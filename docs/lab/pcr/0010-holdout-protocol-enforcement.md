@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-20
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/holdout-protocol-enforcement-3efb`
-- Commit: `bbaecbc`
+- Commit: implementation `bbaecbc`; enforcement-fix `7386e1f`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `protocol-fixture`; `unsealed-regression`
 
