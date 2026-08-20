@@ -8,8 +8,9 @@ contract in `docs/EVALUATION.md`.
 - `ctxbench.mjs`: repeated correctness, determinism, and latency measurement.
 - `smoke.mjs`: public-repo smoke control board (`npm run ctxbench:smoke`).
 - `holdout.mjs`: public-repo holdout slice board (`npm run ctxbench:holdout`).
-- `pi-smoke.mjs`, `pi-trace-runner.mjs`: Pi adapter replay board (`npm run ctxbench:pi-smoke`).
-- `hermes-smoke.mjs`, `hermes-trace-runner.mjs`: Hermes adapter replay board (`npm run ctxbench:hermes-smoke`).
+- `pi-smoke.mjs`, `pi-holdout.mjs`, `pi-trace-runner.mjs`: Pi adapter replay boards (`npm run ctxbench:pi-smoke`, `npm run ctxbench:pi-holdout`).
+- `hermes-smoke.mjs`, `hermes-holdout.mjs`, `hermes-trace-runner.mjs`: Hermes adapter replay boards (`npm run ctxbench:hermes-smoke`, `npm run ctxbench:hermes-holdout`).
+- Combined adapter holdout: `npm run ctxbench:adapters-holdout` (`bench/adapters-holdout.mjs`).
 - `trace-runner.mjs`, `baselines.mjs`, `corvus.mjs`, `oracle.mjs`, `workspace.mjs`: deterministic trace replay.
 - `traces/smoke/`: frozen Flask and Express smoke traces pinned to `repos.lock.json`.
 - `traces/holdout/`: first holdout v0.1 slice (go-tools + neovim); unsealed on commit.
