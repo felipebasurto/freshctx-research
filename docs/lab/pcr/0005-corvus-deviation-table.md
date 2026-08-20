@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-20
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/corvus-deviation-table-6b2b`
-- Commit: `f549434`
+- Commit: `cab3ec4`
 - Paper-manifest digest: `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`
 - CORVUS PDF sha256: `204af5d8df1a25d09dcc2ef154b2aac8d3d3fcea4c9c737a511129f40cd27eaf`
 - Result labels used: `synthetic`; `public-repo-smoke`
