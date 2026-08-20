@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "manifestSha256": "442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89",
+  "scope": "required",
+  "papers": {
+    "codestruct-2026": {
+      "id": "codestruct-2026",
+      "arxiv": "2604.05407",
+      "url": "https://arxiv.org/pdf/2604.05407",
+      "file": "cache/codestruct-2026.pdf",
+      "bytes": 2163366,
+      "sha256": "fb3a372e25e1ac15d1b35918c12cb6299b13d0b363b63fa54752087322f08b47",
+      "retrievedAt": "2026-08-20T20:10:28.075Z"
+    },
+    "complexity-trap-2025": {
+      "id": "complexity-trap-2025",
+      "arxiv": "2508.21433",
+      "url": "https://arxiv.org/pdf/2508.21433",
+      "file": "cache/complexity-trap-2025.pdf",
+      "bytes": 1380836,
+      "sha256": "e40b2fe085fe0a0867b43d845ec3778305d27a8f4d94af409d0d387b69e2866a",
+      "retrievedAt": "2026-08-20T20:10:28.031Z"
+    },
+    "context-engineering-survey-2025": {
+      "id": "context-engineering-survey-2025",
+      "arxiv": "2507.13334",
+      "url": "https://arxiv.org/pdf/2507.13334",
+      "file": "cache/context-engineering-survey-2025.pdf",
+      "bytes": 3808920,
+      "sha256": "ab220955b1fd9fe1d590bfeef946f52b4e1ddbf317a58bc18fc2863b3cb3d4a5",
+      "retrievedAt": "2026-08-20T20:10:28.332Z"
+    },
+    "corvus-2026": {
+      "id": "corvus-2026",
+      "arxiv": "2607.22711",
+      "url": "https://arxiv.org/pdf/2607.22711",
+      "file": "cache/corvus-2026.pdf",
+      "bytes": 831732,
+      "sha256": "204af5d8df1a25d09dcc2ef154b2aac8d3d3fcea4c9c737a511129f40cd27eaf",
+      "retrievedAt": "2026-08-20T20:10:28.014Z"
+    },
+    "dont-break-cache-2026": {
+      "id": "dont-break-cache-2026",
+      "arxiv": "2601.06007",
+      "url": "https://arxiv.org/pdf/2601.06007",
+      "file": "cache/dont-break-cache-2026.pdf",
+      "bytes": 1247136,
+      "sha256": "a8906ab6bb45dc81fd42c37fa97957d7275fa7ebb4354ffecc3e237879942af0",
+      "retrievedAt": "2026-08-20T20:10:28.235Z"
+    },
+    "lost-in-middle-2023": {
+      "id": "lost-in-middle-2023",
+      "arxiv": "2307.03172",
+      "url": "https://arxiv.org/pdf/2307.03172",
+      "file": "cache/lost-in-middle-2023.pdf",
+      "bytes": 747542,
+      "sha256": "653b29619eae2ae4b361d7bdcdc06db4bedcb1b0eabe31814036beca8c1af0b1",
+      "retrievedAt": "2026-08-20T20:10:28.196Z"
+    },
+    "prompt-cache-2023": {
+      "id": "prompt-cache-2023",
+      "arxiv": "2311.04934",
+      "url": "https://arxiv.org/pdf/2311.04934",
+      "file": "cache/prompt-cache-2023.pdf",
+      "bytes": 905557,
+      "sha256": "15e198a54c37a1177c9b17cf44261b4bec50fe5c3a2377bc8d1af4eadabea20f",
+      "retrievedAt": "2026-08-20T20:10:28.215Z"
+    },
+    "self-gc-2026": {
+      "id": "self-gc-2026",
+      "arxiv": "2607.00692",
+      "url": "https://arxiv.org/pdf/2607.00692",
+      "file": "cache/self-gc-2026.pdf",
+      "bytes": 4194743,
+      "sha256": "ef861029b7c689dd0024a15ba7a291e77ea634b67d8b605c4c3376f71193cb5d",
+      "retrievedAt": "2026-08-20T20:10:28.186Z"
+    },
+    "smoothagent-2026": {
+      "id": "smoothagent-2026",
+      "arxiv": "2607.00151",
+      "url": "https://arxiv.org/pdf/2607.00151",
+      "file": "cache/smoothagent-2026.pdf",
+      "bytes": 1126083,
+      "sha256": "266171b115af180f347fba15d8cab4d670219d45569332231ec7d22bc1032f87",
+      "retrievedAt": "2026-08-20T20:10:28.259Z"
+    },
+    "vocc-2026": {
+      "id": "vocc-2026",
+      "arxiv": "2603.29678",
+      "url": "https://arxiv.org/pdf/2603.29678",
+      "file": "cache/vocc-2026.pdf",
+      "bytes": 342704,
+      "sha256": "440c03f38c264aa71ac6a7f960685cf8854543ef43b1963a081dd3001b0c9729",
+      "retrievedAt": "2026-08-20T20:10:28.118Z"
+    }
+  }
+}

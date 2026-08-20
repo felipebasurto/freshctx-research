@@ -1,5 +1,6 @@
 import { FreshCtxEngine } from "../src/engine.mjs";
-import { annotateReadMessage, stableReadMarker } from "../src/transcript.mjs";
+import { annotateReadMessage } from "../src/transcript.mjs";
+import { CorvusSyncedFileSet, renderSyncedContext } from "./corvus.mjs";
 
 function messageText(messages) {
   return messages
@@ -17,9 +18,6 @@ function observationMarker(path) {
   return `[observation-mask:${path}] Historical read masked; no live projection supplied.`;
 }
 
-function corvusMarker(path) {
-  return `[corvus-sync:${path}] Current whole file follows.`;
-}
 
 export class AppendOnlyBaseline {
   constructor() {
@@ -89,7 +87,7 @@ export class CorvusFileBaseline {
     this.name = "corvus-file";
     this.messages = [];
     this.trackedReads = [];
-    this.trackedFiles = new Map();
+    this.synced = new CorvusSyncedFileSet();
   }
 
   async read(event, content, meta) {
@@ -97,36 +95,26 @@ export class CorvusFileBaseline {
       ...meta,
       initialContent: content,
     });
-    this.trackedFiles.set(meta.path, meta.fileContent);
-    this.messages.push(
-      annotateReadMessage({ role: "tool", content }, { id: meta.unitId, path: meta.path }),
-    );
+    const marker = this.synced.syncFile(meta.path);
+    this.messages.push({ role: "tool", content: marker });
   }
 
   async capture(event, workspace) {
-    const masked = this.messages.map((message) => {
-      const unitId = message?.metadata?.freshctx?.unitId;
-      if (!unitId) return structuredClone(message);
-      const read = this.trackedReads.find((item) => item.unitId === unitId);
-      return {
-        ...structuredClone(message),
-        content: stableReadMarker({ id: unitId, path: read?.path ?? message.metadata.freshctx.path }),
-      };
-    });
-    masked.push({ role: "user", content: `TASK: ${event.task}` });
-    const syncBlocks = [];
-    for (const path of [...this.trackedFiles.keys()].sort()) {
-      const currentFile = await workspace.tryRead(path);
-      if (currentFile === null) continue;
-      syncBlocks.push(`${corvusMarker(path)}\n${currentFile}`);
-    }
-    const payloadMessages = [...masked, ...syncBlocks.map((content) => ({ role: "user", content }))];
-    const payloadText = messageText(payloadMessages);
+    const started = performance.now();
+    const files = await this.synced.syncContext(workspace);
+    const projectionText = renderSyncedContext(files);
+    const history = [
+      ...this.messages.map((message) => structuredClone(message)),
+      { role: "user", content: `TASK: ${event.task}` },
+    ];
+    const payloadMessages = projectionText
+      ? [...history, { role: "user", content: projectionText }]
+      : history;
     return {
       messages: payloadMessages,
-      payloadText,
-      projectionText: syncBlocks.join("\n\n"),
-      telemetry: { totalMs: 0 },
+      payloadText: messageText(payloadMessages),
+      projectionText,
+      telemetry: { totalMs: performance.now() - started },
     };
   }
 }

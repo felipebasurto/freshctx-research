@@ -42,7 +42,7 @@ export function extractCodeUnits(payloadText, baseline) {
   }
 
   if (baseline === "corvus-file") {
-    const markerPattern = /\[corvus-sync:([^\]]+)\] Current whole file follows\.\n?/gu;
+    const markerPattern = /\[corvus-file path="([^"]+)"\]\n?/gu;
     let match;
     while ((match = markerPattern.exec(payloadText)) !== null) {
       const path = match[1];

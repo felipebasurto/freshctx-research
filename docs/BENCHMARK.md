@@ -17,7 +17,7 @@ interior-edit fixture:
 
 - append-only without a re-read;
 - append-only with a re-read;
-- CORVUS-shaped whole-file synchronization;
+- documented CORVUS whole-file synchronization (deviations in ADR 0003);
 - FreshCtx region synchronization.
 
 It reports freshness, duplication, current-code recall, estimated prompt size,
@@ -50,11 +50,13 @@ both locks when freezing an experiment. Re-running with moving refs without a
 new benchmark version invalidates comparison.
 
 `npm run ctxbench:smoke` replays frozen Flask/Express traces across append-only,
-observation-mask, CORVUS-shaped whole-file sync, FreshCtx file, and FreshCtx
-region baselines. It writes `bench/reports/public-repo-smoke.jsonl`,
-`bench/reports/latest.md`, and appends one measurement row to
-`autoresearch/results.tsv`. Results are labeled `public-repo-smoke`; they are
-measurement infrastructure, not a performance claim.
+observation-mask, the documented CORVUS whole-file reproduction (`corvus-file`),
+FreshCtx file, and FreshCtx region baselines. It writes
+`bench/reports/public-repo-smoke.jsonl`, `bench/reports/latest.md`, and appends
+one measurement row to `autoresearch/results.tsv`. Results are labeled
+`public-repo-smoke`; they are measurement infrastructure, not a performance
+claim. The CORVUS baseline is not a reviewed paper reproduction; see
+`docs/decisions/0003-corvus-reproduction-deviations.md`.
 
 ## Result labels
 
