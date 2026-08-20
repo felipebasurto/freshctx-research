@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-20
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pi-hermes-holdout-replay-820d`
-- Commit: (filled at merge)
+- Commit: `04241b3`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `public-repo-smoke`; `public-repo-holdout`; `replay`
 
