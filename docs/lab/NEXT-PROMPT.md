@@ -1,4 +1,4 @@
-# Next-iteration prompt — Hermes `select_context()` on the smoke traces
+# Next-iteration prompt — CORVUS deviation table on smoke traces
 
 Copy everything below the line into the next coding agent. The text is public.
 
@@ -6,8 +6,8 @@ Copy everything below the line into the next coding agent. The text is public.
 
 You are working on FreshCtx, a local-first **context transformer**, not a coding
 agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
-`docs/EVALUATION.md`, `docs/lab/pcr/0003-pi-smoke-capture.md`,
-`adapters/hermes/README.md`, `adapters/pi/replay.mjs`, `bench/pi-smoke.mjs`,
+`docs/EVALUATION.md`, `docs/lab/pcr/0004-hermes-smoke-capture.md`,
+`docs/adr/0003-corvus-reproduction-deviations.md`, `bench/smoke.mjs`,
 `bench/README.md`, `autoresearch/CONTRACT.md`.
 
 Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions. Record conflicts in
@@ -15,22 +15,21 @@ Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions. Record conflicts in
 
 ## Goal
 
-Capture the **same** Flask/Express smoke traces through the Hermes adapter seam
-(`on_turn_complete` + `select_context()`, fake provider / bridge, no model).
-Record whether the Hermes payload satisfies the same freshness/uniqueness gates
-as the core `public-repo-smoke` board and how it compares to the Pi replay in
-PCR 0003.
-
-This is measurement / adapter fidelity, not a performance claim and not SOTA.
+Publish a **measured** side-by-side deviation table: documented CORVUS
+whole-file reproduction (`corvus-file` baseline) vs `freshctx-region` vs
+`freshctx-file` on the existing Flask/Express smoke board. State every known
+deviation from [CORVUS](https://arxiv.org/abs/2607.22711) explicitly. This is
+measurement and documentation fidelity, not a SOTA claim and not holdout work.
 
 ## Hard restrictions
 
 - No autoresearch campaign. No model SDK. No sampled output.
 - Do not tune `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs`.
-- Do not retarget `bench/repos.lock.json`.
+- Do not retarget `bench/repos.lock.json` commit SHAs.
 - Do not change gold labels, weights, thresholds, or existing test bodies except
-  to ADD adapter/runner tests.
-- Node stdlib only in prototype core. Fail open at the host boundary.
+  to ADD reporting/runner tests if needed.
+- Node stdlib only in prototype core. Fail open at host boundary.
+- Pi and Hermes adapter smoke boards must keep passing as regressions.
 
 ## Required loop
 
@@ -43,12 +42,13 @@ npm run demo
 npm run repos:verify
 npm run ctxbench:smoke
 npm run ctxbench:pi-smoke
+npm run ctxbench:hermes-smoke
 ```
 
-File PCR 0004 with full-suite table and Pi/Hermes/core deltas. Update lab index
+File PCR 0005 with the deviation table and raw metric deltas. Update lab index
 and metrics. Append `decision=review` to `autoresearch/results.tsv`.
 
 ## Done when
 
-Hermes request-capture either passes the same smoke gates or PCR 0004 states the
-exact protocol gap. Do not start CORVUS ranking or holdout work in the same PR.
+PCR 0005 contains a cited-vs-measured CORVUS deviation table on smoke v0.1 with
+no implied ranking claim. Do not start sealed holdout execution in the same PR.

@@ -3,8 +3,9 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
-const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
+export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
 const MAX_FILE_BYTES = 512 * 1024;
+const DEFAULT_BUDGET_CHARS = 24_000;
 
 async function readStdin() {
   const chunks = [];
@@ -12,7 +13,7 @@ async function readStdin() {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-async function loadState(path) {
+export async function loadState(path) {
   try {
     const value = JSON.parse(await readFile(path, "utf8"));
     return value && typeof value === "object" ? value : { calls: {} };
@@ -21,14 +22,14 @@ async function loadState(path) {
   }
 }
 
-async function saveState(path, state) {
+export async function saveState(path, state) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   const temporary = `${path}.${process.pid}.tmp`;
   await writeFile(temporary, `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 });
   await rename(temporary, path);
 }
 
-function parseArguments(value) {
+export function parseArguments(value) {
   if (value && typeof value === "object") return value;
   if (typeof value !== "string") return {};
   try {
@@ -39,7 +40,7 @@ function parseArguments(value) {
   }
 }
 
-function discoveredCalls(messages) {
+export function discoveredCalls(messages) {
   const candidates = new Map();
   const completed = new Set();
 
@@ -63,7 +64,7 @@ function discoveredCalls(messages) {
   return Object.fromEntries([...candidates].filter(([id]) => completed.has(id)));
 }
 
-function textContent(content) {
+export function textContent(content) {
   if (typeof content === "string") return content;
   if (!Array.isArray(content)) return "";
   return content
@@ -72,7 +73,7 @@ function textContent(content) {
     .join("\n");
 }
 
-function taskFrom(payload) {
+export function taskFrom(payload) {
   const incoming = textContent(payload.incomingMessage?.content);
   if (incoming) return incoming;
   for (let index = payload.messages.length - 1; index >= 0; index -= 1) {
@@ -84,7 +85,7 @@ function taskFrom(payload) {
   return "";
 }
 
-async function safeWorkspaceFile(rootInput, requestedPath) {
+export async function safeWorkspaceFile(rootInput, requestedPath) {
   const root = await realpath(rootInput);
   const candidate = resolve(root, isAbsolute(requestedPath) ? relative(root, requestedPath) : requestedPath);
   const canonical = await realpath(candidate);
@@ -99,67 +100,141 @@ async function safeWorkspaceFile(rootInput, requestedPath) {
   };
 }
 
-async function observe(payload) {
+export function trackedCallsFromMessages(messages) {
+  const calls = discoveredCalls(messages);
+  const tracked = {};
+  for (const [callId, path] of Object.entries(calls)) {
+    const toolMessage = messages.find(
+      (message) =>
+        message?.role === "tool"
+        && (message.tool_call_id ?? message.toolCallId) === callId,
+    );
+    if (!toolMessage) continue;
+    tracked[callId] = {
+      path,
+      content: textContent(toolMessage.content),
+    };
+  }
+  return tracked;
+}
+
+export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
   state.calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
+  state.tracked = {
+    ...(state.tracked ?? {}),
+    ...trackedCallsFromMessages(payload.messages),
+  };
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
   return { observedCalls: Object.keys(state.calls).length };
 }
 
-async function select(payload) {
+export async function selectContext(payload) {
   const state = await loadState(payload.stateFile);
   const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
+  const tracked = {
+    ...(state.tracked ?? {}),
+    ...trackedCallsFromMessages(payload.messages),
+  };
   const paths = [...new Set(Object.values(calls))].sort();
-  if (paths.length === 0) return { messages: payload.messages, selected: 0 };
+  if (paths.length === 0) {
+    return {
+      messages: payload.messages,
+      selected: 0,
+      applied: false,
+      projectionText: "",
+      telemetry: { totalMs: 0, projectionBytes: 0 },
+    };
+  }
 
   const engine = new FreshCtxEngine();
-  const unitsByPath = new Map();
-  for (const requestedPath of paths) {
+  const unitsByCall = new Map();
+  for (const [callId, observation] of Object.entries(tracked)) {
     try {
-      const file = await safeWorkspaceFile(payload.cwd, requestedPath);
-      const unit = engine.trackRead({ path: file.path, content: file.content, scope: "file" });
-      unitsByPath.set(requestedPath, unit);
-      unitsByPath.set(file.path, unit);
+      const unit = engine.trackRead({
+        path: observation.path,
+        content: observation.content,
+        scope: "file",
+      });
+      unitsByCall.set(callId, unit);
     } catch {
-      // Keep the original result for paths that cannot be refreshed. This is
-      // the adapter's fail-open boundary.
+      // Unsupported observations remain ordinary tool results.
     }
   }
+
+  await engine.refresh(async (filePath) =>
+    (await safeWorkspaceFile(payload.cwd, filePath)).content,
+  );
 
   const rewritten = payload.messages.map((message) => {
     if (message?.role !== "tool") return structuredClone(message);
     const id = message.tool_call_id ?? message.toolCallId;
-    const requestedPath = typeof id === "string" ? calls[id] : undefined;
-    const unit = requestedPath ? unitsByPath.get(requestedPath) : undefined;
+    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
     if (!unit) return structuredClone(message);
     return { ...structuredClone(message), content: stableReadMarker(unit) };
   });
 
-  const configuredBudget = Number(process.env.FRESHCTX_BUDGET_CHARS);
+  const configuredBudget = Number(process.env.FRESHCTX_BUDGET_CHARS ?? payload.budgetChars);
   const derivedBudget = Math.min(
     32_000,
     Math.max(4_000, Math.floor(Number(payload.budgetTokens ?? 0) * 4 * 0.15)),
   );
+  const budgetChars = Number.isFinite(configuredBudget) && configuredBudget > 0
+    ? configuredBudget
+    : derivedBudget;
+
   const projection = engine.project({
     task: taskFrom(payload),
-    budgetChars: Number.isFinite(configuredBudget) && configuredBudget > 0
-      ? configuredBudget
-      : derivedBudget,
+    budgetChars,
   });
 
+  const projectionText = projection.text;
   return {
-    messages: [...rewritten, { role: "user", content: projection.text }],
+    messages: [...rewritten, { role: "user", content: projectionText }],
     selected: projection.selected.length,
     unresolved: projection.omitted.filter((item) => item.reason === "unresolved").length,
+    applied: engine.registry.list().length > 0,
+    projectionText,
+    telemetry: {
+      totalMs: 0,
+      projectionBytes: Buffer.byteLength(projectionText, "utf8"),
+    },
   };
 }
 
-try {
-  const payload = await readStdin();
-  const result = payload.operation === "observe" ? await observe(payload) : await select(payload);
-  process.stdout.write(JSON.stringify(result));
-} catch (error) {
-  process.stderr.write(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
+export function messageText(messages) {
+  return messages
+    .flatMap((message) => {
+      if (typeof message.content === "string") return [message.content];
+      if (!Array.isArray(message.content)) return [];
+      return message.content
+        .filter((part) => part?.type === "text" && typeof part.text === "string")
+        .map((part) => part.text);
+    })
+    .join("\n\n");
+}
+
+export function toProviderPayload(messages, { model = "freshctx-capture" } = {}) {
+  return {
+    model,
+    messages: messages.map((message) => structuredClone(message)),
+    stream: false,
+  };
+}
+
+import { fileURLToPath } from "node:url";
+
+const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (invoked) {
+  try {
+    const payload = await readStdin();
+    const result = payload.operation === "observe"
+      ? await observeTurn(payload)
+      : await selectContext(payload);
+    process.stdout.write(JSON.stringify(result));
+  } catch (error) {
+    process.stderr.write(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
 }
