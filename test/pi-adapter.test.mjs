@@ -13,6 +13,7 @@ import {
   toProviderPayload,
 } from "../adapters/pi/replay.mjs";
 import { finalPiCapture, runPiTrace } from "../bench/pi-trace-runner.mjs";
+import { finalCapture, runTrace } from "../bench/trace-runner.mjs";
 import { createCaptureProvider } from "../capture/provider.mjs";
 
 test("Pi replay refuses paths outside the workspace root", async () => {
@@ -101,6 +102,42 @@ test("Pi trace runner passes freshness gates on express interior-edit smoke trac
   assert.equal(capture.metrics.requiredRecall, 1);
   assert.ok(capture.adapterApplied);
   assert.notEqual(messageText(capture.persistedMessages), capture.payloadText);
+});
+
+test("Pi trace runner matches core freshctx-region exact-current on region families", async () => {
+  const trace = JSON.parse(
+    await readFile(new URL("../bench/traces/smoke/express-interior-edit.json", import.meta.url), "utf8"),
+  );
+  const [piResult, coreResult] = await Promise.all([runPiTrace(trace), runTrace(trace, "freshctx-region")]);
+  const piCapture = finalPiCapture(piResult);
+  const coreCapture = finalCapture(coreResult);
+  assert.ok(piCapture);
+  assert.ok(coreCapture);
+  assert.equal(piCapture.metrics.exactCurrentRate, 1);
+  assert.equal(coreCapture.metrics.exactCurrentRate, 1);
+  assert.equal(piCapture.metrics.projectionBytes, coreCapture.metrics.projectionBytes);
+});
+
+test("Pi region tracking uses scope metadata from read tool arguments", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-region-meta-"));
+  const fileContent = "line1\nline2\nline3\n";
+  await writeFile(join(workspace, "sample.ts"), fileContent);
+  const adapter = createPiAdapter({ budgetChars: 8_000 });
+  const toolCallId = "call-region";
+  await adapter.onToolResult(
+    {
+      toolName: "read",
+      toolCallId,
+      input: { path: "sample.ts", scope: "region", startLine: 2, endLine: 2, selector: "line2" },
+      content: "line2",
+      isError: false,
+    },
+    { cwd: workspace },
+  );
+  const units = adapter.engine.registry.list();
+  assert.equal(units.length, 1);
+  assert.equal(units[0].scope, "region");
+  assert.equal(units[0].content, "line2");
 });
 
 test("Pi smoke pack runs all traces and compares against core board", async () => {

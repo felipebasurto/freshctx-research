@@ -77,8 +77,9 @@ function replaceCapturedReads(
  *
  * It is deliberately request-only: persisted tool results remain untouched.
  * If this extension fails, returning undefined makes Pi use its original
- * context. This adapter currently synchronizes whole text files; the core and
- * benchmark already exercise finer region synchronization.
+ * context. This adapter synchronizes whole text files or region-scoped reads
+ * when the read tool arguments include `scope: "region"` plus line metadata;
+ * the core and benchmark already exercise finer region synchronization.
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = new FreshCtxEngine();
@@ -95,6 +96,28 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
 
     try {
       const file = await safeWorkspaceFile(ctx.cwd, requestedPath);
+      const input = event.input as {
+        path: string;
+        scope?: string;
+        startLine?: number;
+        endLine?: number;
+        selector?: string;
+      };
+      if (input.scope === "region") {
+        const content = textFromContent(event.content);
+        if (!content) return;
+        const unit = engine.trackRead({
+          path: file.path,
+          content,
+          scope: "region",
+          startLine: input.startLine,
+          endLine: input.endLine,
+          selector: input.selector,
+        });
+        callToUnit.set(event.toolCallId, unit.id);
+        return;
+      }
+
       const unit = engine.trackRead({
         path: file.path,
         content: file.content,

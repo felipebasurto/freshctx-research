@@ -307,7 +307,7 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
     snapshot?.cachePrefixReuse.toFixed(6) ?? "0",
     snapshot?.transformP95.toFixed(3) ?? "0",
     "review",
-    `hermes-adapter supported=${supported}; freshness/uniqueness gates pass; file-level exact-current`,
+    `hermes-adapter supported=${supported}; freshness/uniqueness gates pass; region-grain exact-current on smoke`,
   ].join("\t");
   await appendFile(RESULTS_TSV, `${tsvLine}\n`);
 

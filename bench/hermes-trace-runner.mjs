@@ -80,7 +80,16 @@ export async function runHermesTrace(trace, { workspaceRoot, stateFile } = {}) {
         trackedReads.push(meta);
 
         const toolCallId = makeToolCallId();
-        persistedMessages.push(buildReadToolCall({ toolCallId, path: event.path }));
+        persistedMessages.push(
+          buildReadToolCall({
+            toolCallId,
+            path: event.path,
+            scope: event.scope,
+            startLine: event.startLine,
+            endLine: event.endLine,
+            selector: event.selector,
+          }),
+        );
         persistedMessages.push(buildToolResultMessage({ toolCallId, content }));
         await adapter.onTurnComplete(structuredClone(persistedMessages), ctx);
         continue;
@@ -122,7 +131,7 @@ export async function runHermesTrace(trace, { workspaceRoot, stateFile } = {}) {
 
         const priorPayloadText = captures.at(-1)?.payloadText ?? "";
         const metrics = analyzeCapture({
-          baseline: "freshctx-file",
+          baseline: "freshctx-region",
           payloadText,
           payloadBytes: Buffer.byteLength(payloadText, "utf8"),
           projectionText,

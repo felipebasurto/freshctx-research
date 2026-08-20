@@ -78,13 +78,28 @@ export async function runPiTrace(trace, { workspaceRoot } = {}) {
         trackedReads.push(meta);
 
         const toolCallId = makeToolCallId();
-        persistedMessages.push(buildReadToolCall({ toolCallId, path: event.path }));
+        persistedMessages.push(
+          buildReadToolCall({
+            toolCallId,
+            path: event.path,
+            scope: event.scope,
+            startLine: event.startLine,
+            endLine: event.endLine,
+            selector: event.selector,
+          }),
+        );
         persistedMessages.push(buildToolResultMessage({ toolCallId, content }));
         await adapter.onToolResult(
           {
             toolName: "read",
             toolCallId,
-            input: { path: event.path },
+            input: {
+              path: event.path,
+              scope: event.scope,
+              startLine: event.startLine,
+              endLine: event.endLine,
+              selector: event.selector,
+            },
             content,
             isError: false,
           },
@@ -125,7 +140,7 @@ export async function runPiTrace(trace, { workspaceRoot } = {}) {
 
         const priorPayloadText = captures.at(-1)?.payloadText ?? "";
         const metrics = analyzeCapture({
-          baseline: "freshctx-file",
+          baseline: "freshctx-region",
           payloadText,
           payloadBytes: Buffer.byteLength(payloadText, "utf8"),
           projectionText,

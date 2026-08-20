@@ -14,6 +14,7 @@ import {
   toProviderPayload,
 } from "../adapters/hermes/replay.mjs";
 import { finalHermesCapture, runHermesTrace } from "../bench/hermes-trace-runner.mjs";
+import { finalCapture, runTrace } from "../bench/trace-runner.mjs";
 import { createCaptureProvider } from "../capture/provider.mjs";
 
 test("Hermes adapter is request-only: persisted session stays unchanged", async () => {
@@ -85,6 +86,42 @@ test("Hermes trace runner passes freshness gates on express interior-edit smoke 
   assert.equal(capture.metrics.requiredRecall, 1);
   assert.ok(capture.adapterApplied);
   assert.notEqual(messageText(capture.persistedMessages), capture.payloadText);
+});
+
+test("Hermes trace runner matches core freshctx-region exact-current on region families", async () => {
+  const trace = JSON.parse(
+    await readFile(new URL("../bench/traces/smoke/express-interior-edit.json", import.meta.url), "utf8"),
+  );
+  const [hermesResult, coreResult] = await Promise.all([
+    runHermesTrace(trace),
+    runTrace(trace, "freshctx-region"),
+  ]);
+  const hermesCapture = finalHermesCapture(hermesResult);
+  const coreCapture = finalCapture(coreResult);
+  assert.ok(hermesCapture);
+  assert.ok(coreCapture);
+  assert.equal(hermesCapture.metrics.exactCurrentRate, 1);
+  assert.equal(coreCapture.metrics.exactCurrentRate, 1);
+  assert.equal(hermesCapture.metrics.projectionBytes, coreCapture.metrics.projectionBytes);
+});
+
+test("Hermes region tracking uses scope metadata from read tool arguments", async () => {
+  const { discoveredCalls } = await import("../adapters/hermes/bridge.mjs");
+  const messages = [
+    buildReadToolCall({
+      toolCallId: "call-region",
+      path: "sample.ts",
+      scope: "region",
+      startLine: 2,
+      endLine: 2,
+      selector: "line2",
+    }),
+    buildToolResultMessage({ toolCallId: "call-region", content: "line2" }),
+  ];
+  const calls = discoveredCalls(messages);
+  assert.equal(calls["call-region"].scope, "region");
+  assert.equal(calls["call-region"].startLine, 2);
+  assert.equal(calls["call-region"].selector, "line2");
 });
 
 test("Hermes smoke pack runs all traces and compares against core board", async () => {
