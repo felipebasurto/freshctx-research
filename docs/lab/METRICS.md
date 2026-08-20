@@ -9,7 +9,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | `0644400` smoke landing | 22/22 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0001](pcr/0001-public-log-and-lineage.md) |
 | 2026-08-20 | `fbf13d6` CORVUS lifecycle | 26/26 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0002](pcr/0002-corvus-lifecycle.md) |
 | 2026-08-20 | `17bc65c` Pi smoke | 32/32 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0003](pcr/0003-pi-smoke-capture.md) |
-| 2026-08-20 | `826a272` Hermes smoke | 37/37 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0004](pcr/0004-hermes-smoke-capture.md) |
+| 2026-08-20 | `b7a0b2a` Hermes smoke | 37/37 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0004](pcr/0004-hermes-smoke-capture.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
