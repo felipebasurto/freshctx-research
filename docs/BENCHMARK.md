@@ -66,7 +66,18 @@ See `docs/lab/pcr/0003-pi-smoke-capture.md`.
 `npm run ctxbench:holdout` replays the first holdout slice (go-tools + neovim)
 through the same five baselines as smoke and writes
 `bench/reports/holdout.md`. Results are labeled `public-repo-holdout`.
-See `docs/lab/pcr/0007-sealed-holdout-protocol.md`.
+Status: **unsealed-regression-development-pack** (legacy; predates freeze protocol).
+See `docs/lab/pcr/0007-sealed-holdout-protocol.md` and PCR 0009.
+
+New holdout packs MUST use the ordered pipeline:
+
+```bash
+npm run holdout:freeze -- --manifest=bench/splits/<pack>.json ...
+# commit manifest
+npm run holdout:generate -- --manifest=bench/splits/<pack>.json
+npm run holdout:run -- --manifest=bench/splits/<pack>.json
+npm run holdout:report -- --manifest=bench/splits/<pack>.json
+```
 
 ## Result labels
 

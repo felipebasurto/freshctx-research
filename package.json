@@ -30,6 +30,10 @@
     "repos:fetch:smoke": "node scripts/repos.mjs fetch --tier=smoke",
     "repos:fetch:holdout": "node scripts/repos.mjs fetch --ids=go-tools,neovim",
     "repos:verify": "node scripts/repos.mjs verify",
+    "holdout:freeze": "node scripts/holdout-protocol.mjs freeze",
+    "holdout:generate": "node scripts/holdout-protocol.mjs generate",
+    "holdout:run": "node scripts/holdout-protocol.mjs run",
+    "holdout:report": "node scripts/holdout-protocol.mjs report",
     "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs"
   },
   "keywords": [
