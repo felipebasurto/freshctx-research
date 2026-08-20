@@ -68,3 +68,5 @@ conflict in the PCR. Do not silently pick a side.
 | [METRICS.md](METRICS.md) | Running benchmark ledger |
 | [NEXT-PROMPT.md](NEXT-PROMPT.md) | Current next-iteration prompt |
 | [pcr/](pcr/) | Numbered Public Change Records |
+
+Latest development-lex note: [PCR 0012](pcr/0012-devloop-wave1-rejects.md) records WAVE 1 rejects; implementation unchanged.
