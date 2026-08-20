@@ -11,6 +11,7 @@ import { sha256 } from "../src/hash.mjs";
 import { DEFAULT_POLICY } from "../src/policy.mjs";
 import { guardLegacyHoldoutEntrypoint, formatLegacyV01ProvenanceHeaderSync, HOLDOUT_V01 } from "./legacy-holdout-guard.mjs";
 import { hashDirectoryJsonSet, hashJsonlSet } from "./holdout-hashes.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "holdout");
@@ -161,8 +162,8 @@ function hardGateFailures(results) {
   return failures;
 }
 
-export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
-  const skipArtifactWrite = skipReportWrite;
+export async function runHoldoutPack({ packId, skipReportWrite = false, invoked = false } = {}) {
+  const writeArtifacts = shouldWriteTrackedReports({ skipReportWrite, invoked });
   guardLegacyHoldoutEntrypoint("ctxbench:holdout", { packId, tracesDir: HOLDOUT_V01.tracesDir });
 
   const lock = await loadJson(LOCK_PATH);
@@ -178,7 +179,7 @@ export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "public-repo-holdout.jsonl");
-  if (!skipArtifactWrite) {
+  if (writeArtifacts) {
     await mkdir(REPORTS_DIR, { recursive: true });
     await writeFile(jsonlPath, "");
   }
@@ -229,7 +230,7 @@ export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
         resources: {},
         payload_sha256: capture.payloadSha256,
       };
-      if (!skipArtifactWrite) {
+      if (writeArtifacts) {
         await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
       }
     }
@@ -250,7 +251,7 @@ export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
     resultSetHash,
   });
   const report = formatTable(rows, provenanceHeader);
-  if (!skipReportWrite) {
+  if (writeArtifacts) {
     await writeFile(join(REPORTS_DIR, "holdout.md"), report);
   }
 
@@ -276,7 +277,7 @@ export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
     "review",
     "public-repo-holdout measurement row; not an autoresearch accept",
   ].join("\t");
-  if (!skipArtifactWrite) {
+  if (writeArtifacts) {
     await appendFile(RESULTS_TSV, `${tsvLine}\n`);
   }
 
@@ -299,7 +300,7 @@ export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
 
 const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invoked) {
-  const summary = await runHoldoutPack();
+  const summary = await runHoldoutPack({ invoked: true });
   console.log(JSON.stringify(summary, null, 2));
   if (summary.failures.length > 0) process.exitCode = 1;
 }

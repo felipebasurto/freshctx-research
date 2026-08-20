@@ -8,6 +8,7 @@ import { finalCapture, runTrace } from "./trace-runner.mjs";
 import { finalPiCapture, runPiTrace } from "./pi-trace-runner.mjs";
 import { percentile } from "./metrics.mjs";
 import { sha256 } from "../src/hash.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "smoke");
@@ -178,7 +179,8 @@ function piHardGateFailures(results) {
   return failures;
 }
 
-export async function runPiSmokePack({ strictGates = true } = {}) {
+export async function runPiSmokePack({ strictGates = true, skipReportWrite = false, invoked = false } = {}) {
+  const writeArtifacts = shouldWriteTrackedReports({ skipReportWrite, invoked });
   await loadJson(LOCK_PATH);
   const traces = await listSmokeTraces();
   if (traces.length === 0) throw new Error("no smoke traces found in bench/traces/smoke");
@@ -190,8 +192,10 @@ export async function runPiSmokePack({ strictGates = true } = {}) {
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "pi-smoke.jsonl");
-  await mkdir(REPORTS_DIR, { recursive: true });
-  await writeFile(jsonlPath, "");
+  if (writeArtifacts) {
+    await mkdir(REPORTS_DIR, { recursive: true });
+    await writeFile(jsonlPath, "");
+  }
 
   const piResults = [];
   const coreResults = [];
@@ -240,7 +244,9 @@ export async function runPiSmokePack({ strictGates = true } = {}) {
       payload_sha256: piCapture.payloadSha256,
       adapter_applied: piCapture.adapterApplied,
     };
-    await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    if (writeArtifacts) {
+      await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    }
   }
 
   const piRows = aggregatePiRows(piResults);
@@ -257,7 +263,9 @@ export async function runPiSmokePack({ strictGates = true } = {}) {
     };
   });
   const report = formatPiTable(piRows, coreRows);
-  await writeFile(join(REPORTS_DIR, "pi-smoke.md"), report);
+  if (writeArtifacts) {
+    await writeFile(join(REPORTS_DIR, "pi-smoke.md"), report);
+  }
 
   const failures = piHardGateFailures(piResults);
   const supported = failures.length === 0;
@@ -280,7 +288,9 @@ export async function runPiSmokePack({ strictGates = true } = {}) {
     "review",
     `pi-adapter supported=${supported}; freshness/uniqueness gates pass; region-grain exact-current on smoke`,
   ].join("\t");
-  await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  if (writeArtifacts) {
+    await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  }
 
   const summary = {
     label: "public-repo-smoke",
@@ -304,6 +314,6 @@ export async function runPiSmokePack({ strictGates = true } = {}) {
 
 const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invoked) {
-  const summary = await runPiSmokePack();
+  const summary = await runPiSmokePack({ invoked: true });
   console.log(JSON.stringify(summary, null, 2));
 }

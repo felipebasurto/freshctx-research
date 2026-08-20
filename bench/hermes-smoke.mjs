@@ -9,6 +9,7 @@ import { finalHermesCapture, runHermesTrace } from "./hermes-trace-runner.mjs";
 import { finalPiCapture, runPiTrace } from "./pi-trace-runner.mjs";
 import { percentile } from "./metrics.mjs";
 import { sha256 } from "../src/hash.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "smoke");
@@ -193,7 +194,8 @@ function hermesHardGateFailures(results) {
   return failures;
 }
 
-export async function runHermesSmokePack({ strictGates = true } = {}) {
+export async function runHermesSmokePack({ strictGates = true, skipReportWrite = false, invoked = false } = {}) {
+  const writeArtifacts = shouldWriteTrackedReports({ skipReportWrite, invoked });
   await loadJson(LOCK_PATH);
   const traces = await listSmokeTraces();
   if (traces.length === 0) throw new Error("no smoke traces found in bench/traces/smoke");
@@ -205,8 +207,10 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "hermes-smoke.jsonl");
-  await mkdir(REPORTS_DIR, { recursive: true });
-  await writeFile(jsonlPath, "");
+  if (writeArtifacts) {
+    await mkdir(REPORTS_DIR, { recursive: true });
+    await writeFile(jsonlPath, "");
+  }
 
   const hermesResults = [];
   const coreResults = [];
@@ -257,7 +261,9 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
       payload_sha256: hermesCapture.payloadSha256,
       adapter_applied: hermesCapture.adapterApplied,
     };
-    await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    if (writeArtifacts) {
+      await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    }
   }
 
   const hermesRows = aggregateHermesRows(hermesResults);
@@ -286,7 +292,9 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
     };
   });
   const report = formatHermesTable(hermesRows, coreRows, piRows);
-  await writeFile(join(REPORTS_DIR, "hermes-smoke.md"), report);
+  if (writeArtifacts) {
+    await writeFile(join(REPORTS_DIR, "hermes-smoke.md"), report);
+  }
 
   const failures = hermesHardGateFailures(hermesResults);
   const supported = failures.length === 0;
@@ -309,7 +317,9 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
     "review",
     `hermes-adapter supported=${supported}; freshness/uniqueness gates pass; region-grain exact-current on smoke`,
   ].join("\t");
-  await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  if (writeArtifacts) {
+    await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  }
 
   const summary = {
     label: "public-repo-smoke",
@@ -333,6 +343,6 @@ export async function runHermesSmokePack({ strictGates = true } = {}) {
 
 const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invoked) {
-  const summary = await runHermesSmokePack();
+  const summary = await runHermesSmokePack({ invoked: true });
   console.log(JSON.stringify(summary, null, 2));
 }

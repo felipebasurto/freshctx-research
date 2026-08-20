@@ -9,6 +9,7 @@ import { percentile } from "./metrics.mjs";
 import { finalCapture, runTrace } from "./trace-runner.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { DEFAULT_POLICY } from "../src/policy.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "smoke");
@@ -154,7 +155,8 @@ function hardGateFailures(results) {
   return failures;
 }
 
-export async function runSmokePack() {
+export async function runSmokePack({ skipReportWrite = false, invoked = false } = {}) {
+  const writeArtifacts = shouldWriteTrackedReports({ skipReportWrite, invoked });
   const lock = await loadJson(LOCK_PATH);
   const traces = await listSmokeTraces();
   if (traces.length === 0) throw new Error("no smoke traces found in bench/traces/smoke");
@@ -168,8 +170,10 @@ export async function runSmokePack() {
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "public-repo-smoke.jsonl");
-  await mkdir(REPORTS_DIR, { recursive: true });
-  await writeFile(jsonlPath, "");
+  if (writeArtifacts) {
+    await mkdir(REPORTS_DIR, { recursive: true });
+    await writeFile(jsonlPath, "");
+  }
 
   const results = [];
   for (const trace of traces) {
@@ -217,13 +221,17 @@ export async function runSmokePack() {
         resources: {},
         payload_sha256: capture.payloadSha256,
       };
-      await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+      if (writeArtifacts) {
+        await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+      }
     }
   }
 
   const rows = aggregateRows(results);
   const report = formatTable(rows);
-  await writeFile(join(REPORTS_DIR, "latest.md"), report);
+  if (writeArtifacts) {
+    await writeFile(join(REPORTS_DIR, "latest.md"), report);
+  }
 
   const freshctxRows = rows.filter(
     (row) => row.baseline === "freshctx-region" && row.requiredRecall === 1,
@@ -247,7 +255,9 @@ export async function runSmokePack() {
     "review",
     "public-repo-smoke measurement row; not an autoresearch accept",
   ].join("\t");
-  await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  if (writeArtifacts) {
+    await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  }
 
   const failures = hardGateFailures(results);
   if (failures.length > 0) {
@@ -268,6 +278,6 @@ export async function runSmokePack() {
 
 const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invoked) {
-  const summary = await runSmokePack();
+  const summary = await runSmokePack({ invoked: true });
   console.log(JSON.stringify(summary, null, 2));
 }

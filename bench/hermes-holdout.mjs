@@ -10,6 +10,7 @@ import { finalPiCapture, runPiTrace } from "./pi-trace-runner.mjs";
 import { percentile } from "./metrics.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { guardLegacyHoldoutEntrypoint, HOLDOUT_V01 } from "./legacy-holdout-guard.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "holdout");
@@ -194,7 +195,8 @@ function hermesHardGateFailures(results) {
   return failures;
 }
 
-export async function runHermesHoldoutPack({ strictGates = false, packId } = {}) {
+export async function runHermesHoldoutPack({ strictGates = false, packId, skipReportWrite = false, invoked = false } = {}) {
+  const writeArtifacts = shouldWriteTrackedReports({ skipReportWrite, invoked });
   guardLegacyHoldoutEntrypoint("ctxbench:hermes-holdout", { packId, tracesDir: HOLDOUT_V01.tracesDir });
 
   const lock = await loadJson(LOCK_PATH);
@@ -208,8 +210,10 @@ export async function runHermesHoldoutPack({ strictGates = false, packId } = {})
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "hermes-holdout.jsonl");
-  await mkdir(REPORTS_DIR, { recursive: true });
-  await writeFile(jsonlPath, "");
+  if (writeArtifacts) {
+    await mkdir(REPORTS_DIR, { recursive: true });
+    await writeFile(jsonlPath, "");
+  }
 
   const hermesResults = [];
   const coreResults = [];
@@ -262,7 +266,9 @@ export async function runHermesHoldoutPack({ strictGates = false, packId } = {})
       payload_sha256: hermesCapture.payloadSha256,
       adapter_applied: hermesCapture.adapterApplied,
     };
-    await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    if (writeArtifacts) {
+      await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+    }
   }
 
   const hermesRows = aggregateHermesRows(hermesResults);
@@ -291,7 +297,9 @@ export async function runHermesHoldoutPack({ strictGates = false, packId } = {})
     };
   });
   const report = formatHermesTable(hermesRows, coreRows, piRows);
-  await writeFile(join(REPORTS_DIR, "hermes-holdout.md"), report);
+  if (writeArtifacts) {
+    await writeFile(join(REPORTS_DIR, "hermes-holdout.md"), report);
+  }
 
   const failures = hermesHardGateFailures(hermesResults);
   const supported = failures.length === 0;
@@ -314,7 +322,9 @@ export async function runHermesHoldoutPack({ strictGates = false, packId } = {})
     "review",
     `hermes-adapter holdout supported=${supported}; failures=${failures.length}; region-grain replay on holdout v0.1`,
   ].join("\t");
-  await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  if (writeArtifacts) {
+    await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  }
 
   if (failures.length > 0) {
     process.stderr.write(`Hermes adapter holdout hard gate failures (recorded, not tuned):\n${failures.join("\n")}\n`);
@@ -342,7 +352,7 @@ export async function runHermesHoldoutPack({ strictGates = false, packId } = {})
 
 const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invoked) {
-  const summary = await runHermesHoldoutPack();
+  const summary = await runHermesHoldoutPack({ invoked: true });
   console.log(JSON.stringify(summary, null, 2));
   if (summary.failures.length > 0) process.exitCode = 1;
 }
