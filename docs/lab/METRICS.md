@@ -11,6 +11,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | `17bc65c` Pi smoke | 32/32 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0003](pcr/0003-pi-smoke-capture.md) |
 | 2026-08-20 | `b7a0b2a` Hermes smoke | 37/37 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0004](pcr/0004-hermes-smoke-capture.md) |
 | 2026-08-20 | `54d71f8` CORVUS deviation table | 37/37 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0005](pcr/0005-corvus-deviation-table.md) |
+| 2026-08-20 | (PCR 0006) | 41/41 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0006](pcr/0006-region-grain-adapters.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -27,5 +28,6 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-20 | `17bc65c` | `public-repo-smoke` / `replay` | Pi adapter smoke: stale 0, recall 1, duplicate 0 on all families; exact-current 0 (file scope). Matches `freshctx-file` bytes, not `freshctx-region`. | [0003](pcr/0003-pi-smoke-capture.md) |
 | 2026-08-20 | (PCR 0004) | `public-repo-smoke` / `replay` | Hermes adapter smoke: stale 0, recall 1, duplicate 0; projection-bytes identical to Pi on all families; exact-current 0 (file scope). | [0004](pcr/0004-hermes-smoke-capture.md) |
 | 2026-08-20 | `54d71f8` | `public-repo-smoke` | CORVUS deviation table: corvus-file / freshctx-file / freshctx-region side-by-side on smoke v0.1; 0-byte delta vs PCR 0002; region smaller on append/interior-edit/move-in-file; no ranking claim. | [0005](pcr/0005-corvus-deviation-table.md) |
+| 2026-08-20 | (PCR 0006) | `public-repo-smoke` / `replay` | Region-grain Pi/Hermes: exact-current matches core-region on append/interior-edit/move-in-file (1.000); projection-bytes match core-region (0 delta); vs PCR 0003 file-grain exact-current 0 and +350–6859 bytes. | [0006](pcr/0006-region-grain-adapters.md) |
 
 Full tables: `bench/reports/latest.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`.

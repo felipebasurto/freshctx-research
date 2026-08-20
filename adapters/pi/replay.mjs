@@ -23,6 +23,24 @@ function lastUserTask(messages) {
   return "";
 }
 
+function observedToolContent(content) {
+  if (typeof content === "string") return content;
+  return textFromContent(content);
+}
+
+export function readScopeFromInput(input) {
+  if (!input || typeof input !== "object") return { scope: "file" };
+  if (input.scope === "region") {
+    return {
+      scope: "region",
+      startLine: input.startLine,
+      endLine: input.endLine,
+      selector: input.selector,
+    };
+  }
+  return { scope: "file" };
+}
+
 export async function safeWorkspaceFile(rootInput, requestedPath) {
   const root = await realpath(rootInput);
   const candidate = resolve(root, isAbsolute(requestedPath) ? relative(root, requestedPath) : requestedPath);
@@ -102,6 +120,22 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
 
       try {
         const file = await safeWorkspaceFile(ctx.cwd, requestedPath);
+        const scopeMeta = readScopeFromInput(event.input);
+        if (scopeMeta.scope === "region") {
+          const content = observedToolContent(event.content);
+          if (!content) return;
+          const unit = engine.trackRead({
+            path: file.path,
+            content,
+            scope: "region",
+            startLine: scopeMeta.startLine,
+            endLine: scopeMeta.endLine,
+            selector: scopeMeta.selector,
+          });
+          callToUnit.set(event.toolCallId, unit.id);
+          return;
+        }
+
         const unit = engine.trackRead({
           path: file.path,
           content: file.content,
@@ -150,7 +184,14 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   };
 }
 
-export function buildReadToolCall({ toolCallId, path }) {
+export function buildReadToolCall({ toolCallId, path, scope, startLine, endLine, selector }) {
+  const args = { path };
+  if (scope === "region") {
+    args.scope = "region";
+    if (startLine != null) args.startLine = startLine;
+    if (endLine != null) args.endLine = endLine;
+    if (selector != null) args.selector = selector;
+  }
   return {
     role: "assistant",
     content: "",
@@ -160,7 +201,7 @@ export function buildReadToolCall({ toolCallId, path }) {
         type: "function",
         function: {
           name: "read",
-          arguments: JSON.stringify({ path }),
+          arguments: JSON.stringify(args),
         },
       },
     ],
@@ -196,16 +237,16 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
     const toolCallId = message.toolCallId ?? message.tool_call_id;
     if (typeof toolCallId !== "string") continue;
 
-    let path;
+    let input = {};
     for (const prior of persistedMessages) {
       if (prior.role !== "assistant" || !Array.isArray(prior.tool_calls)) continue;
       const call = prior.tool_calls.find((item) => item.id === toolCallId);
       if (!call) continue;
       try {
         const args = JSON.parse(call.function.arguments);
-        path = args.path;
+        input = args && typeof args === "object" ? args : {};
       } catch {
-        path = undefined;
+        input = {};
       }
       break;
     }
@@ -214,7 +255,7 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
       {
         toolName: "read",
         toolCallId,
-        input: { path },
+        input,
         content: message.content,
         isError: false,
       },

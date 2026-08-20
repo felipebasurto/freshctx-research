@@ -51,7 +51,14 @@ export function discoveredCalls(messages) {
         if (!READ_TOOLS.has(name) || typeof call?.id !== "string") continue;
         const args = parseArguments(call?.function?.arguments ?? call?.arguments);
         const path = args.path ?? args.file_path;
-        if (typeof path === "string") candidates.set(call.id, path);
+        if (typeof path !== "string") continue;
+        candidates.set(call.id, {
+          path,
+          scope: args.scope === "region" ? "region" : "file",
+          startLine: args.startLine,
+          endLine: args.endLine,
+          selector: args.selector,
+        });
       }
     }
 
@@ -103,7 +110,7 @@ export async function safeWorkspaceFile(rootInput, requestedPath) {
 export function trackedCallsFromMessages(messages) {
   const calls = discoveredCalls(messages);
   const tracked = {};
-  for (const [callId, path] of Object.entries(calls)) {
+  for (const [callId, meta] of Object.entries(calls)) {
     const toolMessage = messages.find(
       (message) =>
         message?.role === "tool"
@@ -111,8 +118,12 @@ export function trackedCallsFromMessages(messages) {
     );
     if (!toolMessage) continue;
     tracked[callId] = {
-      path,
+      path: meta.path,
       content: textContent(toolMessage.content),
+      scope: meta.scope ?? "file",
+      startLine: meta.startLine,
+      endLine: meta.endLine,
+      selector: meta.selector,
     };
   }
   return tracked;
@@ -137,7 +148,7 @@ export async function selectContext(payload) {
     ...(state.tracked ?? {}),
     ...trackedCallsFromMessages(payload.messages),
   };
-  const paths = [...new Set(Object.values(calls))].sort();
+  const paths = [...new Set(Object.values(calls).map((call) => call.path ?? call))].sort();
   if (paths.length === 0) {
     return {
       messages: payload.messages,
@@ -152,11 +163,21 @@ export async function selectContext(payload) {
   const unitsByCall = new Map();
   for (const [callId, observation] of Object.entries(tracked)) {
     try {
-      const unit = engine.trackRead({
-        path: observation.path,
-        content: observation.content,
-        scope: "file",
-      });
+      const trackArgs = observation.scope === "region"
+        ? {
+            path: observation.path,
+            content: observation.content,
+            scope: "region",
+            startLine: observation.startLine,
+            endLine: observation.endLine,
+            selector: observation.selector,
+          }
+        : {
+            path: observation.path,
+            content: observation.content,
+            scope: "file",
+          };
+      const unit = engine.trackRead(trackArgs);
       unitsByCall.set(callId, unit);
     } catch {
       // Unsupported observations remain ordinary tool results.
