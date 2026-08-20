@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://freshctx.dev/schemas/trace-v1.json",
+  "title": "FreshCtx deterministic mutation trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "name", "initialFiles", "events"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "license": { "type": "string" }
+      }
+    },
+    "initialFiles": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "path", "scope"],
+            "properties": {
+              "type": { "const": "read" },
+              "path": { "type": "string" },
+              "scope": { "enum": ["file", "region"] },
+              "startLine": { "type": "integer", "minimum": 1 },
+              "endLine": { "type": "integer", "minimum": 1 },
+              "selector": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "path", "expected", "replacement"],
+            "properties": {
+              "type": { "const": "replace-exact" },
+              "path": { "type": "string" },
+              "expected": { "type": "string" },
+              "replacement": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "path"],
+            "properties": {
+              "type": { "const": "delete-file" },
+              "path": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "task", "budgetChars", "requiredUnits"],
+            "properties": {
+              "type": { "const": "capture-request" },
+              "task": { "type": "string" },
+              "budgetChars": { "type": "integer", "minimum": 0 },
+              "requiredUnits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["path", "sha256"],
+                  "properties": {
+                    "path": { "type": "string" },
+                    "selector": { "type": "string" },
+                    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

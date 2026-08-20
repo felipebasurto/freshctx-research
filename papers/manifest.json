@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-08-21",
+  "policy": "Required papers must be downloaded, verified, and read before an autoresearch run. PDFs are local artifacts; the generated digest lock freezes the exact corpus.",
+  "papers": [
+    {
+      "id": "corvus-2026",
+      "title": "CORVUS: Context Optimization and Reduction Via Underlying Synchronization for LLM Coding Agents",
+      "arxiv": "2607.22711",
+      "landingUrl": "https://arxiv.org/abs/2607.22711",
+      "pdfUrl": "https://arxiv.org/pdf/2607.22711",
+      "required": true,
+      "topic": "closest-baseline",
+      "why": "Closest prior work: decouples file-read observations from an append-only trajectory and synchronizes current whole files.",
+      "readingQuestions": [
+        "What exact data structure and refresh lifecycle does CORVUS use?",
+        "Which costs and failure modes are excluded from its evaluation?",
+        "Which open problems justify region-level synchronization?"
+      ]
+    },
+    {
+      "id": "complexity-trap-2025",
+      "title": "The Complexity Trap: Simple Observation Masking Is as Efficient as LLM Summarization for Agent Context Management",
+      "arxiv": "2508.21433",
+      "landingUrl": "https://arxiv.org/abs/2508.21433",
+      "pdfUrl": "https://arxiv.org/pdf/2508.21433",
+      "required": true,
+      "topic": "observation-masking",
+      "why": "Establishes observation masking as a strong simple baseline against LLM summarization.",
+      "readingQuestions": [
+        "What is masked and what exact addressing information remains?",
+        "How should FreshCtx reproduce masking without using solve rate as its own primary metric?"
+      ]
+    },
+    {
+      "id": "codestruct-2026",
+      "title": "CodeStruct: Code Agents over Structured Action Spaces",
+      "arxiv": "2604.05407",
+      "landingUrl": "https://arxiv.org/abs/2604.05407",
+      "pdfUrl": "https://arxiv.org/pdf/2604.05407",
+      "required": true,
+      "topic": "structural-code-units",
+      "why": "Defines AST-addressed read and edit units; it is the primary prior art for FreshCtx symbol identity and boundaries.",
+      "readingQuestions": [
+        "How are named AST entities addressed across languages?",
+        "What happens on rename, parse failure, overload, move, and duplicate symbols?"
+      ]
+    },
+    {
+      "id": "vocc-2026",
+      "title": "View-oriented Conversation Compiler for Agent Trace Analysis",
+      "arxiv": "2603.29678",
+      "landingUrl": "https://arxiv.org/abs/2603.29678",
+      "pdfUrl": "https://arxiv.org/pdf/2603.29678",
+      "required": true,
+      "topic": "context-views",
+      "why": "Treats agent traces as compiled views, directly adjacent to FreshCtx's event-log/materialized-view split.",
+      "readingQuestions": [
+        "Which trace transformations are deterministic and auditable?",
+        "How are compiled views validated against source traces?"
+      ]
+    },
+    {
+      "id": "self-gc-2026",
+      "title": "Self-GC: Self-Governing Context for Long-Horizon LLM Agents",
+      "arxiv": "2607.00692",
+      "landingUrl": "https://arxiv.org/abs/2607.00692",
+      "pdfUrl": "https://arxiv.org/pdf/2607.00692",
+      "required": true,
+      "topic": "context-lifecycle",
+      "why": "Frames context as indexed, recoverable runtime objects with lifecycle control and cache-aware commits.",
+      "readingQuestions": [
+        "Which object lifecycle states and recovery guarantees transfer to code units?",
+        "Which parts require an LLM planner and therefore do not belong in FreshCtx's deterministic core?"
+      ]
+    },
+    {
+      "id": "lost-in-middle-2023",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "arxiv": "2307.03172",
+      "landingUrl": "https://arxiv.org/abs/2307.03172",
+      "pdfUrl": "https://arxiv.org/pdf/2307.03172",
+      "required": true,
+      "topic": "context-position",
+      "why": "Motivates explicit measurement of layout and position rather than treating all projected bytes as equally useful.",
+      "readingQuestions": [
+        "Which positional effects can be tested without sampling a coding agent?",
+        "What layout metrics are valid proxies and which require a model study?"
+      ]
+    },
+    {
+      "id": "prompt-cache-2023",
+      "title": "Prompt Cache: Modular Attention Reuse for Low-Latency Inference",
+      "arxiv": "2311.04934",
+      "landingUrl": "https://arxiv.org/abs/2311.04934",
+      "pdfUrl": "https://arxiv.org/pdf/2311.04934",
+      "required": true,
+      "topic": "cache-reuse",
+      "why": "Provides the systems basis for reusable prompt modules and cache-aligned projection layout.",
+      "readingQuestions": [
+        "Which byte and positional invariants are needed for reuse?",
+        "How should stable and volatile units be ordered?"
+      ]
+    },
+    {
+      "id": "dont-break-cache-2026",
+      "title": "Don't Break the Cache: An Evaluation of Prompt Caching for Long-Horizon Agentic Tasks",
+      "arxiv": "2601.06007",
+      "landingUrl": "https://arxiv.org/abs/2601.06007",
+      "pdfUrl": "https://arxiv.org/pdf/2601.06007",
+      "required": true,
+      "topic": "cache-measurement",
+      "why": "Shows why dynamic tool output and cache boundaries must be measured rather than assuming fewer tokens means lower latency.",
+      "readingQuestions": [
+        "Which cache metrics are provider-independent?",
+        "How should warmup and cache contamination be controlled?"
+      ]
+    },
+    {
+      "id": "smoothagent-2026",
+      "title": "SmoothAgent: Efficient Long-Horizon LLM-Based Agent Serving with Lookahead Context Engineering",
+      "arxiv": "2607.00151",
+      "landingUrl": "https://arxiv.org/abs/2607.00151",
+      "pdfUrl": "https://arxiv.org/pdf/2607.00151",
+      "required": true,
+      "topic": "transformation-latency",
+      "why": "Directly studies context-transformation overhead, KV invalidation, and asynchronous lookahead.",
+      "readingQuestions": [
+        "Which stages of FreshCtx can run ahead of the request boundary?",
+        "How should propagation latency and blocking transform latency be separated?"
+      ]
+    },
+    {
+      "id": "context-engineering-survey-2025",
+      "title": "A Survey of Context Engineering for Large Language Models",
+      "arxiv": "2507.13334",
+      "landingUrl": "https://arxiv.org/abs/2507.13334",
+      "pdfUrl": "https://arxiv.org/pdf/2507.13334",
+      "required": true,
+      "topic": "survey",
+      "why": "Provides terminology and a map of retrieval, compression, memory, and tool-context approaches.",
+      "readingQuestions": [
+        "Which category is FreshCtx in and which adjacent contributions must not be claimed as novel?"
+      ]
+    },
+    {
+      "id": "coding-agents-long-context-2026",
+      "title": "Coding Agents are Effective Long-Context Processors",
+      "arxiv": "2603.20432",
+      "landingUrl": "https://arxiv.org/abs/2603.20432",
+      "pdfUrl": "https://arxiv.org/pdf/2603.20432",
+      "required": false,
+      "topic": "coding-agents",
+      "why": "Shows the value of executable filesystem interaction for long-context work and helps bound the substrate thesis."
+    },
+    {
+      "id": "masking-stale-search-2026",
+      "title": "Masking Stale Observations Helps Search Agents – Until It Doesn't: A Regime Map and Its Mechanism",
+      "arxiv": "2606.00408",
+      "landingUrl": "https://arxiv.org/abs/2606.00408",
+      "pdfUrl": "https://arxiv.org/pdf/2606.00408",
+      "required": false,
+      "topic": "staleness",
+      "why": "Analyzes when masking stale observations helps and when exact addressing or error retention is necessary."
+    },
+    {
+      "id": "longllmlingua-2023",
+      "title": "LongLLMLingua: Accelerating and Enhancing LLMs in Long Context Scenarios via Prompt Compression",
+      "arxiv": "2310.06839",
+      "landingUrl": "https://arxiv.org/abs/2310.06839",
+      "pdfUrl": "https://arxiv.org/pdf/2310.06839",
+      "required": false,
+      "topic": "prompt-compression",
+      "why": "A strong compression baseline, adjacent but distinct from exact live-state synchronization."
+    },
+    {
+      "id": "memgpt-2023",
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "arxiv": "2310.08560",
+      "landingUrl": "https://arxiv.org/abs/2310.08560",
+      "pdfUrl": "https://arxiv.org/pdf/2310.08560",
+      "required": false,
+      "topic": "memory-hierarchy",
+      "why": "Foundational virtual-context and tiered-memory framing."
+    },
+    {
+      "id": "ruler-2024",
+      "title": "RULER: What's the Real Context Size of Your Long-Context Language Models?",
+      "arxiv": "2404.06654",
+      "landingUrl": "https://arxiv.org/abs/2404.06654",
+      "pdfUrl": "https://arxiv.org/pdf/2404.06654",
+      "required": false,
+      "topic": "long-context-evaluation",
+      "why": "Demonstrates that advertised context length and effective context use are different questions."
+    },
+    {
+      "id": "cacheblend-2024",
+      "title": "CacheBlend: Fast Large Language Model Serving for RAG with Cached Knowledge Fusion",
+      "arxiv": "2405.16444",
+      "landingUrl": "https://arxiv.org/abs/2405.16444",
+      "pdfUrl": "https://arxiv.org/pdf/2405.16444",
+      "required": false,
+      "topic": "kv-cache",
+      "why": "Explores reuse when context chunks are not a single stable prefix."
+    },
+    {
+      "id": "repocoder-2023",
+      "title": "RepoCoder: Repository-Level Code Completion Through Iterative Retrieval and Generation",
+      "arxiv": "2303.12570",
+      "landingUrl": "https://arxiv.org/abs/2303.12570",
+      "pdfUrl": "https://arxiv.org/pdf/2303.12570",
+      "required": false,
+      "topic": "repository-retrieval",
+      "why": "Early repository-level iterative retrieval baseline for selecting code context."
+    },
+    {
+      "id": "swe-agent-2024",
+      "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "arxiv": "2405.15793",
+      "landingUrl": "https://arxiv.org/abs/2405.15793",
+      "pdfUrl": "https://arxiv.org/pdf/2405.15793",
+      "required": false,
+      "topic": "agent-interface",
+      "why": "Relevant prior art for measuring the interface separately from the foundation model."
+    }
+  ]
+}

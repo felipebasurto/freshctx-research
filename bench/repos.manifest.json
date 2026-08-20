@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "bootstrap-unfrozen",
+  "freezeRule": "Resolve each ref to an immutable commit in repos.lock.json before collecting public results.",
+  "repositories": [
+    {
+      "id": "flask",
+      "url": "https://github.com/pallets/flask.git",
+      "ref": "main",
+      "language": "Python",
+      "license": "BSD-3-Clause",
+      "tier": "smoke",
+      "why": "Compact Python project with decorators, classes, fixtures, and a stable test-oriented layout."
+    },
+    {
+      "id": "express",
+      "url": "https://github.com/expressjs/express.git",
+      "ref": "master",
+      "language": "JavaScript",
+      "license": "MIT",
+      "tier": "smoke",
+      "why": "Mature JavaScript code with middleware functions, prototypes, and varied source/test units."
+    },
+    {
+      "id": "ripgrep",
+      "url": "https://github.com/BurntSushi/ripgrep.git",
+      "ref": "master",
+      "language": "Rust",
+      "license": "MIT OR Unlicense",
+      "tier": "full",
+      "why": "Multi-crate Rust repository with macros, traits, implementations, and large source files."
+    },
+    {
+      "id": "typescript",
+      "url": "https://github.com/microsoft/TypeScript.git",
+      "ref": "main",
+      "language": "TypeScript",
+      "license": "Apache-2.0",
+      "tier": "full",
+      "why": "Large TypeScript monorepo that stresses scale, overloads, generated content, and symbol movement."
+    },
+    {
+      "id": "go-tools",
+      "url": "https://go.googlesource.com/tools",
+      "ref": "master",
+      "language": "Go",
+      "license": "BSD-3-Clause",
+      "tier": "full",
+      "why": "Public Go tooling repository with packages, methods, interfaces, and repository-scale symbol relationships."
+    },
+    {
+      "id": "neovim",
+      "url": "https://github.com/neovim/neovim.git",
+      "ref": "master",
+      "language": "C and Lua",
+      "license": "Apache-2.0",
+      "tier": "full",
+      "why": "Mixed-language systems repository for preprocessor, C function, Lua module, and move/delete stress cases."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+__pycache__/
+*.pyc
+.freshctx/
+papers/cache/
+bench/repos/
+capture/results/
+*.tmp
+.freshctx/
+*.log
+*.tmp
+.DS_Store
+autoresearch/runs/

@@ -1,0 +1,34 @@
+{
+  "name": "freshctx",
+  "version": "0.1.0",
+  "description": "A live, versioned context layer for coding agents.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "bench": "node bench/run.mjs",
+    "ctxbench": "node bench/ctxbench.mjs",
+    "capture-provider": "node capture/provider.mjs",
+    "evaluate": "node autoresearch/evaluate.mjs",
+    "demo": "node examples/demo.mjs",
+    "papers:list": "node scripts/papers.mjs list",
+    "papers:fetch": "node scripts/papers.mjs fetch",
+    "papers:fetch:all": "node scripts/papers.mjs fetch --all",
+    "papers:verify": "node scripts/papers.mjs verify",
+    "repos:fetch": "node scripts/repos.mjs fetch",
+    "repos:fetch:smoke": "node scripts/repos.mjs fetch --tier=smoke",
+    "repos:verify": "node scripts/repos.mjs verify",
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs"
+  },
+  "keywords": [
+    "agents",
+    "context-engineering",
+    "coding-agents",
+    "autoresearch",
+    "llm"
+  ]
+}

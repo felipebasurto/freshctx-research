@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax
+        run: npm run check
+      - name: Invariants
+        run: npm test
+      - name: Synthetic comparison
+        run: npm run bench
+      - name: Repeated deterministic context benchmark
+        run: npm run ctxbench
+      - name: Protected autoresearch evaluator
+        run: npm run evaluate
+      - name: Paper manifest is readable
+        run: npm run papers:list
+      - name: Hermes Python scaffold compiles
+        run: python -m py_compile adapters/hermes/__init__.py
+
+  node-compatibility:
+    strategy:
+      matrix:
+        node: [22, 24]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test

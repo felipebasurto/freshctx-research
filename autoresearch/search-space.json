@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "objective": "maximize AUTORESEARCH_SCORE",
+  "allowedFiles": [
+    "src/policy.mjs",
+    "src/anchors.mjs",
+    "src/projector.mjs",
+    "autoresearch/search-space.json"
+  ],
+  "forbiddenDuringRun": [
+    "bench/**",
+    "test/**",
+    "papers/**",
+    "docs/EVALUATION.md",
+    "autoresearch/evaluate.mjs",
+    "autoresearch/results.tsv"
+  ],
+  "hardGates": [
+    "tests_pass",
+    "stale_bytes_equals_zero",
+    "current_copies_equals_one",
+    "gold_recall_equals_one",
+    "unresolved_rate_equals_zero",
+    "deterministic_output"
+  ],
+  "tunables": {
+    "recencyWindow": [4, 8, 12, 20, 32],
+    "recencyWeight": [1, 2, 4, 8],
+    "taskOverlapWeight": [2, 4, 8, 12],
+    "changedWeight": [0, 1, 2, 4],
+    "sizePenaltyWeight": [0.25, 0.5, 1, 1.5, 2]
+  }
+}

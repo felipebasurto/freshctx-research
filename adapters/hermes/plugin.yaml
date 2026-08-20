@@ -1,0 +1,3 @@
+name: freshctx
+version: "0.1.0-preview"
+description: Live, versioned code context composed with Hermes' built-in compressor

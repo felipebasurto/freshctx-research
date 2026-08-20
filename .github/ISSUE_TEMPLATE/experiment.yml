@@ -1,0 +1,41 @@
+name: Autoresearch experiment
+description: Propose one falsifiable context-transformer experiment
+title: "[experiment] "
+labels: ["experiment"]
+body:
+  - type: input
+    id: hypothesis
+    attributes:
+      label: One-sentence hypothesis
+      placeholder: Moving volatile units later increases prefix reuse without changing required recall.
+    validations:
+      required: true
+  - type: textarea
+    id: papers
+    attributes:
+      label: Relevant locked papers
+      description: Cite IDs from papers/manifest.json and the paper-manifest digest.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected metric movement
+      description: State which metrics should move and which hard gates must remain invariant.
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: Smallest proposed change
+    validations:
+      required: true
+  - type: checkboxes
+    id: protection
+    attributes:
+      label: Evaluation protection
+      options:
+        - label: I will not edit benchmark, gold, paper corpus, score, or held-out data during the run.
+          required: true
+        - label: The experiment makes no model call.
+          required: true

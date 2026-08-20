@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use FreshCtx in research, please cite this software and the associated technical report."
+title: "FreshCtx: A Live, Versioned Context Substrate for Coding Agents"
+type: software
+authors:
+  - family-names: Basurto
+    given-names: Felipe
+version: 0.1.0
+date-released: 2026-08-21
+license: MIT
+keywords:
+  - coding agents
+  - context engineering
+  - software engineering agents
+  - synchronized context
+  - autoresearch
+

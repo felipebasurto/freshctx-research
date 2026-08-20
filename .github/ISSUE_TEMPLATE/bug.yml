@@ -1,0 +1,43 @@
+name: Correctness bug
+description: Report stale, duplicate, missing, unsafe, or non-deterministic context
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not paste private source. Prefer a minimal public or synthetic trace.
+  - type: input
+    id: version
+    attributes:
+      label: FreshCtx commit/version
+      placeholder: 40-character commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: invariant
+    attributes:
+      label: Affected invariant
+      options:
+        - Freshness
+        - Uniqueness
+        - Recoverability
+        - Determinism
+        - Budget
+        - Path/security boundary
+        - Host protocol
+    validations:
+      required: true
+  - type: textarea
+    id: trace
+    attributes:
+      label: Minimal trace and workspace revisions
+      description: Include hashes, event order, expected payload, and actual payload.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, runtime, adapter/host version, filesystem, and relevant configuration.
+    validations:
+      required: true
