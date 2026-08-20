@@ -4,20 +4,20 @@ Label: `public-repo-holdout` / `replay`. Measurement infrastructure only; not a 
 
 Hermes ContextEngine plugin contract: https://github.com/NousResearch/hermes-agent/blob/main/website/docs/developer-guide/context-engine-plugin.md
 
-Generated: 2026-08-20T21:25:36.379Z
+Generated: 2026-08-20T21:28:39.435Z
 
 | baseline | repo | family | exact-current | stale | duplicate | required-recall | projection-bytes | cache-prefix-reuse | transform-p50 | transform-p95 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| hermes-adapter | go-tools | append | 1.000 | 0.000 | 0.0 | 1.000 | 604 | 0.189 | 1.30 | 1.30 |
-| hermes-adapter | go-tools | delete | 0.000 | 0.000 | 0.0 | 1.000 | 164 | 0.242 | 0.82 | 0.82 |
-| hermes-adapter | go-tools | duplicate-boundary | 0.000 | 0.000 | 0.0 | 1.000 | 809 | 0.166 | 0.68 | 0.68 |
-| hermes-adapter | go-tools | interior-edit | 0.000 | 0.000 | 0.0 | 0.000 | 164 | 0.205 | 0.32 | 0.32 |
-| hermes-adapter | go-tools | move-in-file | 1.000 | 0.000 | 0.0 | 1.000 | 538 | 0.206 | 1.37 | 1.37 |
-| hermes-adapter | neovim | append | 0.000 | 0.000 | 0.0 | 1.000 | 1075 | 0.124 | 0.41 | 0.41 |
-| hermes-adapter | neovim | delete | 0.000 | 0.000 | 0.0 | 1.000 | 164 | 0.245 | 0.64 | 0.64 |
-| hermes-adapter | neovim | duplicate-boundary | 0.000 | 0.000 | 0.0 | 1.000 | 561 | 0.223 | 0.30 | 0.30 |
-| hermes-adapter | neovim | interior-edit | 1.000 | 0.000 | 0.0 | 1.000 | 872 | 0.150 | 0.77 | 0.77 |
-| hermes-adapter | neovim | move-in-file | 1.000 | 0.000 | 0.0 | 1.000 | 698 | 0.174 | 1.69 | 1.69 |
+| hermes-adapter | go-tools | append | 1.000 | 0.000 | 0.0 | 1.000 | 604 | 0.189 | 0.89 | 0.89 |
+| hermes-adapter | go-tools | delete | 0.000 | 0.000 | 0.0 | 1.000 | 164 | 0.242 | 0.29 | 0.29 |
+| hermes-adapter | go-tools | duplicate-boundary | 0.000 | 0.000 | 0.0 | 1.000 | 809 | 0.166 | 0.30 | 0.30 |
+| hermes-adapter | go-tools | interior-edit | 0.000 | 0.000 | 0.0 | 0.000 | 164 | 0.205 | 0.33 | 0.33 |
+| hermes-adapter | go-tools | move-in-file | 1.000 | 0.000 | 0.0 | 1.000 | 538 | 0.206 | 0.80 | 0.80 |
+| hermes-adapter | neovim | append | 0.000 | 0.000 | 0.0 | 1.000 | 1075 | 0.124 | 0.35 | 0.35 |
+| hermes-adapter | neovim | delete | 0.000 | 0.000 | 0.0 | 1.000 | 164 | 0.245 | 0.22 | 0.22 |
+| hermes-adapter | neovim | duplicate-boundary | 0.000 | 0.000 | 0.0 | 1.000 | 561 | 0.223 | 1.04 | 1.04 |
+| hermes-adapter | neovim | interior-edit | 1.000 | 0.000 | 0.0 | 1.000 | 872 | 0.150 | 0.34 | 0.34 |
+| hermes-adapter | neovim | move-in-file | 1.000 | 0.000 | 0.0 | 1.000 | 698 | 0.174 | 0.43 | 0.43 |
 
 ## Delta vs core `freshctx-region` (final capture per trace)
 
