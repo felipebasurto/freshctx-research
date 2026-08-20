@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "manifestSha256": "4b6ecc86003607504fccb3eee4baadccabe9201f1a88b1db5ba00e9addcd52f4",
+  "scope": "smoke",
+  "resolvedAt": "2026-08-20T19:48:40.000Z",
+  "repositories": {
+    "flask": {
+      "url": "https://github.com/pallets/flask.git",
+      "requestedRef": "main",
+      "commit": "d318b683471101618febed18996405ad26462110",
+      "language": "Python",
+      "license": "BSD-3-Clause"
+    },
+    "express": {
+      "url": "https://github.com/expressjs/express.git",
+      "requestedRef": "master",
+      "commit": "a3714473feb3d2908add734d340e7755fd85e0a3",
+      "language": "JavaScript",
+      "license": "MIT"
+    }
+  }
+}
