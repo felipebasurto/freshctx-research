@@ -42,6 +42,7 @@ npm run papers:verify
 npm run repos:fetch:smoke
 npm run repos:verify
 npm run ctxbench:smoke
+npm run ctxbench:pi-smoke
 ```
 
 The paper command generates `papers/papers.lock.json`. The repository command
@@ -57,6 +58,10 @@ one measurement row to `autoresearch/results.tsv`. Results are labeled
 `public-repo-smoke`; they are measurement infrastructure, not a performance
 claim. The CORVUS baseline is not a reviewed paper reproduction; see
 `docs/decisions/0003-corvus-reproduction-deviations.md`.
+
+`npm run ctxbench:pi-smoke` replays the same traces through the Pi extension
+replay harness (`adapters/pi/replay.mjs`) and writes `bench/reports/pi-smoke.md`.
+See `docs/lab/pcr/0003-pi-smoke-capture.md`.
 
 ## Result labels
 

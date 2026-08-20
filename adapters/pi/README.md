@@ -23,6 +23,16 @@ results. The current adapter is file-level and in-memory; session persistence,
 partial-read fidelity, symbol providers, and an integration test pinned to a Pi
 release are v0.2 release gates.
 
+Deterministic replay (no Pi package required at bench time):
+
+```bash
+npm run ctxbench:pi-smoke
+```
+
+The replay harness lives in `adapters/pi/replay.mjs` and mirrors the extension's
+`tool_result`, `turn_start`, and `context` handlers. See
+`docs/lab/pcr/0003-pi-smoke-capture.md`.
+
 The source targets the current `@earendil-works/pi-coding-agent` package. Pi's
 official extension contract is documented at
 <https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md>.
