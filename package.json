@@ -14,6 +14,7 @@
     "ctxbench": "node bench/ctxbench.mjs",
     "ctxbench:smoke": "node bench/smoke.mjs",
     "ctxbench:pi-smoke": "node bench/pi-smoke.mjs",
+    "ctxbench:hermes-smoke": "node bench/hermes-smoke.mjs",
     "capture-provider": "node capture/provider.mjs",
     "evaluate": "node autoresearch/evaluate.mjs",
     "demo": "node examples/demo.mjs",
@@ -24,7 +25,7 @@
     "repos:fetch": "node scripts/repos.mjs fetch",
     "repos:fetch:smoke": "node scripts/repos.mjs fetch --tier=smoke",
     "repos:verify": "node scripts/repos.mjs verify",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs"
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs"
   },
   "keywords": [
     "agents",
