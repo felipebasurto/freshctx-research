@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test",
+    "test": "node --test test/*.test.mjs",
     "bench": "node bench/run.mjs",
     "ctxbench": "node bench/ctxbench.mjs",
     "capture-provider": "node capture/provider.mjs",

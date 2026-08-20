@@ -6,7 +6,7 @@ current executable subset.
 ## Commands
 
 ```bash
-node --test
+node --test test/*.test.mjs
 node bench/run.mjs
 node bench/ctxbench.mjs
 node autoresearch/evaluate.mjs

@@ -1,11 +1,27 @@
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runBenchmark } from "../bench/run.mjs";
 
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+
+function listFreshCtxTestFiles() {
+  const testDir = join(repoRoot, "test");
+  return readdirSync(testDir)
+    .filter((name) => name.endsWith(".test.mjs"))
+    .sort()
+    .map((name) => join(testDir, name));
+}
+
 export async function evaluate() {
-  const testRun = spawnSync(process.execPath, ["--test"], {
-    cwd: new URL("..", import.meta.url),
+  const testFiles = listFreshCtxTestFiles();
+  if (testFiles.length === 0) {
+    throw new Error("hard gate failed: no FreshCtx regression tests found");
+  }
+
+  const testRun = spawnSync(process.execPath, ["--test", ...testFiles], {
     encoding: "utf8",
   });
   if (testRun.status !== 0) {
