@@ -13,6 +13,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | `54d71f8` CORVUS deviation table | 37/37 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0005](pcr/0005-corvus-deviation-table.md) |
 | 2026-08-20 | (PCR 0006) | 41/41 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0006](pcr/0006-region-grain-adapters.md) |
 | 2026-08-20 | (PCR 0007) | 42/42 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0007](pcr/0007-sealed-holdout-protocol.md) |
+| 2026-08-20 | (PCR 0008) | 44/44 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -31,5 +32,6 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-20 | `54d71f8` | `public-repo-smoke` | CORVUS deviation table: corvus-file / freshctx-file / freshctx-region side-by-side on smoke v0.1; 0-byte delta vs PCR 0002; region smaller on append/interior-edit/move-in-file; no ranking claim. | [0005](pcr/0005-corvus-deviation-table.md) |
 | 2026-08-20 | (PCR 0006) | `public-repo-smoke` / `replay` | Region-grain Pi/Hermes: exact-current matches core-region on append/interior-edit/move-in-file (1.000); projection-bytes match core-region (0 delta); vs PCR 0003 file-grain exact-current 0 and +350–6859 bytes. | [0006](pcr/0006-region-grain-adapters.md) |
 | 2026-08-20 | (PCR 0007) | `public-repo-holdout` | First holdout v0.1 slice: go-tools `ed9ed918…`, neovim `2dd6e9d6…`; 10 traces; freshctx-region gate failure on go-tools interior-edit (recall 0, fail-closed); 9/10 cells pass stale/duplicate/recall; not SOTA. | [0007](pcr/0007-sealed-holdout-protocol.md) |
+| 2026-08-20 | (PCR 0008) | `public-repo-holdout` / `replay` | Pi/Hermes holdout replay: 0-byte delta vs core-region on all 10 cells; go-tools interior-edit recall 0 reproduced on Pi and Hermes (not silently passed); Hermes 0-byte delta vs Pi; not SOTA. | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
 
-Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`.
+Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`.

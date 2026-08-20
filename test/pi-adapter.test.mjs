@@ -148,3 +148,15 @@ test("Pi smoke pack runs all traces and compares against core board", async () =
   assert.equal(summary.supported, true);
   assert.equal(summary.failures.length, 0);
 });
+
+test("Pi holdout pack runs and records go-tools interior-edit recall miss like core", async () => {
+  const { runPiHoldoutPack } = await import("../bench/pi-holdout.mjs");
+  const summary = await runPiHoldoutPack();
+  assert.equal(summary.label, "public-repo-holdout");
+  assert.equal(summary.traces, 10);
+  assert.ok(summary.failures.some((item) => item.includes("go-tools/interior-edit") && item.includes("required recall 0")));
+  const interior = summary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
+  assert.ok(interior);
+  assert.equal(interior.requiredRecall, 0);
+  assert.equal(interior.stale, 0);
+});
