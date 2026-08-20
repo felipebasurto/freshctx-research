@@ -1,0 +1,70 @@
+name: holdout-generate
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Manifest path relative to repo root"
+        required: true
+      pack_id:
+        description: "Pack ID"
+        required: true
+      attestation_artifact:
+        description: "Name of downloaded freeze attestation artifact"
+        required: false
+        default: "holdout-freeze-attestation"
+
+permissions:
+  contents: read
+
+jobs:
+  generate-after-attestation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Require prior freeze attestation
+        run: |
+          MANIFEST="${{ github.event.inputs.manifest_path }}"
+          PACK="${{ github.event.inputs.pack_id }}"
+          ATTEST="bench/packs/${PACK}/provenance/freeze-attestation.json"
+          if [ ! -f "$ATTEST" ]; then
+            echo "Missing attestation at $ATTEST"
+            echo "Run holdout-freeze-attest workflow on the manifest commit first."
+            exit 1
+          fi
+          node -e "
+          import { readFile } from 'node:fs/promises';
+          import { validateAttestationShape } from './bench/holdout-hashes.mjs';
+          import { computeManifestHash } from './bench/holdout-protocol.mjs';
+          const att = JSON.parse(await readFile(process.env.ATTEST, 'utf8'));
+          const err = validateAttestationShape(att);
+          if (err) { console.error(err); process.exit(1); }
+          const manifest = JSON.parse(await readFile(process.env.MANIFEST, 'utf8'));
+          if (att.manifestSha256 !== manifest.manifestSha256) { console.error('attestation/manifest hash mismatch'); process.exit(1); }
+          if (computeManifestHash(manifest) !== manifest.manifestSha256) { console.error('manifest tampered'); process.exit(1); }
+          console.log('attestation valid for', att.packId);
+          "
+        env:
+          ATTEST: bench/packs/${{ github.event.inputs.pack_id }}/provenance/freeze-attestation.json
+          MANIFEST: ${{ github.event.inputs.manifest_path }}
+
+      - name: Generate traces (fixture or repo fetch per manifest)
+        run: |
+          npm run holdout:generate -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+
+      - name: Run benchmarks
+        run: npm run holdout:run -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+
+      - name: Report (remotely-attested → sealed only with attestation on disk)
+        run: npm run holdout:report -- --manifest=${{ github.event.inputs.manifest_path }}
+
+      - name: Verify pack
+        run: npm run holdout:verify -- --manifest=${{ github.event.inputs.manifest_path }}

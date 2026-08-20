@@ -4,10 +4,14 @@ import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { guardLegacyHoldoutEntrypoint, HOLDOUT_V01 } from "../bench/legacy-holdout-guard.mjs";
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPOS = join(ROOT, "bench", "repos");
 const OUT = join(ROOT, "bench", "traces", "holdout");
 const CANDIDATES_PATH = join(OUT, "candidates-rejected.json");
+
+guardLegacyHoldoutEntrypoint("build-holdout-traces", { tracesDir: HOLDOUT_V01.tracesDir, packId: HOLDOUT_V01.packId });
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");

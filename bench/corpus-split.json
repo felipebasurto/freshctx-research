@@ -21,7 +21,9 @@
     },
     "holdout": {
       "role": "unsealed regression holdout slice (v0.1 development pack)",
-      "protocolExempt": true,
+      "packId": "holdout-v0.1",
+      "classification": "unsealed-regression",
+      "legacyEntrypointAllowed": true,
       "repositoryIds": ["go-tools", "neovim"],
       "mutationFamilies": [
         "interior-edit",

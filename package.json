@@ -34,6 +34,9 @@
     "holdout:generate": "node scripts/holdout-protocol.mjs generate",
     "holdout:run": "node scripts/holdout-protocol.mjs run",
     "holdout:report": "node scripts/holdout-protocol.mjs report",
+    "holdout:verify": "node scripts/holdout-verify.mjs",
+    "holdout:ci-guard": "node scripts/holdout-ci-guard.mjs",
+    "holdout:attest-stub": "node scripts/holdout-attest-stub.mjs",
     "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs"
   },
   "keywords": [

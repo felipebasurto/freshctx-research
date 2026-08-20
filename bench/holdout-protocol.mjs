@@ -6,6 +6,13 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { sha256 } from "../src/hash.mjs";
+import {
+  hashDirectoryJsonSet,
+  hashJsonlSet,
+  hashReportMarkdown,
+  validateAttestationShape,
+} from "./holdout-hashes.mjs";
+import { readAttestation, writePackState, readPackState } from "./holdout-state.mjs";
 
 const DEFAULT_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -287,7 +294,26 @@ export async function assertFreezePhaseComplete(root, manifestPath, phase = "gen
   assertNoArtifactsAtCommit(root, freezeCommitSha, pack);
   assertImplementationMatchesFreeze(root, manifest);
   await assertReposLockMatchesFreeze(root, manifest);
-  return { manifest, pack, freezeCommitSha };
+
+  const attestation = await readAttestation(root, pack);
+  let classification = "locally-frozen";
+  if (attestation) {
+    const attestationError = validateAttestationShape(attestation);
+    if (attestationError) {
+      throw new ProtocolError(attestationError);
+    }
+    if (
+      attestation.freezeCommitSha === freezeCommitSha &&
+      attestation.manifestSha256 === manifest.manifestSha256
+    ) {
+      classification = "remotely-attested";
+    }
+  }
+  if (manifest.classification === "sealed") {
+    throw new ProtocolError("manifest claims sealed; only verify may assert sealed after full pipeline");
+  }
+
+  return { manifest, pack, freezeCommitSha, classification };
 }
 
 export async function freezePack(root, manifestPath, manifestDraft) {
@@ -325,12 +351,30 @@ export async function freezePack(root, manifestPath, manifestDraft) {
     reportsDir: pack.reportsDir,
     provenanceDir: pack.provenanceDir,
     reposLockPath: lockPath,
+    classification: "candidate",
   };
   manifest.manifestSha256 = computeManifestHash(manifest);
 
   const fullManifestPath = join(root, manifestPath);
   await mkdir(dirname(fullManifestPath), { recursive: true });
   await writeFile(fullManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  await writePackState(root, pack, {
+    schemaVersion: 1,
+    packId: pack.packId,
+    classification: "candidate",
+    manifestPath,
+    manifestSha256: manifest.manifestSha256,
+    freezeCommitSha: null,
+    implementationCommitSha: manifest.implementationCommitSha,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    traceSetHash: null,
+    resultSetHash: null,
+    reportHash: null,
+    remoteAttestation: null,
+    updatedAt: frozenAt,
+  });
 
   return {
     manifestPath,
@@ -342,8 +386,25 @@ export async function freezePack(root, manifestPath, manifestDraft) {
   };
 }
 
+async function refreshPackState(root, pack, patch) {
+  const existing = (await readPackState(root, pack)) ?? {};
+  const state = {
+    schemaVersion: 1,
+    packId: pack.packId,
+    ...existing,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  await writePackState(root, pack, state);
+  return state;
+}
+
 export async function generatePack(root, manifestPath, generateTraces) {
-  const { manifest, pack, freezeCommitSha } = await assertFreezePhaseComplete(root, manifestPath, "generate");
+  const { manifest, pack, freezeCommitSha, classification } = await assertFreezePhaseComplete(
+    root,
+    manifestPath,
+    "generate",
+  );
 
   const generateProvenancePath = join(pack.provenanceDir, PROVENANCE_GENERATE);
   if (await pathExists(root, generateProvenancePath)) {
@@ -371,7 +432,19 @@ export async function generatePack(root, manifestPath, generateTraces) {
   };
   await writeJson(root, generateProvenancePath, provenance);
 
-  return { manifest, pack, provenance };
+  const traceSetHash = await hashDirectoryJsonSet(root, pack.tracesDir);
+  await refreshPackState(root, pack, {
+    classification,
+    manifestPath,
+    manifestSha256: manifest.manifestSha256,
+    freezeCommitSha,
+    implementationCommitSha: manifest.implementationCommitSha,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    traceSetHash,
+  });
+
+  return { manifest, pack, provenance, classification };
 }
 
 async function loadGenerateProvenance(root, pack) {
@@ -387,7 +460,11 @@ async function loadGenerateProvenance(root, pack) {
 }
 
 export async function runPack(root, manifestPath, runBenchmarks) {
-  const { manifest, pack, freezeCommitSha } = await assertFreezePhaseComplete(root, manifestPath, "run");
+  const { manifest, pack, freezeCommitSha, classification } = await assertFreezePhaseComplete(
+    root,
+    manifestPath,
+    "run",
+  );
   const generateProvenance = await loadGenerateProvenance(root, pack);
 
   if (generateProvenance.freezeCommitSha !== freezeCommitSha) {
@@ -428,11 +505,23 @@ export async function runPack(root, manifestPath, runBenchmarks) {
   };
   await writeJson(root, runProvenancePath, provenance);
 
-  return { manifest, pack, provenance, generateProvenance };
+  const resultsPath = join(pack.reportsDir, "results.jsonl").replace(/\\/g, "/");
+  const resultSetHash = await hashJsonlSet(root, resultsPath);
+  await refreshPackState(root, pack, {
+    classification,
+    resultSetHash,
+    implementationCommitSha,
+  });
+
+  return { manifest, pack, provenance, generateProvenance, classification };
 }
 
 export async function reportPack(root, manifestPath, formatReport) {
-  const { manifest, pack, freezeCommitSha } = await assertFreezePhaseComplete(root, manifestPath, "report");
+  const { manifest, pack, freezeCommitSha, classification: baseClassification } = await assertFreezePhaseComplete(
+    root,
+    manifestPath,
+    "report",
+  );
   const generateProvenance = await loadGenerateProvenance(root, pack);
   const runProvenancePath = join(pack.provenanceDir, PROVENANCE_RUN);
   if (!(await pathExists(root, runProvenancePath))) {
@@ -451,17 +540,46 @@ export async function reportPack(root, manifestPath, formatReport) {
   }
   await assertReposLockMatchesFreeze(root, manifest);
 
+  const attestation = await readAttestation(root, pack);
+  const classification = baseClassification === "remotely-attested" && attestation ? "sealed" : baseClassification;
+
   const reportBody = formatReport({
     manifest,
     pack,
     generateProvenance,
     runProvenance,
     freezeCommitSha,
+    classification,
+    attestation,
   });
 
   const reportPath = join(pack.reportsDir, "report.md");
   await mkdir(join(root, pack.reportsDir), { recursive: true });
   await writeFile(join(root, reportPath), reportBody);
+
+  const reportHash = hashReportMarkdown(reportBody);
+  const traceSetHash = await hashDirectoryJsonSet(root, pack.tracesDir);
+  const resultsPath = join(pack.reportsDir, "results.jsonl").replace(/\\/g, "/");
+  const resultSetHash = await hashJsonlSet(root, resultsPath);
+
+  if (classification === "sealed" && !attestation) {
+    throw new ProtocolError("sealed classification requires remote attestation");
+  }
+
+  await refreshPackState(root, pack, {
+    classification,
+    manifestSha256: manifest.manifestSha256,
+    freezeCommitSha,
+    implementationCommitSha: runProvenance.implementationCommitSha,
+    traceSetHash,
+    resultSetHash,
+    reportHash,
+    remoteAttestation: attestation
+      ? { workflowRunId: attestation.workflowRunId, workflowRunUrl: attestation.workflowRunUrl }
+      : null,
+  });
+
+  manifest.classification = classification;
 
   return {
     manifest,
@@ -469,14 +587,22 @@ export async function reportPack(root, manifestPath, formatReport) {
     reportPath,
     runProvenance,
     reportBody,
+    classification,
+    reportHash,
   };
 }
 
 export function defaultReportFormatter({
   manifest,
   runProvenance,
+  generateProvenance,
   freezeCommitSha,
+  classification = "locally-frozen",
+  attestation = null,
 }) {
+  const attestationLine = attestation
+    ? `- remote attestation: run \`${attestation.workflowRunId}\` — ${attestation.workflowRunUrl}`
+    : "- remote attestation: none — local pipeline only (not sealed for external preregistration)";
   return [
     `# Holdout report — ${manifest.packId}`,
     "",
@@ -484,6 +610,8 @@ export function defaultReportFormatter({
     "",
     "## Provenance",
     "",
+    `- pack ID: \`${manifest.packId}\``,
+    `- classification: \`${classification}\``,
     `- freeze commit SHA: \`${freezeCommitSha}\``,
     `- manifest SHA-256: \`${manifest.manifestSha256}\``,
     `- implementation commit SHA: \`${runProvenance.implementationCommitSha}\``,
@@ -491,6 +619,9 @@ export function defaultReportFormatter({
     ...Object.entries(runProvenance.repositoryLocks ?? {}).map(
       ([repoId, commit]) => `- ${repoId} lock SHA: \`${commit}\``,
     ),
+    `- trace-set hash: \`${generateProvenance?.traceSetHash ?? generateProvenance?.tracesWritten ?? "see state.json"}\``,
+    `- result-set hash: \`${runProvenance?.resultSetHash ?? "see state.json"}\``,
+    attestationLine,
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
@@ -576,15 +707,28 @@ export async function syntheticFixtureTrace({ root, manifest, pack }) {
   return { tracesWritten: 1, traceNames: [trace.name] };
 }
 
-export async function syntheticFixtureRun({ root, pack }) {
+export async function syntheticFixtureRun({ root, pack, manifest, implementationCommitSha }) {
   const { runTrace, finalCapture } = await import("./trace-runner.mjs");
   const names = (await readdir(join(root, pack.tracesDir))).filter((n) => n.endsWith(".json"));
   let records = 0;
+  const jsonlLines = [];
   for (const name of names) {
     const trace = await readJson(root, join(pack.tracesDir, name));
     const result = await runTrace(trace, "freshctx-region");
     const capture = finalCapture(result);
-    if (capture) records += 1;
+    if (capture) {
+      records += 1;
+      jsonlLines.push(
+        JSON.stringify({
+          trace: trace.name,
+          implementationCommitSha,
+          payloadSha256: capture.payloadSha256,
+        }),
+      );
+    }
   }
-  return { records, summary: `Ran ${records} capture(s) on ${names.length} trace(s).` };
+  const resultsPath = join(pack.reportsDir, "results.jsonl");
+  await mkdir(join(root, pack.reportsDir), { recursive: true });
+  await writeFile(join(root, resultsPath), jsonlLines.length ? `${jsonlLines.join("\n")}\n` : "");
+  return { records, summary: `Ran ${records} capture(s) on ${names.length} trace(s).`, recordsWritten: jsonlLines.length };
 }
