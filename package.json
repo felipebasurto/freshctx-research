@@ -13,6 +13,7 @@
     "bench": "node bench/run.mjs",
     "ctxbench": "node bench/ctxbench.mjs",
     "ctxbench:smoke": "node bench/smoke.mjs",
+    "ctxbench:holdout": "node bench/holdout.mjs",
     "ctxbench:pi-smoke": "node bench/pi-smoke.mjs",
     "ctxbench:hermes-smoke": "node bench/hermes-smoke.mjs",
     "capture-provider": "node capture/provider.mjs",
@@ -24,6 +25,7 @@
     "papers:verify": "node scripts/papers.mjs verify",
     "repos:fetch": "node scripts/repos.mjs fetch",
     "repos:fetch:smoke": "node scripts/repos.mjs fetch --tier=smoke",
+    "repos:fetch:holdout": "node scripts/repos.mjs fetch --ids=go-tools,neovim",
     "repos:verify": "node scripts/repos.mjs verify",
     "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs"
   },

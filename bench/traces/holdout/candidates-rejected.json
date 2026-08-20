@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "label": "holdout-v0.1-candidate-audit",
+  "note": "EVALUATION §5.1 parsers not implemented; hand-authored slice with documented rejection.",
+  "selectionRule": "sha256(commit + selector + scenario) ranking among enumerated eligible units",
+  "rejected": [
+    {
+      "repo": "go-tools",
+      "path": "go/ast/astutil/imports.go",
+      "selector": "AddNamedImport.doc",
+      "reason": "whole file exceeds 12000-char smoke-parity budget (14003 bytes); freshctx-file cannot satisfy region gold",
+      "rankKey": "fc58273879bbeb2ee6d727e4d0e3d219d2cd80ed6c305d052dc1a0845944007e"
+    },
+    {
+      "repo": "go-tools",
+      "path": "go/ast/astutil/imports.go",
+      "selector": "AddNamedImport.doc",
+      "reason": "duplicate godoc block caused false stale-byte detection after interior edit on first draft",
+      "rankKey": "55c01bf2cec809861d6596068b297807a18561da215411d27b6667f829581a55"
+    },
+    {
+      "repo": "neovim",
+      "path": "runtime/lua/nvim/dir.lua",
+      "selector": "dir.module",
+      "reason": "396 lines; deferred to expanded holdout (rank below secure.read_trust for delete family)",
+      "rankKey": "39b2e4b8397dd7ea6649dfe805b1176e216e3f8366f5163af44757f52d816f9f"
+    },
+    {
+      "repo": "neovim",
+      "path": "runtime/lua/vim/_meta.lua",
+      "selector": "meta.generated",
+      "reason": "generated/meta surface; excluded unless scenario targets generated code"
+    }
+  ],
+  "selected": [
+    {
+      "repo": "go-tools",
+      "family": "interior-edit",
+      "path": "go/buildutil/util.go",
+      "selector": "ParseFile.body",
+      "rankKey": "97034f3dd05ec76fadb9cea0955207e183528a493b55917db14e5f909b499225"
+    },
+    {
+      "repo": "go-tools",
+      "family": "append",
+      "path": "go/buildutil/util.go",
+      "selector": "ParseFile.sig",
+      "rankKey": "7064435e56c21d66ab6cba6b527609a49fae440e632847b80835fed5b23238b1"
+    },
+    {
+      "repo": "go-tools",
+      "family": "delete",
+      "path": "internal/holdouttemp/temp.go",
+      "selector": "HoldoutTemp.file",
+      "rankKey": "a2c7c8d07c9010ac98bb38e22d0b253542d54a0224550c3228fac457df000efb"
+    },
+    {
+      "repo": "go-tools",
+      "family": "move-in-file",
+      "path": "go/buildutil/util.go",
+      "selector": "HasSubdir.header",
+      "rankKey": "a7962232d0f88f1ebedff52227bc62b2f117d301069ac00bb38380b63d03bb45"
+    },
+    {
+      "repo": "go-tools",
+      "family": "duplicate-boundary",
+      "path": "go/buildutil/util.go",
+      "selector": "ContainingPackage.sig",
+      "rankKey": "f2515399d788f4586e78adba17b2b633e49503fd6b0a30eb87fe8431c3695ed7"
+    },
+    {
+      "repo": "neovim",
+      "family": "interior-edit",
+      "path": "runtime/lua/vim/secure.lua",
+      "selector": "read_trust.fn",
+      "rankKey": "e8b1915ea33c535fdbcc68f4aad5e2e252183aae70cc00a475a9bcf33fd9dafe"
+    },
+    {
+      "repo": "neovim",
+      "family": "append",
+      "path": "runtime/lua/vim/secure.lua",
+      "selector": "compute_hash.header",
+      "rankKey": "d8d195a8e6dadf2d6f7c0fc830c8afbb1876cfbda197293fc89d8ccb5bf7e6c3"
+    },
+    {
+      "repo": "neovim",
+      "family": "delete",
+      "path": "runtime/lua/vim/_holdout_temp.lua",
+      "selector": "holdoutTemp.file",
+      "rankKey": "5dee21354446cd117900cade978caea8d63ad95af3d2a32c25341f3a6b8c6544"
+    },
+    {
+      "repo": "neovim",
+      "family": "move-in-file",
+      "path": "runtime/lua/vim/secure.lua",
+      "selector": "write_trust.fn",
+      "rankKey": "b650fe4821cb2d3fa2eb5a0d0cf5c85ba66c7f80edb1b23895584d3b78e67df5"
+    },
+    {
+      "repo": "neovim",
+      "family": "duplicate-boundary",
+      "path": "runtime/lua/vim/secure.lua",
+      "selector": "M.read.sig",
+      "rankKey": "70ab0b63e2d08102576c32c9f8d11817381ea494d44b5741ba0310a0b45dd35e"
+    }
+  ]
+}

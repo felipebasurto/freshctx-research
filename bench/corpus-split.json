@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "benchmarkVersion": "holdout-v0.1",
+  "preregisteredAt": "2026-08-20T20:45:00.000Z",
+  "status": "preregistered-before-trace-generation",
+  "note": "Split file for CtxBench v0.1 holdout protocol (EVALUATION §4). Secrecy ends when trace pack is committed.",
+  "splits": {
+    "smoke-train": {
+      "role": "smoke and autoresearch training lock",
+      "repositoryIds": ["flask", "express"],
+      "mutationFamilies": [
+        "interior-edit",
+        "append",
+        "delete",
+        "move-in-file",
+        "duplicate-boundary"
+      ],
+      "tracePack": "bench/traces/smoke/",
+      "label": "public-repo-smoke"
+    },
+    "holdout": {
+      "role": "sealed holdout candidate (first slice v0.1)",
+      "repositoryIds": ["go-tools", "neovim"],
+      "mutationFamilies": [
+        "interior-edit",
+        "append",
+        "delete",
+        "move-in-file",
+        "duplicate-boundary"
+      ],
+      "tracePack": "bench/traces/holdout/",
+      "label": "public-repo-holdout",
+      "scopeNote": "First unsealed holdout slice only; not full 50-units×all-families suite."
+    }
+  },
+  "frozenSmokeCommits": {
+    "flask": "d318b683471101618febed18996405ad26462110",
+    "express": "a3714473feb3d2908add734d340e7755fd85e0a3"
+  },
+  "manifestSha256": "4b6ecc86003607504fccb3eee4baadccabe9201f1a88b1db5ba00e9addcd52f4",
+  "materialityTolerances": {
+    "status": "preregistered-proposal-not-result",
+    "source": "docs/EVALUATION.md §13",
+    "byteOrLatencyImprovementMinRelative": 0.1,
+    "prefixReuseMaxRegressionPp": 2,
+    "otherEfficiencyMetricMaxRelativeRegression": 0.05
+  },
+  "claimsNotMade": [
+    "state-of-the-art context transformer (Level 4)",
+    "FreshCtx beats CORVUS",
+    "agents program better",
+    "full multi-language 50-units-per-family holdout suite",
+    "Pi/Hermes request-capture on holdout traces (deferred)"
+  ]
+}

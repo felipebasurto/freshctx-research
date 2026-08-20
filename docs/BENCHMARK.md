@@ -63,11 +63,18 @@ claim. The CORVUS baseline is not a reviewed paper reproduction; see
 replay harness (`adapters/pi/replay.mjs`) and writes `bench/reports/pi-smoke.md`.
 See `docs/lab/pcr/0003-pi-smoke-capture.md`.
 
+`npm run ctxbench:holdout` replays the first holdout slice (go-tools + neovim)
+through the same five baselines as smoke and writes
+`bench/reports/holdout.md`. Results are labeled `public-repo-holdout`.
+See `docs/lab/pcr/0007-sealed-holdout-protocol.md`.
+
 ## Result labels
 
 - `synthetic`: embedded files and mutations;
 - `replay`: frozen host/message trace, no repository checkout;
-- `public-repo`: trace over an immutable public repository commit.
+- `public-repo`: trace over an immutable public repository commit;
+- `public-repo-smoke`: smoke control board (Flask/Express);
+- `public-repo-holdout`: holdout slice board (go-tools/neovim); measurement only.
 
 No label implies that an agent solved a task better. CtxBench evaluates the
 context payload only.

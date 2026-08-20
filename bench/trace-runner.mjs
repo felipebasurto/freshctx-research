@@ -17,6 +17,8 @@ function parseRepoId(trace) {
   const url = trace.source?.repository ?? "";
   if (url.includes("flask")) return "flask";
   if (url.includes("express")) return "express";
+  if (url.includes("googlesource.com/tools") || url.includes("go-tools")) return "go-tools";
+  if (url.includes("neovim")) return "neovim";
   return trace.name.split("/")[0] ?? "unknown";
 }
 

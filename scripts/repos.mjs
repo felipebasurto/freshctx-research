@@ -31,11 +31,32 @@ async function atomicJson(path, value) {
   await rename(temporary, path);
 }
 
-async function fetchRepos(tier) {
+async function loadExistingLock() {
+  try {
+    return JSON.parse(await readFile(LOCK_PATH, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+async function fetchRepos({ tier, ids }) {
   const { manifest, digest } = await manifestWithDigest();
-  const repositories = manifest.repositories.filter((repo) => !tier || repo.tier === tier);
+  const idSet = ids ? new Set(ids) : null;
+  const repositories = manifest.repositories.filter((repo) => {
+    if (idSet) return idSet.has(repo.id);
+    return !tier || repo.tier === tier;
+  });
+  if (idSet) {
+    for (const id of idSet) {
+      if (!repositories.some((repo) => repo.id === id)) {
+        throw new Error(`unknown repository id in --ids: ${id}`);
+      }
+    }
+  }
   await mkdir(REPOS_DIR, { recursive: true });
-  const locked = {};
+  const existing = await loadExistingLock();
+  const locked = { ...(existing?.repositories ?? {}) };
 
   for (const repo of repositories) {
     if (!/^[a-z0-9][a-z0-9-]*$/u.test(repo.id)) throw new Error(`unsafe repository id: ${repo.id}`);
@@ -73,10 +94,11 @@ async function fetchRepos(tier) {
     };
   }
 
+  const scope = idSet ? "merge" : tier ?? "all";
   await atomicJson(LOCK_PATH, {
     schemaVersion: 1,
     manifestSha256: digest,
-    scope: tier ?? "all",
+    scope,
     resolvedAt: new Date().toISOString(),
     repositories: locked,
   });
@@ -106,7 +128,9 @@ async function verifyRepos() {
 
 const [command = "verify", ...flags] = process.argv.slice(2);
 const tierFlag = flags.find((flag) => flag.startsWith("--tier="));
+const idsFlag = flags.find((flag) => flag.startsWith("--ids="));
 const tier = tierFlag?.slice("--tier=".length);
-if (command === "fetch") await fetchRepos(tier);
+const ids = idsFlag?.slice("--ids=".length).split(",").filter(Boolean);
+if (command === "fetch") await fetchRepos({ tier, ids });
 else if (command === "verify") await verifyRepos();
 else throw new Error(`unknown command: ${command}`);
