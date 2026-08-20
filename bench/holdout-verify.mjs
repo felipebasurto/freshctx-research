@@ -1,8 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { HOLDOUT_V01 } from "./holdout-identity.mjs";
-
 const STATE_FILENAME = "state.json";
 import {
   attestationBindingHash,
@@ -24,6 +22,7 @@ import {
 } from "./holdout-protocol.mjs";
 import { inferEarnedClassification, readAttestation, readPackState } from "./holdout-state.mjs";
 import { sha256 } from "../src/hash.mjs";
+import { HOLDOUT_V01 } from "./holdout-identity.mjs";
 
 export class VerifyError extends Error {
   constructor(message) {
@@ -144,7 +143,10 @@ export async function verifyProtocolPack(root, manifestPath) {
 
   const traceSetHash = await hashDirectoryJsonSet(root, pack.tracesDir);
   const resultsPath = join(pack.reportsDir, "results.jsonl").replace(/\\/g, "/");
-  const resultSetHash = await hashJsonlSet(root, resultsPath);
+  const claimed = state?.classification ?? manifest.classification ?? "locally-frozen";
+  const resultSetHash = await verifySealedResultSet(root, pack, state, claimed, errors);
+  const computedResultSetHash =
+    resultSetHash ?? (claimed === "sealed" ? null : await hashJsonlSet(root, resultsPath));
   const reportPath = join(pack.reportsDir, "report.md").replace(/\\/g, "/");
   let reportHash = null;
   try {
@@ -162,14 +164,15 @@ export async function verifyProtocolPack(root, manifestPath) {
   if (state?.traceSetHash && traceSetHash && state.traceSetHash !== traceSetHash) {
     errors.push("trace-set hash mismatch (tampered traces)");
   }
-  if (state?.resultSetHash && resultSetHash && state.resultSetHash !== resultSetHash) {
-    errors.push("result-set hash mismatch (tampered results)");
+  if (claimed !== "sealed") {
+    if (state?.resultSetHash && computedResultSetHash && state.resultSetHash !== computedResultSetHash) {
+      errors.push("result-set hash mismatch (tampered results)");
+    }
   }
   if (state?.reportHash && reportHash && state.reportHash !== reportHash) {
     errors.push("report hash mismatch (tampered report markdown)");
   }
 
-  const claimed = state?.classification ?? manifest.classification ?? "locally-frozen";
   const earned = inferEarnedClassification({
     isV01: false,
     hasRemoteAttestation: Boolean(productionAttestation),
@@ -211,7 +214,7 @@ export async function verifyProtocolPack(root, manifestPath) {
     manifestSha256: manifest.manifestSha256,
     freezeCommitSha,
     traceSetHash,
-    resultSetHash,
+    resultSetHash: computedResultSetHash ?? resultSetHash,
     reportHash,
     remoteAttestation: attestation
       ? { workflowRunId: attestation.workflowRunId, workflowRunUrl: attestation.workflowRunUrl }
@@ -222,6 +225,47 @@ export async function verifyProtocolPack(root, manifestPath) {
 function classificationOutranks(claimed, earned) {
   const order = ["unsealed-regression", "candidate", "locally-frozen", "remotely-attested", "sealed"];
   return order.indexOf(claimed) > order.indexOf(earned ?? "");
+}
+
+async function readResultsJsonl(root, relPath) {
+  try {
+    return await readFile(join(root, relPath), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/** Fail closed for sealed packs: result-set hash and raw results must be present and consistent. */
+export async function verifySealedResultSet(root, pack, state, claimed, errors) {
+  if (claimed !== "sealed") return null;
+
+  const resultsPath = join(pack.reportsDir, "results.jsonl").replace(/\\/g, "/");
+  const rawContent = await readResultsJsonl(root, resultsPath);
+  if (rawContent === null) {
+    errors.push("sealed classification requires committed results.jsonl");
+    return null;
+  }
+
+  const lines = rawContent.trim().split("\n").filter(Boolean);
+  if (lines.length === 0) {
+    errors.push("sealed classification requires non-empty results.jsonl");
+  }
+
+  if (!state?.resultSetHash) {
+    errors.push("sealed classification requires state.resultSetHash");
+  }
+
+  const computed = await hashJsonlSet(root, resultsPath);
+  if (!computed) {
+    errors.push("sealed classification results.jsonl not hashable");
+    return null;
+  }
+
+  if (state?.resultSetHash && state.resultSetHash !== computed) {
+    errors.push("result-set hash mismatch (tampered results)");
+  }
+
+  return computed;
 }
 
 export async function verifyPack(root, { manifestPath, packId } = {}) {

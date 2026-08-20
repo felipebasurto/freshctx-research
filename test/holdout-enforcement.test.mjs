@@ -320,3 +320,108 @@ test("sealed classification with production attestation in GHA passes verify", a
   }
   await rm(root, { recursive: true, force: true });
 });
+
+test("sealed classification with null resultSetHash fails verify", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/sealed-null-hash.json";
+  await freezePack(root, manifestPath, manifestDraft("sealed-null-hash"));
+  await commitAll(root, "freeze manifest");
+
+  const { writeAttestation } = await import("../bench/holdout-state.mjs");
+  const { resolvePackPaths, readManifest } = await import("../bench/holdout-protocol.mjs");
+  const manifest = await readManifest(root, manifestPath);
+  const pack = resolvePackPaths(root, { ...manifest, manifestPath });
+  await writeAttestation(root, pack, {
+    schemaVersion: 1,
+    packId: "sealed-null-hash",
+    freezeCommitSha: git(root, ["rev-parse", "HEAD"]),
+    manifestSha256: manifest.manifestSha256,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    workflowRunId: "9876543211",
+    workflowRunUrl: "https://github.com/fil/freshctx/actions/runs/9876543211",
+    attestedAt: new Date().toISOString(),
+  });
+  await commitAll(root, "production attestation");
+
+  const prevActions = process.env.GITHUB_ACTIONS;
+  process.env.GITHUB_ACTIONS = "true";
+  try {
+    await generatePack(root, manifestPath, syntheticFixtureTrace);
+    await runPack(root, manifestPath, syntheticFixtureRun);
+    await reportPack(root, manifestPath, defaultReportFormatter);
+
+    const statePath = join(root, "bench/packs/sealed-null-hash/state.json");
+    const state = JSON.parse(await readFile(statePath, "utf8"));
+    state.classification = "sealed";
+    state.resultSetHash = null;
+    await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`);
+
+    const result = await verifyPack(root, { manifestPath });
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => /requires state\.resultSetHash/i.test(e)));
+  } finally {
+    if (prevActions === undefined) delete process.env.GITHUB_ACTIONS;
+    else process.env.GITHUB_ACTIONS = prevActions;
+  }
+  await rm(root, { recursive: true, force: true });
+});
+
+test("sealed classification with tampered results.jsonl fails verify", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/sealed-tamper-results.json";
+  await freezePack(root, manifestPath, manifestDraft("sealed-tamper-results"));
+  await commitAll(root, "freeze manifest");
+
+  const { writeAttestation } = await import("../bench/holdout-state.mjs");
+  const { resolvePackPaths, readManifest } = await import("../bench/holdout-protocol.mjs");
+  const manifest = await readManifest(root, manifestPath);
+  const pack = resolvePackPaths(root, { ...manifest, manifestPath });
+  await writeAttestation(root, pack, {
+    schemaVersion: 1,
+    packId: "sealed-tamper-results",
+    freezeCommitSha: git(root, ["rev-parse", "HEAD"]),
+    manifestSha256: manifest.manifestSha256,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    workflowRunId: "9876543212",
+    workflowRunUrl: "https://github.com/fil/freshctx/actions/runs/9876543212",
+    attestedAt: new Date().toISOString(),
+  });
+  await commitAll(root, "production attestation");
+
+  const prevActions = process.env.GITHUB_ACTIONS;
+  process.env.GITHUB_ACTIONS = "true";
+  try {
+    await generatePack(root, manifestPath, syntheticFixtureTrace);
+    await runPack(root, manifestPath, syntheticFixtureRun);
+    await reportPack(root, manifestPath, defaultReportFormatter);
+
+    const statePath = join(root, "bench/packs/sealed-tamper-results/state.json");
+    const state = JSON.parse(await readFile(statePath, "utf8"));
+    state.classification = "sealed";
+    await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`);
+
+    await writeFile(
+      join(root, "bench/packs/sealed-tamper-results/reports/results.jsonl"),
+      '{"tampered":true}\n',
+    );
+
+    const result = await verifyPack(root, { manifestPath });
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => /result-set hash mismatch/i.test(e)));
+  } finally {
+    if (prevActions === undefined) delete process.env.GITHUB_ACTIONS;
+    else process.env.GITHUB_ACTIONS = prevActions;
+  }
+  await rm(root, { recursive: true, force: true });
+});
+
+test("holdout v0.1 verify passes as unsealed-regression on repository fixture", async () => {
+  const { dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = dirname(dirname(fileURLToPath(import.meta.url)));
+  const result = await verifyPack(root, { packId: HOLDOUT_V01.packId });
+  assert.equal(result.classification, "unsealed-regression");
+  assert.equal(result.valid, true, result.errors?.join("; "));
+});

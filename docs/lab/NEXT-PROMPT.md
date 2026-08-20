@@ -1,4 +1,4 @@
-# Next-iteration prompt — first new-seed holdout with freeze protocol
+# Next-iteration prompt — remote attestation host, live-run verify, §5.1 sampler
 
 Copy everything below the line into the next coding agent. The text is public.
 
@@ -6,38 +6,35 @@ Copy everything below the line into the next coding agent. The text is public.
 
 You are working on FreshCtx, a local-first **context transformer**, not a coding
 agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
-`docs/EVALUATION.md`, `docs/lab/pcr/0009-holdout-freeze-protocol.md`,
-`docs/lab/pcr/0010-holdout-protocol-enforcement.md`,
-`bench/holdout-protocol.mjs`, `bench/README.md`.
+`docs/EVALUATION.md`, `docs/lab/pcr/0010-holdout-protocol-enforcement.md`,
+`docs/lab/pcr/0011-test-hygiene-sealed-hash-gate.md`,
+`bench/holdout-protocol.mjs`, `bench/holdout-verify.mjs`, `bench/README.md`.
 
 Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions. Record conflicts in
 `docs/lab/pcr/`. Do not silently pick a side.
 
 ## Goal
 
-Execute the **first new-seed holdout** (v0.2+) using the enforced pipeline:
+Complete Phase 0 infrastructure **before** any v0.2 holdout measurement:
 
-```bash
-npm run holdout:freeze -- --manifest=bench/splits/holdout-v0.2.json --pack=holdout-v0.2 --repos=go-tools,neovim --seed=<new-seed>
-# commit and push manifest — triggers holdout-freeze-attest workflow
+1. **Remote-attest host + live-run verification** — wire production attestation
+   consumption and end-to-end verify on a protocol fixture (not v0.2 seeds).
+2. **EVALUATION §5.1 trace sampler** — deterministic pre-freeze sampling only;
+   no holdout-v0.2 manifest or traces yet.
+3. **Disposable canary pack** — exercise freeze→generate→run→report→verify with
+   sampler output on a throwaway pack id (not holdout-v0.2).
 
-npm run repos:fetch:holdout
-npm run holdout:generate -- --manifest=bench/splits/holdout-v0.2.json
-npm run holdout:run -- --manifest=bench/splits/holdout-v0.2.json
-npm run holdout:report -- --manifest=bench/splits/holdout-v0.2.json
-npm run holdout:verify -- --manifest=bench/splits/holdout-v0.2.json
-```
+Do **not** start holdout v0.2 measurement in this iteration.
 
-Do **not** expand or re-seal holdout v0.1. v0.1 remains
-`unsealed-regression-development-pack` for regression only.
-
-## Context from PCR 0009 + 0010
+## Context from PCR 0010 + 0011
 
 - Freeze/generate/run/report invariant is code-enforced with negative tests.
-- holdout v0.1 predates the protocol; do not retroactively preregister it.
+- holdout v0.1 predates the protocol; remains `unsealed-regression-development-pack`.
 - Legacy `npm run ctxbench:holdout` runs v0.1 only; v0.2+ requires protocol commands.
-- Sealed classification requires remote freeze attestation from `holdout-freeze-attest` workflow.
-- `holdout:verify` and `holdout:ci-guard` run in CI.
+- Sealed classification requires remote freeze attestation + committed
+  `bench/packs/<packId>/reports/results.jsonl` with matching `state.resultSetHash`.
+- Unit tests must not rewrite tracked reports (`bench/report-artifacts.mjs`);
+  `npm test` followed by `git diff --exit-code` must stay clean.
 
 ## Hard restrictions
 
@@ -45,17 +42,18 @@ Do **not** expand or re-seal holdout v0.1. v0.1 remains
 - Do not tune `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs` on holdout feedback.
 - Do not change smoke gold labels, weights, thresholds, or existing test bodies.
 - Synthetic score 89.107165 and ctxbench payload sha256 must remain unchanged.
-- New holdout MUST use **new seeds** and new manifest path (`holdout-v0.2` or later).
+- Do not generate holdout-v0.2 seeds, traces, manifests, or reports.
 
 ## Required loop
 
 ```bash
 npm test
+git diff --exit-code
 npm run check
 npm run evaluate
 npm run ctxbench
-npm run demo
-npm run ctxbench:holdout   # legacy v0.1 regression (may exit 1 on known miss)
+npm run holdout:verify -- --pack=holdout-v0.1
+npm run holdout:ci-guard -- --base=origin/main
 ```
 
 File the next PCR, update lab index and metrics, append `decision=review` to
@@ -63,6 +61,11 @@ File the next PCR, update lab index and metrics, append `decision=review` to
 
 ## Done when
 
-New-seed holdout manifest is frozen and committed before traces; full pipeline
-produces a report embedding freeze SHA, manifest hash, implementation SHA, and
-lock SHAs; limitations documented; no Level 4 / SOTA claim.
+Remote attestation host path is documented and exercised on a protocol fixture;
+§5.1 sampler is implemented and tested without creating v0.2 artifacts; hygiene
+and sealed-hash gates remain green; limitations documented; no Level 4 / SOTA claim.
+
+## After Phase 0 (later iteration)
+
+First **new-seed** holdout (v0.2+) using full protocol including remote freeze
+attestation and §5.1 sampler output — separate PCR from canary work above.
