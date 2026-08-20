@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-20
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/holdout-freeze-protocol-96e3`
-- Commit: `6aeab4b`
+- Commit: `e7b2b80`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `protocol-fixture`
 
