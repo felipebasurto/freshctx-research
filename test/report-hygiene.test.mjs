@@ -54,14 +54,13 @@ test("adapter and holdout pack runners do not rewrite tracked reports", async ()
   assertSnapshotsUnchanged(before, after);
 });
 
-test("git working tree stays clean on tracked report markdown after hygiene runners", () => {
-  const reportMarkdownPaths = TRACKED_REPORT_PATHS.filter((path) => path.endsWith(".md"));
-  const diff = spawnSync("git", ["diff", "--exit-code", "--", ...reportMarkdownPaths], {
+test("git working tree stays clean on all tracked report paths after hygiene runners", () => {
+  const diff = spawnSync("git", ["diff", "--exit-code", "--", ...TRACKED_REPORT_PATHS], {
     cwd: repoRoot(),
     encoding: "utf8",
   });
   assert.equal(diff.status, 0, diff.stdout || diff.stderr);
-  const status = spawnSync("git", ["status", "--porcelain", "--", ...reportMarkdownPaths], {
+  const status = spawnSync("git", ["status", "--porcelain", "--", ...TRACKED_REPORT_PATHS], {
     cwd: repoRoot(),
     encoding: "utf8",
   });

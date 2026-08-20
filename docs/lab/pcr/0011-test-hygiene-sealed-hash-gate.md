@@ -16,8 +16,9 @@ Phase 0 prerequisite before any v0.2 holdout: unit tests must not rewrite tracke
 ### Test hygiene
 
 - Added `bench/report-artifacts.mjs` with `TRACKED_REPORT_PATHS`, `shouldWriteTrackedReports()`, and default **no writes** from programmatic callers.
-- Pi/Hermes smoke and holdout runners plus core `holdout.mjs` now write tracked markdown / `results.tsv` only when invoked as CLI (`invoked: true`) or when `FRESHCTX_WRITE_REPORTS=1`.
-- Added `test/report-hygiene.test.mjs`: byte snapshots of tracked reports, git-clean assertion on report paths.
+- Pi/Hermes smoke and holdout runners plus core `holdout.mjs` and `smoke.mjs` now write tracked markdown / `results.tsv` only when invoked as CLI (`invoked: true`) or when `FRESHCTX_WRITE_REPORTS=1`.
+- On main (`4590321`), `npm test` appended eight rows to `autoresearch/results.tsv` (adapter/holdout pack tests × duplicate invocations) plus regenerated four Pi/Hermes markdown reports; this PCR closes both paths.
+- Added `test/report-hygiene.test.mjs`: byte snapshots of all `TRACKED_REPORT_PATHS` (including `results.tsv`) and `git diff` / `git status --porcelain` assertions after pack runners.
 
 ### Sealed verify fail-closed
 
