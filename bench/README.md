@@ -7,6 +7,7 @@ contract in `docs/EVALUATION.md`.
 - `run.mjs`: baseline comparison.
 - `ctxbench.mjs`: repeated correctness, determinism, and latency measurement.
 - `smoke.mjs`: public-repo smoke control board (`npm run ctxbench:smoke`).
+- `pi-smoke.mjs`, `pi-trace-runner.mjs`: Pi adapter replay board (`npm run ctxbench:pi-smoke`).
 - `trace-runner.mjs`, `baselines.mjs`, `corvus.mjs`, `oracle.mjs`, `workspace.mjs`: deterministic trace replay.
 - `traces/smoke/`: frozen Flask and Express smoke traces pinned to `repos.lock.json`.
 - `reports/latest.md`: generated baseline comparison table (`public-repo-smoke` label).

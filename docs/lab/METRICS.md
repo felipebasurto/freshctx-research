@@ -8,6 +8,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-08-20 | `0644400` smoke landing | 22/22 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0001](pcr/0001-public-log-and-lineage.md) |
 | 2026-08-20 | `fbf13d6` CORVUS lifecycle | 26/26 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0002](pcr/0002-corvus-lifecycle.md) |
+| 2026-08-20 | `ef077d1` Pi smoke | 32/32 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0003](pcr/0003-pi-smoke-capture.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -21,5 +22,6 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 |---|---|---|---|---|
 | 2026-08-20 | `0644400` | `public-repo-smoke` | First control board. `corvus-file` was CORVUS-shaped. | [0001](pcr/0001-public-log-and-lineage.md) |
 | 2026-08-20 | `fbf13d6` | `public-repo-smoke` | Documented `sync_file`/`sync_context`. CORVUS projection-bytes −21 on most cells (marker serialization); delete cells −82. Correctness columns unchanged. | [0002](pcr/0002-corvus-lifecycle.md) |
+| 2026-08-20 | `17bc65c` | `public-repo-smoke` / `replay` | Pi adapter smoke: stale 0, recall 1, duplicate 0 on all families; exact-current 0 (file scope). Matches `freshctx-file` bytes, not `freshctx-region`. | [0003](pcr/0003-pi-smoke-capture.md) |
 
-Full tables: `bench/reports/latest.md`.
+Full tables: `bench/reports/latest.md`, `bench/reports/pi-smoke.md`.
