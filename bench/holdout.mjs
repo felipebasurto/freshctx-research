@@ -9,6 +9,8 @@ import { percentile } from "./metrics.mjs";
 import { finalCapture, runTrace } from "./trace-runner.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { DEFAULT_POLICY } from "../src/policy.mjs";
+import { guardLegacyHoldoutEntrypoint, formatLegacyV01ProvenanceHeaderSync, HOLDOUT_V01 } from "./legacy-holdout-guard.mjs";
+import { hashDirectoryJsonSet, hashJsonlSet } from "./holdout-hashes.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "holdout");
@@ -94,7 +96,7 @@ function aggregateRows(results) {
   }));
 }
 
-function formatTable(rows) {
+function formatTable(rows, provenanceHeader) {
   const header = [
     "baseline",
     "repo",
@@ -114,6 +116,7 @@ function formatTable(rows) {
     "Label: `public-repo-holdout`. Status: `unsealed-regression-development-pack` (not preregistered; predates freeze protocol).",
     "Measurement only; not a performance or SOTA claim.",
     "",
+    provenanceHeader,
     `Generated: ${new Date().toISOString()}`,
     "",
     `| ${header.join(" | ")} |`,
@@ -158,7 +161,10 @@ function hardGateFailures(results) {
   return failures;
 }
 
-export async function runHoldoutPack() {
+export async function runHoldoutPack({ packId, skipReportWrite = false } = {}) {
+  const skipArtifactWrite = skipReportWrite;
+  guardLegacyHoldoutEntrypoint("ctxbench:holdout", { packId, tracesDir: HOLDOUT_V01.tracesDir });
+
   const lock = await loadJson(LOCK_PATH);
   const traces = await listHoldoutTraces();
   if (traces.length === 0) throw new Error("no holdout traces found in bench/traces/holdout");
@@ -172,8 +178,10 @@ export async function runHoldoutPack() {
     .digest("hex")
     .slice(0, 16);
   const jsonlPath = join(REPORTS_DIR, "public-repo-holdout.jsonl");
-  await mkdir(REPORTS_DIR, { recursive: true });
-  await writeFile(jsonlPath, "");
+  if (!skipArtifactWrite) {
+    await mkdir(REPORTS_DIR, { recursive: true });
+    await writeFile(jsonlPath, "");
+  }
 
   const results = [];
   for (const trace of traces) {
@@ -221,13 +229,30 @@ export async function runHoldoutPack() {
         resources: {},
         payload_sha256: capture.payloadSha256,
       };
-      await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+      if (!skipArtifactWrite) {
+        await appendFile(jsonlPath, `${JSON.stringify(record)}\n`);
+      }
     }
   }
 
   const rows = aggregateRows(results);
-  const report = formatTable(rows);
-  await writeFile(join(REPORTS_DIR, "holdout.md"), report);
+  const lockContent = await readFile(LOCK_PATH, "utf8");
+  const traceSetHash = await hashDirectoryJsonSet(ROOT, HOLDOUT_V01.tracesDir);
+  const resultSetHash = await hashJsonlSet(ROOT, HOLDOUT_V01.resultsJsonl);
+  const repositoryLocks = Object.fromEntries(
+    Object.entries(lock.repositories ?? {}).map(([id, repo]) => [id, repo.commit]),
+  );
+  const provenanceHeader = formatLegacyV01ProvenanceHeaderSync(sha256, {
+    implementationCommitSha: systemCommit,
+    lockContent,
+    repositoryLocks,
+    traceSetHash,
+    resultSetHash,
+  });
+  const report = formatTable(rows, provenanceHeader);
+  if (!skipReportWrite) {
+    await writeFile(join(REPORTS_DIR, "holdout.md"), report);
+  }
 
   const freshctxRows = rows.filter(
     (row) => row.baseline === "freshctx-region" && row.requiredRecall === 1,
@@ -251,7 +276,9 @@ export async function runHoldoutPack() {
     "review",
     "public-repo-holdout measurement row; not an autoresearch accept",
   ].join("\t");
-  await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  if (!skipArtifactWrite) {
+    await appendFile(RESULTS_TSV, `${tsvLine}\n`);
+  }
 
   const failures = hardGateFailures(results);
   if (failures.length > 0) {

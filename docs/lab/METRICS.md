@@ -15,6 +15,8 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | (PCR 0007) | 42/42 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0007](pcr/0007-sealed-holdout-protocol.md) |
 | 2026-08-20 | (PCR 0008) | 44/44 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
 | 2026-08-20 | (PCR 0009) | 51/51 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0009](pcr/0009-holdout-freeze-protocol.md) |
+| 2026-08-20 | (PCR 0010) | 61/61 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0010](pcr/0010-holdout-protocol-enforcement.md) |
+| 2026-08-20 | (PCR 0010 enforcement-fix) | 63/63 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0010](pcr/0010-holdout-protocol-enforcement.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

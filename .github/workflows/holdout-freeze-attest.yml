@@ -1,0 +1,47 @@
+name: holdout-freeze-attest
+
+on:
+  push:
+    paths:
+      - "bench/splits/**"
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Manifest path relative to repo root"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  attest-freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Resolve manifest path
+        id: manifest
+        run: |
+          if [ -n "${{ github.event.inputs.manifest_path }}" ]; then
+            echo "path=${{ github.event.inputs.manifest_path }}" >> "$GITHUB_OUTPUT"
+          else
+            CHANGED=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- 'bench/splits/*.json' | head -1)
+            echo "path=${CHANGED}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write freeze attestation
+        run: node scripts/holdout-write-attestation.mjs --manifest="${{ steps.manifest.outputs.path }}" --artifact-out=attestation.json
+
+      - name: Upload attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: holdout-freeze-attestation
+          path: attestation.json
+          retention-days: 90

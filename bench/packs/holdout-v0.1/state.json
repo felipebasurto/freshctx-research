@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "packId": "holdout-v0.1",
+  "classification": "unsealed-regression",
+  "manifestPath": null,
+  "manifestSha256": null,
+  "freezeCommitSha": null,
+  "implementationCommitSha": null,
+  "reposLockSha256": null,
+  "repositoryLocks": null,
+  "traceSetHash": "17c44d8c64517faaf4baa659d6f527b47b0a6b0dc27fce5ff58e8c8ae1f509e7",
+  "resultSetHash": "ac1ca9e863c347b8b522c938d98a87c233d34e8cfedbdb27db4bd76be6138015",
+  "reportHash": "6e97d91de38eee36d02adba304e423f7ad8721f4df9a929b712f76ea38cc65fc",
+  "remoteAttestation": null,
+  "note": "v0.1 permanently unsealed; trace/report hashes anchor verify; result-set hash null until jsonl committed",
+  "updatedAt": "2026-08-20T21:29:44.709Z"
+}

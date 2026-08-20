@@ -1,0 +1,83 @@
+name: holdout-generate
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Manifest path relative to repo root"
+        required: true
+      pack_id:
+        description: "Pack ID"
+        required: true
+      freeze_run_id:
+        description: "Workflow run ID from holdout-freeze-attest (uploaded attestation artifact)"
+        required: true
+      attestation_artifact:
+        description: "Artifact name from holdout-freeze-attest"
+        required: false
+        default: "holdout-freeze-attestation"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  generate-after-attestation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Download freeze attestation from prior workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.attestation_artifact }}
+          run-id: ${{ github.event.inputs.freeze_run_id }}
+          github-token: ${{ github.token }}
+          path: attestation-download
+
+      - name: Install and validate attestation
+        run: |
+          PACK="${{ github.event.inputs.pack_id }}"
+          MANIFEST="${{ github.event.inputs.manifest_path }}"
+          DEST="bench/packs/${PACK}/provenance/freeze-attestation.json"
+          mkdir -p "bench/packs/${PACK}/provenance"
+          cp attestation-download/attestation.json "$DEST"
+          node -e "
+          import { readFile } from 'node:fs/promises';
+          import { validateProductionAttestation } from './bench/holdout-hashes.mjs';
+          import { computeManifestHash } from './bench/holdout-protocol.mjs';
+          import { spawnSync } from 'node:child_process';
+          const att = JSON.parse(await readFile(process.env.DEST, 'utf8'));
+          const prodErr = validateProductionAttestation(att);
+          if (prodErr) { console.error(prodErr); process.exit(1); }
+          if (att.packId !== process.env.PACK) { console.error('attestation packId mismatch'); process.exit(1); }
+          const manifest = JSON.parse(await readFile(process.env.MANIFEST, 'utf8'));
+          if (att.manifestSha256 !== manifest.manifestSha256) { console.error('attestation/manifest hash mismatch'); process.exit(1); }
+          if (computeManifestHash(manifest) !== manifest.manifestSha256) { console.error('manifest tampered'); process.exit(1); }
+          const freezeCommit = spawnSync('git', ['log', '-1', '--format=%H', 'HEAD', '--', process.env.MANIFEST], { encoding: 'utf8' }).stdout.trim();
+          if (att.freezeCommitSha !== freezeCommit) { console.error('attestation freezeCommitSha mismatch vs manifest commit'); process.exit(1); }
+          console.log('production attestation valid for', att.packId, 'run', att.workflowRunId);
+          "
+        env:
+          DEST: bench/packs/${{ github.event.inputs.pack_id }}/provenance/freeze-attestation.json
+          PACK: ${{ github.event.inputs.pack_id }}
+          MANIFEST: ${{ github.event.inputs.manifest_path }}
+
+      - name: Generate traces (synthetic fixture only)
+        run: npm run holdout:generate -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+
+      - name: Run benchmarks
+        run: npm run holdout:run -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+
+      - name: Report (GHA + production attestation → sealed)
+        run: npm run holdout:report -- --manifest=${{ github.event.inputs.manifest_path }}
+
+      - name: Verify pack
+        run: npm run holdout:verify -- --manifest=${{ github.event.inputs.manifest_path }}

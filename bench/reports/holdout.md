@@ -3,6 +3,23 @@
 Label: `public-repo-holdout`. Status: `unsealed-regression-development-pack` (not preregistered; predates freeze protocol).
 Measurement only; not a performance or SOTA claim.
 
+## Provenance
+
+- pack ID: `holdout-v0.1`
+- classification: `unsealed-regression` (permanently unsealed; not preregistered)
+- freeze commit: none — unsealed-regression
+- manifest hash: none (predates protocol manifests)
+- implementation commit: `433f7dc16f2348fd8e6893f35230daa16a7f62fa`
+- repos.lock SHA-256: `4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067`
+- flask lock SHA: `d318b683471101618febed18996405ad26462110`
+- express lock SHA: `a3714473feb3d2908add734d340e7755fd85e0a3`
+- go-tools lock SHA: `ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49`
+- neovim lock SHA: `2dd6e9d6a2482069cfe9d12a09f761c5713f246b`
+- trace-set hash: `17c44d8c64517faaf4baa659d6f527b47b0a6b0dc27fce5ff58e8c8ae1f509e7`
+- result-set hash: `ac1ca9e863c347b8b522c938d98a87c233d34e8cfedbdb27db4bd76be6138015`
+- remote attestation: none — unsealed-regression pack predates remote freeze workflow
+
+
 Generated: 2026-08-20T21:00:20.273Z
 
 | baseline | repo | family | exact-current | stale | duplicate | required-recall | projection-bytes | cache-prefix-reuse | transform-p50 | transform-p95 |

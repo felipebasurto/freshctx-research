@@ -47,7 +47,7 @@ test("trace runner executes a smoke trace without stale FreshCtx bytes", async (
 
 test("holdout pack runs and records FreshCtx gate failures without policy retune", async () => {
   const { runHoldoutPack } = await import("../bench/holdout.mjs");
-  const summary = await runHoldoutPack();
+  const summary = await runHoldoutPack({ skipReportWrite: true });
   assert.equal(summary.label, "public-repo-holdout");
   assert.equal(summary.traces, 10);
   assert.ok(summary.rows.length > 0);

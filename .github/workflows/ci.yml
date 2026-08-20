@@ -13,6 +13,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -30,6 +32,12 @@ jobs:
         run: npm run papers:list
       - name: Hermes Python scaffold compiles
         run: python -m py_compile adapters/hermes/__init__.py
+      - name: Holdout verify (v0.1 + sealed fixtures)
+        run: npm run holdout:verify -- --pack=holdout-v0.1
+      - name: Holdout CI guard
+        run: |
+          git fetch origin main
+          npm run holdout:ci-guard -- --base=origin/main
 
   node-compatibility:
     strategy:

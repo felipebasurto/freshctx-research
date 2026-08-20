@@ -8,6 +8,7 @@ import { finalCapture, runTrace } from "./trace-runner.mjs";
 import { finalPiCapture, runPiTrace } from "./pi-trace-runner.mjs";
 import { percentile } from "./metrics.mjs";
 import { sha256 } from "../src/hash.mjs";
+import { guardLegacyHoldoutEntrypoint, HOLDOUT_V01 } from "./legacy-holdout-guard.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TRACES_DIR = join(ROOT, "bench", "traces", "holdout");
@@ -178,7 +179,9 @@ function piHardGateFailures(results) {
   return failures;
 }
 
-export async function runPiHoldoutPack({ strictGates = false } = {}) {
+export async function runPiHoldoutPack({ strictGates = false, packId } = {}) {
+  guardLegacyHoldoutEntrypoint("ctxbench:pi-holdout", { packId, tracesDir: HOLDOUT_V01.tracesDir });
+
   const lock = await loadJson(LOCK_PATH);
   const traces = await listHoldoutTraces();
   if (traces.length === 0) throw new Error("no holdout traces found in bench/traces/holdout");
