@@ -548,11 +548,16 @@ Implemented now:
 Not yet implemented and therefore not claimable:
 
 - language parsers and deterministic public-repo trace generator;
-- frozen `repos.lock.json` and released trace pack;
 - independent multi-language unit oracle;
 - full stage-level timing in every adapter;
 - pinned Pi/Hermes compatibility tests;
-- sealed holdout execution and a reviewed CORVUS reproduction.
+- reviewed CORVUS reproduction.
+
+Partially implemented (holdout v0.1 first slice; see PCR 0007):
+
+- frozen `repos.lock.json` now includes smoke + holdout candidate commits;
+- first `public-repo-holdout` trace pack (10 traces, five families, two repos);
+- one holdout execution with raw metrics recorded (not Level 4).
 
 This boundary is intentional. CtxBench is the contract the next implementation
 milestones must satisfy, not evidence that they are already complete.

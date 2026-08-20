@@ -45,6 +45,14 @@ test("trace runner executes a smoke trace without stale FreshCtx bytes", async (
   assert.equal(capture.metrics.duplicateUnits, 0);
 });
 
+test("holdout pack runs and records FreshCtx gate failures without policy retune", async () => {
+  const { runHoldoutPack } = await import("../bench/holdout.mjs");
+  const summary = await runHoldoutPack();
+  assert.equal(summary.label, "public-repo-holdout");
+  assert.equal(summary.traces, 10);
+  assert.ok(summary.rows.length > 0);
+});
+
 test("baselines are equally instantiated for smoke control board", () => {
   for (const name of [
     "append-only",

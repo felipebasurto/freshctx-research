@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "manifestSha256": "4b6ecc86003607504fccb3eee4baadccabe9201f1a88b1db5ba00e9addcd52f4",
   "scope": "smoke",
-  "resolvedAt": "2026-08-20T19:48:40.000Z",
+  "resolvedAt": "2026-08-20T20:38:25.174Z",
   "repositories": {
     "flask": {
       "url": "https://github.com/pallets/flask.git",
@@ -17,6 +17,20 @@
       "commit": "a3714473feb3d2908add734d340e7755fd85e0a3",
       "language": "JavaScript",
       "license": "MIT"
+    },
+    "go-tools": {
+      "url": "https://go.googlesource.com/tools",
+      "requestedRef": "master",
+      "commit": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49",
+      "language": "Go",
+      "license": "BSD-3-Clause"
+    },
+    "neovim": {
+      "url": "https://github.com/neovim/neovim.git",
+      "requestedRef": "master",
+      "commit": "2dd6e9d6a2482069cfe9d12a09f761c5713f246b",
+      "language": "C and Lua",
+      "license": "Apache-2.0"
     }
   }
 }
