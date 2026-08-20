@@ -553,10 +553,11 @@ Not yet implemented and therefore not claimable:
 - pinned Pi/Hermes compatibility tests;
 - reviewed CORVUS reproduction.
 
-Partially implemented (holdout v0.1 first slice; see PCR 0007):
+Partially implemented (holdout v0.1 first slice; see PCR 0007, **unsealed**; freeze protocol in PCR 0009):
 
 - frozen `repos.lock.json` now includes smoke + holdout candidate commits;
-- first `public-repo-holdout` trace pack (10 traces, five families, two repos);
+- first `public-repo-holdout` trace pack (10 traces, five families, two repos) — **unsealed-regression-development-pack**, not preregistered;
+- holdout freeze/generate/run/report pipeline invariant for **new** packs (PCR 0009);
 - one holdout execution with raw metrics recorded (not Level 4).
 
 This boundary is intentional. CtxBench is the contract the next implementation

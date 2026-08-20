@@ -2,8 +2,9 @@
   "schemaVersion": 1,
   "benchmarkVersion": "holdout-v0.1",
   "preregisteredAt": "2026-08-20T20:45:00.000Z",
-  "status": "preregistered-before-trace-generation",
-  "note": "Split file for CtxBench v0.1 holdout protocol (EVALUATION §4). Secrecy ends when trace pack is committed.",
+  "status": "unsealed-regression-development-pack",
+  "protocolStatus": "predates-freeze-generate-run-report-invariant",
+  "note": "Holdout v0.1 landed in commit 56974c0 with traces, reports, and split manifest together; holdout.md Generated timestamp (2026-08-20T20:43:14Z) predates preregisteredAt. Not a sealed preregistration. New holdouts MUST use holdout:freeze → commit → holdout:generate → holdout:run → holdout:report.",
   "splits": {
     "smoke-train": {
       "role": "smoke and autoresearch training lock",
@@ -19,7 +20,8 @@
       "label": "public-repo-smoke"
     },
     "holdout": {
-      "role": "sealed holdout candidate (first slice v0.1)",
+      "role": "unsealed regression holdout slice (v0.1 development pack)",
+      "protocolExempt": true,
       "repositoryIds": ["go-tools", "neovim"],
       "mutationFamilies": [
         "interior-edit",
@@ -39,7 +41,7 @@
   },
   "manifestSha256": "4b6ecc86003607504fccb3eee4baadccabe9201f1a88b1db5ba00e9addcd52f4",
   "materialityTolerances": {
-    "status": "preregistered-proposal-not-result",
+    "status": "proposal-not-preregistered-result",
     "source": "docs/EVALUATION.md §13",
     "byteOrLatencyImprovementMinRelative": 0.1,
     "prefixReuseMaxRegressionPp": 2,

@@ -15,8 +15,10 @@ Preregister and execute the **first holdout measurement** on pinned `go-tools` +
 
 ## Preregistration (before trace generation)
 
-Recorded in [`bench/corpus-split.json`](../../../bench/corpus-split.json) at
-`2026-08-20T20:45:00.000Z`, **before** holdout traces were built or executed.
+**Retraction (PCR 0009):** holdout v0.1 was **not** preregistered before trace generation. Traces, reports, and `corpus-split.json` landed together in commit `56974c0`; report timestamp predates `preregisteredAt`. Status reclassified to **`unsealed-regression-development-pack`**. The freeze/generate/run/report invariant applies only to **new** packs (see PCR 0009).
+
+Originally claimed in [`bench/corpus-split.json`](../../../bench/corpus-split.json) at
+`2026-08-20T20:45:00.000Z`:
 
 | Item | Preregistered value |
 |---|---|

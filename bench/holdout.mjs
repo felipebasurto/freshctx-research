@@ -19,7 +19,10 @@ const HOST_VERSION = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8
 
 function gitCommit() {
   const run = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
-  return run.status === 0 ? run.stdout.trim() : "unknown";
+  if (run.error?.code === "ENOENT" || run.status !== 0) {
+    throw new Error("git unavailable; holdout runner requires git for commit identity");
+  }
+  return run.stdout.trim();
 }
 
 function environmentDigest() {
@@ -108,7 +111,8 @@ function formatTable(rows) {
   const lines = [
     `# CtxBench holdout v0.1 (first slice)`,
     "",
-    "Label: `public-repo-holdout`. Measurement only; not a performance or SOTA claim.",
+    "Label: `public-repo-holdout`. Status: `unsealed-regression-development-pack` (not preregistered; predates freeze protocol).",
+    "Measurement only; not a performance or SOTA claim.",
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
