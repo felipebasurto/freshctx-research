@@ -23,6 +23,16 @@ Extend PCR 0009 freeze→generate→run→report pipeline so **every pack presen
 | Mixed manifest+traces+report introduction | `holdout:ci-guard` diff scan + negative test |
 | Sealed without remote attestation | Verify fails; generate workflow requires attestation artifact |
 
+## Enforcement-fix gaps closed (PR review follow-up)
+
+| Gap | Fix |
+|---|---|
+| Local `holdout-write-attestation` created production-shaped `local-run` attestations → `sealed` | Script refuses unless `GITHUB_ACTIONS=true` + `GITHUB_RUN_ID`; protocol ignores non-production attestations locally |
+| Local generate/run/report could become `sealed` | Classification advances to `remotely-attested`/`sealed` only inside GHA with `isProductionAttestation()` |
+| `holdout-generate` could not see uploaded attestation | `freeze_run_id` input + `actions/download-artifact` installs attestation before pipeline |
+| CI guard silently passed when `origin/main` missing | `fetch-depth: 0`, explicit `git fetch origin main`, fail-closed on unresolvable base / diff failure |
+| Incomplete tamper tests | Explicit result-set hash mismatch test; stub-not-sealed test; ci-guard missing-base test |
+
 ## Remaining exceptions (honest)
 
 | Exception | Why |
@@ -54,14 +64,14 @@ Extend PCR 0009 freeze→generate→run→report pipeline so **every pack presen
 ## Remote attestation workflow evidence
 
 - `.github/workflows/holdout-freeze-attest.yml` — runs on `bench/splits/**` push; writes attestation via `scripts/holdout-write-attestation.mjs`; uploads artifact
-- `.github/workflows/holdout-generate.yml` — requires `freeze-attestation.json` before generate/run/report/verify
+- `.github/workflows/holdout-generate.yml` — `freeze_run_id` input downloads artifact; validates pack/freeze/manifest before generate/run/report/verify (synthetic fixture only)
 - Attestation object binds: pack ID, freeze commit SHA, manifest SHA-256, repos.lock SHA-256, repository lock SHAs, workflow run ID/URL, timestamp
 
 ## Benchmarks run
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | 61 tests (10 new enforcement tests) |
+| `npm test` | yes | 0 | 63 tests (13 enforcement; includes stub-not-sealed, missing-base guard) |
 | `npm run check` | yes | 0 | |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` unchanged |
 | `npm run ctxbench` | yes | 0 | payload sha256 unchanged |

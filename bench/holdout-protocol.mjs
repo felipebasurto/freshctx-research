@@ -10,6 +10,8 @@ import {
   hashDirectoryJsonSet,
   hashJsonlSet,
   hashReportMarkdown,
+  isGithubActionsPipeline,
+  isProductionAttestation,
   validateAttestationShape,
 } from "./holdout-hashes.mjs";
 import { readAttestation, writePackState, readPackState } from "./holdout-state.mjs";
@@ -303,6 +305,8 @@ export async function assertFreezePhaseComplete(root, manifestPath, phase = "gen
       throw new ProtocolError(attestationError);
     }
     if (
+      isGithubActionsPipeline() &&
+      isProductionAttestation(attestation) &&
       attestation.freezeCommitSha === freezeCommitSha &&
       attestation.manifestSha256 === manifest.manifestSha256
     ) {
@@ -541,7 +545,17 @@ export async function reportPack(root, manifestPath, formatReport) {
   await assertReposLockMatchesFreeze(root, manifest);
 
   const attestation = await readAttestation(root, pack);
-  const classification = baseClassification === "remotely-attested" && attestation ? "sealed" : baseClassification;
+  let classification = baseClassification;
+  if (
+    baseClassification === "remotely-attested" &&
+    attestation &&
+    isGithubActionsPipeline() &&
+    isProductionAttestation(attestation)
+  ) {
+    classification = "sealed";
+  } else if (baseClassification === "remotely-attested" && !isGithubActionsPipeline()) {
+    classification = "locally-frozen";
+  }
 
   const reportBody = formatReport({
     manifest,
@@ -562,8 +576,8 @@ export async function reportPack(root, manifestPath, formatReport) {
   const resultsPath = join(pack.reportsDir, "results.jsonl").replace(/\\/g, "/");
   const resultSetHash = await hashJsonlSet(root, resultsPath);
 
-  if (classification === "sealed" && !attestation) {
-    throw new ProtocolError("sealed classification requires remote attestation");
+  if (classification === "sealed" && (!attestation || !isProductionAttestation(attestation))) {
+    throw new ProtocolError("sealed classification requires production remote attestation from GHA freeze-attest");
   }
 
   await refreshPackState(root, pack, {

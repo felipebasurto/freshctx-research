@@ -25,11 +25,12 @@ Status: design note accompanying PCR 0010 enforcement work.
 
 ## Remote attestation role
 
-- **Local freeze + commit** → `locally-frozen` (development / candidate runs).
-- **Successful `holdout-freeze-attest` workflow** on a pushed manifest commit → publishes attestation binding pack ID, freeze commit SHA, manifest SHA-256, repository lock SHAs, workflow run ID/URL, and timestamp.
-- **Generate/run/report after attestation** → may reach `sealed` only when verify passes and attestation object matches.
+- **Local freeze + commit** → `locally-frozen` (development / candidate runs). Local `generate` / `run` / `report` **never** reach `sealed` or `remotely-attested`, even if a JSON attestation file exists on disk.
+- **A JSON file written on a laptop is not remote attestation.** `holdout-write-attestation.mjs` refuses outside GitHub Actions (`GITHUB_ACTIONS=true` + real `GITHUB_RUN_ID`). Stub objects (`stub: true`, `local-run`, example.com URLs) are ignored for classification.
+- **Successful `holdout-freeze-attest` workflow** on a pushed manifest commit → uploads production attestation (numeric GHA run id + `https://github.com/.../actions/runs/<id>` URL).
+- **`holdout-generate` workflow** downloads that artifact by `freeze_run_id`, validates pack ID / freeze commit / manifest hash, then may reach `sealed` only inside GHA with the downloaded production attestation.
 
-Local protocol checks give reproducibility and fail-closed ordering. Externally credible preregistration **additionally** requires the remote CI freeze attestation from an independent workflow run on the manifest commit.
+Local protocol checks give reproducibility and fail-closed ordering. Externally credible preregistration **additionally** requires a production attestation from the published `holdout-freeze-attest` GHA run — not a file copied from a developer machine.
 
 ## Claim boundary
 

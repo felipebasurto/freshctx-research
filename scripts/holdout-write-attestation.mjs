@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-/** Write production-shaped freeze attestation (GHA workflow or manual with env vars). */
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+/** Write production-shaped freeze attestation (GitHub Actions only). */
+import { writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { computeManifestHash, readManifest, resolvePackPaths } from "../bench/holdout-protocol.mjs";
 import { attestationBindingHash } from "../bench/holdout-hashes.mjs";
-import { sha256 } from "../src/hash.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -42,6 +41,15 @@ async function main() {
     return;
   }
 
+  if (process.env.GITHUB_ACTIONS !== "true" || !process.env.GITHUB_RUN_ID) {
+    process.stderr.write(
+      "holdout-write-attestation requires GitHub Actions (GITHUB_ACTIONS=true and GITHUB_RUN_ID). " +
+        "Local laptops cannot write production attestations; use holdout:attest-stub in tests only.\n",
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const manifest = await readManifest(ROOT, manifestPath);
   if (manifest.status !== "frozen") {
     throw new Error("manifest not frozen");
@@ -53,12 +61,8 @@ async function main() {
 
   const pack = resolvePackPaths(ROOT, { ...manifest, manifestPath });
   const freezeCommitSha = flags["freeze-commit"] ?? gitFreezeCommit(manifestPath);
-  const runId = flags["run-id"] ?? process.env.GITHUB_RUN_ID ?? "local-run";
-  const runUrl =
-    flags["run-url"] ??
-    (process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY
-      ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${runId}`
-      : `https://github.local/actions/runs/${runId}`);
+  const runId = String(process.env.GITHUB_RUN_ID);
+  const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${runId}`;
 
   const attestation = {
     schemaVersion: 1,
@@ -67,7 +71,7 @@ async function main() {
     manifestSha256: manifest.manifestSha256,
     reposLockSha256: manifest.reposLockSha256,
     repositoryLocks: manifest.repositoryLocks ?? {},
-    workflowRunId: String(runId),
+    workflowRunId: runId,
     workflowRunUrl: runUrl,
     attestedAt: new Date().toISOString(),
   };

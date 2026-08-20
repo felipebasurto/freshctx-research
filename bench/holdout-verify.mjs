@@ -10,7 +10,9 @@ import {
   hashFileBytes,
   hashJsonlSet,
   hashReportMarkdown,
+  isProductionAttestation,
   validateAttestationShape,
+  validateProductionAttestation,
 } from "./holdout-hashes.mjs";
 import {
   computeManifestHash,
@@ -122,6 +124,12 @@ export async function verifyProtocolPack(root, manifestPath) {
   const attestationError = attestation ? validateAttestationShape(attestation) : null;
   if (attestationError) errors.push(attestationError);
 
+  const productionAttestation = attestation && isProductionAttestation(attestation);
+  if (attestation && !productionAttestation) {
+    const prodErr = validateProductionAttestation(attestation);
+    if (prodErr) errors.push(`non-production attestation: ${prodErr}`);
+  }
+
   if (attestation) {
     if (attestation.manifestSha256 !== manifest.manifestSha256) {
       errors.push("attestation manifestSha256 mismatch");
@@ -164,7 +172,7 @@ export async function verifyProtocolPack(root, manifestPath) {
   const claimed = state?.classification ?? manifest.classification ?? "locally-frozen";
   const earned = inferEarnedClassification({
     isV01: false,
-    hasRemoteAttestation: Boolean(attestation && !attestationError),
+    hasRemoteAttestation: Boolean(productionAttestation),
     hasReport: Boolean(reportHash),
     hasRunProvenance: Boolean(hasRun),
     hasGenerateProvenance: Boolean(hasGenerate),
@@ -172,6 +180,9 @@ export async function verifyProtocolPack(root, manifestPath) {
     claimedClassification: claimed,
   });
 
+  if ((claimed === "sealed" || claimed === "remotely-attested") && attestation && !productionAttestation) {
+    errors.push(`${claimed} classification requires production GHA attestation (not stub/local-run)`);
+  }
   if (claimed === "sealed" && !attestation) {
     errors.push("sealed classification requires remote attestation");
   }

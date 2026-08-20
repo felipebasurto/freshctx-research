@@ -74,6 +74,36 @@ export function validateAttestationShape(attestation) {
   return null;
 }
 
+/** True only for attestations from a real GitHub Actions freeze-attest run (not stub/local). */
+export function isProductionAttestation(attestation) {
+  if (!attestation || attestation.stub === true) return false;
+  if (validateAttestationShape(attestation)) return false;
+  const runId = String(attestation.workflowRunId);
+  if (runId === "local-run" || !/^\d+$/.test(runId)) return false;
+  const url = String(attestation.workflowRunUrl);
+  if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+/.test(url)) return false;
+  return true;
+}
+
+export function validateProductionAttestation(attestation) {
+  const shape = validateAttestationShape(attestation);
+  if (shape) return shape;
+  if (attestation.stub === true) return "attestation is stub; not valid for sealed/remotely-attested";
+  const runId = String(attestation.workflowRunId);
+  if (runId === "local-run" || !/^\d+$/.test(runId)) {
+    return "attestation workflowRunId is not a production GHA run id";
+  }
+  const url = String(attestation.workflowRunUrl);
+  if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+/.test(url)) {
+    return "attestation workflowRunUrl is not a production GHA actions run URL";
+  }
+  return null;
+}
+
+export function isGithubActionsPipeline() {
+  return process.env.GITHUB_ACTIONS === "true";
+}
+
 export function attestationBindingHash(attestation) {
   const clone = { ...attestation };
   delete clone.bindingSha256;

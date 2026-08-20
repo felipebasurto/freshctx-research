@@ -8,14 +8,55 @@ export async function readJson(root, path) {
   return JSON.parse(await readFile(join(root, path), "utf8"));
 }
 
+function git(args, root) {
+  return spawnSync("git", args, { encoding: "utf8", cwd: root });
+}
+
+/** Fetch and verify base ref; fail closed when unresolvable. */
+export function resolveBaseRef(root, baseRef = "main") {
+  const fatal = [];
+
+  if (baseRef.startsWith("origin/")) {
+    const remote = "origin";
+    const branch = baseRef.slice("origin/".length);
+    const fetch = git(["fetch", remote, branch], root);
+    if (fetch.status !== 0) {
+      fatal.push(`git fetch ${remote} ${branch} failed: ${fetch.stderr.trim() || fetch.stdout.trim()}`);
+    }
+  }
+
+  const verify = git(["rev-parse", "--verify", baseRef], root);
+  if (verify.status !== 0) {
+    fatal.push(`base ref not resolvable: ${baseRef}`);
+    return { baseRef, fatal, diffRef: null };
+  }
+
+  return { baseRef, fatal, diffRef: baseRef };
+}
+
+function gitDiff(root, diffRef, mode) {
+  if (!diffRef) {
+    return { ok: false, error: "no diff ref (base unresolved)" };
+  }
+  const run = git(["diff", `--name-${mode}`, `${diffRef}...HEAD`], root);
+  if (run.status !== 0) {
+    return { ok: false, error: `git diff ${diffRef}...HEAD failed: ${run.stderr.trim() || run.stdout.trim()}` };
+  }
+  return { ok: true, output: run.stdout };
+}
+
 export async function scanProtocolExempt(root, baseRef = "main") {
   const errors = [];
-  const diff = spawnSync("git", ["diff", "--name-only", `${baseRef}...HEAD`], { encoding: "utf8", cwd: root });
-  if (diff.status !== 0) {
+  const { fatal, diffRef } = resolveBaseRef(root, baseRef);
+  errors.push(...fatal);
+
+  const diff = gitDiff(root, diffRef, "only");
+  if (!diff.ok) {
+    errors.push(diff.error);
     return errors;
   }
 
-  const changed = diff.stdout.trim().split("\n").filter(Boolean);
+  const changed = diff.output.trim().split("\n").filter(Boolean);
   for (const file of changed) {
     if (file.endsWith(".json") && file.includes("bench/splits/")) {
       try {
@@ -48,11 +89,17 @@ export async function scanProtocolExempt(root, baseRef = "main") {
 
 export async function scanMixedIntroduction(root, baseRef = "main") {
   const errors = [];
-  const diff = spawnSync("git", ["diff", "--name-status", `${baseRef}...HEAD`], { encoding: "utf8", cwd: root });
-  if (diff.status !== 0) return errors;
+  const { fatal, diffRef } = resolveBaseRef(root, baseRef);
+  errors.push(...fatal);
+
+  const diff = gitDiff(root, diffRef, "status");
+  if (!diff.ok) {
+    errors.push(diff.error);
+    return errors;
+  }
 
   const added = new Set();
-  for (const line of diff.stdout.trim().split("\n").filter(Boolean)) {
+  for (const line of diff.output.trim().split("\n").filter(Boolean)) {
     const [status, ...rest] = line.split("\t");
     const file = rest.join("\t");
     if (status.startsWith("A")) added.add(file);
@@ -85,10 +132,16 @@ export async function scanMixedIntroduction(root, baseRef = "main") {
 
 export async function scanLegacySealedReports(root, baseRef = "main") {
   const errors = [];
-  const diff = spawnSync("git", ["diff", "--name-only", `${baseRef}...HEAD`], { encoding: "utf8", cwd: root });
-  if (diff.status !== 0) return errors;
+  const { fatal, diffRef } = resolveBaseRef(root, baseRef);
+  errors.push(...fatal);
 
-  for (const file of diff.stdout.trim().split("\n").filter(Boolean)) {
+  const diff = gitDiff(root, diffRef, "only");
+  if (!diff.ok) {
+    errors.push(diff.error);
+    return errors;
+  }
+
+  for (const file of diff.output.trim().split("\n").filter(Boolean)) {
     if (
       file.startsWith("bench/traces/") &&
       !file.startsWith(HOLDOUT_V01.tracesDir) &&
@@ -107,5 +160,6 @@ export async function runHoldoutCiGuard(root, { baseRef = "main" } = {}) {
     ...(await scanMixedIntroduction(root, baseRef)),
     ...(await scanLegacySealedReports(root, baseRef)),
   ];
-  return { baseRef, valid: errors.length === 0, errors };
+  const valid = errors.length === 0;
+  return { baseRef, valid, errors };
 }

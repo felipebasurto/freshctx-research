@@ -142,6 +142,10 @@ test("verify fails on tampered manifest, traces, results, report", async () => {
   result = await verifyPack(root, { manifestPath });
   assert.ok(result.errors.some((e) => /trace-set hash mismatch/i.test(e)));
 
+  await writeFile(join(root, "bench/packs/tamper-fixture/reports/results.jsonl"), '{"tampered":true}\n');
+  result = await verifyPack(root, { manifestPath });
+  assert.ok(result.errors.some((e) => /result-set hash mismatch/i.test(e)));
+
   await rm(root, { recursive: true, force: true });
 });
 
@@ -230,7 +234,53 @@ test("CI guard fails mixed introduction of manifest traces report", async () => 
   await rm(root, { recursive: true, force: true });
 });
 
-test("sealed classification with attestation stub passes verify in fixture repo", async () => {
+test("stub or local attestation with reportPack must not classify sealed", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/stub-attest.json";
+  await freezePack(root, manifestPath, manifestDraft("stub-attest"));
+  await commitAll(root, "freeze manifest");
+
+  const { writeAttestation } = await import("../bench/holdout-state.mjs");
+  const { resolvePackPaths, readManifest } = await import("../bench/holdout-protocol.mjs");
+  const manifest = await readManifest(root, manifestPath);
+  const pack = resolvePackPaths(root, { ...manifest, manifestPath });
+  await writeAttestation(root, pack, {
+    schemaVersion: 1,
+    packId: "stub-attest",
+    freezeCommitSha: git(root, ["rev-parse", "HEAD"]),
+    manifestSha256: manifest.manifestSha256,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    workflowRunId: "test-run-0001",
+    workflowRunUrl: "https://github.com/example/example/actions/runs/1",
+    attestedAt: new Date().toISOString(),
+    stub: true,
+  });
+  await commitAll(root, "stub attestation");
+
+  await generatePack(root, manifestPath, syntheticFixtureTrace);
+  await runPack(root, manifestPath, syntheticFixtureRun);
+  const reported = await reportPack(root, manifestPath, defaultReportFormatter);
+  assert.notEqual(reported.classification, "sealed");
+  assert.notEqual(reported.classification, "remotely-attested");
+
+  const result = await verifyPack(root, { manifestPath });
+  if (result.classification === "sealed" || result.classification === "remotely-attested") {
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => /non-production attestation|production GHA attestation/i.test(e)));
+  }
+  await rm(root, { recursive: true, force: true });
+});
+
+test("ci-guard fails when base ref is missing or unresolvable", async () => {
+  const { root } = await initProtocolRepo();
+  const result = await runHoldoutCiGuard(root, { baseRef: "origin/this-branch-does-not-exist-xyz" });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => /base ref not resolvable|git fetch.*failed/i.test(e)));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("sealed classification with production attestation in GHA passes verify", async () => {
   const { root } = await initProtocolRepo();
   const manifestPath = "bench/splits/sealed-fixture.json";
   await freezePack(root, manifestPath, manifestDraft("sealed-fixture"));
@@ -247,18 +297,26 @@ test("sealed classification with attestation stub passes verify in fixture repo"
     manifestSha256: manifest.manifestSha256,
     reposLockSha256: manifest.reposLockSha256,
     repositoryLocks: manifest.repositoryLocks,
-    workflowRunId: "test-1",
-    workflowRunUrl: "https://example.com/run/1",
+    workflowRunId: "9876543210",
+    workflowRunUrl: "https://github.com/fil/freshctx/actions/runs/9876543210",
     attestedAt: new Date().toISOString(),
   });
-  await commitAll(root, "remote attestation stub");
+  await commitAll(root, "production-shaped attestation");
 
-  await generatePack(root, manifestPath, syntheticFixtureTrace);
-  await runPack(root, manifestPath, syntheticFixtureRun);
-  await reportPack(root, manifestPath, defaultReportFormatter);
+  const prevActions = process.env.GITHUB_ACTIONS;
+  process.env.GITHUB_ACTIONS = "true";
+  try {
+    await generatePack(root, manifestPath, syntheticFixtureTrace);
+    await runPack(root, manifestPath, syntheticFixtureRun);
+    const reported = await reportPack(root, manifestPath, defaultReportFormatter);
+    assert.equal(reported.classification, "sealed");
 
-  const result = await verifyPack(root, { manifestPath });
-  assert.equal(result.classification, "sealed");
-  assert.equal(result.valid, true, result.errors?.join("; "));
+    const result = await verifyPack(root, { manifestPath });
+    assert.equal(result.classification, "sealed");
+    assert.equal(result.valid, true, result.errors?.join("; "));
+  } finally {
+    if (prevActions === undefined) delete process.env.GITHUB_ACTIONS;
+    else process.env.GITHUB_ACTIONS = prevActions;
+  }
   await rm(root, { recursive: true, force: true });
 });
