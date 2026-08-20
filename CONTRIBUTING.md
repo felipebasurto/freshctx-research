@@ -12,6 +12,12 @@ Before opening a pull request:
 5. Include before/after context metrics and identify the result class:
    synthetic, replay, or public-repo. Do not use stochastic agent output as a
    core acceptance metric.
+6. Re-run the full local suite that exists on the branch (`npm test`,
+   `npm run check`, `npm run evaluate`, `npm run ctxbench`, `npm run demo`,
+   and smoke commands when present). Record the raw results in a Public
+   Change Record under `docs/lab/pcr/` using `docs/lab/TEMPLATE.md`. Update
+   `docs/lab/METRICS.md`. Lab notes are public: no unpublished claims,
+   secrets, or competitor speculation.
 
 Pull requests that alter benchmark weights and implementation behavior together
 will not be accepted. Architectural changes should include an ADR under
