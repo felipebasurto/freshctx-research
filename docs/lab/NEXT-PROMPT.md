@@ -1,4 +1,4 @@
-# Next-iteration prompt — CORVUS deviation table on smoke traces
+# Next-iteration prompt — sealed holdout protocol or region-grain adapters
 
 Copy everything below the line into the next coding agent. The text is public.
 
@@ -6,30 +6,39 @@ Copy everything below the line into the next coding agent. The text is public.
 
 You are working on FreshCtx, a local-first **context transformer**, not a coding
 agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
-`docs/EVALUATION.md`, `docs/lab/pcr/0004-hermes-smoke-capture.md`,
-`docs/adr/0003-corvus-reproduction-deviations.md`, `bench/smoke.mjs`,
-`bench/README.md`, `autoresearch/CONTRACT.md`.
+`docs/EVALUATION.md`, `docs/lab/pcr/0005-corvus-deviation-table.md`,
+`docs/decisions/0003-corvus-reproduction-deviations.md`, `bench/README.md`,
+`autoresearch/CONTRACT.md`.
 
 Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions. Record conflicts in
 `docs/lab/pcr/`. Do not silently pick a side.
 
-## Goal
+## Goal (pick one branch; do not combine in one PR)
 
-Publish a **measured** side-by-side deviation table: documented CORVUS
-whole-file reproduction (`corvus-file` baseline) vs `freshctx-region` vs
-`freshctx-file` on the existing Flask/Express smoke board. State every known
-deviation from [CORVUS](https://arxiv.org/abs/2607.22711) explicitly. This is
-measurement and documentation fidelity, not a SOTA claim and not holdout work.
+**Option A — Sealed holdout protocol:** Preregister and execute the holdout trace
+protocol in `docs/EVALUATION.md` §4 / §13 on pinned repos **without** tuning on
+holdout labels. Document trace seeds, gold audit sample, and raw results only.
+
+**Option B — Region-grain adapters:** Extend Pi and Hermes replay harnesses to
+track smoke region reads at region granularity (not whole-file), re-measure
+`exact-current` against region gold, and compare projection-bytes to
+`freshctx-region` on the same smoke traces.
+
+PCR 0005 published the CORVUS cited-vs-measured deviation table on smoke v0.1.
+Do not repeat that work. Do not claim to beat CORVUS or state-of-the-art.
 
 ## Hard restrictions
 
-- No autoresearch campaign. No model SDK. No sampled output.
-- Do not tune `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs`.
-- Do not retarget `bench/repos.lock.json` commit SHAs.
+- No autoresearch campaign. No model SDK. No sampled output. No paid inference.
+- Do not tune `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs`
+  unless Option B requires adapter-only changes (not core policy).
+- Do not retarget `bench/repos.lock.json` commit SHAs without a documented
+  benchmark version bump.
 - Do not change gold labels, weights, thresholds, or existing test bodies except
   to ADD reporting/runner tests if needed.
-- Node stdlib only in prototype core. Fail open at host boundary.
-- Pi and Hermes adapter smoke boards must keep passing as regressions.
+- Synthetic score 89.107165 and payload sha256
+  `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` must
+  remain unchanged unless you intentionally bump the benchmark contract.
 
 ## Required loop
 
@@ -45,10 +54,10 @@ npm run ctxbench:pi-smoke
 npm run ctxbench:hermes-smoke
 ```
 
-File PCR 0005 with the deviation table and raw metric deltas. Update lab index
-and metrics. Append `decision=review` to `autoresearch/results.tsv`.
+File the next PCR, update lab index and metrics, append `decision=review` to
+`autoresearch/results.tsv`.
 
 ## Done when
 
-PCR 0005 contains a cited-vs-measured CORVUS deviation table on smoke v0.1 with
-no implied ranking claim. Do not start sealed holdout execution in the same PR.
+The chosen option has a PCR with measured raw metrics, explicit limitations, and
+no ranking claim against CORVUS or other systems.
