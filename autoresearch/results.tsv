@@ -1,1 +1,2 @@
 timestamp	commit	paper_manifest	hypothesis	train_score	exact_current_rate	stale_unit_rate	required_recall	projection_bytes	cache_prefix_reuse	transform_p95_ms	decision	notes
+2026-08-20T19:53:40.948Z	3bcaadd1a141a2f139d1a9050df93ec7d9e146f5	n/a-smoke-only	CtxBench smoke v0.1 control-board snapshot	n/a	1.000000	0.000000	1.000000	502	0.203947	0.072	review	public-repo-smoke measurement row; not an autoresearch accept

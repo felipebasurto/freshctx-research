@@ -41,12 +41,20 @@ npm run papers:fetch
 npm run papers:verify
 npm run repos:fetch:smoke
 npm run repos:verify
+npm run ctxbench:smoke
 ```
 
 The paper command generates `papers/papers.lock.json`. The repository command
 resolves public refs and generates `bench/repos.lock.json`. Review and commit
 both locks when freezing an experiment. Re-running with moving refs without a
 new benchmark version invalidates comparison.
+
+`npm run ctxbench:smoke` replays frozen Flask/Express traces across append-only,
+observation-mask, CORVUS-shaped whole-file sync, FreshCtx file, and FreshCtx
+region baselines. It writes `bench/reports/public-repo-smoke.jsonl`,
+`bench/reports/latest.md`, and appends one measurement row to
+`autoresearch/results.tsv`. Results are labeled `public-repo-smoke`; they are
+measurement infrastructure, not a performance claim.
 
 ## Result labels
 

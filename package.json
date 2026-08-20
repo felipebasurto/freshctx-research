@@ -12,6 +12,7 @@
     "test": "node --test test/*.test.mjs",
     "bench": "node bench/run.mjs",
     "ctxbench": "node bench/ctxbench.mjs",
+    "ctxbench:smoke": "node bench/smoke.mjs",
     "capture-provider": "node capture/provider.mjs",
     "evaluate": "node autoresearch/evaluate.mjs",
     "demo": "node examples/demo.mjs",
