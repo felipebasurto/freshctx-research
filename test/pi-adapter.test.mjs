@@ -149,14 +149,43 @@ test("Pi smoke pack runs all traces and compares against core board", async () =
   assert.equal(summary.failures.length, 0);
 });
 
-test("Pi holdout pack runs and records go-tools interior-edit recall miss like core", async () => {
+// v0.1 PCR 0008 recorded go-tools/interior-edit required recall 0 as unsealed
+// historical development evidence — not a frozen executable invariant.
+test("Pi holdout pack matches live core freshctx-region payload and metrics per trace", async () => {
   const { runPiHoldoutPack } = await import("../bench/pi-holdout.mjs");
-  const summary = await runPiHoldoutPack();
+  const { runHoldoutPack } = await import("../bench/holdout.mjs");
+  const { runPiTrace, finalPiCapture } = await import("../bench/pi-trace-runner.mjs");
+  const {
+    assertRowMatchesLiveCore,
+    compareAdapterToCoreHoldout,
+    findComparison,
+  } = await import("./helpers/adapter-holdout-parity.mjs");
+
+  const parity = await compareAdapterToCoreHoldout({
+    runAdapterTrace: runPiTrace,
+    finalAdapterCapture: finalPiCapture,
+  });
+  assert.equal(parity.length, 10);
+
+  const [summary, coreSummary] = await Promise.all([
+    runPiHoldoutPack(),
+    runHoldoutPack({ skipReportWrite: true }),
+  ]);
   assert.equal(summary.label, "public-repo-holdout");
   assert.equal(summary.traces, 10);
-  assert.ok(summary.failures.some((item) => item.includes("go-tools/interior-edit") && item.includes("required recall 0")));
-  const interior = summary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
+
+  for (const row of summary.rows) {
+    assertRowMatchesLiveCore(row, findComparison(parity, row.repo, row.family), "Pi");
+  }
+
+  const interior = findComparison(parity, "go-tools", "interior-edit");
   assert.ok(interior);
-  assert.equal(interior.requiredRecall, 0);
-  assert.equal(interior.stale, 0);
+  const coreInterior = coreSummary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
+  assert.ok(coreInterior);
+  assert.equal(interior.coreMetrics.requiredRecall, coreInterior.requiredRecall);
+  assert.equal(summary.failures.length, coreSummary.failures.length);
+  assert.ok(
+    summary.failures.some((item) => item.startsWith(interior.traceName)),
+    "Pi holdout failures must mirror live core gate outcomes, not a frozen recall literal",
+  );
 });
