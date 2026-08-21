@@ -17,3 +17,4 @@
 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) | 2026-08-21 | wave2 go-tools structural consensus rebase reeval | `synthetic`; `public-repo-smoke`; `public-repo-holdout`; `replay` | accept |
 | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) | 2026-08-21 | stop pinning live unsealed holdout results | `synthetic`; `public-repo-smoke`; `public-repo-holdout` | review |
 | [0015](pcr/0015-insert-before-dev-pack.md) | 2026-08-21 | insert-before development pack (not a public benchmark) | `synthetic`; `insert-before-dev` | review |
+| [0016](pcr/0016-insert-before-interior-dev-pack.md) | 2026-08-21 | insert-before interior door pack (not a public benchmark) | `synthetic`; `insert-before-interior-dev` | review |
