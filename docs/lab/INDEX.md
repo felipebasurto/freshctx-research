@@ -15,3 +15,4 @@
 | [0011](pcr/0011-test-hygiene-sealed-hash-gate.md) | 2026-08-20 | Test hygiene + sealed result-set hash fail-closed gate | `synthetic`; `protocol-fixture`; `unsealed-regression` | review |
 | [0012](pcr/0012-devloop-wave1-rejects.md) | 2026-08-20 | WAVE 1 development lex rejects (no implementation merge) | `synthetic` | reject |
 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) | 2026-08-21 | wave2 go-tools structural consensus rebase reeval | `synthetic`; `public-repo-smoke`; `public-repo-holdout`; `replay` | accept |
+| [0014](pcr/0014-unsealed-hash-anchor-refresh.md) | 2026-08-21 | unsealed hash-anchor refresh after PR 5 | `synthetic`; `public-repo-smoke`; `public-repo-holdout` | review |

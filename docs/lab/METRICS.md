@@ -20,6 +20,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | (PCR 0011) | 68/68 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0011](pcr/0011-test-hygiene-sealed-hash-gate.md) |
 | 2026-08-20 | `e245906` WAVE 1 rejected (no impl merge) | 69/69 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0012](pcr/0012-devloop-wave1-rejects.md) |
 | 2026-08-21 | `f3cdb47` wave2 rebase reeval (+ Codex exact-startLine gate) | 78/78 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) |
+| 2026-08-21 | (PCR 0014) unsealed hash-anchor refresh | 78/78 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -39,5 +40,6 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-20 | (PCR 0006) | `public-repo-smoke` / `replay` | Region-grain Pi/Hermes: exact-current matches core-region on append/interior-edit/move-in-file (1.000); projection-bytes match core-region (0 delta); vs PCR 0003 file-grain exact-current 0 and +350–6859 bytes. | [0006](pcr/0006-region-grain-adapters.md) |
 | 2026-08-20 | (PCR 0007) | `public-repo-holdout` | First holdout v0.1 slice (unsealed-regression-development-pack; not preregistered — see PCR 0009): go-tools `ed9ed918…`, neovim `2dd6e9d6…`; 10 traces; freshctx-region gate failure on go-tools interior-edit (recall 0); 9/10 cells pass; not SOTA. | [0007](pcr/0007-sealed-holdout-protocol.md) |
 | 2026-08-20 | (PCR 0008) | `public-repo-holdout` / `replay` | Pi/Hermes holdout replay: 0-byte delta vs core-region on all 10 cells; go-tools interior-edit recall 0 reproduced on Pi and Hermes (not silently passed); Hermes 0-byte delta vs Pi; not SOTA. | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
+| 2026-08-21 | (PCR 0014) | `public-repo-holdout` | Unsealed resultSetHash refresh after PR 5 go-tools interior-edit lift; committed jsonl matches live impl; historical holdout.md unchanged. | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
 Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`.
