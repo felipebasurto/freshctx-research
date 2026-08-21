@@ -145,7 +145,8 @@ export async function scanLegacySealedReports(root, baseRef = "main") {
     if (
       file.startsWith("bench/traces/") &&
       !file.startsWith(HOLDOUT_V01.tracesDir) &&
-      !file.startsWith("bench/traces/smoke")
+      !file.startsWith("bench/traces/smoke") &&
+      !file.startsWith("bench/traces/lab")
     ) {
       errors.push(`${file}: new traces outside protocol namespace require holdout:generate`);
     }

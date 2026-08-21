@@ -14,6 +14,7 @@ contract in `docs/EVALUATION.md`.
 - `trace-runner.mjs`, `baselines.mjs`, `corvus.mjs`, `oracle.mjs`, `workspace.mjs`: deterministic trace replay.
 - `traces/smoke/`: frozen Flask and Express smoke traces pinned to `repos.lock.json`.
 - `traces/holdout/`: first holdout v0.1 slice (go-tools + neovim); unsealed on commit.
+- `traces/lab/`: development-pack traces live under `bench/traces/lab`.
 - `corpus-split.json`: preregistered smoke/train vs holdout split.
 - `reports/latest.md`: generated baseline comparison table (`public-repo-smoke` label).
 - `trace.schema.json`: versioned trace data contract.
