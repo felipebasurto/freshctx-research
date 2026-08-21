@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "insert-before-tie-dev-v0.1",
+  "classification": "candidate",
+  "manifestPath": "bench/splits/insert-before-tie-dev-v0.1.json",
+  "manifestSha256": "218fc6d029ba064c2eb87093e8c4e3c3267d5ce173cd2ca986048b9f7920e6a8",
+  "freezeCommitSha": null,
+  "implementationCommitSha": "e00f8db05d9cd4a3850c969039aff160bba0891b",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": null,
+  "resultSetHash": null,
+  "reportHash": null,
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-21T20:05:14.802Z"
+}
