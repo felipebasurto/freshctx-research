@@ -1,3 +1,5 @@
+import { resolveRegionByStructuralConsensus } from "./structural-consensus.mjs";
+
 function splitLines(value) {
   return String(value).replaceAll("\r\n", "\n").split("\n");
 }
@@ -98,6 +100,12 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
   }
 
   if (candidates.length === 0) {
+    const structural = resolveRegionByStructuralConsensus({
+      previousContent: previous,
+      currentFileContent: current,
+      anchors,
+    });
+    if (structural.state === "resolved") return structural;
     return { state: "unresolved", method: "anchors-not-found" };
   }
 
@@ -115,6 +123,12 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
     best.spanDelta === second.spanDelta &&
     best.locationDelta === second.locationDelta
   ) {
+    const structural = resolveRegionByStructuralConsensus({
+      previousContent: previous,
+      currentFileContent: current,
+      anchors,
+    });
+    if (structural.state === "resolved") return structural;
     return { state: "unresolved", method: "ambiguous-boundary-anchors" };
   }
 
