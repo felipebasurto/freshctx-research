@@ -156,6 +156,7 @@ test("Pi holdout pack matches live core freshctx-region payload and metrics per 
   const { runHoldoutPack } = await import("../bench/holdout.mjs");
   const { runPiTrace, finalPiCapture } = await import("../bench/pi-trace-runner.mjs");
   const {
+    assertPackStatusParity,
     assertRowMatchesLiveCore,
     compareAdapterToCoreHoldout,
     findComparison,
@@ -178,14 +179,5 @@ test("Pi holdout pack matches live core freshctx-region payload and metrics per 
     assertRowMatchesLiveCore(row, findComparison(parity, row.repo, row.family), "Pi");
   }
 
-  const interior = findComparison(parity, "go-tools", "interior-edit");
-  assert.ok(interior);
-  const coreInterior = coreSummary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
-  assert.ok(coreInterior);
-  assert.equal(interior.coreMetrics.requiredRecall, coreInterior.requiredRecall);
-  assert.equal(summary.failures.length, coreSummary.failures.length);
-  assert.ok(
-    summary.failures.some((item) => item.startsWith(interior.traceName)),
-    "Pi holdout failures must mirror live core gate outcomes, not a frozen recall literal",
-  );
+  assertPackStatusParity(summary, coreSummary, "Pi");
 });

@@ -140,6 +140,7 @@ test("Hermes holdout pack matches live core freshctx-region payload and metrics 
   const { runHoldoutPack } = await import("../bench/holdout.mjs");
   const { runHermesTrace, finalHermesCapture } = await import("../bench/hermes-trace-runner.mjs");
   const {
+    assertPackStatusParity,
     assertRowMatchesLiveCore,
     compareAdapterToCoreHoldout,
     findComparison,
@@ -162,14 +163,5 @@ test("Hermes holdout pack matches live core freshctx-region payload and metrics 
     assertRowMatchesLiveCore(row, findComparison(parity, row.repo, row.family), "Hermes");
   }
 
-  const interior = findComparison(parity, "go-tools", "interior-edit");
-  assert.ok(interior);
-  const coreInterior = coreSummary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
-  assert.ok(coreInterior);
-  assert.equal(interior.coreMetrics.requiredRecall, coreInterior.requiredRecall);
-  assert.equal(summary.failures.length, coreSummary.failures.length);
-  assert.ok(
-    summary.failures.some((item) => item.startsWith(interior.traceName)),
-    "Hermes holdout failures must mirror live core gate outcomes, not a frozen recall literal",
-  );
+  assertPackStatusParity(summary, coreSummary, "Hermes");
 });
