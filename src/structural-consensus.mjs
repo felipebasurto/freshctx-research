@@ -22,14 +22,15 @@ function occurrenceCounts(lines) {
  * Used by production `resolveRegion` when boundary anchors fail or tie, and by
  * contract tests for interior-line consensus acceptance criteria.
  *
- * Accepts only when the winning inferred start matches the original observed
- * `anchors.startLine` exactly. Offset-shifted unanimous votes fail closed.
+ * Offset-shifted consensus additionally requires a unique surviving
+ * first/last boundary pair at the inferred start.
  */
 export function resolveRegionByStructuralConsensus({
   previousContent,
   currentFileContent,
   anchors,
   minSupportingLines = 2,
+  currentBoundaryPairs = [],
 }) {
   const previousLines = splitLines(previousContent);
   const currentLines = splitLines(String(currentFileContent).replaceAll("\r\n", "\n"));
@@ -89,18 +90,31 @@ export function resolveRegionByStructuralConsensus({
     return { state: "unresolved", method: "ambiguous-structural-anchors" };
   }
 
-  if (storedStartLine !== null && best.start + 1 !== storedStartLine) {
-    return { state: "unresolved", method: "offset-shift-without-boundaries" };
+  const shifted = storedStartLine !== null && best.start + 1 !== storedStartLine;
+  let corroboratingBoundary = null;
+  if (shifted) {
+    if (second && best.support === second.support) {
+      return { state: "unresolved", method: "ambiguous-structural-anchors" };
+    }
+
+    const matchingBoundaries = currentBoundaryPairs.filter(
+      (candidate) => candidate.start === best.start,
+    );
+    if (matchingBoundaries.length !== 1) {
+      return { state: "unresolved", method: "offset-shift-without-boundaries" };
+    }
+    [corroboratingBoundary] = matchingBoundaries;
   }
 
   const start = best.start;
-  const end = best.start + lineCount - 1;
+  const end = corroboratingBoundary?.end ?? best.start + lineCount - 1;
   const content = currentLines.slice(start, end + 1).join("\n");
+  const resolvedLineCount = end - start + 1;
   const duplicateRegions = candidates.filter(
     (candidate) =>
       candidate.support >= minSupportingLines &&
       candidate.start !== start &&
-      currentLines.slice(candidate.start, candidate.start + lineCount).join("\n") === content,
+      currentLines.slice(candidate.start, candidate.start + resolvedLineCount).join("\n") === content,
   );
   if (duplicateRegions.length > 0) {
     return { state: "unresolved", method: "duplicate-structural-candidates" };
@@ -108,7 +122,9 @@ export function resolveRegionByStructuralConsensus({
 
   return {
     state: "resolved",
-    method: "structural-anchors",
+    method: corroboratingBoundary
+      ? "structural-anchors-with-boundaries"
+      : "structural-anchors",
     content,
     startLine: start + 1,
     endLine: end + 1,

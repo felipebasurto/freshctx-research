@@ -42,6 +42,81 @@ test("structural consensus succeeds on in-place first-line mutation with multipl
   assert.equal(result.startLine, 32);
 });
 
+test("production resolveRegion accepts an offset shift only when unique boundaries corroborate interior consensus", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const currentRegion = [
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "REGION END",
+    "gap",
+    currentRegion,
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 5 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "structural-anchors-with-boundaries");
+  assert.equal(result.content, currentRegion);
+  assert.equal(result.startLine, 8);
+  assert.equal(result.endLine, 12);
+});
+
+test("production resolveRegion rejects offset consensus with competing boundary pairs", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "REGION END",
+    "gap",
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 5 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
 test("production resolveRegion fails closed on Codex offset-shift after renamed header and insert", () => {
   const previous = [
     "export function authorize(user) {",
