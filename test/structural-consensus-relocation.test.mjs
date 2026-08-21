@@ -42,6 +42,225 @@ test("structural consensus succeeds on in-place first-line mutation with multipl
   assert.equal(result.startLine, 32);
 });
 
+test("production resolveRegion accepts an offset shift only when unique boundaries corroborate interior consensus", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const currentRegion = [
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "REGION END",
+    "gap",
+    currentRegion,
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 5 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "structural-anchors-with-boundaries");
+  assert.equal(result.content, currentRegion);
+  assert.equal(result.startLine, 8);
+  assert.equal(result.endLine, 12);
+});
+
+test("production resolveRegion rejects offset consensus with competing boundary pairs", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "REGION END",
+    "gap",
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 5 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
+test("production resolveRegion rejects a trailing decoy last boundary outside the inferred region", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "decoy four",
+    "decoy five",
+    "REGION END",
+    "gap",
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END CHANGED",
+    "unrelated code",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 6 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
+test("structural consensus does not count the corroborating boundaries as interior support", () => {
+  const previous = ["REGION START", "old mutable line", "REGION END"].join("\n");
+  const current = ["padding", "REGION START", "current mutable line", "REGION END"].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 1 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [{ start: 1, end: 3 }],
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
+test("structural consensus validates supplied boundary pairs against historical anchors", () => {
+  const previous = [
+    "export function authorize(user) {",
+    "  if (!user) return false;",
+    "  return user.role === 'admin';",
+    "}",
+  ].join("\n");
+  const current = [
+    "export function authorizeAccount(user) {",
+    "// inserted policy line",
+    "  if (!user) return false;",
+    "  return user.role === 'admin';",
+    "}",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 10 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [{ start: 1, end: 4 }],
+  });
+
+  assert.deepEqual(result, {
+    state: "unresolved",
+    method: "offset-shift-without-boundaries",
+  });
+});
+
+test("structural consensus rejects a boundary pair that does not enclose every interior vote", () => {
+  const previous = [
+    "REGION START",
+    "interior survivor one",
+    "old mutable line",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "interior survivor one",
+    "REGION END",
+    "interior survivor two",
+    "tail",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 10 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [{ start: 1, end: 3 }],
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
+test("structural consensus rejects multiple pairs when only one encloses the interior votes", () => {
+  const previous = [
+    "REGION START",
+    "interior survivor one",
+    "old mutable line",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "interior survivor one",
+    "REGION END",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 10 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [
+      { start: 1, end: 3 },
+      { start: 1, end: 5 },
+    ],
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
 test("production resolveRegion fails closed on Codex offset-shift after renamed header and insert", () => {
   const previous = [
     "export function authorize(user) {",
