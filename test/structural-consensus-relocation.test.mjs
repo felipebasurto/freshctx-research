@@ -191,6 +191,38 @@ test("structural consensus rejects a boundary pair that does not enclose every i
   assert.equal(result.content, undefined);
 });
 
+test("structural consensus rejects multiple pairs when only one encloses the interior votes", () => {
+  const previous = [
+    "REGION START",
+    "interior survivor one",
+    "old mutable line",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "interior survivor one",
+    "REGION END",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 10 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [
+      { start: 1, end: 3 },
+      { start: 1, end: 5 },
+    ],
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
 test("production resolveRegion fails closed on Codex offset-shift after renamed header and insert", () => {
   const previous = [
     "export function authorize(user) {",

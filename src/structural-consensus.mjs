@@ -120,12 +120,17 @@ export function resolveRegionByStructuralConsensus({
       candidate.end >= candidate.start &&
       candidate.end < normalizedCurrent.length &&
       normalizedCurrent[candidate.start] === firstBoundary &&
-      normalizedCurrent[candidate.end] === lastBoundary &&
-      best.interiorCurrentIndexes.every(
-        (index) => index > candidate.start && index < candidate.end,
-      )
+      normalizedCurrent[candidate.end] === lastBoundary
     );
     if (matchingBoundaries.length !== 1) {
+      return { state: "unresolved", method: "offset-shift-without-boundaries" };
+    }
+    const [matchingBoundary] = matchingBoundaries;
+    if (
+      !best.interiorCurrentIndexes.every(
+        (index) => index > matchingBoundary.start && index < matchingBoundary.end,
+      )
+    ) {
       return { state: "unresolved", method: "offset-shift-without-boundaries" };
     }
 
@@ -140,7 +145,7 @@ export function resolveRegionByStructuralConsensus({
     ) {
       return { state: "unresolved", method: "ambiguous-structural-anchors" };
     }
-    [corroboratingBoundary] = matchingBoundaries;
+    corroboratingBoundary = matchingBoundary;
   }
 
   const start = best.start;
