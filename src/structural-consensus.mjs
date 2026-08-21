@@ -21,6 +21,9 @@ function occurrenceCounts(lines) {
  *
  * Used by production `resolveRegion` when boundary anchors fail or tie, and by
  * contract tests for interior-line consensus acceptance criteria.
+ *
+ * Accepts only when the winning inferred start matches the original observed
+ * `anchors.startLine` exactly. Offset-shifted unanimous votes fail closed.
  */
 export function resolveRegionByStructuralConsensus({
   previousContent,
@@ -33,6 +36,7 @@ export function resolveRegionByStructuralConsensus({
   const normalizedCurrent = currentLines.map(normalizedLine);
   const lineCount = anchors?.lineCount ?? previousLines.length;
   const uniqueInCurrent = occurrenceCounts(currentLines);
+  const storedStartLine = anchors?.startLine ?? null;
 
   const votes = new Map();
   for (let index = 0; index < previousLines.length; index += 1) {
@@ -57,13 +61,17 @@ export function resolveRegionByStructuralConsensus({
 
   const candidates = [...votes.values()].map((candidate) => ({
     ...candidate,
-    locationDelta: Math.abs(candidate.start + 1 - (anchors?.startLine ?? candidate.start + 1)),
+    locationDelta:
+      storedStartLine === null
+        ? 0
+        : Math.abs(candidate.start + 1 - storedStartLine),
   }));
 
-  candidates.sort((a, b) =>
-    b.support - a.support ||
-    a.locationDelta - b.locationDelta ||
-    a.start - b.start,
+  candidates.sort(
+    (a, b) =>
+      b.support - a.support ||
+      a.locationDelta - b.locationDelta ||
+      a.start - b.start,
   );
 
   const best = candidates[0];
@@ -81,12 +89,17 @@ export function resolveRegionByStructuralConsensus({
     return { state: "unresolved", method: "ambiguous-structural-anchors" };
   }
 
+  if (storedStartLine !== null && best.start + 1 !== storedStartLine) {
+    return { state: "unresolved", method: "offset-shift-without-boundaries" };
+  }
+
+  const start = best.start;
   const end = best.start + lineCount - 1;
-  const content = currentLines.slice(best.start, end + 1).join("\n");
+  const content = currentLines.slice(start, end + 1).join("\n");
   const duplicateRegions = candidates.filter(
     (candidate) =>
       candidate.support >= minSupportingLines &&
-      candidate.start !== best.start &&
+      candidate.start !== start &&
       currentLines.slice(candidate.start, candidate.start + lineCount).join("\n") === content,
   );
   if (duplicateRegions.length > 0) {
@@ -97,7 +110,7 @@ export function resolveRegionByStructuralConsensus({
     state: "resolved",
     method: "structural-anchors",
     content,
-    startLine: best.start + 1,
+    startLine: start + 1,
     endLine: end + 1,
     support: best.support,
   };

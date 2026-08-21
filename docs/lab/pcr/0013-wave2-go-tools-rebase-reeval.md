@@ -2,10 +2,10 @@
 
 - Date (UTC): 2026-08-21
 - Author / agent: Cloud Agent (wave2-go-tools-rebase-reeval)
-- Branch / PR: `wave2-go-tools-rebase-reeval`
+- Branch / PR: `wave2-go-tools-rebase-reeval` ([PR #5](https://github.com/felipebasurto/freshctx/pull/5))
 - Rebase base SHA: `b042c0a36987e58c8f1d2da271af71b59c1a226a` (main: neovim prefix-stable crop + adapter-contract)
 - Candidate source: `80f457e55d428f1dd3090cc9473eeca1221f33ee` (wave2-go-tools-safe-relocation)
-- Resulting HEAD: `f3cdb4740e1093326a2de221dcd4804a40935391`
+- Resulting HEAD: (this PR; see commit column below)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `public-repo-smoke`; `public-repo-holdout`; `replay`
 
@@ -18,40 +18,52 @@ Rebase commit `80f457e` (unique interior line structural consensus) onto current
 1. neovim prefix-stable span crop (PR 2 / `94e9e59`), and
 2. production wiring of `resolveRegion` fallback to `src/structural-consensus.mjs` (single implementation; no forked algorithm).
 
-Allowlisted files: `src/anchors.mjs`, `src/structural-consensus.mjs`.
+Production rule (post–Codex review): structural consensus accepts **only** when the winning inferred `startLine` equals the original observed `anchors.startLine` exactly. Offset-shifted unanimous votes fail closed. No independent current-boundary proof in this slice.
+
+Allowlisted implementation files: `src/anchors.mjs`, `src/structural-consensus.mjs`.
 
 ## Implementation summary
 
 | Commit | Description |
 |---|---|
 | `ba7770a` | Rebased `80f457e` structural consensus onto `b042c0a` (clean rebase) |
-| `f3cdb47` | Wire production `resolveRegion` to import `resolveRegionByStructuralConsensus`; remove duplicate inline helper |
+| `f3cdb47` | Wire production `resolveRegion` to import `resolveRegionByStructuralConsensus` |
+| (this PR) | Codex fail-closed fix: reject structural consensus when `best.start + 1 !== anchors.startLine`; adversarial production + helper tests |
 
 Historical v0.1 reports, golds, scoring, protocol, sampler, registry, and `autoresearch/results.tsv` are **byte-identical** to pre-branch main.
 
+## Codex review finding and fix
+
+**Finding (valid, fail-closed):** before the fix, `resolveRegionByStructuralConsensus` treated `locationDelta` as a tie-breaker only. When the first boundary line was renamed and a line inserted before surviving interior lines, every survivor voted for a shifted inferred start. The helper returned a fixed `lineCount` slice from that shifted start — projecting body-through-closer and omitting the current header — marked `resolved`.
+
+**Fix:** after ambiguity, minimum-support, and duplicate checks pass, reject unless `best.start + 1 === anchors.startLine`. Method: `offset-shift-without-boundaries`. No independent boundary-pair or interior-blob escape hatch in this PR.
+
+**Adversarial regression (production path):** `test/structural-consensus-relocation.test.mjs` — four-line function, header renamed, one line inserted after header, body lines vote shifted start; both helper and production `resolveRegion` return `unresolved` with no projected content.
+
 ## FINAL REPORT — accept/reject verdict
 
-**Verdict: ACCEPT** (all development-board gates pass; DRAFT PR opened; not merged).
+**Verdict: ACCEPT** (all gates pass after Codex fix; DRAFT PR #5 updated; **not merged**).
 
 | Gate | Result |
 |---|---|
-| `npm test` | **76/76** pass |
+| `npm test` | **78/78** pass |
 | `npm run evaluate` | exit 0; `AUTORESEARCH_SCORE=89.107165` (unchanged) |
-| smoke + holdout jsonl (programmatic read) | 20/20 `freshctx-region` cells measured; 0 hard gate failures |
+| smoke + holdout (programmatic) | 20/20 `freshctx-region` cells; 0 hard gate failures |
 | required-recall | **20/20** |
-| exact-current (eligible) | **12/20** (was 11/20 on `b042c0a`; +1 go-tools interior-edit) |
+| exact-current | **12/20** (was 11/20 on `b042c0a`; +1 go-tools interior-edit) |
 | staleBytesSum | **0** |
 | duplicateSum | **0** |
 | delete / duplicate-boundary | fail-closed (exact 0, required-recall 1) |
 | Pi holdout payloadSha256 parity | **10/10** traces match live core |
 | Hermes holdout payloadSha256 parity | **10/10** traces match live core |
 | Pi/Hermes failure-set parity | **empty === empty** |
-| protected-file SHA-256 vs `b042c0a` | **pass** (only allowlisted files differ) |
-| neovim prefix-stable crop | preserved (`neovim/append` exact=1, 1029 bytes — same as main) |
-| authorize / interior-growth unit test | pass (`boundary anchors recover a region whose interior changed`) |
-| historical tracked reports | unchanged (jsonl runs discarded; `holdout.md` git-clean) |
+| protected-file SHA-256 vs `b042c0a` | **pass** (only allowlisted impl + test + PCR docs differ) |
+| neovim prefix-stable crop | preserved (`neovim/append` exact=1, 1029 bytes) |
+| go-tools interior-edit | **recovered** (recall 1, exact 1, start 32, locationDelta 0) |
+| Codex-shaped regression | **fail-closed** (production unresolved) |
+| historical tracked reports | unchanged |
 
-## Per-cell table — candidate HEAD (`f3cdb47`)
+## Per-cell table — candidate HEAD (post–Codex fix)
 
 `freshctx-region` over smoke v0.1 (10 cells) + holdout v0.1 (10 cells) = 20 cells.
 
@@ -82,11 +94,9 @@ Historical v0.1 reports, golds, scoring, protocol, sampler, registry, and `autor
 
 ## Delta vs current main (`b042c0a`)
 
-Only one cell moves; all previously exact cells on main remain exact.
-
 | repo | family | Δ recall | Δ exact | Δ proj bytes | note |
 |---|---|---:|---:|---:|---|
-| go-tools | interior-edit | +1 (0→1) | +1 (0→1) | **+398** (164→562) | structural consensus after boundary failure |
+| go-tools | interior-edit | +1 (0→1) | +1 (0→1) | **+398** (164→562) | in-place first-line edit; consensus start 32 |
 | *all others* | * | 0 | 0 | 0 | incl. neovim append exact=1 preserved |
 
 Main aggregate before: required-recall **19/20**, exact **11/20**.
@@ -103,18 +113,22 @@ Legacy aggregate: required-recall **19/20**, exact **10/20**.
 
 ## Protected-file SHA-256 verification
 
-Compared **160** tracked files at `b042c0a` vs candidate HEAD.
+Compared tracked files at `b042c0a` vs candidate HEAD. Only these paths differ:
 
-| path | allowlisted | base SHA-256 | HEAD SHA-256 |
-|---|---|---|---|
-| `src/anchors.mjs` | yes | `4119269c4c6c3e55cc9e88300fec6e0a46c3bb8b711324ffb18438e1175ee2fc` | `8fa9a50c268b28b9866ceccd1da7cd12939b5b372e8f224396befacfafad6c94` |
-| `src/structural-consensus.mjs` | yes | `a198db1294999231ddb5b963e7bc910e63609948af63f08f8fbe8090e0d47515` | `15e05695fafe8c107975652e54c8cd3df71982281a924d2dfb1e55f3188249f9` |
+| path | category | note |
+|---|---|---|
+| `src/anchors.mjs` | allowlisted impl | wires structural fallback |
+| `src/structural-consensus.mjs` | allowlisted impl | exact-startLine gate |
+| `test/structural-consensus-relocation.test.mjs` | test | Codex + production regressions |
+| `docs/lab/pcr/0013-wave2-go-tools-rebase-reeval.md` | PCR | this document |
+| `docs/lab/INDEX.md` | lab index | PCR 0013 row |
+| `docs/lab/METRICS.md` | lab metrics | append row |
 
-Unexpected diffs: **0**. Historical PCRs/reports/results.tsv: **unchanged**.
+Historical v0.1 reports / `results.tsv`: **byte-identical**.
 
 ## Pi / Hermes holdout — full final provider payloadSha256
 
-Live-core parity enforced by `test/helpers/adapter-holdout-parity.mjs` (76/76 tests). Per-trace hashes (Pi === Hermes === core):
+Live-core parity enforced by `test/helpers/adapter-holdout-parity.mjs` (78/78 tests). Per-trace hashes (Pi === Hermes === core):
 
 | trace | payloadSha256 |
 |---|---|
@@ -135,31 +149,28 @@ Failure sets: core **[]**, Pi **[]**, Hermes **[]** (empty === empty).
 
 **Trace:** `go-tools/interior-edit/parse-file-body`  
 **Region:** `ParseFile.body` lines 32–38 (7 lines)  
-**Mutation:** first boundary line edited (`if !IsAbsPath…` → adds `// holdout interior edit`).
+**Mutation:** first boundary line edited in place (`if !IsAbsPath…` → adds `// holdout interior edit`).
 
 ### Boundary phase (fail → fallback)
 
-- `first` anchor `if !IsAbsPath(ctxt, file) {` no longer exact-matches current first line.
+- `first` anchor no longer exact-matches current first line.
 - First-to-last boundary pairing does not yield a unique cropped span.
 - Fallback: `resolveRegionByStructuralConsensus`.
 
 ### Candidate interior lines (unique in current file)
 
-| prior line | normalized (truncated) | unique | current line | inferred start | in bounds |
-|---:|---|---|---:|---:|---|
-| 2 | `file = JoinPath(ctxt, dir, file)` | yes | 33 | 32 | yes |
-| 4 | `rd, err := OpenFile(ctxt, file)` | yes | 35 | 32 | yes |
-| 6 | `return nil, err` | yes | 37 | 32 | yes |
-
-Prior line 1 (mutated boundary) excluded (not unique exact match). Empty/duplicate lines excluded.
+| prior line | normalized (truncated) | unique | inferred start |
+|---:|---|---|---:|
+| 2 | `file = JoinPath(ctxt, dir, file)` | yes | 32 |
+| 4 | `rd, err := OpenFile(ctxt, file)` | yes | 32 |
+| 6 | `return nil, err` | yes | 32 |
 
 ### Consensus scoring
 
 - Votes for inferred start **32**: support **3** (≥ `minSupportingLines=2`).
-- No second candidate with equal support and locationDelta.
-- Duplicate-region check: no identical 7-line slice elsewhere.
+- `best.start + 1 === anchors.startLine` (**32 === 32**) → accept.
+- Duplicate-region check: pass.
 - **Selected identity:** start 32, end 38, method `structural-anchors`, support 3.
-- **Why unique:** three independent interior survivors agree on one start; mutated first line alone insufficient.
 
 ### Byte accounting (go-tools interior-edit)
 
@@ -169,7 +180,9 @@ Prior line 1 (mutated boundary) excluded (not unique exact match). Empty/duplica
 | exact-current | 0 | 1 | +1 |
 | projection bytes | 164 | 562 | **+398** |
 
-Recall lift is **not** accepted without this log (per development board contract).
+## Known limitation (post–Codex fix)
+
+Regions that relocate by a pure line offset (prefix insertion, suffix noise with unchanged first/last text at a new line number) remain **unresolved** under structural consensus until a future slice adds independent current-boundary proof. This is intentional fail-closed behavior; the Codex adversarial case is covered.
 
 ## Remaining failures
 
@@ -179,21 +192,19 @@ None on the 20-cell development board at candidate HEAD. Historical v0.1 committ
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | 76/76 |
+| `npm test` | yes | 0 | 78/78 |
 | `npm run evaluate` | yes | 0 | score unchanged |
-| `npm run ctxbench:smoke` | yes | 0 | jsonl read; reports restored |
-| `npm run ctxbench:holdout` | yes | 0 | jsonl read; reports restored |
-| `npm run ctxbench:pi-holdout` | via tests | 0 | payload parity |
-| `npm run ctxbench:hermes-holdout` | via tests | 0 | payload parity |
-| protected-hash snapshot | yes | pass | 160 files |
+| smoke + holdout board | yes | 0 | programmatic; reports not committed |
+| Pi/Hermes holdout | via tests | 0 | 10/10 payload parity |
+| protected-hash snapshot | yes | pass | historical reports unchanged |
 
 ## Explicit non-goals
 
 - No merge (DRAFT PR only).
 - No v0.2 seeds/traces/manifests.
-- No gold/scoring/protocol/sampler edits.
+- No gold/scoring/protocol/sampler/registry/adapter edits.
 - No rewrite of historical PCR 0007/0008/0012 metrics or committed v0.1 report tables.
 
 ## Recommended next experiment
 
-Run the same structural-consensus wiring against any new interior-edit holdout traces in a future **new-seed** pack (v0.2+ protocol) with preregistered attestation — separate from this unsealed development accept.
+Independent current-boundary proof for offset-shifted structural candidates in a separate reviewable slice (not bundled with this exact-startLine gate).

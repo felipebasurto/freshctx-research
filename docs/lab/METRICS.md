@@ -19,7 +19,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-20 | (PCR 0010 enforcement-fix) | 63/63 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0010](pcr/0010-holdout-protocol-enforcement.md) |
 | 2026-08-20 | (PCR 0011) | 68/68 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0011](pcr/0011-test-hygiene-sealed-hash-gate.md) |
 | 2026-08-20 | `e245906` WAVE 1 rejected (no impl merge) | 69/69 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0012](pcr/0012-devloop-wave1-rejects.md) |
-| 2026-08-21 | `f3cdb47` wave2 rebase reeval | 76/76 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) |
+| 2026-08-21 | `f3cdb47` wave2 rebase reeval (+ Codex exact-startLine gate) | 78/78 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
