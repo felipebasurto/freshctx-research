@@ -117,6 +117,51 @@ test("production resolveRegion rejects offset consensus with competing boundary 
   assert.equal(result.content, undefined);
 });
 
+test("structural consensus does not count the corroborating boundaries as interior support", () => {
+  const previous = ["REGION START", "old mutable line", "REGION END"].join("\n");
+  const current = ["padding", "REGION START", "current mutable line", "REGION END"].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 1 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [{ start: 1, end: 3 }],
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
+test("structural consensus validates supplied boundary pairs against historical anchors", () => {
+  const previous = [
+    "export function authorize(user) {",
+    "  if (!user) return false;",
+    "  return user.role === 'admin';",
+    "}",
+  ].join("\n");
+  const current = [
+    "export function authorizeAccount(user) {",
+    "// inserted policy line",
+    "  if (!user) return false;",
+    "  return user.role === 'admin';",
+    "}",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 10 });
+
+  const result = resolveRegionByStructuralConsensus({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+    currentBoundaryPairs: [{ start: 1, end: 4 }],
+  });
+
+  assert.deepEqual(result, {
+    state: "unresolved",
+    method: "offset-shift-without-boundaries",
+  });
+});
+
 test("production resolveRegion fails closed on Codex offset-shift after renamed header and insert", () => {
   const previous = [
     "export function authorize(user) {",
