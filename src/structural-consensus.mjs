@@ -17,10 +17,10 @@ function occurrenceCounts(lines) {
 }
 
 /**
- * Pure structural-consensus relocation decision procedure.
+ * Structural-consensus relocation decision procedure.
  *
- * Contract-only helper: not wired into production `resolveRegion`. Tests encode
- * the acceptance criteria for interior-line consensus after boundary anchors fail.
+ * Used by production `resolveRegion` when boundary anchors fail or tie, and by
+ * contract tests for interior-line consensus acceptance criteria.
  */
 export function resolveRegionByStructuralConsensus({
   previousContent,
