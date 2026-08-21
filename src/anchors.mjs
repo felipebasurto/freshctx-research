@@ -31,6 +31,74 @@ function lineForOffset(value, offset) {
   return value.slice(0, offset).split("\n").length;
 }
 
+function occurrenceCounts(lines) {
+  const counts = new Map();
+  for (const line of lines) {
+    const normalized = normalizedLine(line);
+    if (normalized.length === 0) continue;
+    counts.set(normalized, (counts.get(normalized) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function resolveByStructuralAnchors({ previousContent, currentFileContent, anchors }) {
+  const previousLines = splitLines(previousContent);
+  const currentLines = splitLines(currentFileContent);
+  const normalizedCurrent = currentLines.map(normalizedLine);
+  const lineCount = anchors?.lineCount ?? previousLines.length;
+  const uniqueInCurrent = occurrenceCounts(currentLines);
+
+  const votes = new Map();
+  for (let index = 0; index < previousLines.length; index += 1) {
+    const normalized = normalizedLine(previousLines[index]);
+    if (normalized.length === 0 || uniqueInCurrent.get(normalized) !== 1) continue;
+
+    const currentIndex = normalizedCurrent.indexOf(normalized);
+    if (currentIndex === -1) continue;
+
+    const inferredStart = currentIndex - index;
+    if (inferredStart < 0 || inferredStart + lineCount > currentLines.length) continue;
+
+    const bucket = votes.get(inferredStart) ?? { start: inferredStart, support: 0 };
+    bucket.support += 1;
+    votes.set(inferredStart, bucket);
+  }
+
+  if (votes.size === 0) {
+    return { state: "unresolved", method: "structural-anchors-not-found" };
+  }
+
+  const candidates = [...votes.values()].map((candidate) => ({
+    ...candidate,
+    locationDelta: Math.abs(candidate.start + 1 - (anchors?.startLine ?? candidate.start + 1)),
+  }));
+
+  candidates.sort((a, b) =>
+    b.support - a.support ||
+    a.locationDelta - b.locationDelta ||
+    a.start - b.start,
+  );
+
+  const best = candidates[0];
+  const second = candidates[1];
+  if (
+    second &&
+    best.support === second.support &&
+    best.locationDelta === second.locationDelta
+  ) {
+    return { state: "unresolved", method: "ambiguous-structural-anchors" };
+  }
+
+  const end = best.start + lineCount - 1;
+  return {
+    state: "resolved",
+    method: "structural-anchors",
+    content: currentLines.slice(best.start, end + 1).join("\n"),
+    startLine: best.start + 1,
+    endLine: end + 1,
+  };
+}
+
 export function makeAnchors(content, { startLine = 1 } = {}) {
   const lines = splitLines(content);
   const meaningful = meaningfulLines(lines);
@@ -98,6 +166,12 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
   }
 
   if (candidates.length === 0) {
+    const structural = resolveByStructuralAnchors({
+      previousContent: previous,
+      currentFileContent: current,
+      anchors,
+    });
+    if (structural.state === "resolved") return structural;
     return { state: "unresolved", method: "anchors-not-found" };
   }
 
@@ -115,6 +189,12 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
     best.spanDelta === second.spanDelta &&
     best.locationDelta === second.locationDelta
   ) {
+    const structural = resolveByStructuralAnchors({
+      previousContent: previous,
+      currentFileContent: current,
+      anchors,
+    });
+    if (structural.state === "resolved") return structural;
     return { state: "unresolved", method: "ambiguous-boundary-anchors" };
   }
 
