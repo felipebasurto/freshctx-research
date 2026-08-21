@@ -133,14 +133,35 @@ test("Hermes smoke pack runs all traces and compares against core board", async 
   assert.equal(summary.failures.length, 0);
 });
 
-test("Hermes holdout pack runs and records go-tools interior-edit recall miss like core", async () => {
+// v0.1 PCR 0008 recorded go-tools/interior-edit required recall 0 as unsealed
+// historical development evidence — not a frozen executable invariant.
+test("Hermes holdout pack matches live core freshctx-region payload and metrics per trace", async () => {
   const { runHermesHoldoutPack } = await import("../bench/hermes-holdout.mjs");
-  const summary = await runHermesHoldoutPack();
+  const { runHoldoutPack } = await import("../bench/holdout.mjs");
+  const { runHermesTrace, finalHermesCapture } = await import("../bench/hermes-trace-runner.mjs");
+  const {
+    assertPackStatusParity,
+    assertRowMatchesLiveCore,
+    compareAdapterToCoreHoldout,
+    findComparison,
+  } = await import("./helpers/adapter-holdout-parity.mjs");
+
+  const parity = await compareAdapterToCoreHoldout({
+    runAdapterTrace: runHermesTrace,
+    finalAdapterCapture: finalHermesCapture,
+  });
+  assert.equal(parity.length, 10);
+
+  const [summary, coreSummary] = await Promise.all([
+    runHermesHoldoutPack(),
+    runHoldoutPack({ skipReportWrite: true }),
+  ]);
   assert.equal(summary.label, "public-repo-holdout");
   assert.equal(summary.traces, 10);
-  assert.ok(summary.failures.some((item) => item.includes("go-tools/interior-edit") && item.includes("required recall 0")));
-  const interior = summary.rows.find((row) => row.repo === "go-tools" && row.family === "interior-edit");
-  assert.ok(interior);
-  assert.equal(interior.requiredRecall, 0);
-  assert.equal(interior.stale, 0);
+
+  for (const row of summary.rows) {
+    assertRowMatchesLiveCore(row, findComparison(parity, row.repo, row.family), "Hermes");
+  }
+
+  assertPackStatusParity(summary, coreSummary, "Hermes");
 });
