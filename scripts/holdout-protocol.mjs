@@ -12,6 +12,11 @@ import {
   runInsertBeforeInteriorLab,
 } from "../bench/insert-before-interior-lab.mjs";
 import {
+  generateInsertBeforeTieLabTraces,
+  insertBeforeTieLabManifestDraft,
+  runInsertBeforeTieLab,
+} from "../bench/insert-before-tie-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -25,11 +30,18 @@ import {
 const TRACE_GENERATORS = {
   "insert-before-lab": generateInsertBeforeLabTraces,
   "insert-before-interior-lab": generateInsertBeforeInteriorLabTraces,
+  "insert-before-tie-lab": generateInsertBeforeTieLabTraces,
 };
 
 const TRACE_RUNNERS = {
   "insert-before-lab": runInsertBeforeLab,
   "insert-before-interior-lab": runInsertBeforeInteriorLab,
+  "insert-before-tie-lab": runInsertBeforeTieLab,
+};
+
+const MANIFEST_DRAFTS = {
+  "insert-before-interior-lab": insertBeforeInteriorLabManifestDraft,
+  "insert-before-tie-lab": insertBeforeTieLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -50,9 +62,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
@@ -100,9 +112,8 @@ async function main() {
 
   try {
     if (phase === "freeze") {
-      const draft = flags.generator === "insert-before-interior-lab"
-        ? insertBeforeInteriorLabManifestDraft()
-        : await loadManifestDraft(manifestPath, flags);
+      const draftFactory = MANIFEST_DRAFTS[flags.generator];
+      const draft = draftFactory ? draftFactory() : await loadManifestDraft(manifestPath, flags);
       const result = await freezePack(ROOT, manifestPath, draft);
       process.stdout.write(
         `${JSON.stringify(
