@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-21T19:00:39.848Z",
+  "packId": "insert-before-interior-dev-v0.1",
+  "manifestPath": "bench/splits/insert-before-interior-dev-v0.1.json",
+  "manifestSha256": "4444ad529fc997f795e451e3c353a9970278a3d78c0d286cc25a90c8ee1c9cba",
+  "freezeCommitSha": "4ae5092e197c41fa860b63bc01427fb20d74699d",
+  "implementationCommitSha": "cb80c59d45f260dcfa6f3e5dd49d4d4110e78083",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/insert-before/parse-file-body-interior",
+    "go-tools/insert-before/parse-file-body-interior-trailing-decoy",
+    "go-tools/insert-before/parse-file-renamed-header-interior"
+  ]
+}

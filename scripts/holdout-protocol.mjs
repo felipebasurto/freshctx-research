@@ -7,6 +7,11 @@ import {
   runInsertBeforeLab,
 } from "../bench/insert-before-lab.mjs";
 import {
+  generateInsertBeforeInteriorLabTraces,
+  insertBeforeInteriorLabManifestDraft,
+  runInsertBeforeInteriorLab,
+} from "../bench/insert-before-interior-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -16,6 +21,16 @@ import {
   syntheticFixtureRun,
   syntheticFixtureTrace,
 } from "../bench/holdout-protocol.mjs";
+
+const TRACE_GENERATORS = {
+  "insert-before-lab": generateInsertBeforeLabTraces,
+  "insert-before-interior-lab": generateInsertBeforeInteriorLabTraces,
+};
+
+const TRACE_RUNNERS = {
+  "insert-before-lab": runInsertBeforeLab,
+  "insert-before-interior-lab": runInsertBeforeInteriorLab,
+};
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -35,9 +50,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
@@ -85,7 +100,9 @@ async function main() {
 
   try {
     if (phase === "freeze") {
-      const draft = await loadManifestDraft(manifestPath, flags);
+      const draft = flags.generator === "insert-before-interior-lab"
+        ? insertBeforeInteriorLabManifestDraft()
+        : await loadManifestDraft(manifestPath, flags);
       const result = await freezePack(ROOT, manifestPath, draft);
       process.stdout.write(
         `${JSON.stringify(
@@ -105,16 +122,14 @@ async function main() {
     }
 
     if (phase === "generate") {
-      const generator = flags.generator === "insert-before-lab"
-        ? generateInsertBeforeLabTraces
-        : syntheticFixtureTrace;
+      const generator = TRACE_GENERATORS[flags.generator] ?? syntheticFixtureTrace;
       const result = await generatePack(ROOT, manifestPath, generator);
       process.stdout.write(`${JSON.stringify({ phase: "generate", ...result.provenance }, null, 2)}\n`);
       return;
     }
 
     if (phase === "run") {
-      const runner = flags.runner === "insert-before-lab" ? runInsertBeforeLab : syntheticFixtureRun;
+      const runner = TRACE_RUNNERS[flags.runner] ?? syntheticFixtureRun;
       const result = await runPack(ROOT, manifestPath, runner);
       process.stdout.write(`${JSON.stringify({ phase: "run", ...result.provenance }, null, 2)}\n`);
       return;

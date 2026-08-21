@@ -22,6 +22,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-21 | `f3cdb47` wave2 rebase reeval (+ Codex exact-startLine gate) | 78/78 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0013](pcr/0013-wave2-go-tools-rebase-reeval.md) |
 | 2026-08-21 | (PCR 0014) stop pinning live unsealed holdout results | 78/78 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 | 2026-08-21 | (PCR 0015) insert-before-dev-v0.1 pack | 90/90 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0015](pcr/0015-insert-before-dev-pack.md) |
+| 2026-08-21 | (PCR 0016) insert-before-interior-dev-v0.1 pack | 91/91 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0016](pcr/0016-insert-before-interior-dev-pack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
