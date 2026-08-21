@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-21T20:06:03.416Z",
   "packId": "insert-before-tie-dev-v0.1",
-  "classification": "locally-frozen",
   "manifestPath": "bench/splits/insert-before-tie-dev-v0.1.json",
   "manifestSha256": "218fc6d029ba064c2eb87093e8c4e3c3267d5ce173cd2ca986048b9f7920e6a8",
   "freezeCommitSha": "a1c5a0b21244efe28878f961eeb0453e8da0caee",
@@ -10,9 +11,8 @@
   "repositoryLocks": {
     "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
   },
-  "traceSetHash": "26e135a51801d8897ee1cb27c19292796ffff4b1ff765ff61b2315e6e40bf0ab",
-  "resultSetHash": "467f095b9d1296a9560172a2844252785701ab4ddd648a1395ccb1375dfca6ff",
-  "reportHash": "ef671abaf429d34e887210c85049f238fc8c418d21447f29068638fac4c64a7e",
-  "remoteAttestation": null,
-  "updatedAt": "2026-08-21T20:06:03.552Z"
+  "generateProvenancePath": "bench/packs/insert-before-tie-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 insert-before-tie lab cell(s).",
+  "recordsWritten": 3
 }

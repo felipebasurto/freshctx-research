@@ -18,3 +18,4 @@
 | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) | 2026-08-21 | stop pinning live unsealed holdout results | `synthetic`; `public-repo-smoke`; `public-repo-holdout` | review |
 | [0015](pcr/0015-insert-before-dev-pack.md) | 2026-08-21 | insert-before development pack (not a public benchmark) | `synthetic`; `insert-before-dev` | review |
 | [0016](pcr/0016-insert-before-interior-dev-pack.md) | 2026-08-21 | insert-before interior door pack (not a public benchmark) | `synthetic`; `insert-before-interior-dev` | review |
+| [0017](pcr/0017-insert-before-tie-dev-pack.md) | 2026-08-21 | insert-before structural-tie pack (not a public benchmark) | `synthetic`; `insert-before-tie-dev` | review |
