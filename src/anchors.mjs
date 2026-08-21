@@ -118,11 +118,31 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
     return { state: "unresolved", method: "ambiguous-boundary-anchors" };
   }
 
+  const expectedLineCount = anchors.lineCount ?? best.end - best.start + 1;
+  let end = best.end;
+  const span = end - best.start + 1;
+
+  // When the first-to-last span grew but the prefix before the last anchor is
+  // unchanged, treat the tail as append-inside-before-closer and crop to the
+  // original lineCount (oracle: first line + lineCount). Interior edits change
+  // the prefix and keep the full grown span.
+  if (span > expectedLineCount && previous.length > 0 && expectedLineCount > 1) {
+    const previousLines = splitLines(previous);
+    const candidateLines = currentLines.slice(best.start, end + 1);
+    const prefixLength = expectedLineCount - 1;
+    const prefixStable = previousLines
+      .slice(0, prefixLength)
+      .every((line, index) => normalizedLine(line) === normalizedLine(candidateLines[index] ?? ""));
+    if (prefixStable) {
+      end = best.start + expectedLineCount - 1;
+    }
+  }
+
   return {
     state: "resolved",
     method: "boundary-anchors",
-    content: currentLines.slice(best.start, best.end + 1).join("\n"),
+    content: currentLines.slice(best.start, end + 1).join("\n"),
     startLine: best.start + 1,
-    endLine: best.end + 1,
+    endLine: end + 1,
   };
 }
