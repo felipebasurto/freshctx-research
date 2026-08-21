@@ -127,6 +127,7 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
       previousContent: previous,
       currentFileContent: current,
       anchors,
+      currentBoundaryPairs: candidates,
     });
     if (structural.state === "resolved") return structural;
     return { state: "unresolved", method: "ambiguous-boundary-anchors" };
