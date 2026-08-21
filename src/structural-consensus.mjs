@@ -62,10 +62,14 @@ export function resolveRegionByStructuralConsensus({
       start: inferredStart,
       support: 0,
       interiorSupport: 0,
+      interiorCurrentIndexes: [],
       lines: [],
     };
     bucket.support += 1;
-    if (!boundaryIndexes.has(index)) bucket.interiorSupport += 1;
+    if (!boundaryIndexes.has(index)) {
+      bucket.interiorSupport += 1;
+      bucket.interiorCurrentIndexes.push(currentIndex);
+    }
     bucket.lines.push(normalized);
     votes.set(inferredStart, bucket);
   }
@@ -116,7 +120,10 @@ export function resolveRegionByStructuralConsensus({
       candidate.end >= candidate.start &&
       candidate.end < normalizedCurrent.length &&
       normalizedCurrent[candidate.start] === firstBoundary &&
-      normalizedCurrent[candidate.end] === lastBoundary
+      normalizedCurrent[candidate.end] === lastBoundary &&
+      best.interiorCurrentIndexes.every(
+        (index) => index > candidate.start && index < candidate.end,
+      )
     );
     if (matchingBoundaries.length !== 1) {
       return { state: "unresolved", method: "offset-shift-without-boundaries" };
