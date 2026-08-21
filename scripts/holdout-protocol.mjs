@@ -3,6 +3,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  generateInsertBeforeLabTraces,
+  runInsertBeforeLab,
+} from "../bench/insert-before-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -32,8 +36,8 @@ function parseArgs(argv) {
 function usage() {
   process.stderr.write(`Usage:
   holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>]
-  holdout-protocol.mjs generate --manifest=<path>
-  holdout-protocol.mjs run --manifest=<path>
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
@@ -101,14 +105,16 @@ async function main() {
     }
 
     if (phase === "generate") {
-      const generator = flags.fixture === "synthetic" ? syntheticFixtureTrace : syntheticFixtureTrace;
+      const generator = flags.generator === "insert-before-lab"
+        ? generateInsertBeforeLabTraces
+        : syntheticFixtureTrace;
       const result = await generatePack(ROOT, manifestPath, generator);
       process.stdout.write(`${JSON.stringify({ phase: "generate", ...result.provenance }, null, 2)}\n`);
       return;
     }
 
     if (phase === "run") {
-      const runner = flags.fixture === "synthetic" ? syntheticFixtureRun : syntheticFixtureRun;
+      const runner = flags.runner === "insert-before-lab" ? runInsertBeforeLab : syntheticFixtureRun;
       const result = await runPack(ROOT, manifestPath, runner);
       process.stdout.write(`${JSON.stringify({ phase: "run", ...result.provenance }, null, 2)}\n`);
       return;

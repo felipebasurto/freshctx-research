@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "insert-before-dev-v0.1",
+  "benchmarkVersion": "insert-before-dev-v0.1",
+  "label": "insert-before-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "insert-before"
+  ],
+  "seeds": {
+    "traceSelection": "insert-before-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/insert-before-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab",
+  "reportsDir": "bench/packs/insert-before-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/insert-before-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-21T15:10:06.041Z",
+  "implementationCommitSha": "89d46481759c77a91e539d67101c4717dc8c9d73",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "4fb54dcb08cbb60a55ebe8c691419e360dc580597043b5b441143f4aea42d8cf"
+}

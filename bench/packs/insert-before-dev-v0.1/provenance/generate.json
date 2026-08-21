@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-21T15:10:46.464Z",
+  "packId": "insert-before-dev-v0.1",
+  "manifestPath": "bench/splits/insert-before-dev-v0.1.json",
+  "manifestSha256": "4fb54dcb08cbb60a55ebe8c691419e360dc580597043b5b441143f4aea42d8cf",
+  "freezeCommitSha": "ba28966d73300ca3c42ef4ccc2b272864b62f044",
+  "implementationCommitSha": "89d46481759c77a91e539d67101c4717dc8c9d73",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/insert-before/parse-file-body",
+    "go-tools/insert-before/parse-file-body-trailing-decoy",
+    "go-tools/insert-before/parse-file-renamed-header"
+  ]
+}

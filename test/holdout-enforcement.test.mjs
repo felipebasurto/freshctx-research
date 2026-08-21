@@ -19,7 +19,12 @@ import {
 import { verifyPack, VerifyError } from "../bench/holdout-verify.mjs";
 import { HOLDOUT_V01, PROTOCOL_COMMAND_HINT } from "../bench/holdout-identity.mjs";
 import { guardLegacyHoldoutEntrypoint } from "../bench/legacy-holdout-guard.mjs";
-import { runHoldoutCiGuard, scanProtocolExempt, scanMixedIntroduction } from "../bench/holdout-ci-guard.mjs";
+import {
+  runHoldoutCiGuard,
+  scanLegacySealedReports,
+  scanProtocolExempt,
+  scanMixedIntroduction,
+} from "../bench/holdout-ci-guard.mjs";
 import { sha256 } from "../src/hash.mjs";
 
 function git(cwd, args) {
@@ -414,6 +419,32 @@ test("sealed classification with tampered results.jsonl fails verify", async () 
     if (prevActions === undefined) delete process.env.GITHUB_ACTIONS;
     else process.env.GITHUB_ACTIONS = prevActions;
   }
+  await rm(root, { recursive: true, force: true });
+});
+
+test("scanLegacySealedReports allows bench/traces/lab development traces", async () => {
+  const { root } = await initProtocolRepo();
+  const base = git(root, ["rev-parse", "HEAD"]);
+  await mkdir(join(root, "bench/traces/lab"), { recursive: true });
+  await writeFile(join(root, "bench/traces/lab/foo.json"), "{}\n");
+  git(root, ["add", "."]);
+  git(root, ["commit", "-m", "lab trace"]);
+
+  const errors = await scanLegacySealedReports(root, base);
+  assert.equal(errors.filter((error) => error.includes("bench/traces/lab")).length, 0);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("scanLegacySealedReports flags traces outside protocol namespace", async () => {
+  const { root } = await initProtocolRepo();
+  const base = git(root, ["rev-parse", "HEAD"]);
+  await mkdir(join(root, "bench/traces/custom"), { recursive: true });
+  await writeFile(join(root, "bench/traces/custom/foo.json"), "{}\n");
+  git(root, ["add", "."]);
+  git(root, ["commit", "-m", "custom trace"]);
+
+  const errors = await scanLegacySealedReports(root, base);
+  assert.ok(errors.some((error) => /outside protocol namespace/i.test(error)));
   await rm(root, { recursive: true, force: true });
 });
 
