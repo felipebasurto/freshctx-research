@@ -117,6 +117,44 @@ test("production resolveRegion rejects offset consensus with competing boundary 
   assert.equal(result.content, undefined);
 });
 
+test("production resolveRegion rejects a trailing decoy last boundary outside the inferred region", () => {
+  const previous = [
+    "REGION START",
+    "old mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END",
+  ].join("\n");
+  const current = [
+    "padding",
+    "REGION START",
+    "decoy one",
+    "decoy two",
+    "decoy three",
+    "decoy four",
+    "decoy five",
+    "REGION END",
+    "gap",
+    "REGION START",
+    "current mutable line",
+    "interior survivor one",
+    "interior survivor two",
+    "REGION END CHANGED",
+    "unrelated code",
+    "REGION END",
+  ].join("\n");
+  const anchors = makeAnchors(previous, { startLine: 6 });
+
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors,
+  });
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
+});
+
 test("structural consensus does not count the corroborating boundaries as interior support", () => {
   const previous = ["REGION START", "old mutable line", "REGION END"].join("\n");
   const current = ["padding", "REGION START", "current mutable line", "REGION END"].join("\n");

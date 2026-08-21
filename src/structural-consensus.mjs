@@ -39,6 +39,7 @@ export function resolveRegionByStructuralConsensus({
     .map((line, index) => ({ index, normalized: normalizedLine(line) }))
     .filter((line) => line.normalized.length > 0)
     .map((line) => line.index);
+  const lastBoundaryOffset = meaningfulPreviousIndexes.at(-1);
   const boundaryIndexes = new Set([
     meaningfulPreviousIndexes.at(0),
     meaningfulPreviousIndexes.at(-1),
@@ -127,6 +128,7 @@ export function resolveRegionByStructuralConsensus({
     }
     const [matchingBoundary] = matchingBoundaries;
     if (
+      matchingBoundary.end !== best.start + lastBoundaryOffset ||
       !best.interiorCurrentIndexes.every(
         (index) => index > matchingBoundary.start && index < matchingBoundary.end,
       )
