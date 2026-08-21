@@ -22,28 +22,18 @@ function occurrenceCounts(lines) {
  * Used by production `resolveRegion` when boundary anchors fail or tie, and by
  * contract tests for interior-line consensus acceptance criteria.
  *
- * Offset-shifted consensus additionally requires a unique surviving
- * first/last boundary pair at the inferred start.
+ * Offset-shifted consensus fails closed because textual boundary occurrences
+ * cannot prove that a matching closer belongs to the inferred region.
  */
 export function resolveRegionByStructuralConsensus({
   previousContent,
   currentFileContent,
   anchors,
   minSupportingLines = 2,
-  currentBoundaryPairs = [],
 }) {
   const previousLines = splitLines(previousContent);
   const currentLines = splitLines(String(currentFileContent).replaceAll("\r\n", "\n"));
   const normalizedCurrent = currentLines.map(normalizedLine);
-  const meaningfulPreviousIndexes = previousLines
-    .map((line, index) => ({ index, normalized: normalizedLine(line) }))
-    .filter((line) => line.normalized.length > 0)
-    .map((line) => line.index);
-  const lastBoundaryOffset = meaningfulPreviousIndexes.at(-1);
-  const boundaryIndexes = new Set([
-    meaningfulPreviousIndexes.at(0),
-    meaningfulPreviousIndexes.at(-1),
-  ]);
   const lineCount = anchors?.lineCount ?? previousLines.length;
   const uniqueInCurrent = occurrenceCounts(currentLines);
   const storedStartLine = anchors?.startLine ?? null;
@@ -59,18 +49,8 @@ export function resolveRegionByStructuralConsensus({
     const inferredStart = currentIndex - index;
     if (inferredStart < 0 || inferredStart + lineCount > currentLines.length) continue;
 
-    const bucket = votes.get(inferredStart) ?? {
-      start: inferredStart,
-      support: 0,
-      interiorSupport: 0,
-      interiorCurrentIndexes: [],
-      lines: [],
-    };
+    const bucket = votes.get(inferredStart) ?? { start: inferredStart, support: 0, lines: [] };
     bucket.support += 1;
-    if (!boundaryIndexes.has(index)) {
-      bucket.interiorSupport += 1;
-      bucket.interiorCurrentIndexes.push(currentIndex);
-    }
     bucket.lines.push(normalized);
     votes.set(inferredStart, bucket);
   }
@@ -109,49 +89,12 @@ export function resolveRegionByStructuralConsensus({
     return { state: "unresolved", method: "ambiguous-structural-anchors" };
   }
 
-  const shifted = storedStartLine !== null && best.start + 1 !== storedStartLine;
-  let corroboratingBoundary = null;
-  if (shifted) {
-    const firstBoundary = normalizedLine(anchors?.first ?? "");
-    const lastBoundary = normalizedLine(anchors?.last ?? "");
-    const matchingBoundaries = currentBoundaryPairs.filter((candidate) =>
-      Number.isInteger(candidate.start) &&
-      Number.isInteger(candidate.end) &&
-      candidate.start === best.start &&
-      candidate.end >= candidate.start &&
-      candidate.end < normalizedCurrent.length &&
-      normalizedCurrent[candidate.start] === firstBoundary &&
-      normalizedCurrent[candidate.end] === lastBoundary
-    );
-    if (matchingBoundaries.length !== 1) {
-      return { state: "unresolved", method: "offset-shift-without-boundaries" };
-    }
-    const [matchingBoundary] = matchingBoundaries;
-    if (
-      matchingBoundary.end !== best.start + lastBoundaryOffset ||
-      !best.interiorCurrentIndexes.every(
-        (index) => index > matchingBoundary.start && index < matchingBoundary.end,
-      )
-    ) {
-      return { state: "unresolved", method: "offset-shift-without-boundaries" };
-    }
-
-    const hasCompetingInteriorConsensus = candidates.some(
-      (candidate) =>
-        candidate.start !== best.start &&
-        candidate.interiorSupport >= best.interiorSupport,
-    );
-    if (
-      best.interiorSupport < minSupportingLines ||
-      hasCompetingInteriorConsensus
-    ) {
-      return { state: "unresolved", method: "ambiguous-structural-anchors" };
-    }
-    corroboratingBoundary = matchingBoundary;
+  if (storedStartLine !== null && best.start + 1 !== storedStartLine) {
+    return { state: "unresolved", method: "offset-shift-without-boundaries" };
   }
 
   const start = best.start;
-  const end = corroboratingBoundary?.end ?? best.start + lineCount - 1;
+  const end = best.start + lineCount - 1;
   const content = currentLines.slice(start, end + 1).join("\n");
   const resolvedLineCount = end - start + 1;
   const duplicateRegions = candidates.filter(
@@ -166,9 +109,7 @@ export function resolveRegionByStructuralConsensus({
 
   return {
     state: "resolved",
-    method: corroboratingBoundary
-      ? "structural-anchors-with-boundaries"
-      : "structural-anchors",
+    method: "structural-anchors",
     content,
     startLine: start + 1,
     endLine: end + 1,

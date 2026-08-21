@@ -42,7 +42,7 @@ test("structural consensus succeeds on in-place first-line mutation with multipl
   assert.equal(result.startLine, 32);
 });
 
-test("production resolveRegion accepts an offset shift only when unique boundaries corroborate interior consensus", () => {
+test("production resolveRegion rejects offset shifts without independent end identity", () => {
   const previous = [
     "REGION START",
     "old mutable line",
@@ -75,11 +75,8 @@ test("production resolveRegion accepts an offset shift only when unique boundari
     anchors,
   });
 
-  assert.equal(result.state, "resolved");
-  assert.equal(result.method, "structural-anchors-with-boundaries");
-  assert.equal(result.content, currentRegion);
-  assert.equal(result.startLine, 8);
-  assert.equal(result.endLine, 12);
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.content, undefined);
 });
 
 test("production resolveRegion rejects offset consensus with competing boundary pairs", () => {
