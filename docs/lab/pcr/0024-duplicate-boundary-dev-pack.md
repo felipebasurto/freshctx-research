@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-22
 - Author / agent: Cloud Agent (duplicate-boundary-dev-pack)
-- Branch / PR: `cursor/duplicate-boundary-dev-pack-0118`
+- Branch / PR: `cursor/duplicate-boundary-dev-pack-0118` ([PR #19](https://github.com/felipebasurto/freshctx/pull/19))
 - Base SHA: `c2513a3807a4d306f2a19a551f97a2e7fb8d9612` (main after PCR 0021 squash)
 - Freeze commit: `b385d200a374ed4c9ade78a1fc7f4d32fdf6fb6f`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
