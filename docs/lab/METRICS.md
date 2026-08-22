@@ -53,6 +53,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-23 | (PCR 0048) Hermes CLI hook skip host investigation (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0048](pcr/0048-hermes-cli-hook-skip.md) |
 | 2026-08-23 | (PCR 0049) live Hermes CLI hook trace one-shot (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0049](pcr/0049-live-hermes-cli-hook-trace.md) |
 | 2026-08-23 | (PCR 0050) Hermes bridge extract import failure (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0050](pcr/0050-hermes-bridge-extract-import.md) |
+| 2026-08-23 | (PCR 0051) Live Hermes layout complete (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0051](pcr/0051-live-hermes-layout-complete.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -98,4 +99,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-v4-flash | 0 | Host read-only; fail-open hook delivery; box evidence PCR 0046 | [0048](pcr/0048-hermes-cli-hook-skip.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | Hook trace from box files; Hermes fires hooks; adapter None; HOOK_PROBE_OK is tool payload not rewrite | [0049](pcr/0049-live-hermes-cli-hook-trace.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 0 | Bridge import fail on hermes-only extract; in-tree control rc=0; not host skip | [0050](pcr/0050-hermes-bridge-extract-import.md) |
+| 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | Layout-complete plugin; select list; observe ran; state populated; collision on live logs | [0051](pcr/0051-live-hermes-layout-complete.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
