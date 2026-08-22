@@ -1,18 +1,20 @@
 {
   "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T07:14:02.584Z",
   "packId": "insert-before-unique-last-dev-v0.1",
-  "classification": "locally-frozen",
   "manifestPath": "bench/splits/insert-before-unique-last-dev-v0.1.json",
   "manifestSha256": "8ea4205a7e202cb942de7ebe4b9fcbb6f6219d3e2e469a744d628df594f70623",
   "freezeCommitSha": "423af65152124a454e1471e077e1035b9062dd17",
-  "implementationCommitSha": "423af65152124a454e1471e077e1035b9062dd17",
+  "implementationCommitSha": "fd990be472ddbe00b57b73083c39903e7ddd6880",
   "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
   "repositoryLocks": {
     "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
   },
-  "traceSetHash": "891528de065ab970e0a23b9f09753aeedb1f6ac427109660625f24ff9bb4afb2",
-  "resultSetHash": "a6da4d28e256206c661a184f7695b6364261ce132e537e3f951314eca796139e",
-  "reportHash": "9a1f07027ade3419b9539098ef5ac14dfe6422d8124d7bd248d3c4a1cc44d1b5",
-  "remoteAttestation": null,
-  "updatedAt": "2026-08-22T07:14:02.863Z"
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/insert-before/benchmark-fields-unique-last",
+    "go-tools/insert-before/benchmark-fields-unique-last-trailing-decoy",
+    "go-tools/insert-before/benchmark-renamed-header-unique-last"
+  ]
 }
