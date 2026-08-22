@@ -29,6 +29,18 @@ the box files directly; not `REPORT.md`.
 
 Session: `20260822_232051_a8cf8a` (`hermes-home-clean`).
 
+## Scored cell
+
+Thinker scores the **box files directly**; not `REPORT.md`.
+
+| field | value |
+|---|---|
+| Scored cell | `hermes-home-clean` **first turn** |
+| Session | `20260822_232051_a8cf8a` |
+| `hook_trace.jsonl` | select **list/2** then **list/5** (`n_read` 0 then 1); bridge rc=0 |
+| `on_turn_complete` | **yes** (observe rc=0) |
+| State file | `233d965fd31f58e35ce1.json` — `calls` + `tracked` (`HOOK_PROBE_OK`); not `{}` |
+
 ## Named why
 
 PCR 0050's import failure was **layout**, not bridge logic. With siblings
@@ -40,8 +52,10 @@ Hermes tool payload). `on_turn_complete` observe rc=0;
 `read_file` of `hook_probe.txt` containing `HOOK_PROBE_OK` — not empty `{}`.
 
 **Collision (honest):** a later `--continue` overwrote some live turn-1 request
-logs. Score from **gold captures** + current `hook_trace.jsonl`; do not hide the
-collision.
+logs. A parallel resume titled **layout-oneshot** against the first
+`hermes-home` lives under `artifacts/collision-resume/` and is **not** the
+scored cell. Score from **gold captures** + current `hook_trace.jsonl`; do not
+hide the collision.
 
 ## Hook table (from `artifacts/hook_trace.jsonl`)
 
@@ -69,8 +83,14 @@ overwritten by a later `--continue`; gold is authoritative for request shape.
 | artifact | shape | token / projection |
 |---|---|---|
 | `artifacts/gold/req_001.json` | 2 msgs | no `HOOK_PROBE_OK` token |
-| `artifacts/gold/req_002.json` | 5 msgs | `HOOK_PROBE_OK` present; **FreshCtx projection present** (rewrite, not only raw Hermes tool payload) |
+| `artifacts/gold/req_002.json` | 5 msgs | `HOOK_PROBE_OK` present via **FreshCtx rewrite** (not raw Hermes read payload); see below |
 | `artifacts/gold/state-after-turn1.json` | tracked | same `calls` / `tracked` shape as live state file |
+
+**`HOOK_PROBE_OK` in gold `req_002` is a FreshCtx rewrite, not the raw Hermes
+read.** The tool slot reads `[freshctx:fc_…] Current content is supplied in the
+live projection.` The token appears in the **extra projection user message**.
+The raw `read_file` payload lives in state `tracked`, not in the rewritten tool
+slot.
 
 ## Box evidence
 
@@ -82,7 +102,7 @@ overwritten by a later `--continue`; gold is authoritative for request shape.
 | Live `select_context` call 2 | return_kind=list; return_len=5; n_read=1; bridge_rc=0 |
 | Live `on_turn_complete` | observe rc=0; stdout `{"observedCalls":1}` |
 | State file | `hermes-home-clean/artifacts/freshctx-state/233d965fd31f58e35ce1.json` — **`calls` + `tracked` populated** for `read_file` of `hook_probe.txt` (`HOOK_PROBE_OK`); not `{}` |
-| Collision | later `--continue` overwrote some live turn-1 request logs; score from gold + `hook_trace.jsonl` |
+| Collision | later `--continue` overwrote some live turn-1 request logs; parallel resume under `artifacts/collision-resume/` is **not** the scored cell; score from gold + `hook_trace.jsonl` |
 | Model | `deepseek-chat` |
 | Host | `999703fd` untouched |
 
