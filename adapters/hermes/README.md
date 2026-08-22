@@ -5,15 +5,34 @@ Hermes compaction remains active. It adds `select_context()` for request-only
 projection and `on_turn_complete()` for observation. A short-lived Node bridge
 reuses the FreshCtx core and stores only tool-call-to-path mappings per session.
 
-For a source checkout of Hermes, install this preview by symlinking the whole
-directory into Hermes' documented context-engine plugin location. The symlink
-is important because `bridge.mjs` imports the FreshCtx core from this repository:
+## Install (layout-complete)
+
+`bridge.mjs` imports sibling modules from this repository (`request-prune.mjs`
+and `src/`). Symlinking only `adapters/hermes` into Hermes leaves those imports
+unreachable and the bridge exits 1 — live `select_context` returns `None`.
+
+From a FreshCtx source checkout, run the install script against your Hermes
+Agent `plugins/` directory (the folder that contains `context_engine/`):
 
 ```bash
-ln -s "$PWD/adapters/hermes" "/path/to/hermes-agent/plugins/context_engine/freshctx"
+node /path/to/freshctx/adapters/hermes/install.mjs /path/to/hermes-agent/plugins
 ```
 
-Then select it in Hermes configuration:
+This stages three symlinks by default:
+
+| Hermes path | FreshCtx source |
+|---|---|
+| `plugins/context_engine/freshctx/` | `adapters/hermes/` |
+| `plugins/context_engine/request-prune.mjs` | `adapters/request-prune.mjs` |
+| `plugins/src/` | `src/` |
+
+Verify the staged layout (fails on hermes-only extracts):
+
+```bash
+node /path/to/freshctx/adapters/hermes/verify-layout.mjs /path/to/hermes-agent/plugins
+```
+
+Then select the engine in Hermes configuration:
 
 ```yaml
 context:
@@ -22,8 +41,8 @@ context:
 
 Requirements: Node.js 22+, a FreshCtx source checkout, and a Hermes version
 whose `ContextEngine` exposes `select_context()` and `on_turn_complete()`.
-Packaging through Hermes' user-plugin registry is a v0.3 gate; this command is
-deliberately a source-development install, not a production installer.
+Packaging through Hermes' user-plugin registry is a v0.3 gate; this install
+script is the source-development path, not a registry publish.
 
 The bridge recognizes OpenAI-format `read`, `read_file`, and `read_text_file`
 tool calls. It synchronizes whole text files, rejects root escapes, symlinks
