@@ -51,6 +51,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0044) live Hermes ctor re-run (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
 | 2026-08-22 | (PCR 0047) live Hermes newline-fixed cell B rerun (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0047](pcr/0047-live-hermes-newline-cell-b.md) |
 | 2026-08-23 | (PCR 0048) Hermes CLI hook skip host investigation (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0048](pcr/0048-hermes-cli-hook-skip.md) |
+| 2026-08-23 | (PCR 0049) live Hermes CLI hook trace one-shot (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0049](pcr/0049-live-hermes-cli-hook-trace.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -94,4 +95,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-22 | `4ccb0083` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 16 | Official Pi hook pi-cli; 8 cells × fresh/native; not pi-adapter-replay | [0043](pcr/0043-live-pi-cli-official-hook.md) |
 | 2026-08-22 | `4ccb0083` | `999703fd` | — | deepseek-v4-flash | 4 | Newline-fixed B/B2 only; B region miss; B2 file-scope fresh; not 0041 cell B | [0047](pcr/0047-live-hermes-newline-cell-b.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-v4-flash | 0 | Host read-only; fail-open hook delivery; box evidence PCR 0046 | [0048](pcr/0048-hermes-cli-hook-skip.md) |
+| 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | Hook trace from box files; Hermes fires hooks; adapter None; HOOK_PROBE_OK is tool payload not rewrite | [0049](pcr/0049-live-hermes-cli-hook-trace.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |

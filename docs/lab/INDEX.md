@@ -48,3 +48,4 @@
 | [0044](pcr/0044-live-hermes-ctor-rerun.md) | 2026-08-22 | Live Hermes ctor re-run (post-ctor-fix, gold miss) | `synthetic`; `live-host`; `hermes-fresh`; `live-ctor`; `post-ctor-fix`; `pre-lifecycle-fix` | review |
 | [0047](pcr/0047-live-hermes-newline-cell-b.md) | 2026-08-22 | Live Hermes newline-fixed cell B rerun (region miss) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `newline-fixed`; `region-miss` | review |
 | [0048](pcr/0048-hermes-cli-hook-skip.md) | 2026-08-23 | Hermes CLI hook skip (host-side, fail-open delivery) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `host-investigation`; `fail-open-delivery` | review |
+| [0049](pcr/0049-live-hermes-cli-hook-trace.md) | 2026-08-23 | Live Hermes CLI hook trace (one-shot) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `hook-trace`; `fail-open-delivery` | review |
