@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-22
 - Author / agent: Cloud Agent (insert-before-unique-last-dev-pack)
-- Branch / PR: `cursor/lab-insert-before-unique-last-7cdc`
+- Branch / PR: `cursor/lab-insert-before-unique-last-7cdc` ([PR #12](https://github.com/felipebasurto/freshctx/pull/12))
 - Base SHA: `ed4e0528eee77d78cde28c3c0f21afbf653b9984` (main after PCR 0017 squash)
 - Freeze commit: `423af65152124a454e1471e077e1035b9062dd17`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
