@@ -45,6 +45,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0037) always prune unserved reads | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0037](pcr/0037-always-prune-unserved-reads.md) |
 | 2026-08-22 | (PCR 0038) holdout adapter bake-off | 137/137 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0038](pcr/0038-holdout-adapter-bakeoff.md) |
 | 2026-08-22 | (PCR 0040) empty envelope without boilerplate | 138/138 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) |
+| 2026-08-22 | (PCR 0041) live DeepSeek Hermes session (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0041](pcr/0041-live-deepseek-hermes-session.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -75,3 +76,13 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-21 | (PCR 0014) | `public-repo-holdout` | Stop pinning live unsealed jsonl; resultSetHash null; jsonl stays gitignored; historical holdout.md unchanged. | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
 Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`, `bench/reports/native-holdout.md`, `bench/reports/holdout-adapter-bakeoff.md`.
+
+## Live host session
+
+Hermes here is NousResearch/hermes-agent, not a Hermes LLM. Model is DeepSeek.
+Official score is token-in-request. Cell B is a confounded region test (literal backslash-n). Not a paper result.
+
+| UTC | FreshCtx | Hermes Agent | Model requested / response | Cells | Note | PCR |
+|---|---|---|---|---|---|---|
+| 2026-08-22 | `4ccb0083` | `999703fd` | deepseek-chat / deepseek-v4-flash | 15 | File-scope current vs native stale; cell B invalid; not a paper result | [0041](pcr/0041-live-deepseek-hermes-session.md) |
+| 2026-08-22 | `fa6e2011` base | `999703fd` | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |

@@ -1,0 +1,9 @@
+FreshCtx live session commands (no secrets)
+confirmed SHAs: freshctx 4ccb008385e223c0e67eb95080d5398dc3f8cc5e, hermes 999703fd43ab6d75c4a5c7bc8b610dd73ecece76, pi c49906ec77788625aacbdc53ebca6fbe65bd20f5
+ln -s adapters/hermes -> hosts/hermes/plugins/context_engine/freshctx
+uv venv /workspace/freshctx-live-2026-08-22/.venv
+uv pip install -e hosts/hermes --python that venv
+python logs/ping_deepseek.py -> 200 deepseek-v4-flash PONG 1179ms
+python logs/test_bridge.py then logs/run_live.py then logs/extra_b2.py
+never set FRESHCTX_CAPTURE_OK
+never used loopback capture server

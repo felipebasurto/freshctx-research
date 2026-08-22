@@ -1,0 +1,18 @@
+{
+  "cell": "A-append",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\nALPHA_OLD_MARKER_7f3a unique stale token\\nALPHA_NEW_MARKER_9c2b appended live\\n\\n</freshctx-unit>\\n",
+    "ALPHA_NEW_MARKER_9c2b": "nique stale token\\nALPHA_NEW_MARKER_9c2b appended live\\n\\n</freshctx-unit>\\n</freshctx>\"}]"
+  },
+  "stale_bytes": false,
+  "current_present": true,
+  "request_bytes": 1129,
+  "transform_ms": 72.87,
+  "model_http_ms": 1762.27,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "I can see the following unique marker tokens in the file: **ALPHA_OLD_MARKER_7f3a** and **ALPHA_NEW_MARKER_9c2b**. There are no BETA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens present. The file appears **FRESH** because it contains an \"appended live\" line with a new marker (ALPHA_NEW_MARKER_9c2b) alongside the old one, indicating recent modification rather than a stale snapshot.",
+  "error": null
+}

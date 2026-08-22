@@ -1,0 +1,18 @@
+{
+  "cell": "B2-file-scope-interior",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "BETA_OLD_INTERIOR": null,
+    "BETA_NEW_INTERIOR": "\\\">\\nline1 header\\\\nBETA_NEW_INTERIOR keep this line unique\\\\nline3 footer\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]"
+  },
+  "stale_bytes": false,
+  "current_present": true,
+  "request_bytes": 1104,
+  "transform_ms": 64.7,
+  "model_http_ms": 1917.61,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "The only unique marker token present in the file is **BETA_NEW_INTERIOR** (which contains both BETA_ and NEW). No ALPHA_, GAMMA_, DELTA_, or EPSILON_ tokens appear. The file looks **FRESH** \u2014 it has a single, clearly defined interior line with a NEW marker, no stale or duplicated marker clutter.",
+  "error": null
+}

@@ -1,0 +1,19 @@
+{
+  "cell": "D-two-files",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "DELTA_FILE1_OLD": null,
+    "DELTA_FILE1_NEW": "tent-bytes=\\\"35\\\">\\nDELTA_FILE1_NEW this file changed\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]",
+    "DELTA_FILE2_STABLE": "tent-bytes=\\\"45\\\">\\nDELTA_FILE2_STABLE this file stays the same\\\\n\\n</freshctx-unit>\\n<freshctx-unit id=\\\"fc_82aceb64c"
+  },
+  "stale_bytes": false,
+  "current_present": true,
+  "request_bytes": 1665,
+  "transform_ms": 71.18,
+  "model_http_ms": 1766.25,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "I see the following unique marker tokens: **DELTA_FILE2_STABLE** (from pair_d2.txt) and **DELTA_FILE1_NEW** (from pair_d1.txt). No ALPHA_, BETA_, GAMMA_, EPSILON_, or NEW tokens are present.\n\nThe files look **FRESH** \u2014 both are current live projections with no stale or unresolved content, and the markers indicate one file is stable while the other has been updated.",
+  "error": null
+}

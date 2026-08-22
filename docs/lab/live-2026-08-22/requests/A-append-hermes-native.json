@@ -1,0 +1,18 @@
+{
+  "cell": "A-append",
+  "mode": "hermes-native",
+  "snippets": {
+    "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\nALPHA_OLD_MARKER_7f3a unique stale token\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique marker",
+    "ALPHA_NEW_MARKER_9c2b": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 555,
+  "transform_ms": 0.08,
+  "model_http_ms": 1548.28,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the marker token: `ALPHA_OLD_MARKER_7f3a` (which contains the `ALPHA_` prefix). No `BETA_`, `GAMMA_`, `DELTA_`, `EPSILON_`, or `NEW` tokens are present in the file content.\n\nThe file looks **STALE** because it contains the `ALPHA_OLD_MARKER_7f3a` token, which explicitly indicates an old/outdated marker.",
+  "error": null
+}

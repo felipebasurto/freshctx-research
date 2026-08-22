@@ -1,0 +1,18 @@
+{
+  "cell": "B2-file-scope-interior",
+  "mode": "hermes-native",
+  "snippets": {
+    "BETA_OLD_INTERIOR": "t\": \"line1 header\\\\nBETA_OLD_INTERIOR keep this line unique\\\\nline3 footer\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote e",
+    "BETA_NEW_INTERIOR": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 566,
+  "transform_ms": 0.06,
+  "model_http_ms": 1718.95,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the following unique marker tokens in the file: **BETA_OLD_INTERIOR** (no ALPHA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens are present).\n\nThe file looks **STALE** because it contains only the old BETA marker and lacks any NEW or other fresh-generation tokens.",
+  "error": null
+}

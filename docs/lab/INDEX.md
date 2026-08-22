@@ -35,9 +35,11 @@
 | [0031](pcr/0031-move-cross-file-dev-pack.md) | 2026-08-22 | move-cross-file development pack (not a public benchmark) | `synthetic`; `move-cross-file-dev` | review |
 | [0032](pcr/0032-native-host-context-bakeoff.md) | 2026-08-22 | Native host context bake-off scaffold on holdout v0.1 | `synthetic`; `public-repo-holdout`; `native-host` | review |
 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) | 2026-08-22 | Budget-pressure native bake-off (Hermes compress photo) | `synthetic`; `budget-pressure-dev`; `native-host` | review |
+| [0034](pcr/0034-budget-pressure-live-summarizer.md) | 2026-08-22 | Budget-pressure live DeepSeek summarizer (not merged) | `synthetic`; `budget-pressure-dev`; `native-host`; `live-model` | review |
 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) | 2026-08-22 | Budget-pressure Hermes FreshCtx adapter (hermes-fresh) | `synthetic`; `budget-pressure-dev`; `hermes-fresh` | review |
 | [0036](pcr/0036-budget-pressure-adapter-prune.md) | 2026-08-22 | Budget-pressure adapter request prune under 4k | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
 | [0037](pcr/0037-always-prune-unserved-reads.md) | 2026-08-22 | Always prune unserved read pairs on projection | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
 | [0038](pcr/0038-holdout-adapter-bakeoff.md) | 2026-08-22 | Holdout v0.1 adapter bake-off after prune | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0039](pcr/0039-holdout-corvus-file.md) | 2026-08-22 | Holdout v0.1 corvus-file column on adapter bake-off | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) | 2026-08-22 | Empty envelope without boilerplate prose on delete cells | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
+| [0041](pcr/0041-live-deepseek-hermes-session.md) | 2026-08-22 | Live DeepSeek session on Hermes Agent + FreshCtx | `synthetic`; `live-host`; `hermes-fresh` | review |

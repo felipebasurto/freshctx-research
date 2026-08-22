@@ -1,0 +1,19 @@
+{
+  "cell": "D-two-files",
+  "mode": "hermes-native",
+  "snippets": {
+    "DELTA_FILE1_OLD": " \"cD1\", \"content\": \"DELTA_FILE1_OLD this file will change\\\\n\"}, {\"role\": \"assistant\", \"content\": \"\", \"tool_calls\": ",
+    "DELTA_FILE1_NEW": null,
+    "DELTA_FILE2_STABLE": " \"cD2\", \"content\": \"DELTA_FILE2_STABLE this file stays the same\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique "
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 803,
+  "transform_ms": 0.06,
+  "model_http_ms": 1928.16,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the following unique marker tokens: **DELTA_FILE1_OLD** and **DELTA_FILE2_STABLE**. No ALPHA_, BETA_, GAMMA_, EPSILON_, or NEW tokens are present.\n\nThe files look **STALE** \u2014 they contain only DELTA markers, and the first file explicitly says \"this file will change\" while the second says \"this file stays the same,\" suggesting an old test state rather than a fresh, updated one.",
+  "error": null
+}

@@ -1,0 +1,18 @@
+{
+  "cell": "B-interior",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "BETA_OLD_INTERIOR": " 2, \\\"selector\\\": \\\"BETA_OLD_INTERIOR\\\"}}}]}, {\"role\": \"tool\", \"tool_call_id\": \"cB\", \"content\": \"[freshctx:fc_c7c6f8",
+    "BETA_NEW_INTERIOR": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 806,
+  "transform_ms": 71.22,
+  "model_http_ms": 2160.63,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "I can see the file `region_b.txt` was read, but the actual content was not displayed in the visible output \u2014 only a system note about \"live projection\" appeared. Since no marker tokens (ALPHA_, BETA_, GAMMA_, DELTA_, EPSILON_, or NEW) are visible in the provided text, I cannot quote any unique markers.\n\nBased on the absence of any visible content and the system note indicating a projection rather than raw text, the files appear **STALE** \u2014 there is no fresh data or marker tokens to confirm curre",
+  "error": null
+}

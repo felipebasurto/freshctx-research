@@ -1,0 +1,18 @@
+{
+  "cell": "E-large-pressure",
+  "mode": "hermes-native",
+  "snippets": {
+    "EPSILON_OLD_MARKER": ": \"cE\", \"content\": \"EPSILON_OLD_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons",
+    "EPSILON_NEW_MARKER": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 8944,
+  "transform_ms": 0.12,
+  "model_http_ms": 1585.08,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": true,
+  "mode_detail": "compress",
+  "model_reply": "I see the following unique marker tokens in the file: **EPSILON_OLD_MARKER** (from `large_e.txt`). No ALPHA_, BETA_, GAMMA_, DELTA_, or NEW markers are present in the content I read.\n\nThe file looks **STALE** because it contains an explicit \"OLD\" marker and no \"NEW\" markers, indicating it has not been refreshed.",
+  "error": null
+}

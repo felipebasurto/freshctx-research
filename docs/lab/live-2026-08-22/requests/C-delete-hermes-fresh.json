@@ -1,0 +1,17 @@
+{
+  "cell": "C-delete",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "GAMMA_DELETE_MARKER": null
+  },
+  "stale_bytes": false,
+  "current_present": true,
+  "request_bytes": 712,
+  "transform_ms": 65.81,
+  "model_http_ms": 1951.49,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "I cannot see any actual file content in the provided context \u2014 the read_file result only shows a system note about \"live projection\" with no visible text, and the freshctx block is empty. Therefore, I cannot quote any marker tokens (ALPHA_, BETA_, GAMMA_, DELTA_, EPSILON_, or NEW). Based on the absence of any readable content, the files appear **STALE** (or unreadable), as no fresh data was delivered.",
+  "error": null
+}

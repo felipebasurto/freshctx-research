@@ -1,0 +1,1 @@
+{"ok": true, "status": 200, "requested_model": "deepseek-chat", "response_model": "deepseek-v4-flash", "host": "api.deepseek.com", "http_ms": 1178.8, "content": "PONG"}
