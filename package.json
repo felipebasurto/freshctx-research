@@ -30,6 +30,9 @@
     "repos:fetch:smoke": "node scripts/repos.mjs fetch --tier=smoke",
     "repos:fetch:holdout": "node scripts/repos.mjs fetch --ids=go-tools,neovim",
     "repos:verify": "node scripts/repos.mjs verify",
+    "hosts:fetch": "node scripts/hosts.mjs fetch",
+    "hosts:verify": "node scripts/hosts.mjs verify",
+    "ctxbench:native-holdout": "node bench/native-holdout.mjs",
     "holdout:freeze": "node scripts/holdout-protocol.mjs freeze",
     "holdout:generate": "node scripts/holdout-protocol.mjs generate",
     "holdout:run": "node scripts/holdout-protocol.mjs run",
@@ -37,7 +40,7 @@
     "holdout:verify": "node scripts/holdout-verify.mjs",
     "holdout:ci-guard": "node scripts/holdout-ci-guard.mjs",
     "holdout:attest-stub": "node scripts/holdout-attest-stub.mjs",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs"
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && python3 -m py_compile bench/hermes-native-bridge.py"
   },
   "keywords": [
     "agents",

@@ -59,9 +59,13 @@ export function extractCodeUnits(payloadText, baseline) {
     return units;
   }
 
-  if (baseline === "append-only" || baseline === "observation-mask") {
+  if (
+    baseline === "append-only"
+    || baseline === "pi-native"
+    || baseline === "hermes-native"
+    || baseline === "hermes-native-precompress"
+  ) {
     const readPattern = /\[freshctx:([^\s]+)\s+path=([^\]]+)\]/gu;
-    if (baseline === "observation-mask") return units;
     const blocks = payloadText.split(/\n\n/u);
     for (const block of blocks) {
       if (block.startsWith("TASK:")) continue;
@@ -75,6 +79,10 @@ export function extractCodeUnits(payloadText, baseline) {
         bytes: Buffer.byteLength(block, "utf8"),
       });
     }
+  }
+
+  if (baseline === "observation-mask") {
+    return units;
   }
 
   return units;

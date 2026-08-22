@@ -38,6 +38,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0029) grow-shrink exact-decoy door change | 109/109 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0029](pcr/0029-grow-shrink-exact-decoy-door.md) |
 | 2026-08-22 | (PCR 0030) stored-start leftover fail-close door change | 110/110 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0030](pcr/0030-stored-start-leftover-fail-close-door.md) |
 | 2026-08-22 | (PCR 0031) move-cross-file-dev-v0.1 pack | 111/111 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0031](pcr/0031-move-cross-file-dev-pack.md) |
+| 2026-08-22 | (PCR 0032) native host context bake-off scaffold | 114/114 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0032](pcr/0032-native-host-context-bakeoff.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -57,6 +58,7 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-20 | (PCR 0006) | `public-repo-smoke` / `replay` | Region-grain Pi/Hermes: exact-current matches core-region on append/interior-edit/move-in-file (1.000); projection-bytes match core-region (0 delta); vs PCR 0003 file-grain exact-current 0 and +350–6859 bytes. | [0006](pcr/0006-region-grain-adapters.md) |
 | 2026-08-20 | (PCR 0007) | `public-repo-holdout` | First holdout v0.1 slice (unsealed-regression-development-pack; not preregistered — see PCR 0009): go-tools `ed9ed918…`, neovim `2dd6e9d6…`; 10 traces; freshctx-region gate failure on go-tools interior-edit (recall 0); 9/10 cells pass; not SOTA. | [0007](pcr/0007-sealed-holdout-protocol.md) |
 | 2026-08-20 | (PCR 0008) | `public-repo-holdout` / `replay` | Pi/Hermes holdout replay: 0-byte delta vs core-region on all 10 cells; go-tools interior-edit recall 0 reproduced on Pi and Hermes (not silently passed); Hermes 0-byte delta vs Pi; not SOTA. | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
+| 2026-08-22 | (PCR 0032) | `public-repo-holdout` / `native-host` | Native pi/hermes context bake-off scaffold on holdout v0.1; native payloads differ from adapter on all 10 cells; Hermes native-no-op (under compression threshold); not SOTA. | [0032](pcr/0032-native-host-context-bakeoff.md) |
 | 2026-08-21 | (PCR 0014) | `public-repo-holdout` | Stop pinning live unsealed jsonl; resultSetHash null; jsonl stays gitignored; historical holdout.md unchanged. | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
-Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`.
+Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`, `bench/reports/native-holdout.md`.

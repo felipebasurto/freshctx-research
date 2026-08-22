@@ -33,3 +33,4 @@
 | [0029](pcr/0029-grow-shrink-exact-decoy-door.md) | 2026-08-22 | grow-shrink exact-decoy door change (not a public benchmark) | `synthetic`; `grow-shrink-exact-decoy-dev` | review |
 | [0030](pcr/0030-stored-start-leftover-fail-close-door.md) | 2026-08-22 | stored-start leftover fail-close door change (not a public benchmark) | `synthetic`; `stored-start-leftover-fail-close-dev` | review |
 | [0031](pcr/0031-move-cross-file-dev-pack.md) | 2026-08-22 | move-cross-file development pack (not a public benchmark) | `synthetic`; `move-cross-file-dev` | review |
+| [0032](pcr/0032-native-host-context-bakeoff.md) | 2026-08-22 | Native host context bake-off scaffold on holdout v0.1 | `synthetic`; `public-repo-holdout`; `native-host` | review |

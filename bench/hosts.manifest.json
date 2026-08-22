@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "freezeRule": "Resolve each host ref to an immutable commit in hosts.lock.json before native bake-off runs.",
+  "hosts": [
+    {
+      "id": "pi",
+      "url": "https://github.com/earendil-works/pi.git",
+      "ref": "c49906ec77788625aacbdc53ebca6fbe65bd20f5",
+      "contextModule": "packages/coding-agent/src/core/extensions/runner.ts",
+      "license": "MIT"
+    },
+    {
+      "id": "hermes",
+      "url": "https://github.com/NousResearch/hermes-agent.git",
+      "ref": "999703fd43ab6d75c4a5c7bc8b610dd73ecece76",
+      "contextModule": "agent/context_engine.py",
+      "license": "MIT"
+    }
+  ]
+}
