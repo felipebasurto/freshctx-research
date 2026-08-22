@@ -22,21 +22,30 @@ import {
   runInsertBeforeUniqueLastLab,
 } from "../bench/insert-before-unique-last-lab.mjs";
 import {
+  generateGrowInsideLabTraces,
+  growInsideLabManifestDraft,
+  runGrowInsideLab,
+} from "../bench/grow-inside-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
   generatePack,
+  readManifest,
   reportPack,
+  resolvePackPaths,
   runPack,
   syntheticFixtureRun,
   syntheticFixtureTrace,
 } from "../bench/holdout-protocol.mjs";
+import { readPackState } from "../bench/holdout-state.mjs";
 
 const TRACE_GENERATORS = {
   "insert-before-lab": generateInsertBeforeLabTraces,
   "insert-before-interior-lab": generateInsertBeforeInteriorLabTraces,
   "insert-before-tie-lab": generateInsertBeforeTieLabTraces,
   "insert-before-unique-last-lab": generateInsertBeforeUniqueLastLabTraces,
+  "grow-inside-lab": generateGrowInsideLabTraces,
 };
 
 const TRACE_RUNNERS = {
@@ -44,12 +53,14 @@ const TRACE_RUNNERS = {
   "insert-before-interior-lab": runInsertBeforeInteriorLab,
   "insert-before-tie-lab": runInsertBeforeTieLab,
   "insert-before-unique-last-lab": runInsertBeforeUniqueLastLab,
+  "grow-inside-lab": runGrowInsideLab,
 };
 
 const MANIFEST_DRAFTS = {
   "insert-before-interior-lab": insertBeforeInteriorLabManifestDraft,
   "insert-before-tie-lab": insertBeforeTieLabManifestDraft,
   "insert-before-unique-last-lab": insertBeforeUniqueLastLabManifestDraft,
+  "grow-inside-lab": growInsideLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -70,9 +81,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
@@ -155,7 +166,26 @@ async function main() {
     }
 
     if (phase === "report") {
-      const result = await reportPack(ROOT, manifestPath, defaultReportFormatter);
+      const manifest = await readManifest(ROOT, manifestPath);
+      const pack = resolvePackPaths(ROOT, manifest);
+      const state = await readPackState(ROOT, pack);
+      const formatter = (args) => {
+        if (manifest.packId !== "grow-inside-dev-v0.1") {
+          return defaultReportFormatter(args);
+        }
+        return defaultReportFormatter({
+          ...args,
+          generateProvenance: {
+            ...args.generateProvenance,
+            traceSetHash: state?.traceSetHash,
+          },
+          runProvenance: {
+            ...args.runProvenance,
+            resultSetHash: state?.resultSetHash,
+          },
+        });
+      };
+      const result = await reportPack(ROOT, manifestPath, formatter);
       process.stdout.write(
         `${JSON.stringify(
           {
