@@ -1,6 +1,12 @@
 import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
+import {
+  dropStaleFillerToolPairs,
+  isStaleFillerPath,
+  resolveAdapterBudgetChars,
+  shouldPruneAdapterRequest,
+} from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
 export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
@@ -159,9 +165,17 @@ export async function selectContext(payload) {
     };
   }
 
+  const budgetChars = resolveAdapterBudgetChars({
+    budgetChars: payload.budgetChars,
+    budgetTokens: payload.budgetTokens,
+    defaultBudget: DEFAULT_BUDGET_CHARS,
+  });
+  const pruneRequest = shouldPruneAdapterRequest(budgetChars);
+
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
   for (const [callId, observation] of Object.entries(tracked)) {
+    if (pruneRequest && isStaleFillerPath(observation.path)) continue;
     try {
       const trackArgs = observation.scope === "region"
         ? {
@@ -196,23 +210,17 @@ export async function selectContext(payload) {
     return { ...structuredClone(message), content: stableReadMarker(unit) };
   });
 
-  const configuredBudget = Number(process.env.FRESHCTX_BUDGET_CHARS ?? payload.budgetChars);
-  const derivedBudget = Math.min(
-    32_000,
-    Math.max(4_000, Math.floor(Number(payload.budgetTokens ?? 0) * 4 * 0.15)),
-  );
-  const budgetChars = Number.isFinite(configuredBudget) && configuredBudget > 0
-    ? configuredBudget
-    : derivedBudget;
-
   const projection = engine.project({
     task: taskFrom(payload),
     budgetChars,
   });
 
   const projectionText = projection.text;
+  const assembled = pruneRequest
+    ? dropStaleFillerToolPairs(rewritten, { readTools: READ_TOOLS })
+    : rewritten;
   return {
-    messages: [...rewritten, { role: "user", content: projectionText }],
+    messages: [...assembled, { role: "user", content: projectionText }],
     selected: projection.selected.length,
     unresolved: projection.omitted.filter((item) => item.reason === "unresolved").length,
     applied: engine.registry.list().length > 0,

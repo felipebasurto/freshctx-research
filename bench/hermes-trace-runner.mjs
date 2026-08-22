@@ -120,6 +120,7 @@ export async function runHermesTrace(trace, { workspaceRoot, stateFile } = {}) {
           structuredClone(captureMessages),
           ctx,
           {
+            budgetChars: event.budgetChars,
             budgetTokens: Math.ceil((event.budgetChars ?? 12_000) / 4),
             incomingMessage,
           },

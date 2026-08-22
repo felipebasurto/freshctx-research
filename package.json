@@ -35,6 +35,7 @@
     "ctxbench:native-holdout": "node bench/native-holdout.mjs",
     "ctxbench:native-budget-pressure": "node bench/native-budget-pressure.mjs",
     "ctxbench:budget-pressure-hermes-fresh": "node bench/budget-pressure-hermes-fresh.mjs",
+    "ctxbench:budget-pressure-adapter-prune": "node bench/budget-pressure-adapter-prune.mjs",
     "holdout:freeze": "node scripts/holdout-protocol.mjs freeze",
     "holdout:generate": "node scripts/holdout-protocol.mjs generate",
     "holdout:run": "node scripts/holdout-protocol.mjs run",
@@ -42,7 +43,7 @@
     "holdout:verify": "node scripts/holdout-verify.mjs",
     "holdout:ci-guard": "node scripts/holdout-ci-guard.mjs",
     "holdout:attest-stub": "node scripts/holdout-attest-stub.mjs",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && python3 -m py_compile bench/hermes-native-bridge.py"
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && python3 -m py_compile bench/hermes-native-bridge.py"
   },
   "keywords": [
     "agents",

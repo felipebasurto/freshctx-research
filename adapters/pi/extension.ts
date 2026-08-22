@@ -4,6 +4,12 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
+import {
+  dropStaleFillerToolPairs,
+  isStaleFillerPath,
+  resolveAdapterBudgetChars,
+  shouldPruneAdapterRequest,
+} from "../request-prune.mjs";
 
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
 
@@ -93,6 +99,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     if (event.toolName !== "read" || event.isError) return;
     const requestedPath = event.input.path;
     if (typeof requestedPath !== "string") return;
+    if (isStaleFillerPath(requestedPath)) return;
 
     try {
       const file = await safeWorkspaceFile(ctx.cwd, requestedPath);
@@ -137,19 +144,28 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       await engine.refresh(async (filePath) =>
         (await safeWorkspaceFile(ctx.cwd, filePath)).content,
       );
-      const projection = engine.project({
-        task: lastUserTask(event.messages),
-        budgetChars: (() => {
+      const budgetChars = resolveAdapterBudgetChars({
+        budgetChars: (event as { budgetChars?: number }).budgetChars,
+        budgetTokens: (event as { budgetTokens?: number }).budgetTokens,
+        defaultBudget: (() => {
           const configured = Number(process.env.FRESHCTX_BUDGET_CHARS ?? 24_000);
           return Number.isFinite(configured) && configured > 0 ? configured : 24_000;
         })(),
       });
+      const pruneRequest = shouldPruneAdapterRequest(budgetChars);
+      const projection = engine.project({
+        task: lastUserTask(event.messages),
+        budgetChars,
+      });
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
+      const assembled = pruneRequest
+        ? dropStaleFillerToolPairs(rewritten, { readTools: new Set(["read"]) })
+        : rewritten;
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
 
       return {
         messages: [
-          ...rewritten,
+          ...assembled,
           {
             role: "user",
             content: [{ type: "text", text: projection.text }],
