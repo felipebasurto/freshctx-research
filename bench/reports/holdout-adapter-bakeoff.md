@@ -5,7 +5,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 - pack: `holdout-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `98e7151fe04811c1943157a427becf6efdac1cad`
+- HEAD: `b06d9c8643bee8d28e7ab6105555c299751dcee1`
 - merge-base vs e45b2cdb: `e45b2cdbf15aec2b4133e232e5b005dd832f49cb`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -27,7 +27,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** Hermes native stayed **native-no-op** on all 10 cells (holdout window below `should_compress` threshold; no Hermes quality number claimed).
 
-Generated: 2026-08-22T18:51:43.924Z
+Generated: 2026-08-22T18:51:49.334Z
 
 ## Per-cell metrics (10 traces)
 
