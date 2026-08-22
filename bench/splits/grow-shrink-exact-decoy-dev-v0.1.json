@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "grow-shrink-exact-decoy-dev-v0.1",
+  "benchmarkVersion": "grow-shrink-exact-decoy-dev-v0.1",
+  "label": "grow-shrink-exact-decoy-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "grow-shrink-exact"
+  ],
+  "seeds": {
+    "traceSelection": "grow-shrink-exact-decoy-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/grow-shrink-exact-decoy-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/grow-shrink-exact-decoy-dev-v0.1",
+  "reportsDir": "bench/packs/grow-shrink-exact-decoy-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/grow-shrink-exact-decoy-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T15:31:25.008Z",
+  "implementationCommitSha": "e361b2f537e2fcfd5d002f760b5c4607260e6c7d",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "d70d92773da8ae71a8c6f1398b0f1ea346dfe83ee1ed8c7764d36668bb00d30c"
+}

@@ -67,6 +67,144 @@ function boundariesMatchAtStoredStart(currentLines, anchors, lineCount) {
   return normalized[storedStart] === first && normalized[storedEnd] === last;
 }
 
+function firstMatchesAtStoredStart(currentLines, anchors) {
+  const expectedStartLine = anchors?.startLine;
+  const first = anchors?.first ?? "";
+  if (expectedStartLine == null || first.length === 0) return false;
+
+  const storedStart = expectedStartLine - 1;
+  if (storedStart < 0 || storedStart >= currentLines.length) return false;
+  return normalizedLine(currentLines[storedStart]) === first;
+}
+
+function prefixStableBeforeLast(previousLines, candidateLines, expectedLineCount) {
+  if (expectedLineCount <= 1 || previousLines.length === 0) return false;
+  const prefixLength = expectedLineCount - 1;
+  return previousLines
+    .slice(0, prefixLength)
+    .every((line, index) => normalizedLine(line) === normalizedLine(candidateLines[index] ?? ""));
+}
+
+function hasNonPrefixLookalikeAtStoredStart(currentLines, anchors, lineCount, previousLines) {
+  const storedStart = anchors.startLine - 1;
+  const last = anchors?.last ?? "";
+  if (last.length === 0) return false;
+
+  const normalized = currentLines.map(normalizedLine);
+  for (
+    let end = storedStart;
+    end < storedStart + lineCount && end < normalized.length;
+    end += 1
+  ) {
+    if (normalized[end] !== last) continue;
+    const span = end - storedStart + 1;
+    if (span >= lineCount) continue;
+    const block = currentLines.slice(storedStart, end + 1);
+    const isPrefix = block.every(
+      (line, index) => normalizedLine(line) === normalizedLine(previousLines[index] ?? ""),
+    );
+    if (!isPrefix) return true;
+  }
+
+  return false;
+}
+
+function contiguousPrefixLengthAt(currentLines, storedStart, previousLines) {
+  let prefixLength = 0;
+  while (
+    prefixLength < previousLines.length &&
+    storedStart + prefixLength < currentLines.length &&
+    normalizedLine(currentLines[storedStart + prefixLength]) ===
+      normalizedLine(previousLines[prefixLength])
+  ) {
+    prefixLength += 1;
+  }
+  return prefixLength;
+}
+
+function inPlaceGrowAtStoredStart(currentLines, anchors, lineCount, previous) {
+  const expectedStartLine = anchors?.startLine;
+  const last = anchors?.last ?? "";
+  if (expectedStartLine == null || last.length === 0) return false;
+  if (!firstMatchesAtStoredStart(currentLines, anchors)) return false;
+
+  const storedStart = expectedStartLine - 1;
+  const oldStoredEnd = storedStart + lineCount - 1;
+  const normalized = currentLines.map(normalizedLine);
+  if (oldStoredEnd >= normalized.length || normalized[oldStoredEnd] === last) return false;
+
+  const previousLines = splitLines(previous);
+  const prefixLength = contiguousPrefixLengthAt(currentLines, storedStart, previousLines);
+  if (prefixLength === 0) return false;
+
+  for (let end = oldStoredEnd + 1; end < normalized.length; end += 1) {
+    if (normalized[end] !== last) continue;
+    const span = end - storedStart + 1;
+    if (span <= lineCount) continue;
+    const candidate = currentLines.slice(storedStart, end + 1).join("\n");
+    if (previous.length > 0 && candidate.includes(previous)) continue;
+    return true;
+  }
+
+  return false;
+}
+
+function inPlaceShrinkPrefixAtStoredStart(currentLines, anchors, lineCount, previous) {
+  const expectedStartLine = anchors?.startLine;
+  if (expectedStartLine == null) return false;
+  if (!firstMatchesAtStoredStart(currentLines, anchors)) return false;
+
+  const storedStart = expectedStartLine - 1;
+  const previousLines = splitLines(previous);
+  const prefixLength = contiguousPrefixLengthAt(currentLines, storedStart, previousLines);
+
+  return prefixLength > 0 && prefixLength < previousLines.length;
+}
+
+function resolveInPlaceGrowAtStoredStart(currentLines, anchors, lineCount, previous) {
+  if (!inPlaceGrowAtStoredStart(currentLines, anchors, lineCount, previous)) return null;
+
+  const storedStart = anchors.startLine - 1;
+  const oldStoredEnd = storedStart + lineCount - 1;
+  const last = anchors?.last ?? "";
+  const normalized = currentLines.map(normalizedLine);
+
+  for (let end = oldStoredEnd + 1; end < normalized.length; end += 1) {
+    if (normalized[end] !== last) continue;
+    const span = end - storedStart + 1;
+    if (span <= lineCount) continue;
+    const candidate = currentLines.slice(storedStart, end + 1).join("\n");
+    if (previous.length > 0 && candidate.includes(previous)) continue;
+    return {
+      state: "resolved",
+      method: "boundary-anchors",
+      content: candidate,
+      startLine: storedStart + 1,
+      endLine: end + 1,
+    };
+  }
+
+  return null;
+}
+
+function resolveInPlaceShrinkPrefixAtStoredStart(currentLines, anchors, previous) {
+  if (!inPlaceShrinkPrefixAtStoredStart(currentLines, anchors, anchors?.lineCount ?? 0, previous)) {
+    return null;
+  }
+
+  const storedStart = anchors.startLine - 1;
+  const previousLines = splitLines(previous);
+  const prefixLength = contiguousPrefixLengthAt(currentLines, storedStart, previousLines);
+
+  return {
+    state: "resolved",
+    method: "boundary-anchors",
+    content: currentLines.slice(storedStart, storedStart + prefixLength).join("\n"),
+    startLine: storedStart + 1,
+    endLine: storedStart + prefixLength,
+  };
+}
+
 export function resolveRegion({ previousContent, currentFileContent, anchors }) {
   const previous = String(previousContent);
   const current = String(currentFileContent).replaceAll("\r\n", "\n");
@@ -85,9 +223,30 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
       const storedEnd = storedStart + lineCount - 1;
       if (storedEnd < currentLines.length) {
         const storedContent = currentLines.slice(storedStart, storedEnd + 1).join("\n");
-        preferStoredRegion =
-          storedContent !== previous &&
-          boundariesMatchAtStoredStart(currentLines, anchors, lineCount);
+        if (storedContent !== previous) {
+          if (boundariesMatchAtStoredStart(currentLines, anchors, lineCount)) {
+            preferStoredRegion = true;
+          } else {
+            const previousLines = splitLines(previous);
+            if (
+              !hasNonPrefixLookalikeAtStoredStart(currentLines, anchors, lineCount, previousLines)
+            ) {
+              const grown = resolveInPlaceGrowAtStoredStart(
+                currentLines,
+                anchors,
+                lineCount,
+                previous,
+              );
+              if (grown) return grown;
+              const shrunk = resolveInPlaceShrinkPrefixAtStoredStart(
+                currentLines,
+                anchors,
+                previous,
+              );
+              if (shrunk) return shrunk;
+            }
+          }
+        }
       }
     }
 
@@ -186,11 +345,7 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
   if (span > expectedLineCount && previous.length > 0 && expectedLineCount > 1) {
     const previousLines = splitLines(previous);
     const candidateLines = currentLines.slice(best.start, end + 1);
-    const prefixLength = expectedLineCount - 1;
-    const prefixStable = previousLines
-      .slice(0, prefixLength)
-      .every((line, index) => normalizedLine(line) === normalizedLine(candidateLines[index] ?? ""));
-    if (prefixStable) {
+    if (prefixStableBeforeLast(previousLines, candidateLines, expectedLineCount)) {
       end = best.start + expectedLineCount - 1;
     }
   }

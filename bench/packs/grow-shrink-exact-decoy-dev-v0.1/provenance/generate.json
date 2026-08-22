@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T15:31:30.474Z",
+  "packId": "grow-shrink-exact-decoy-dev-v0.1",
+  "manifestPath": "bench/splits/grow-shrink-exact-decoy-dev-v0.1.json",
+  "manifestSha256": "d70d92773da8ae71a8c6f1398b0f1ea346dfe83ee1ed8c7764d36668bb00d30c",
+  "freezeCommitSha": "90ec3ee67ced11b631b69aea2c41598147c3dd92",
+  "implementationCommitSha": "e361b2f537e2fcfd5d002f760b5c4607260e6c7d",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/grow-shrink-exact/benchmark-fields-grow-decoy",
+    "go-tools/grow-shrink-exact/benchmark-fields-shrink-decoy",
+    "go-tools/grow-shrink-exact/benchmark-fields-lookalike-relocated"
+  ],
+  "traceSetHash": "6d0b758d48bb2cbeb9a59f333024a44cd523a25e98a13fadeef37a35a72d27d6"
+}
