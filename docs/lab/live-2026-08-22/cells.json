@@ -1,0 +1,415 @@
+[
+  {
+    "cell": "A-append",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [
+      "ALPHA_OLD_MARKER_7f3a"
+    ],
+    "current_present": true,
+    "current_tokens_in_request": [
+      "ALPHA_NEW_MARKER_9c2b"
+    ],
+    "current_char_count": 21,
+    "request_bytes": 1129,
+    "projection_bytes": 797,
+    "transform_ms": 72.87,
+    "model_http_ms": 1762.27,
+    "full_request_ms": 1835.51,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "I can see the following unique marker tokens in the file: **ALPHA_OLD_MARKER_7f3a** and **ALPHA_NEW_MARKER_9c2b**. There are no BETA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens present. The file appears **FRESH** because it contains an \"appended live\" line with a new marker (ALPHA_NEW_MARKER_9c2b) alongside the old one, indicating recent modification rather than a stale snapshot.",
+    "error": null,
+    "snippets": {
+      "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\\\nALPHA_OLD_MARKER_7f3a unique stale token\\\\nALPHA_NEW_MARKER_9c2b appended live\\\\n\\n</freshctx-unit>\\n",
+      "ALPHA_NEW_MARKER_9c2b": "nique stale token\\\\nALPHA_NEW_MARKER_9c2b appended live\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]"
+    }
+  },
+  {
+    "cell": "A-append",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "ALPHA_OLD_MARKER_7f3a"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 555,
+    "projection_bytes": 277,
+    "transform_ms": 0.08,
+    "model_http_ms": 1548.28,
+    "full_request_ms": 1548.62,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the marker token: `ALPHA_OLD_MARKER_7f3a` (which contains the `ALPHA_` prefix). No `BETA_`, `GAMMA_`, `DELTA_`, `EPSILON_`, or `NEW` tokens are present in the file content.\n\nThe file looks **STALE** because it contains the `ALPHA_OLD_MARKER_7f3a` token, which explicitly indicates an old/outdated marker.",
+    "error": null,
+    "snippets": {
+      "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\\\nALPHA_OLD_MARKER_7f3a unique stale token\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique marker",
+      "ALPHA_NEW_MARKER_9c2b": null
+    }
+  },
+  {
+    "cell": "B-interior",
+    "mode": "hermes-fresh",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "BETA_OLD_INTERIOR"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 806,
+    "projection_bytes": 397,
+    "transform_ms": 71.22,
+    "model_http_ms": 2160.63,
+    "full_request_ms": 2232.16,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "I can see the file `region_b.txt` was read, but the actual content was not displayed in the visible output \u2014 only a system note about \"live projection\" appeared. Since no marker tokens (ALPHA_, BETA_, GAMMA_, DELTA_, EPSILON_, or NEW) are visible in the provided text, I cannot quote any unique markers.\n\nBased on the absence of any visible content and the system note indicating a projection rather than raw text, the files appear **STALE** \u2014 there is no fresh data or marker tokens to confirm curre",
+    "error": null,
+    "snippets": {
+      "BETA_OLD_INTERIOR": " 2, \\\"selector\\\": \\\"BETA_OLD_INTERIOR\\\"}}\]}, {\"role\": \"tool\", \"tool_call_id\": \"cB\", \"content\": \"[freshctx:fc_c7c6f8",
+      "BETA_NEW_INTERIOR": null
+    }
+  },
+  {
+    "cell": "B-interior",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "BETA_OLD_INTERIOR"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 658,
+    "projection_bytes": 284,
+    "transform_ms": 0.05,
+    "model_http_ms": 1758.09,
+    "full_request_ms": 1758.33,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the marker token **BETA_OLD_INTERIOR** in the file content. No ALPHA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens are present in the provided snippet.\n\nThe files look **STALE** because the only marker present is `BETA_OLD_INTERIOR` (containing \"OLD\"), and there is no `NEW` token to indicate a fresh update.",
+    "error": null,
+    "snippets": {
+      "BETA_OLD_INTERIOR": " 2, \\\"selector\\\": \\\"BETA_OLD_INTERIOR\\\"}}\]}, {\"role\": \"tool\", \"tool_call_id\": \"cB\", \"content\": \"line1 header\\\\nBETA",
+      "BETA_NEW_INTERIOR": null
+    }
+  },
+  {
+    "cell": "C-delete",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [],
+    "current_present": true,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 712,
+    "projection_bytes": 397,
+    "transform_ms": 65.81,
+    "model_http_ms": 1951.49,
+    "full_request_ms": 2017.54,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "I cannot see any actual file content in the provided context \u2014 the read_file result only shows a system note about \"live projection\" with no visible text, and the freshctx block is empty. Therefore, I cannot quote any marker tokens (ALPHA_, BETA_, GAMMA_, DELTA_, EPSILON_, or NEW). Based on the absence of any readable content, the files appear **STALE** (or unreadable), as no fresh data was delivered.",
+    "error": null,
+    "snippets": {
+      "GAMMA_DELETE_MARKER": null
+    }
+  },
+  {
+    "cell": "C-delete",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "GAMMA_DELETE_MARKER"
+    ],
+    "current_present": true,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 540,
+    "projection_bytes": 262,
+    "transform_ms": 0.05,
+    "model_http_ms": 1852.62,
+    "full_request_ms": 1852.89,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the following unique marker tokens in the file content: **GAMMA_DELETE_MARKER** (which contains both GAMMA_ and DELTA_ as substrings, but the only explicit token is GAMMA_DELETE_MARKER). No ALPHA_, BETA_, EPSILON_, or NEW tokens are present.\n\nThe file looks **FRESH** \u2014 it contains a single, clearly defined marker with no signs of corruption, truncation, or age-related degradation.",
+    "error": null,
+    "snippets": {
+      "GAMMA_DELETE_MARKER": ": \"cC\", \"content\": \"GAMMA_DELETE_MARKER file that will be removed\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique"
+    }
+  },
+  {
+    "cell": "D-two-files",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [],
+    "current_present": true,
+    "current_tokens_in_request": [
+      "DELTA_FILE1_NEW",
+      "DELTA_FILE2_STABLE"
+    ],
+    "current_char_count": 33,
+    "request_bytes": 1665,
+    "projection_bytes": 1101,
+    "transform_ms": 71.18,
+    "model_http_ms": 1766.25,
+    "full_request_ms": 1837.68,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "I see the following unique marker tokens: **DELTA_FILE2_STABLE** (from pair_d2.txt) and **DELTA_FILE1_NEW** (from pair_d1.txt). No ALPHA_, BETA_, GAMMA_, EPSILON_, or NEW tokens are present.\n\nThe files look **FRESH** \u2014 both are current live projections with no stale or unresolved content, and the markers indicate one file is stable while the other has been updated.",
+    "error": null,
+    "snippets": {
+      "DELTA_FILE1_OLD": null,
+      "DELTA_FILE1_NEW": "tent-bytes=\\\"35\\\">\\nDELTA_FILE1_NEW this file changed\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]",
+      "DELTA_FILE2_STABLE": "tent-bytes=\\\"45\\\">\\nDELTA_FILE2_STABLE this file stays the same\\\\n\\n</freshctx-unit>\\n<freshctx-unit id=\\\"fc_82aceb64c"
+    }
+  },
+  {
+    "cell": "D-two-files",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "DELTA_FILE1_OLD"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [
+      "DELTA_FILE2_STABLE"
+    ],
+    "current_char_count": 18,
+    "request_bytes": 803,
+    "projection_bytes": 307,
+    "transform_ms": 0.06,
+    "model_http_ms": 1928.16,
+    "full_request_ms": 1928.43,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the following unique marker tokens: **DELTA_FILE1_OLD** and **DELTA_FILE2_STABLE**. No ALPHA_, BETA_, GAMMA_, EPSILON_, or NEW tokens are present.\n\nThe files look **STALE** \u2014 they contain only DELTA markers, and the first file explicitly says \"this file will change\" while the second says \"this file stays the same,\" suggesting an old test state rather than a fresh, updated one.",
+    "error": null,
+    "snippets": {
+      "DELTA_FILE1_OLD": " \"cD1\", \"content\": \"DELTA_FILE1_OLD this file will change\\\\n\"}, {\"role\": \"assistant\", \"content\": \"\", \"tool_calls\": ",
+      "DELTA_FILE1_NEW": null,
+      "DELTA_FILE2_STABLE": " \"cD2\", \"content\": \"DELTA_FILE2_STABLE this file stays the same\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique "
+    }
+  },
+  {
+    "cell": "E-large",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [],
+    "current_present": true,
+    "current_tokens_in_request": [
+      "EPSILON_NEW_MARKER"
+    ],
+    "current_char_count": 18,
+    "request_bytes": 9484,
+    "projection_bytes": 9034,
+    "transform_ms": 69.41,
+    "model_http_ms": 1887.98,
+    "full_request_ms": 1957.64,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "Unique marker tokens found: **EPSILON_NEW_MARKER** (contains both EPSILON_ and NEW). No ALPHA_, BETA_, GAMMA_, or DELTA_ tokens are present.\n\nThe file looks **STALE** \u2014 it is a large padding file with a single unique marker at the top and no other marker families, suggesting it has not been refreshed with new content.",
+    "error": null,
+    "snippets": {
+      "EPSILON_OLD_MARKER": null,
+      "EPSILON_NEW_MARKER": "nt-bytes=\\\"8332\\\">\\nEPSILON_NEW_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons"
+    }
+  },
+  {
+    "cell": "E-large",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "EPSILON_OLD_MARKER"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 8944,
+    "projection_bytes": 8547,
+    "transform_ms": 0.07,
+    "model_http_ms": 1664.28,
+    "full_request_ms": 1664.56,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see only one unique marker token in the file you provided: **EPSILON_OLD_MARKER** (from `large_e.txt`). No ALPHA_, BETA_, GAMMA_, DELTA_, or NEW tokens appear in the content shown.\n\nThe file looks **STALE** \u2014 it contains an explicit \"OLD\" marker and only repetitive padding lines, with no fresh or new tokens present.",
+    "error": null,
+    "snippets": {
+      "EPSILON_OLD_MARKER": ": \"cE\", \"content\": \"EPSILON_OLD_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons",
+      "EPSILON_NEW_MARKER": null
+    }
+  },
+  {
+    "cell": "E-large-pressure",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "EPSILON_OLD_MARKER"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 8944,
+    "projection_bytes": 8547,
+    "transform_ms": 0.12,
+    "model_http_ms": 1585.08,
+    "full_request_ms": 1585.45,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": true,
+    "mode_detail": "compress",
+    "should_compress": true,
+    "model_ok": true,
+    "model_reply": "I see the following unique marker tokens in the file: **EPSILON_OLD_MARKER** (from `large_e.txt`). No ALPHA_, BETA_, GAMMA_, DELTA_, or NEW markers are present in the content I read.\n\nThe file looks **STALE** because it contains an explicit \"OLD\" marker and no \"NEW\" markers, indicating it has not been refreshed.",
+    "error": null,
+    "snippets": {
+      "EPSILON_OLD_MARKER": ": \"cE\", \"content\": \"EPSILON_OLD_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons",
+      "EPSILON_NEW_MARKER": null
+    }
+  },
+  {
+    "cell": "G-edit-one-of-two",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [],
+    "current_present": true,
+    "current_tokens_in_request": [
+      "ALPHA_G_NEW_MARKER",
+      "DELTA_FILE2_STABLE"
+    ],
+    "current_char_count": 36,
+    "request_bytes": 1690,
+    "projection_bytes": 1125,
+    "transform_ms": 64.26,
+    "model_http_ms": 2091.34,
+    "full_request_ms": 2155.83,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "I see the following unique marker tokens in the current workspace state:\n\n- **ALPHA_G_NEW_MARKER** (from `notes_a.txt`)\n- **DELTA_FILE2_STABLE** (from `pair_d2.txt`)\n\nNo BETA_, GAMMA_, or EPSILON_ tokens are present. The files look **FRESH** \u2014 both are marked with current, unique tokens that appear to be intentionally placed for this turn, and there are no stale or outdated markers indicating old content.",
+    "error": null,
+    "snippets": {
+      "ALPHA_OLD_MARKER_7f3a": null,
+      "ALPHA_G_NEW_MARKER": "itle: alpha notes\\\\nALPHA_G_NEW_MARKER unique stale token\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]",
+      "DELTA_FILE2_STABLE": "tent-bytes=\\\"45\\\">\\nDELTA_FILE2_STABLE this file stays the same\\\\n\\n</freshctx-unit>\\n<freshctx-unit id=\\\"fc_882019df4"
+    }
+  },
+  {
+    "cell": "G-edit-one-of-two",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "ALPHA_OLD_MARKER_7f3a"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [
+      "DELTA_FILE2_STABLE"
+    ],
+    "current_char_count": 18,
+    "request_bytes": 827,
+    "projection_bytes": 330,
+    "transform_ms": 0.07,
+    "model_http_ms": 1986.87,
+    "full_request_ms": 1987.13,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the following unique marker tokens in the files I read:\n\n- `ALPHA_OLD_MARKER_7f3a` (from `notes_a.txt`)\n- `DELTA_FILE2_STABLE` (from `pair_d2.txt`)\n\nNo `BETA_`, `GAMMA_`, `EPSILON_`, or `NEW` tokens were present in these two files.\n\nThe files look **STALE** \u2014 the alpha file contains an \"OLD\" marker, and the delta file is marked \"STABLE\" (unchanged), with no fresh `NEW` tokens indicating recent updates.",
+    "error": null,
+    "snippets": {
+      "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\\\nALPHA_OLD_MARKER_7f3a unique stale token\\\\n\"}, {\"role\": \"assistant\", \"content\": \"\", \"tool_calls\": [{\",
+      "ALPHA_G_NEW_MARKER": null,
+      "DELTA_FILE2_STABLE": " \"cG2\", \"content\": \"DELTA_FILE2_STABLE this file stays the same\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique "
+    }
+  },
+  {
+    "cell": "B2-file-scope-interior",
+    "mode": "hermes-fresh",
+    "stale_bytes": false,
+    "old_tokens_in_request": [],
+    "current_present": true,
+    "current_tokens_in_request": [
+      "BETA_NEW_INTERIOR"
+    ],
+    "current_char_count": 17,
+    "request_bytes": 1104,
+    "projection_bytes": 769,
+    "transform_ms": 64.7,
+    "model_http_ms": 1917.61,
+    "full_request_ms": 1982.66,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "fresh-select",
+    "should_compress": null,
+    "model_ok": true,
+    "model_reply": "The only unique marker token present in the file is **BETA_NEW_INTERIOR** (which contains both BETA_ and NEW). No ALPHA_, GAMMA_, DELTA_, or EPSILON_ tokens appear. The file looks **FRESH** \u2014 it has a single, clearly defined interior line with a NEW marker, no stale or duplicated marker clutter.",
+    "error": null,
+    "snippets": {
+      "BETA_OLD_INTERIOR": null,
+      "BETA_NEW_INTERIOR": "\\\">\\nline1 header\\\\nBETA_NEW_INTERIOR keep this line unique\\\\nline3 footer\\\\n\\n</freshctx-unit>\\n</freshctx>\"}]"
+    }
+  },
+  {
+    "cell": "B2-file-scope-interior",
+    "mode": "hermes-native",
+    "stale_bytes": true,
+    "old_tokens_in_request": [
+      "BETA_OLD_INTERIOR"
+    ],
+    "current_present": false,
+    "current_tokens_in_request": [],
+    "current_char_count": 0,
+    "request_bytes": 566,
+    "projection_bytes": 284,
+    "transform_ms": 0.06,
+    "model_http_ms": 1718.95,
+    "full_request_ms": 1719.18,
+    "deepseek_model": "deepseek-v4-flash",
+    "compress_happened": false,
+    "mode_detail": "native-no-op",
+    "should_compress": false,
+    "model_ok": true,
+    "model_reply": "I can see the following unique marker tokens in the file: **BETA_OLD_INTERIOR** (no ALPHA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens are present).\n\nThe file looks **STALE** because it contains only the old BETA marker and lacks any NEW or other fresh-generation tokens.",
+    "error": null,
+    "snippets": {
+      "BETA_OLD_INTERIOR": "t\": \"line1 header\\\\nBETA_OLD_INTERIOR keep this line unique\\\\nline3 footer\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote e",
+      "BETA_NEW_INTERIOR": null
+    }
+  }
+]
