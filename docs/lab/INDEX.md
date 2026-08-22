@@ -21,3 +21,4 @@
 | [0017](pcr/0017-insert-before-tie-dev-pack.md) | 2026-08-21 | insert-before structural-tie pack (not a public benchmark) | `synthetic`; `insert-before-tie-dev` | review |
 | [0018](pcr/0018-insert-before-unique-last-dev-pack.md) | 2026-08-22 | insert-before unique-last door pack (not a public benchmark) | `synthetic`; `insert-before-unique-last-dev` | review |
 | [0019](pcr/0019-grow-inside-dev-pack.md) | 2026-08-22 | grow-inside development pack (not a public benchmark) | `synthetic`; `grow-inside-dev` | review |
+| [0020](pcr/0020-delete-unit-dev-pack.md) | 2026-08-22 | delete-unit development pack (not a public benchmark) | `synthetic`; `delete-unit-dev` | review |
