@@ -5,7 +5,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 - pack: `budget-pressure-dev-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `6527e83900d9dd9bd0b806db18e8b8d87784b6dd`
+- HEAD: `4cd1fd1`
 - merge-base vs 7b02a1db: `7b02a1dba0a2bb7536a4a4106eb31b540df9caff`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`

@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0036-adapter-prune-f274`
-- Commit: `6368c7a`
+- Commit: `4cd1fd1`
 - Merge-base vs PCR 0035 squash (`7b02a1db`): `7b02a1dba0a2bb7536a4a4106eb31b540df9caff`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `budget-pressure-dev`; `adapter-prune`
