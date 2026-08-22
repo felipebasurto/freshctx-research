@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "parse-broken-dev-v0.1",
+  "classification": "locally-frozen",
+  "manifestPath": "bench/splits/parse-broken-dev-v0.1.json",
+  "manifestSha256": "7f213531016ccfcb49d236feb5ab7b7cfd986ed122c8fc8101578f5d70ca416b",
+  "freezeCommitSha": "21e98676afbc41b06a972eec1ca39338537ad1aa",
+  "implementationCommitSha": "21e98676afbc41b06a972eec1ca39338537ad1aa",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": "c998768e6323cbe9657faaeed02652038f13d3cc72adc736e895ec7c0814cd8c",
+  "resultSetHash": "458c30afdda011e144768a257028f34b4cb7ca42d162b6674fbec487699d53c7",
+  "reportHash": "dee69c977a8974f454ebb1e6eec75b6eb9350eac3135fbe40bc792701b2bd810",
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T14:29:15.086Z"
+}
