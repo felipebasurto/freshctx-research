@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T15:01:29.184Z",
+  "packId": "duplicate-boundary-markers-dev-v0.1",
+  "manifestPath": "bench/splits/duplicate-boundary-markers-dev-v0.1.json",
+  "manifestSha256": "299040af19d06bd56fa415d34d3ca7f1b8d5cdbe415faa959d075f4beeff11b1",
+  "freezeCommitSha": "6fecbb101f5f276080a273ed15f5c20cf97ba905",
+  "implementationCommitSha": "d99fe15c7886ed48023e77078986da338d3702ed",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/duplicate-boundary/benchmark-fields",
+    "go-tools/duplicate-boundary/benchmark-fields-gap-markers",
+    "go-tools/duplicate-boundary/benchmark-fields-markers-rename"
+  ],
+  "traceSetHash": "227eaa3f2c5c7b7d1f36243a240117998c744d146813107bf4d5c93d62232e8c"
+}

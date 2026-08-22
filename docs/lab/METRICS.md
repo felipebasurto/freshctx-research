@@ -27,12 +27,14 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0018) insert-before-unique-last-dev-v0.1 pack | 93/93 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0018](pcr/0018-insert-before-unique-last-dev-pack.md) |
 | 2026-08-22 | (PCR 0019) grow-inside-dev-v0.1 pack | 94/94 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0019](pcr/0019-grow-inside-dev-pack.md) |
 | 2026-08-22 | (PCR 0020) delete-unit-dev-v0.1 pack | 94/94 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0020](pcr/0020-delete-unit-dev-pack.md) |
+| 2026-08-22 | (PCR 0021) rename-boundary-dev-v0.1 pack | 94/94 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0021](pcr/0021-rename-boundary-dev-pack.md) |
 | 2026-08-22 | (PCR 0022) delete-unit-fail-close-dev-v0.1 pack | 99/99 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0022](pcr/0022-delete-unit-fail-close-dev-pack.md) |
 | 2026-08-22 | (PCR 0023) move-in-file-dev-v0.1 pack | 100/100 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0023](pcr/0023-move-in-file-dev-pack.md) |
 | 2026-08-22 | (PCR 0024) duplicate-boundary-dev-v0.1 pack | 101/101 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0024](pcr/0024-duplicate-boundary-dev-pack.md) |
 | 2026-08-22 | (PCR 0025) parse-broken-dev-v0.1 pack | 97/97 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0025](pcr/0025-parse-broken-dev-pack.md) |
 | 2026-08-22 | (PCR 0026) parse-broken exact-decoy door change | 103/103 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0026](pcr/0026-parse-broken-exact-decoy-door.md) |
 | 2026-08-22 | (PCR 0027) move-lookalike-dev-v0.1 pack | 104/104 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0027](pcr/0027-move-lookalike-dev-pack.md) |
+| 2026-08-22 | (PCR 0028) duplicate-boundary-markers-dev-v0.1 pack | 105/105 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0028](pcr/0028-duplicate-boundary-markers-dev-pack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

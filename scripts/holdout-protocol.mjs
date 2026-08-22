@@ -47,6 +47,11 @@ import {
   runDuplicateBoundaryLab,
 } from "../bench/duplicate-boundary-lab.mjs";
 import {
+  duplicateBoundaryMarkersLabManifestDraft,
+  generateDuplicateBoundaryMarkersLabTraces,
+  runDuplicateBoundaryMarkersLab,
+} from "../bench/duplicate-boundary-markers-lab.mjs";
+import {
   generateMoveInFileLabTraces,
   moveInFileLabManifestDraft,
   runMoveInFileLab,
@@ -86,6 +91,7 @@ const TRACE_GENERATORS = {
   "rename-boundary-lab": generateRenameBoundaryLabTraces,
   "move-in-file-lab": generateMoveInFileLabTraces,
   "duplicate-boundary-lab": generateDuplicateBoundaryLabTraces,
+  "duplicate-boundary-markers-lab": generateDuplicateBoundaryMarkersLabTraces,
   "parse-broken-lab": generateParseBrokenLabTraces,
   "move-lookalike-lab": generateMoveLookalikeLabTraces,
 };
@@ -101,6 +107,7 @@ const TRACE_RUNNERS = {
   "rename-boundary-lab": runRenameBoundaryLab,
   "move-in-file-lab": runMoveInFileLab,
   "duplicate-boundary-lab": runDuplicateBoundaryLab,
+  "duplicate-boundary-markers-lab": runDuplicateBoundaryMarkersLab,
   "parse-broken-lab": runParseBrokenLab,
   "move-lookalike-lab": runMoveLookalikeLab,
 };
@@ -115,6 +122,7 @@ const MANIFEST_DRAFTS = {
   "rename-boundary-lab": renameBoundaryLabManifestDraft,
   "move-in-file-lab": moveInFileLabManifestDraft,
   "duplicate-boundary-lab": duplicateBoundaryLabManifestDraft,
+  "duplicate-boundary-markers-lab": duplicateBoundaryMarkersLabManifestDraft,
   "parse-broken-lab": parseBrokenLabManifestDraft,
   "move-lookalike-lab": moveLookalikeLabManifestDraft,
 };
@@ -137,9 +145,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab|move-lookalike-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab|move-lookalike-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab|move-lookalike-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
