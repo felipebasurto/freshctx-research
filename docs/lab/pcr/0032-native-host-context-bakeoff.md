@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0032-native-host-bakeoff-9e8c`
-- Commit: pending
+- Commit: `2046af6`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `public-repo-holdout`; `native-host`
 - Decision: **review** (draft only; do not merge)
