@@ -35,3 +35,4 @@
 | [0031](pcr/0031-move-cross-file-dev-pack.md) | 2026-08-22 | move-cross-file development pack (not a public benchmark) | `synthetic`; `move-cross-file-dev` | review |
 | [0032](pcr/0032-native-host-context-bakeoff.md) | 2026-08-22 | Native host context bake-off scaffold on holdout v0.1 | `synthetic`; `public-repo-holdout`; `native-host` | review |
 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) | 2026-08-22 | Budget-pressure native bake-off (Hermes compress photo) | `synthetic`; `budget-pressure-dev`; `native-host` | review |
+| [0034](pcr/0034-budget-pressure-live-summarizer.md) | 2026-08-22 | Budget-pressure live Hermes summarizer (no stub) | `synthetic`; `budget-pressure-live-dev`; `native-host` | review |
