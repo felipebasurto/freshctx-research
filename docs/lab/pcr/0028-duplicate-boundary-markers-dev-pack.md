@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: Cloud Agent (duplicate-boundary-markers-dev-pack)
 - Branch / PR: `cursor/duplicate-boundary-markers-dev-pack-38d8`
-- Base SHA: `d99fe15c7886ed48023e77078986da338d3702ed` (main after PCR 0025 squash)
+- Base SHA: `948840f4d334f567e31eea54cd7a9af019e1b399` (main after PCR 0027 squash)
 - Freeze commit: `6fecbb101f5f276080a273ed15f5c20cf97ba905`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `duplicate-boundary-markers-dev`
@@ -86,7 +86,7 @@ Locked go-tools `parse.go` is fixture bytes only. No Go parser, treesitter, iden
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | **104/104** |
+| `npm test` | yes | 0 | **105/105** |
 | `npm run check` | yes | 0 |  |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` unchanged |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3…` unchanged |
