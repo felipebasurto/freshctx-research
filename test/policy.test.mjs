@@ -58,3 +58,19 @@ test("unresolved units cannot be selected even when pinned", () => {
   assert.equal(result.selected.length, 0);
   assert.equal(result.omitted[0].reason, "unresolved");
 });
+
+test("empty renderOrder emits envelope header and close without boilerplate prose", () => {
+  const unresolved = unit("missing", "stale-secret", { state: "unresolved" });
+  const projection = projectContext([unresolved], { turn: 1, budgetChars: 100 });
+
+  assert.equal(projection.selected.length, 0);
+  assert.match(
+    projection.text,
+    /^<freshctx turn="1" selected="0" unresolved="1" budget-omitted="0">\n<\/freshctx>$/u,
+  );
+  assert.doesNotMatch(
+    projection.text,
+    /The following code is the current workspace state/u,
+  );
+  assert.equal(Buffer.byteLength(projection.text, "utf8"), 78);
+});
