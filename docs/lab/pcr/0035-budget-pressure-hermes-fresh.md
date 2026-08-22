@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0035-hermes-fresh-826e`
-- Commit: (see report HEAD after merge)
+- Commit: `a8c5a74`
 - Merge-base vs PCR 0033 squash: `fa6e2011d08b2f5f0ace283d866c0ea6a416b8af`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `budget-pressure-dev`; `hermes-fresh`
