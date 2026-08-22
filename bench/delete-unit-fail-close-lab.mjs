@@ -299,6 +299,7 @@ function liveIncludesLookalike(payloadText) {
 async function pinShrunkGoldMap(goldBytesByKey, trackedReads, workspace, cell) {
   if (!cell?.pinShrunkGold) return goldBytesByKey;
   const current = String(await workspace.read(PARSE_PATH)).replaceAll("\r\n", "\n");
+  if (current.includes(FIELDS)) return goldBytesByKey;
   const shrunk = extractRegion(current, cell.startLine, cell.startLine + 1);
   if (shrunk !== SHRUNK_FIELDS) {
     throw new Error(`${cell.id} shrunk gold drifted from stored start`);
