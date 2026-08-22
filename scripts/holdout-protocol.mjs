@@ -17,6 +17,11 @@ import {
   runInsertBeforeTieLab,
 } from "../bench/insert-before-tie-lab.mjs";
 import {
+  generateInsertBeforeUniqueLastLabTraces,
+  insertBeforeUniqueLastLabManifestDraft,
+  runInsertBeforeUniqueLastLab,
+} from "../bench/insert-before-unique-last-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -31,17 +36,20 @@ const TRACE_GENERATORS = {
   "insert-before-lab": generateInsertBeforeLabTraces,
   "insert-before-interior-lab": generateInsertBeforeInteriorLabTraces,
   "insert-before-tie-lab": generateInsertBeforeTieLabTraces,
+  "insert-before-unique-last-lab": generateInsertBeforeUniqueLastLabTraces,
 };
 
 const TRACE_RUNNERS = {
   "insert-before-lab": runInsertBeforeLab,
   "insert-before-interior-lab": runInsertBeforeInteriorLab,
   "insert-before-tie-lab": runInsertBeforeTieLab,
+  "insert-before-unique-last-lab": runInsertBeforeUniqueLastLab,
 };
 
 const MANIFEST_DRAFTS = {
   "insert-before-interior-lab": insertBeforeInteriorLabManifestDraft,
   "insert-before-tie-lab": insertBeforeTieLabManifestDraft,
+  "insert-before-unique-last-lab": insertBeforeUniqueLastLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -62,9 +70,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
