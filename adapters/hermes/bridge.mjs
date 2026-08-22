@@ -2,9 +2,9 @@ import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  dropStaleFillerToolPairs,
-  isStaleFillerPath,
+  dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
+  servedReadCallIdsFromUnitsByCall,
   shouldPruneAdapterRequest,
 } from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
@@ -175,7 +175,6 @@ export async function selectContext(payload) {
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
   for (const [callId, observation] of Object.entries(tracked)) {
-    if (pruneRequest && isStaleFillerPath(observation.path)) continue;
     try {
       const trackArgs = observation.scope === "region"
         ? {
@@ -216,8 +215,9 @@ export async function selectContext(payload) {
   });
 
   const projectionText = projection.text;
+  const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
   const assembled = pruneRequest
-    ? dropStaleFillerToolPairs(rewritten, { readTools: READ_TOOLS })
+    ? dropUnservedReadToolPairs(rewritten, { readTools: READ_TOOLS, servedCallIds })
     : rewritten;
   return {
     messages: [...assembled, { role: "user", content: projectionText }],

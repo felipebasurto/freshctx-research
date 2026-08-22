@@ -13,11 +13,11 @@
 
 PCR 0035 showed hermes-fresh / pi-fresh refresh gold (stale-bytes 0, required-recall 1.000) but shipped the full tool transcript (~20k projection-bytes, constant +19696 vs region). The remaining hole was bytes, not freshness.
 
-**Hypothesis verified:** under 4k budget, adapter request assembly now drops stale filler tool pairs, excludes fillers from FreshCtx tracking/projection, passes capture `budgetChars` through to projection, and keeps gold read markers plus region projection. hermes-fresh and pi-fresh match freshctx-region on stale-bytes (0) and required-recall (1.000) for all 6 cells; projection-bytes match region (0 delta).
+**Hypothesis verified:** under 4k budget, adapter request assembly drops read tool-call/result pairs that FreshCtx is not serving (untracked or omitted from the current projection), keeps gold read markers plus region projection, and passes capture `budgetChars` through to projection. hermes-fresh and pi-fresh match freshctx-region on stale-bytes (0) and required-recall (1.000) for all 6 cells; projection-bytes match region (0 delta). Path-agnostic: verified with non-`lab/filler/` paths (`src/unused.go`, `cmd/legacy.c`) in unit tests.
 
 ## What we did
 
-- Added `adapters/request-prune.mjs` shared prune helpers; wired Hermes (`bridge.mjs`) and Pi (`replay.mjs`, `extension.ts`).
+- Added `adapters/request-prune.mjs` path-agnostic prune helpers (`dropUnservedReadToolPairs` keyed off projection selection, not fixture paths); wired Hermes (`bridge.mjs`) and Pi (`replay.mjs`, `extension.ts`).
 - Trace runners pass capture `budgetChars` to adapter hooks.
 - Added `bench/budget-pressure-adapter-prune.mjs` (`ctxbench:budget-pressure-adapter-prune`) and report [`bench/reports/budget-pressure-adapter-prune.md`](../../../bench/reports/budget-pressure-adapter-prune.md).
 - Reused existing traces in `bench/traces/lab/budget-pressure-dev-v0.1/`; no holdout copy; gold unchanged.
@@ -38,7 +38,7 @@ Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6`.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | **135/135** (+10 prune tests; host tests skip without checkout) |
+| `npm test` | yes | 0 | **134/134** (+9 prune tests; host tests skip without checkout) |
 | `npm run check` | yes | 0 | |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
 | `npm run holdout:verify --pack=holdout-v0.1` | yes | 0 | `resultSetHash` null; trace-set hash unchanged |
@@ -81,7 +81,7 @@ Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6`.
 
 ## Limitations
 
-- Prune threshold is tied to `lab/filler/` paths and budget ≤ 4k chars; not a general transcript compressor.
+- Prune activates at budget ≤ 4k chars; drops read pairs FreshCtx is not serving in the current projection, not a general transcript compressor above that threshold.
 - `hermes-native` replayed from PCR 0033 report when `bench/hosts/hermes` absent.
 - Lab pack only; holdout v0.1 untouched; `resultSetHash` null.
 - No door edit; no v0.2; no retune.

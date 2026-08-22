@@ -2,9 +2,9 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  dropStaleFillerToolPairs,
-  isStaleFillerPath,
+  dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
+  servedReadCallIdsFromProjection,
   shouldPruneAdapterRequest,
 } from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
@@ -123,7 +123,6 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       if (event.toolName !== "read" || event.isError) return;
       const requestedPath = event.input?.path;
       if (typeof requestedPath !== "string") return;
-      if (isStaleFillerPath(requestedPath)) return;
 
       try {
         const file = await safeWorkspaceFile(ctx.cwd, requestedPath);
@@ -172,8 +171,9 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           budgetChars,
         });
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
+        const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
         const assembled = pruneRequest
-          ? dropStaleFillerToolPairs(rewritten, { readTools: new Set(["read"]) })
+          ? dropUnservedReadToolPairs(rewritten, { readTools: new Set(["read"]), servedCallIds })
           : rewritten;
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 

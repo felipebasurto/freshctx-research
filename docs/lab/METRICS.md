@@ -41,7 +41,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0032) native host context bake-off scaffold | 114/114 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0032](pcr/0032-native-host-context-bakeoff.md) |
 | 2026-08-22 | (PCR 0033) budget-pressure native bake-off | 120/120 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) |
 | 2026-08-22 | (PCR 0035) budget-pressure hermes-fresh | 125/125 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) |
-| 2026-08-22 | (PCR 0036) budget-pressure adapter prune | 135/135 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0036](pcr/0036-budget-pressure-adapter-prune.md) |
+| 2026-08-22 | (PCR 0036) budget-pressure adapter prune | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0036](pcr/0036-budget-pressure-adapter-prune.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
