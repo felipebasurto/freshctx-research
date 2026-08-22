@@ -52,6 +52,11 @@ import {
   runMoveInFileLab,
 } from "../bench/move-in-file-lab.mjs";
 import {
+  generateParseBrokenLabTraces,
+  parseBrokenLabManifestDraft,
+  runParseBrokenLab,
+} from "../bench/parse-broken-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -76,6 +81,7 @@ const TRACE_GENERATORS = {
   "rename-boundary-lab": generateRenameBoundaryLabTraces,
   "move-in-file-lab": generateMoveInFileLabTraces,
   "duplicate-boundary-lab": generateDuplicateBoundaryLabTraces,
+  "parse-broken-lab": generateParseBrokenLabTraces,
 };
 
 const TRACE_RUNNERS = {
@@ -89,6 +95,7 @@ const TRACE_RUNNERS = {
   "rename-boundary-lab": runRenameBoundaryLab,
   "move-in-file-lab": runMoveInFileLab,
   "duplicate-boundary-lab": runDuplicateBoundaryLab,
+  "parse-broken-lab": runParseBrokenLab,
 };
 
 const MANIFEST_DRAFTS = {
@@ -101,6 +108,7 @@ const MANIFEST_DRAFTS = {
   "rename-boundary-lab": renameBoundaryLabManifestDraft,
   "move-in-file-lab": moveInFileLabManifestDraft,
   "duplicate-boundary-lab": duplicateBoundaryLabManifestDraft,
+  "parse-broken-lab": parseBrokenLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -121,9 +129,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|parse-broken-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.

@@ -30,6 +30,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0022) delete-unit-fail-close-dev-v0.1 pack | 99/99 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0022](pcr/0022-delete-unit-fail-close-dev-pack.md) |
 | 2026-08-22 | (PCR 0023) move-in-file-dev-v0.1 pack | 100/100 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0023](pcr/0023-move-in-file-dev-pack.md) |
 | 2026-08-22 | (PCR 0024) duplicate-boundary-dev-v0.1 pack | 101/101 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0024](pcr/0024-duplicate-boundary-dev-pack.md) |
+| 2026-08-22 | (PCR 0026) parse-broken exact-decoy door change | 103/103 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0026](pcr/0026-parse-broken-exact-decoy-door.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

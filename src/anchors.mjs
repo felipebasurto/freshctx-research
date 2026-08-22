@@ -52,21 +52,54 @@ export function makeAnchors(content, { startLine = 1 } = {}) {
  * use the first and last meaningful boundary lines and require a unique best
  * candidate by expected span and previous location. A tie is unresolved.
  */
+function boundariesMatchAtStoredStart(currentLines, anchors, lineCount) {
+  const expectedStartLine = anchors?.startLine;
+  const first = anchors?.first ?? "";
+  const last = anchors?.last ?? "";
+  if (expectedStartLine == null || first.length === 0 || last.length === 0) {
+    return false;
+  }
+
+  const normalized = currentLines.map(normalizedLine);
+  const storedStart = expectedStartLine - 1;
+  const storedEnd = storedStart + lineCount - 1;
+  if (storedEnd >= normalized.length) return false;
+  return normalized[storedStart] === first && normalized[storedEnd] === last;
+}
+
 export function resolveRegion({ previousContent, currentFileContent, anchors }) {
   const previous = String(previousContent);
   const current = String(currentFileContent).replaceAll("\r\n", "\n");
   const exactIndexes = allSubstringIndexes(current, previous);
 
   if (previous.length > 0 && exactIndexes.length === 1) {
-    const startLine = lineForOffset(current, exactIndexes[0]);
+    const exactIndex = exactIndexes[0];
+    const exactStartLine = lineForOffset(current, exactIndex);
     const lineCount = splitLines(previous).length;
-    return {
-      state: "resolved",
-      method: "exact",
-      content: previous,
-      startLine,
-      endLine: startLine + lineCount - 1,
-    };
+    const expectedStartLine = anchors?.startLine;
+    let preferStoredRegion = false;
+
+    if (expectedStartLine != null && exactStartLine !== expectedStartLine) {
+      const currentLines = splitLines(current);
+      const storedStart = expectedStartLine - 1;
+      const storedEnd = storedStart + lineCount - 1;
+      if (storedEnd < currentLines.length) {
+        const storedContent = currentLines.slice(storedStart, storedEnd + 1).join("\n");
+        preferStoredRegion =
+          storedContent !== previous &&
+          boundariesMatchAtStoredStart(currentLines, anchors, lineCount);
+      }
+    }
+
+    if (!preferStoredRegion) {
+      return {
+        state: "resolved",
+        method: "exact",
+        content: previous,
+        startLine: exactStartLine,
+        endLine: exactStartLine + lineCount - 1,
+      };
+    }
   }
 
   const first = anchors?.first ?? "";

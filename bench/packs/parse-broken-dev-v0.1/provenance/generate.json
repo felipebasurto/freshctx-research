@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T14:29:09.347Z",
+  "packId": "parse-broken-dev-v0.1",
+  "manifestPath": "bench/splits/parse-broken-dev-v0.1.json",
+  "manifestSha256": "7f213531016ccfcb49d236feb5ab7b7cfd986ed122c8fc8101578f5d70ca416b",
+  "freezeCommitSha": "21e98676afbc41b06a972eec1ca39338537ad1aa",
+  "implementationCommitSha": "a2f4c93fabd0f4b13b3edcb9c5e585f0967381a8",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/parse-broken/parse-line",
+    "go-tools/parse-broken/parse-line-lookalike-decoy",
+    "go-tools/parse-broken/parse-line-markers-shift"
+  ],
+  "traceSetHash": "c998768e6323cbe9657faaeed02652038f13d3cc72adc736e895ec7c0814cd8c"
+}

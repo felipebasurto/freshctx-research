@@ -109,6 +109,37 @@ test("in-place shrink at stored start is not treated as displaced leftover", () 
   assert.equal(result.startLine, 29);
 });
 
+test("exact match elsewhere does not replay when stored boundaries still anchor changed bytes", () => {
+  const previous = [
+    "func ParseLine(line string) (*Benchmark, error) {",
+    "  b := &Benchmark{Name: fields[0], N: n}",
+    "  return b, nil",
+    "}",
+  ].join("\n");
+  const broken = [
+    "func ParseLine(line string) (*Benchmark, error) {",
+    '  b := &Benchmark{Name: "broken, N: n}',
+    "  return b, nil",
+    "}",
+  ].join("\n");
+  const lookalike = [
+    "// gap",
+    previous,
+    "// tail",
+  ].join("\n");
+  const current = `${broken}\n\n${lookalike.split("\n").slice(1).join("\n")}`;
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: `${broken}\n\n// gap\n${previous}\n// tail`,
+    anchors: makeAnchors(previous, { startLine: 1 }),
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "boundary-anchors");
+  assert.equal(result.content, broken);
+  assert.equal(result.startLine, 1);
+});
+
 test("equally plausible boundary matches fail closed", () => {
   const previous = "BEGIN\nold\nEND";
   const current = [
