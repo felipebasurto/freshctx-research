@@ -37,3 +37,4 @@
 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) | 2026-08-22 | Budget-pressure native bake-off (Hermes compress photo) | `synthetic`; `budget-pressure-dev`; `native-host` | review |
 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) | 2026-08-22 | Budget-pressure Hermes FreshCtx adapter (hermes-fresh) | `synthetic`; `budget-pressure-dev`; `hermes-fresh` | review |
 | [0036](pcr/0036-budget-pressure-adapter-prune.md) | 2026-08-22 | Budget-pressure adapter request prune under 4k | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
+| [0037](pcr/0037-always-prune-unserved-reads.md) | 2026-08-22 | Always prune unserved read pairs on projection | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |

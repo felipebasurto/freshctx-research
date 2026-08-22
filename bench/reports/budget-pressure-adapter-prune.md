@@ -5,7 +5,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 - pack: `budget-pressure-dev-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `bfb9bb20d6aaeb378c0b4052942792288a75f357`
+- HEAD: `939a22109ee5925a40921e5c6eea876b18959d47`
 - merge-base vs bfb9bb20: `bfb9bb20d6aaeb378c0b4052942792288a75f357`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -21,7 +21,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 
 **Finding:** pruned hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 6 cells.
 
-Generated: 2026-08-22T18:20:22.530Z
+Generated: 2026-08-22T18:20:30.106Z
 
 ## Per-cell metrics (final capture)
 
