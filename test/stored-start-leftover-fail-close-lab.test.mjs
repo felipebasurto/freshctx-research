@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
-  buildDeleteUnitFailCloseLabTraces,
-  DELETE_UNIT_FAIL_CLOSE_LAB_CELLS,
-  runDeleteUnitFailCloseTrace,
-} from "../bench/delete-unit-fail-close-lab.mjs";
+  buildStoredStartLeftoverFailCloseLabTraces,
+  STORED_START_LEFTOVER_FAIL_CLOSE_LAB_CELLS,
+  runStoredStartLeftoverFailCloseTrace,
+} from "../bench/stored-start-leftover-fail-close-lab.mjs";
 import { finalCapture } from "../bench/trace-runner.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
 
@@ -17,7 +17,7 @@ const PARSE_FILE = fileURLToPath(
 );
 const GO_TOOLS_LOCKED_COMMIT = "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49";
 const ORIGINAL_FIELDS_SHA = "4e8c2b5c87f6c314493c32b1385e3b8f8846119ad8f2da863c98dcaafef142d7";
-const DELETED_FIELDS = [
+const FIELDS = [
   "\tName              string  // benchmark name",
   "\tN                 int     // number of iterations",
   "\tNsPerOp           float64 // nanoseconds per iteration",
@@ -27,14 +27,16 @@ const DELETED_FIELDS = [
   "\tMeasured          int     // which measurements were recorded",
   "\tOrd               int     // ordinal position within a benchmark run",
 ].join("\n");
-const SHRUNK_FIELDS = [
+const PREFIX_FIELDS = FIELDS.split("\n").slice(0, 6).join("\n");
+const LEFTOVER_FIELDS = [
   "\tName              string  // benchmark name",
   "\tOrd               int     // ordinal position within a benchmark run",
 ].join("\n");
 
 const EXPECTED_NAMES = [
-  "go-tools/delete-unit-fail-close/benchmark-fields-in-place-shrink",
-  "go-tools/delete-unit-fail-close/benchmark-fields-lookalike-decoy",
+  "go-tools/stored-start-leftover/benchmark-fields-displaced-lookalike",
+  "go-tools/stored-start-leftover/benchmark-fields-interior-delete",
+  "go-tools/stored-start-leftover/benchmark-fields-prefix-shrink",
 ];
 
 function captureEvents(trace) {
@@ -50,6 +52,10 @@ function applyTraceMutations(sourceText, trace) {
   return next;
 }
 
+function extractRegion(content, startLine, endLine) {
+  return content.split("\n").slice(startLine - 1, endLine).join("\n");
+}
+
 function liveMethod(result) {
   const units = decodeProjectionUnits(finalCapture(result)?.payloadText ?? "");
   if (units.length === 0) return "unresolved";
@@ -59,47 +65,65 @@ function liveMethod(result) {
 }
 
 test(
-  "delete-unit fail-close lab traces pin post-fix decoy and in-place shrink",
+  "stored-start leftover fail-close lab traces pin door, decoy, and codex cells",
   { skip: existsSync(PARSE_FILE) ? false : "go-tools parse.go not fetched" },
   async () => {
     const goParse = await readFile(PARSE_FILE, "utf8");
-    const { traces } = await buildDeleteUnitFailCloseLabTraces({
+    const { traces } = await buildStoredStartLeftoverFailCloseLabTraces({
       goParse,
       goCommit: GO_TOOLS_LOCKED_COMMIT,
     });
 
-    assert.equal(traces.length, 2);
+    assert.equal(traces.length, 3);
     assert.deepEqual(traces.map((trace) => trace.name).sort(), [...EXPECTED_NAMES].sort());
 
     const byName = new Map(traces.map((trace) => [trace.name, trace]));
-    const cellsByName = new Map(DELETE_UNIT_FAIL_CLOSE_LAB_CELLS.map((cell) => [cell.name, cell]));
-    const decoy = byName.get("go-tools/delete-unit-fail-close/benchmark-fields-lookalike-decoy");
-    const shrink = byName.get("go-tools/delete-unit-fail-close/benchmark-fields-in-place-shrink");
+    const cellsByName = new Map(
+      STORED_START_LEFTOVER_FAIL_CLOSE_LAB_CELLS.map((cell) => [cell.name, cell]),
+    );
+    const door = byName.get("go-tools/stored-start-leftover/benchmark-fields-interior-delete");
+    const decoy = byName.get("go-tools/stored-start-leftover/benchmark-fields-prefix-shrink");
+    const codex = byName.get("go-tools/stored-start-leftover/benchmark-fields-displaced-lookalike");
 
-    assert.equal(captureEvents(decoy)[0].requiredUnits[0].sha256, ORIGINAL_FIELDS_SHA);
-    assert.deepEqual(captureEvents(decoy).at(-1).requiredUnits, []);
-    assert.equal(captureEvents(shrink).at(-1).requiredUnits[0].sha256.length, 64);
+    assert.equal(captureEvents(door)[0].requiredUnits[0].sha256, ORIGINAL_FIELDS_SHA);
+    assert.deepEqual(captureEvents(door).at(-1).requiredUnits, []);
+    assert.equal(captureEvents(decoy).at(-1).requiredUnits[0].sha256.length, 64);
+    assert.deepEqual(captureEvents(codex).at(-1).requiredUnits, []);
 
+    const mutatedDoor = applyTraceMutations(goParse, door);
     const mutatedDecoy = applyTraceMutations(goParse, decoy);
-    const mutatedShrink = applyTraceMutations(goParse, shrink);
-    assert.equal(mutatedDecoy.includes(DELETED_FIELDS), false);
-    assert.equal(mutatedShrink.includes(DELETED_FIELDS), false);
+    const mutatedCodex = applyTraceMutations(goParse, codex);
+    assert.equal(mutatedDoor.includes(FIELDS), false);
+    assert.match(mutatedDoor, new RegExp(`${LEFTOVER_FIELDS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+    assert.equal(extractRegion(mutatedDecoy, 29, 36).includes("\tOrd"), false);
     assert.match(
       mutatedDecoy,
+      new RegExp(`${PREFIX_FIELDS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+    );
+    assert.equal(mutatedCodex.includes(FIELDS), false);
+    assert.match(
+      mutatedCodex,
       /\tName {14}string {2}\/\/ benchmark name\n\tOrd {15}int {5}\/\/ ordinal position within a benchmark run/,
     );
-    assert.match(mutatedShrink, new RegExp(`${SHRUNK_FIELDS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
 
-    const decoyResult = await runDeleteUnitFailCloseTrace(decoy, cellsByName.get(decoy.name));
-    const shrinkResult = await runDeleteUnitFailCloseTrace(shrink, cellsByName.get(shrink.name));
-    assert.equal(liveMethod(decoyResult), "unresolved");
-    assert.equal(liveMethod(shrinkResult), "unresolved");
+    const doorResult = await runStoredStartLeftoverFailCloseTrace(door, cellsByName.get(door.name));
+    const decoyResult = await runStoredStartLeftoverFailCloseTrace(
+      decoy,
+      cellsByName.get(decoy.name),
+    );
+    const codexResult = await runStoredStartLeftoverFailCloseTrace(
+      codex,
+      cellsByName.get(codex.name),
+    );
+    assert.equal(liveMethod(doorResult), "unresolved");
+    assert.equal(liveMethod(decoyResult), "boundary-anchors");
+    assert.equal(liveMethod(codexResult), "unresolved");
 
     for (const trace of traces) {
       assert.equal(trace.source.commit, GO_TOOLS_LOCKED_COMMIT);
       assert.doesNotMatch(trace.name, /holdout/u);
       await assert.doesNotReject(() =>
-        runDeleteUnitFailCloseTrace(trace, cellsByName.get(trace.name)),
+        runStoredStartLeftoverFailCloseTrace(trace, cellsByName.get(trace.name)),
       );
     }
   },

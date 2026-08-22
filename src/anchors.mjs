@@ -328,6 +328,7 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
   const expectedLineCount = anchors.lineCount ?? best.end - best.start + 1;
   let end = best.end;
   const span = end - best.start + 1;
+  const previousLines = splitLines(previous);
 
   // A displaced first+last pair with missing interiors is not the deleted unit.
   if (
@@ -338,12 +339,22 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
     return { state: "unresolved", method: "displaced-shrunk-boundary-anchors" };
   }
 
+  // At the stored start, a shrunk span must be a contiguous prefix of previous.
+  if (span < expectedLineCount && best.locationDelta === 0 && anchors.startLine != null) {
+    const candidateLines = currentLines.slice(best.start, end + 1);
+    const isContiguousPrefix = candidateLines.every(
+      (line, index) => normalizedLine(line) === normalizedLine(previousLines[index] ?? ""),
+    );
+    if (!isContiguousPrefix) {
+      return { state: "unresolved", method: "displaced-shrunk-boundary-anchors" };
+    }
+  }
+
   // When the first-to-last span grew but the prefix before the last anchor is
   // unchanged, treat the tail as append-inside-before-closer and crop to the
   // original lineCount (oracle: first line + lineCount). Interior edits change
   // the prefix and keep the full grown span.
   if (span > expectedLineCount && previous.length > 0 && expectedLineCount > 1) {
-    const previousLines = splitLines(previous);
     const candidateLines = currentLines.slice(best.start, end + 1);
     if (prefixStableBeforeLast(previousLines, candidateLines, expectedLineCount)) {
       end = best.start + expectedLineCount - 1;
