@@ -105,9 +105,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|rename-boundary-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|rename-boundary-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|rename-boundary-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.

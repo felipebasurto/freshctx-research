@@ -9,6 +9,7 @@ import {
   DELETE_UNIT_FAIL_CLOSE_LAB_CELLS,
   runDeleteUnitFailCloseTrace,
 } from "../bench/delete-unit-fail-close-lab.mjs";
+import { finalCapture } from "../bench/trace-runner.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
 
 const PARSE_FILE = fileURLToPath(
