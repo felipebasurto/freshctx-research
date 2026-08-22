@@ -40,6 +40,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0031) move-cross-file-dev-v0.1 pack | 111/111 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0031](pcr/0031-move-cross-file-dev-pack.md) |
 | 2026-08-22 | (PCR 0032) native host context bake-off scaffold | 114/114 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0032](pcr/0032-native-host-context-bakeoff.md) |
 | 2026-08-22 | (PCR 0033) budget-pressure native bake-off | 120/120 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) |
+| 2026-08-22 | (PCR 0035) budget-pressure hermes-fresh | 125/125 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -61,6 +62,7 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-20 | (PCR 0008) | `public-repo-holdout` / `replay` | Pi/Hermes holdout replay: 0-byte delta vs core-region on all 10 cells; go-tools interior-edit recall 0 reproduced on Pi and Hermes (not silently passed); Hermes 0-byte delta vs Pi; not SOTA. | [0008](pcr/0008-pi-hermes-holdout-replay.md) |
 | 2026-08-22 | (PCR 0032) | `public-repo-holdout` / `native-host` | Native pi/hermes context bake-off scaffold on holdout v0.1; native payloads differ from adapter on all 10 cells; Hermes native-no-op (under compression threshold); not SOTA. | [0032](pcr/0032-native-host-context-bakeoff.md) |
 | 2026-08-22 | (PCR 0033) | `budget-pressure-dev` / `native-host` | Budget-pressure lab pack; Hermes `compress` on all 6 cells after honest window; region recall preserved under 4k budget; pi-native ~19k bytes from fillers; draft only. | [0033](pcr/0033-budget-pressure-native-bakeoff.md) |
+| 2026-08-22 | (PCR 0035) | `budget-pressure-dev` / `hermes-fresh` | Hermes FreshCtx adapter on budget-pressure cells; hermes-fresh matched region on recall/stale-bytes (0 stale); hermes-native stale on delete/interior/neovim-append; draft only. | [0035](pcr/0035-budget-pressure-hermes-fresh.md) |
 | 2026-08-21 | (PCR 0014) | `public-repo-holdout` | Stop pinning live unsealed jsonl; resultSetHash null; jsonl stays gitignored; historical holdout.md unchanged. | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
 Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`, `bench/reports/native-holdout.md`.
