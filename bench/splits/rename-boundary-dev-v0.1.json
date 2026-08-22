@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "rename-boundary-dev-v0.1",
+  "benchmarkVersion": "rename-boundary-dev-v0.1",
+  "label": "rename-boundary-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "rename-boundary"
+  ],
+  "seeds": {
+    "traceSelection": "rename-boundary-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/rename-boundary-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/rename-boundary-dev-v0.1",
+  "reportsDir": "bench/packs/rename-boundary-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/rename-boundary-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T07:49:30.354Z",
+  "implementationCommitSha": "62ae3ec16005d7a083b89a9c1bdb6aaeec2c56ca",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "d7bf96ce46b0c823665292ca22362f733d67b5c235d975d080f4f186afce9698"
+}
