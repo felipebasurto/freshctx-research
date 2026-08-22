@@ -27,6 +27,11 @@ import {
   runGrowInsideLab,
 } from "../bench/grow-inside-lab.mjs";
 import {
+  generateDeleteUnitLabTraces,
+  deleteUnitLabManifestDraft,
+  runDeleteUnitLab,
+} from "../bench/delete-unit-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -46,6 +51,7 @@ const TRACE_GENERATORS = {
   "insert-before-tie-lab": generateInsertBeforeTieLabTraces,
   "insert-before-unique-last-lab": generateInsertBeforeUniqueLastLabTraces,
   "grow-inside-lab": generateGrowInsideLabTraces,
+  "delete-unit-lab": generateDeleteUnitLabTraces,
 };
 
 const TRACE_RUNNERS = {
@@ -54,6 +60,7 @@ const TRACE_RUNNERS = {
   "insert-before-tie-lab": runInsertBeforeTieLab,
   "insert-before-unique-last-lab": runInsertBeforeUniqueLastLab,
   "grow-inside-lab": runGrowInsideLab,
+  "delete-unit-lab": runDeleteUnitLab,
 };
 
 const MANIFEST_DRAFTS = {
@@ -61,6 +68,7 @@ const MANIFEST_DRAFTS = {
   "insert-before-tie-lab": insertBeforeTieLabManifestDraft,
   "insert-before-unique-last-lab": insertBeforeUniqueLastLabManifestDraft,
   "grow-inside-lab": growInsideLabManifestDraft,
+  "delete-unit-lab": deleteUnitLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -81,9 +89,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
