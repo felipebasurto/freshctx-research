@@ -38,3 +38,4 @@
 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) | 2026-08-22 | Budget-pressure Hermes FreshCtx adapter (hermes-fresh) | `synthetic`; `budget-pressure-dev`; `hermes-fresh` | review |
 | [0036](pcr/0036-budget-pressure-adapter-prune.md) | 2026-08-22 | Budget-pressure adapter request prune under 4k | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
 | [0037](pcr/0037-always-prune-unserved-reads.md) | 2026-08-22 | Always prune unserved read pairs on projection | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
+| [0038](pcr/0038-holdout-adapter-bakeoff.md) | 2026-08-22 | Holdout v0.1 adapter bake-off after prune | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
