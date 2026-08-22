@@ -25,3 +25,4 @@
 | [0021](pcr/0021-rename-boundary-dev-pack.md) | 2026-08-22 | rename-boundary development pack (not a public benchmark) | `synthetic`; `rename-boundary-dev` | review |
 | [0022](pcr/0022-delete-unit-fail-close-dev-pack.md) | 2026-08-22 | delete-unit fail-close door change (not a public benchmark) | `synthetic`; `delete-unit-fail-close-dev` | review |
 | [0023](pcr/0023-move-in-file-dev-pack.md) | 2026-08-22 | move-in-file development pack (not a public benchmark) | `synthetic`; `move-in-file-dev` | review |
+| [0024](pcr/0024-duplicate-boundary-dev-pack.md) | 2026-08-22 | duplicate-boundary development pack (not a public benchmark) | `synthetic`; `duplicate-boundary-dev` | review |

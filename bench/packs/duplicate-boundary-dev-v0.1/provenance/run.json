@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T08:37:29.594Z",
+  "packId": "duplicate-boundary-dev-v0.1",
+  "manifestPath": "bench/splits/duplicate-boundary-dev-v0.1.json",
+  "manifestSha256": "86fd24bfa582abf6fe6b53d0e6fc04970f4920add63e1c202abafb86ea8f1e6f",
+  "freezeCommitSha": "b385d200a374ed4c9ade78a1fc7f4d32fdf6fb6f",
+  "implementationCommitSha": "b385d200a374ed4c9ade78a1fc7f4d32fdf6fb6f",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "generateProvenancePath": "bench/packs/duplicate-boundary-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 duplicate-boundary lab cell(s).",
+  "recordsWritten": 3,
+  "resultSetHash": "7469b3bfa853fbf154eda76a225b7136cf94a56f2e67d7f8b39c0eed85a929c5"
+}

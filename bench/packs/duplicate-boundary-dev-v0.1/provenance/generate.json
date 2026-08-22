@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T08:37:29.513Z",
+  "packId": "duplicate-boundary-dev-v0.1",
+  "manifestPath": "bench/splits/duplicate-boundary-dev-v0.1.json",
+  "manifestSha256": "86fd24bfa582abf6fe6b53d0e6fc04970f4920add63e1c202abafb86ea8f1e6f",
+  "freezeCommitSha": "b385d200a374ed4c9ade78a1fc7f4d32fdf6fb6f",
+  "implementationCommitSha": "24ce0dea8038335c69b3e715652428d9f753f21a",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/duplicate-boundary/benchmark-fields",
+    "go-tools/duplicate-boundary/benchmark-fields-trailing-decoy",
+    "go-tools/duplicate-boundary/benchmark-renamed-header"
+  ],
+  "traceSetHash": "434ae790fed731ea881455574db6d6aef38c11cc7e0458eb62c0126ee98e8c23"
+}
