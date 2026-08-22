@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T07:46:35.761Z",
   "packId": "grow-inside-dev-v0.1",
-  "classification": "locally-frozen",
   "manifestPath": "bench/splits/grow-inside-dev-v0.1.json",
   "manifestSha256": "1c1bb44bb3dd1036e99c9f383d1fbeec886f8e6fb335f62cc9378ba9dc18eb2a",
   "freezeCommitSha": "b492eae6b26d65c3abe47ff0aaf59d4b9399ff4d",
@@ -10,9 +11,8 @@
   "repositoryLocks": {
     "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
   },
-  "traceSetHash": "fe9a90cf37baa434405e595129de76b2fb9b7244e213ce60b5e4cbd6d0549cdd",
-  "resultSetHash": "032d64d3117c84fef2110e950dcad12890bd7df703feedee5439e3900adf07d7",
-  "reportHash": "72c1bad0bceda54ebf61245a2a2bad047624385bc93ec07fec26686a4901722b",
-  "remoteAttestation": null,
-  "updatedAt": "2026-08-22T07:46:35.901Z"
+  "generateProvenancePath": "bench/packs/grow-inside-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 grow-inside lab cell(s).",
+  "recordsWritten": 3
 }
