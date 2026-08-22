@@ -1,0 +1,19 @@
+{
+  "cell": "G-edit-one-of-two",
+  "mode": "hermes-native",
+  "snippets": {
+    "ALPHA_OLD_MARKER_7f3a": "itle: alpha notes\\\\nALPHA_OLD_MARKER_7f3a unique stale token\\\\n\"}, {\"role\": \"assistant\", \"content\": \"\", \"tool_calls\": [{",
+    "ALPHA_G_NEW_MARKER": null,
+    "DELTA_FILE2_STABLE": " \"cG2\", \"content\": \"DELTA_FILE2_STABLE this file stays the same\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique "
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 827,
+  "transform_ms": 0.07,
+  "model_http_ms": 1986.87,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the following unique marker tokens in the files I read:\n\n- `ALPHA_OLD_MARKER_7f3a` (from `notes_a.txt`)\n- `DELTA_FILE2_STABLE` (from `pair_d2.txt`)\n\nNo `BETA_`, `GAMMA_`, `EPSILON_`, or `NEW` tokens were present in these two files.\n\nThe files look **STALE** \u2014 the alpha file contains an \"OLD\" marker, and the delta file is marked \"STABLE\" (unchanged), with no fresh `NEW` tokens indicating recent updates.",
+  "error": null
+}

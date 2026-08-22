@@ -1,0 +1,18 @@
+{
+  "cell": "E-large",
+  "mode": "hermes-fresh",
+  "snippets": {
+    "EPSILON_OLD_MARKER": null,
+    "EPSILON_NEW_MARKER": "nt-bytes=\\\"8332\\\">\\nEPSILON_NEW_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons"
+  },
+  "stale_bytes": false,
+  "current_present": true,
+  "request_bytes": 9484,
+  "transform_ms": 69.41,
+  "model_http_ms": 1887.98,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "fresh-select",
+  "model_reply": "Unique marker tokens found: **EPSILON_NEW_MARKER** (contains both EPSILON_ and NEW). No ALPHA_, BETA_, GAMMA_, or DELTA_ tokens are present.\n\nThe file looks **STALE** \u2014 it is a large padding file with a single unique marker at the top and no other marker families, suggesting it has not been refreshed with new content.",
+  "error": null
+}

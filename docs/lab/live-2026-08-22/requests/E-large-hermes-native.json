@@ -1,0 +1,18 @@
+{
+  "cell": "E-large",
+  "mode": "hermes-native",
+  "snippets": {
+    "EPSILON_OLD_MARKER": ": \"cE\", \"content\": \"EPSILON_OLD_MARKER unique stale token in large file\\npad line 0000 lorem ipsum dolor sit amet cons",
+    "EPSILON_NEW_MARKER": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 8944,
+  "transform_ms": 0.07,
+  "model_http_ms": 1664.28,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see only one unique marker token in the file you provided: **EPSILON_OLD_MARKER** (from `large_e.txt`). No ALPHA_, BETA_, GAMMA_, DELTA_, or NEW tokens appear in the content shown.\n\nThe file looks **STALE** \u2014 it contains an explicit \"OLD\" marker and only repetitive padding lines, with no fresh or new tokens present.",
+  "error": null
+}
