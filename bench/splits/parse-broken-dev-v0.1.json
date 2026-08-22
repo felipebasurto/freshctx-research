@@ -36,12 +36,12 @@
   "reportsDir": "bench/packs/parse-broken-dev-v0.1/reports",
   "provenanceDir": "bench/packs/parse-broken-dev-v0.1/provenance",
   "status": "frozen",
-  "frozenAt": "2026-08-22T14:27:38.264Z",
-  "implementationCommitSha": "a2f4c93fabd0f4b13b3edcb9c5e585f0967381a8",
+  "frozenAt": "2026-08-22T08:30:37.260Z",
+  "implementationCommitSha": "c2513a3807a4d306f2a19a551f97a2e7fb8d9612",
   "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
   "repositoryLocks": {
     "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
   },
   "classification": "candidate",
-  "manifestSha256": "7f213531016ccfcb49d236feb5ab7b7cfd986ed122c8fc8101578f5d70ca416b"
+  "manifestSha256": "5c83df40349761dc950dab17b5b69c9cd327802f7593e471d8eb6fc8bfc086b8"
 }
