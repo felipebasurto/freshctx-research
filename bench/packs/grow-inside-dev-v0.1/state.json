@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "grow-inside-dev-v0.1",
+  "classification": "candidate",
+  "manifestPath": "bench/splits/grow-inside-dev-v0.1.json",
+  "manifestSha256": "1c1bb44bb3dd1036e99c9f383d1fbeec886f8e6fb335f62cc9378ba9dc18eb2a",
+  "freezeCommitSha": null,
+  "implementationCommitSha": "9df66c43b66fc8662f678164663c8d9e605d6634",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": null,
+  "resultSetHash": null,
+  "reportHash": null,
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T07:45:49.628Z"
+}
