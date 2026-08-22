@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T07:49:42.752Z",
+  "packId": "rename-boundary-dev-v0.1",
+  "manifestPath": "bench/splits/rename-boundary-dev-v0.1.json",
+  "manifestSha256": "d7bf96ce46b0c823665292ca22362f733d67b5c235d975d080f4f186afce9698",
+  "freezeCommitSha": "6c2672abeb3fc9ffe4694f9684f08f232c62dd10",
+  "implementationCommitSha": "6c2672abeb3fc9ffe4694f9684f08f232c62dd10",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "generateProvenancePath": "bench/packs/rename-boundary-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 rename-boundary lab cell(s).",
+  "recordsWritten": 3,
+  "resultSetHash": "e93db3aa48ba69f3fd49e2737daffdabab7d3e36b7c70f7677aa0cf8a9e5e7d5"
+}

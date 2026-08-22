@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "rename-boundary-dev-v0.1",
+  "classification": "locally-frozen",
+  "manifestPath": "bench/splits/rename-boundary-dev-v0.1.json",
+  "manifestSha256": "d7bf96ce46b0c823665292ca22362f733d67b5c235d975d080f4f186afce9698",
+  "freezeCommitSha": "6c2672abeb3fc9ffe4694f9684f08f232c62dd10",
+  "implementationCommitSha": "6c2672abeb3fc9ffe4694f9684f08f232c62dd10",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": "645ed92ffdd7a71b35d5c04eda0e9405e9216f6f91c181519bef869c8abd1a17",
+  "resultSetHash": "e93db3aa48ba69f3fd49e2737daffdabab7d3e36b7c70f7677aa0cf8a9e5e7d5",
+  "reportHash": "417b65f9ff7612f7d867f528e203f0b7cc807564f043e3eb372d645b8e03f288",
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T07:49:42.894Z"
+}
