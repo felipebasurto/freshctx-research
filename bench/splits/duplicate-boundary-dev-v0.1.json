@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "duplicate-boundary-dev-v0.1",
+  "benchmarkVersion": "duplicate-boundary-dev-v0.1",
+  "label": "duplicate-boundary-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "duplicate-boundary"
+  ],
+  "seeds": {
+    "traceSelection": "duplicate-boundary-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/duplicate-boundary-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/duplicate-boundary-dev-v0.1",
+  "reportsDir": "bench/packs/duplicate-boundary-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/duplicate-boundary-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T08:37:27.405Z",
+  "implementationCommitSha": "24ce0dea8038335c69b3e715652428d9f753f21a",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "86fd24bfa582abf6fe6b53d0e6fc04970f4920add63e1c202abafb86ea8f1e6f"
+}
