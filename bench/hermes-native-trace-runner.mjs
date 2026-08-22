@@ -62,6 +62,8 @@ function resolveHermesBridgePayload({
     budgetTokens,
     budgetPressure: Boolean(budgetPressure),
   };
+  const model = process.env.HERMES_MODEL || process.env.OPENAI_MODEL;
+  if (model) payload.model = model;
   if (!budgetPressure) {
     payload.contextLength = Math.max(32_000, Math.ceil(budgetChars * 8));
   }

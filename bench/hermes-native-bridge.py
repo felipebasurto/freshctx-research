@@ -82,7 +82,12 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         context_length = int(payload.get("contextLength") or budget_tokens or 128_000)
 
     engine = ContextCompressor(
-        model=str(payload.get("model") or "freshctx-capture"),
+        model=str(
+            payload.get("model")
+            or os.environ.get("HERMES_MODEL")
+            or os.environ.get("OPENAI_MODEL")
+            or "freshctx-capture"
+        ),
         api_key=os.environ.get("OPENAI_API_KEY") or os.environ.get("HERMES_API_KEY") or "",
         base_url=os.environ.get("OPENAI_BASE_URL") or os.environ.get("HERMES_BASE_URL") or "http://127.0.0.1:8787/v1",
         config_context_length=context_length,

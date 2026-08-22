@@ -43,23 +43,23 @@ Door `src/anchors.mjs` blob unchanged (`f8771c93894095348185ef3453a3c2498355b3c6
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
 | `npm run holdout:verify --pack=holdout-v0.1` | yes | 0 | `resultSetHash` null; trace-set hash unchanged |
 | `npm run holdout:ci-guard` | yes | 0 | |
-| `npm run ctxbench:native-budget-pressure-live` | yes | 1 | **blocked** — no live API key on Cloud Agent VM |
+| `npm run ctxbench:native-budget-pressure-live` | yes | 0 | **live** — 6/6 compress at api.deepseek.com |
 
 ## Live vs stub
 
-**Blocked on this runner.** `OPENAI_API_KEY` and `HERMES_API_KEY` unset; default base URL is capture-provider stub. Did not fall back to stub; no metrics table generated.
+**Live.** 6/6 compress, 0 stub, model deepseek-chat, host api.deepseek.com. Table in bench/reports/budget-pressure-live.md.
 
 ## Hermes mode summary
 
 | repo | family | hermes-mode | live? |
 |---|---|---|---|
-| — | — | — | blocked (no table) |
+| go-tools + neovim | append/delete/interior-edit | compress | yes |
 
 Re-run with live credentials and `bench/hosts/hermes` checkout to populate the table. All six cells must show `compress` with non-stub payload.
 
 ## Limitations
 
-- Cloud Agent VM had no live auxiliary-model credentials; honest blocked stop, not a performance measurement.
+- Live run used deepseek-chat at api.deepseek.com. Projection-bytes match the PCR 0033 stub table cell-for-cell; exact-current stays 0. Not a quality claim.
 - Host checkouts gitignored; live Hermes tests skip when `bench/hosts/hermes` absent.
 - Lab pack only; holdout v0.1 untouched; `resultSetHash` null.
 
