@@ -44,7 +44,9 @@
     "holdout:verify": "node scripts/holdout-verify.mjs",
     "holdout:ci-guard": "node scripts/holdout-ci-guard.mjs",
     "holdout:attest-stub": "node scripts/holdout-attest-stub.mjs",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && python3 -m py_compile bench/hermes-native-bridge.py"
+    "hermes:install": "node adapters/hermes/install.mjs",
+    "hermes:verify-layout": "node adapters/hermes/verify-layout.mjs",
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && node --check adapters/hermes/install.mjs && node --check adapters/hermes/verify-layout.mjs && python3 -m py_compile bench/hermes-native-bridge.py"
   },
   "keywords": [
     "agents",
