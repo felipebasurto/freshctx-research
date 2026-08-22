@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/holdout-adapter-bakeoff-b25d`
-- Commit: `df7cb94`
+- Commit: `f1fffec`
 - Merge-base vs PCR 0037 squash (`5efb5fd0`): `5efb5fd0375ab43e8e46313398a51c8ea632c3fe`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff`
