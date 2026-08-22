@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T15:45:01.639Z",
   "packId": "stored-start-leftover-fail-close-dev-v0.1",
-  "classification": "locally-frozen",
   "manifestPath": "bench/splits/stored-start-leftover-fail-close-dev-v0.1.json",
   "manifestSha256": "56635657ebcbcb2b16f99a1648cbbc499528844350b68234753ea24d22bfb62e",
   "freezeCommitSha": "84b09c409fb6de5bfc6ae40e7693c7e2d0d3e750",
@@ -10,9 +11,9 @@
   "repositoryLocks": {
     "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
   },
-  "traceSetHash": "696f760b4cea0701acd31bf619eeac67efe6cee659fc0ac3e21421a5ccf6ab8e",
-  "resultSetHash": "27fae8489c9393b1e6a9c730416660a38d9ba3833c277596786a066f17df6d47",
-  "reportHash": "7960765e6078dd1908d03ef91fec9e82e0566602f15b75ce415dd944642c746a",
-  "remoteAttestation": null,
-  "updatedAt": "2026-08-22T15:45:01.785Z"
+  "generateProvenancePath": "bench/packs/stored-start-leftover-fail-close-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 stored-start-leftover fail-close lab cell(s).",
+  "recordsWritten": 3,
+  "resultSetHash": "27fae8489c9393b1e6a9c730416660a38d9ba3833c277596786a066f17df6d47"
 }
