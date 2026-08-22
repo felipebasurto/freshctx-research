@@ -49,6 +49,8 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0042) Hermes zero-arg engine env defaults | 139/139 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0042](pcr/0042-hermes-zero-arg-engine.md) |
 | 2026-08-22 | (PCR 0043) live Pi official-hook CLI (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0043](pcr/0043-live-pi-cli-official-hook.md) |
 | 2026-08-22 | (PCR 0044) live Hermes ctor re-run (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
+| 2026-08-22 | (PCR 0045) Hermes lifecycle persist observe+select | 142/142 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0045](pcr/0045-hermes-lifecycle-persist.md) |
+| 2026-08-22 | (PCR 0046) live Hermes CLI observe/select miss (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0046](pcr/0046-live-hermes-cli-hooks-miss.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -89,5 +91,6 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 |---|---|---|---|---|---|---|---|
 | 2026-08-22 | `4ccb0083` | `999703fd` | — | deepseek-chat / deepseek-v4-flash | 15 | File-scope current vs native stale; cell B invalid; not a paper result | [0041](pcr/0041-live-deepseek-hermes-session.md) |
 | 2026-08-22 | `4ccb0083` | `999703fd` | — | deepseek-v4-flash | 1 | Post-ctor-fix plugin `f2048257`; gold miss; freshctx-state empty | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
+| 2026-08-22 | adapter `832713a` | `999703fd` | — | deepseek-v4-flash | 3 | Post-0045 plugin; state file seeded; calls/tracked empty; gold miss | [0046](pcr/0046-live-hermes-cli-hooks-miss.md) |
 | 2026-08-22 | `4ccb0083` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 16 | Official Pi hook pi-cli; 8 cells × fresh/native; not pi-adapter-replay | [0043](pcr/0043-live-pi-cli-official-hook.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |

@@ -46,3 +46,5 @@
 | [0042](pcr/0042-hermes-zero-arg-engine.md) | 2026-08-22 | Hermes zero-arg FreshCtxContextEngine env defaults | `synthetic`; `hermes-fresh`; `adapter-only` | review |
 | [0043](pcr/0043-live-pi-cli-official-hook.md) | 2026-08-22 | Live Pi official-hook CLI (`pi-cli`) | `synthetic`; `live-host`; `pi-fresh`; `pi-cli` | review |
 | [0044](pcr/0044-live-hermes-ctor-rerun.md) | 2026-08-22 | Live Hermes ctor re-run (post-ctor-fix, gold miss) | `synthetic`; `live-host`; `hermes-fresh`; `live-ctor`; `post-ctor-fix`; `pre-lifecycle-fix` | review |
+| [0045](pcr/0045-hermes-lifecycle-persist.md) | 2026-08-22 | Hermes lifecycle persist (observe + select state) | `synthetic`; `hermes-fresh`; `adapter-only` | review |
+| [0046](pcr/0046-live-hermes-cli-hooks-miss.md) | 2026-08-22 | Live Hermes CLI observe/select miss (post-0045 adapter) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `post-lifecycle-fix`; `pre-hook-delivery` | review |

@@ -48,6 +48,8 @@ class FreshCtxContextEngine(ContextCompressor):
             super_kwargs.setdefault("base_url", base_url)
 
         super().__init__(model=model, api_key=api_key, **super_kwargs)
+        self._freshctx_session_id: Optional[str] = None
+        self._freshctx_state_file: Optional[Path] = None
 
     @property
     def name(self) -> str:
@@ -56,15 +58,81 @@ class FreshCtxContextEngine(ContextCompressor):
     def _bridge_path(self) -> Path:
         return Path(__file__).with_name("bridge.mjs")
 
+    def _resolve_hermes_home(self, kwargs: Dict[str, Any]) -> Path:
+        hermes_home = kwargs.get("hermes_home")
+        if hermes_home:
+            return Path(str(hermes_home))
+        env_home = os.environ.get("HERMES_HOME")
+        if env_home:
+            return Path(env_home)
+        return Path.home() / ".hermes"
+
+    def _state_root(self, kwargs: Dict[str, Any]) -> Path:
+        override = os.environ.get("FRESHCTX_STATE_DIR")
+        if override:
+            return Path(override)
+        return self._resolve_hermes_home(kwargs) / "artifacts" / "freshctx-state"
+
+    def _session_state_path(self, session_id: str, kwargs: Dict[str, Any]) -> Path:
+        session_key = hashlib.sha256(session_id.encode("utf8")).hexdigest()[:20]
+        return self._state_root(kwargs) / f"{session_key}.json"
+
+    def _ensure_state_file(
+        self,
+        session_id: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Optional[Path]:
+        existing = getattr(self, "_freshctx_state_file", None)
+        if existing is not None:
+            return Path(existing)
+
+        sid = (
+            session_id
+            or getattr(self, "_freshctx_session_id", None)
+            or getattr(self, "_session_id", None)
+            or "default"
+        )
+        self._freshctx_session_id = str(sid)
+        path = self._session_state_path(self._freshctx_session_id, kwargs)
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text(
+                    json.dumps({"calls": {}, "tracked": {}}, indent=2) + "\n",
+                    encoding="utf8",
+                )
+                try:
+                    os.chmod(path, 0o600)
+                except OSError:
+                    pass
+            self._freshctx_state_file = path
+            return path
+        except OSError:
+            return None
+
+    def _workspace_cwd(self) -> str:
+        terminal_cwd = os.environ.get("TERMINAL_CWD", "").strip()
+        if terminal_cwd:
+            return terminal_cwd
+        return os.getcwd()
+
     def _call_bridge(self, operation: str, messages: List[Dict[str, Any]], **extra: Any):
-        state_file = getattr(self, "_freshctx_state_file", None)
+        bridge_kwargs: Dict[str, Any] = {}
+        turn = extra.get("turn")
+        if isinstance(turn, dict):
+            bridge_kwargs.update(turn)
+
+        state_file = self._ensure_state_file(
+            session_id=getattr(self, "_freshctx_session_id", None),
+            **bridge_kwargs,
+        )
         if state_file is None:
             return None
 
         payload = {
             "operation": operation,
             "messages": messages,
-            "cwd": os.getcwd(),
+            "cwd": self._workspace_cwd(),
             "stateFile": str(state_file),
             **extra,
         }
@@ -85,19 +153,17 @@ class FreshCtxContextEngine(ContextCompressor):
             return None
 
     def on_session_start(self, session_id: str, **kwargs: Any) -> None:
+        self._freshctx_session_id = session_id
+        self._ensure_state_file(session_id, **kwargs)
+
         parent = getattr(super(), "on_session_start", None)
         if callable(parent):
-            parent(session_id, **kwargs)
-
-        default_home = Path.home() / ".hermes"
-        state_root = Path(
-            os.environ.get(
-                "FRESHCTX_STATE_DIR",
-                str(Path(kwargs.get("hermes_home", default_home)) / "freshctx"),
-            )
-        )
-        session_key = hashlib.sha256(session_id.encode("utf8")).hexdigest()[:20]
-        self._freshctx_state_file = state_root / f"{session_key}.json"
+            try:
+                parent(session_id, **kwargs)
+            except Exception:
+                # Parent compression bind may fail without session_db; FreshCtx
+                # state must still persist for select_context/on_turn_complete.
+                pass
 
     def select_context(
         self,
@@ -125,4 +191,3 @@ class FreshCtxContextEngine(ContextCompressor):
         **kwargs: Any,
     ) -> None:
         self._call_bridge("observe", messages, usage=usage, turn=kwargs)
-
