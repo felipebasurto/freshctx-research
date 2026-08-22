@@ -50,3 +50,4 @@
 | [0048](pcr/0048-hermes-cli-hook-skip.md) | 2026-08-23 | Hermes CLI hook skip (host-side, fail-open delivery) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `host-investigation`; `fail-open-delivery` | review |
 | [0049](pcr/0049-live-hermes-cli-hook-trace.md) | 2026-08-23 | Live Hermes CLI hook trace (one-shot) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `hook-trace`; `fail-open-delivery` | review |
 | [0050](pcr/0050-hermes-bridge-extract-import.md) | 2026-08-23 | Hermes bridge extract import failure (live CLI None) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `extract-layout` | review |
+| [0051](pcr/0051-live-hermes-layout-complete.md) | 2026-08-23 | Live Hermes layout complete (CLI list + observe) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `layout-complete` | review |
