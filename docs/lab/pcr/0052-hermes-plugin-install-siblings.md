@@ -2,8 +2,8 @@
 
 - Date (UTC): 2026-08-23
 - Author / agent: Cloud Agent (packaging fix)
-- Branch / PR: `cursor/pcr-0052-hermes-packaging-652e` (new draft PR)
-- Commit: (this commit)
+- Branch / PR: `cursor/pcr-0052-hermes-packaging-652e` → https://github.com/felipebasurto/freshctx/pull/45 (draft)
+- Commit: `21de0d1`
 - Merge-base: `8050ca3f20a8463c8fed88458b3fd83ab9201b28` (main; PCR 0051 squash)
 - Paper-manifest digest: unchanged
 - Result labels used: `synthetic`; `hermes-fresh`; `adapter-only`; `packaging`
