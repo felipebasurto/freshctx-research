@@ -43,3 +43,4 @@
 | [0039](pcr/0039-holdout-corvus-file.md) | 2026-08-22 | Holdout v0.1 corvus-file column on adapter bake-off | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) | 2026-08-22 | Empty envelope without boilerplate prose on delete cells | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0041](pcr/0041-live-deepseek-hermes-session.md) | 2026-08-22 | Live DeepSeek session on Hermes Agent + FreshCtx | `synthetic`; `live-host`; `hermes-fresh` | review |
+| [0042](pcr/0042-hermes-zero-arg-engine.md) | 2026-08-22 | Hermes zero-arg FreshCtxContextEngine env defaults | `synthetic`; `hermes-fresh`; `adapter-only` | review |

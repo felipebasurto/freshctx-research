@@ -20,6 +20,35 @@ from agent.context_compressor import ContextCompressor
 class FreshCtxContextEngine(ContextCompressor):
     """Compose FreshCtx selection with Hermes' normal compressor."""
 
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        if model is None:
+            model = (
+                os.environ.get("HERMES_MODEL")
+                or os.environ.get("OPENAI_MODEL")
+                or "deepseek-chat"
+            )
+        if api_key is None:
+            api_key = (
+                os.environ.get("DEEPSEEK_API_KEY")
+                or os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("HERMES_API_KEY")
+                or ""
+            )
+        if base_url is None:
+            base_url = os.environ.get("OPENAI_BASE_URL") or os.environ.get("HERMES_BASE_URL")
+
+        super_kwargs: Dict[str, Any] = dict(kwargs)
+        if base_url is not None:
+            super_kwargs.setdefault("base_url", base_url)
+
+        super().__init__(model=model, api_key=api_key, **super_kwargs)
+
     @property
     def name(self) -> str:
         return "freshctx"
