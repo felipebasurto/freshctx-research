@@ -4,8 +4,11 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-import { buildDeleteUnitFailCloseLabTraces } from "../bench/delete-unit-fail-close-lab.mjs";
-import { finalCapture, runTrace } from "../bench/trace-runner.mjs";
+import {
+  buildDeleteUnitFailCloseLabTraces,
+  DELETE_UNIT_FAIL_CLOSE_LAB_CELLS,
+  runDeleteUnitFailCloseTrace,
+} from "../bench/delete-unit-fail-close-lab.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
 
 const PARSE_FILE = fileURLToPath(
@@ -68,6 +71,7 @@ test(
     assert.deepEqual(traces.map((trace) => trace.name).sort(), [...EXPECTED_NAMES].sort());
 
     const byName = new Map(traces.map((trace) => [trace.name, trace]));
+    const cellsByName = new Map(DELETE_UNIT_FAIL_CLOSE_LAB_CELLS.map((cell) => [cell.name, cell]));
     const decoy = byName.get("go-tools/delete-unit-fail-close/benchmark-fields-lookalike-decoy");
     const shrink = byName.get("go-tools/delete-unit-fail-close/benchmark-fields-in-place-shrink");
 
@@ -85,15 +89,17 @@ test(
     );
     assert.match(mutatedShrink, new RegExp(`${SHRUNK_FIELDS.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
 
-    const decoyResult = await runTrace(decoy, "freshctx-region");
-    const shrinkResult = await runTrace(shrink, "freshctx-region");
+    const decoyResult = await runDeleteUnitFailCloseTrace(decoy, cellsByName.get(decoy.name));
+    const shrinkResult = await runDeleteUnitFailCloseTrace(shrink, cellsByName.get(shrink.name));
     assert.equal(liveMethod(decoyResult), "unresolved");
     assert.equal(liveMethod(shrinkResult), "boundary-anchors");
 
     for (const trace of traces) {
       assert.equal(trace.source.commit, GO_TOOLS_LOCKED_COMMIT);
       assert.doesNotMatch(trace.name, /holdout/u);
-      await assert.doesNotReject(() => runTrace(trace, "freshctx-region"));
+      await assert.doesNotReject(() =>
+        runDeleteUnitFailCloseTrace(trace, cellsByName.get(trace.name)),
+      );
     }
   },
 );

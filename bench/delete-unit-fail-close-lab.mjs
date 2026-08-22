@@ -1,11 +1,15 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { sha256 } from "../src/hash.mjs";
+import { sha256, stableUnitId } from "../src/hash.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
+import { createBaseline } from "./baselines.mjs";
+import { analyzeCapture } from "./metrics.mjs";
 import { hashDirectoryJsonSet, hashJsonlSet } from "./holdout-hashes.mjs";
-import { goldBytesForRead } from "./oracle.mjs";
-import { finalCapture, runTrace } from "./trace-runner.mjs";
+import { buildGoldMap, goldBytesForRead, requiredUnitsFromCapture, unitKey } from "./oracle.mjs";
+import { finalCapture } from "./trace-runner.mjs";
+import { Workspace } from "./workspace.mjs";
 
 export const DELETE_UNIT_FAIL_CLOSE_LAB_PACK_ID = "delete-unit-fail-close-dev-v0.1";
 export const DELETE_UNIT_FAIL_CLOSE_LAB_MANIFEST_PATH =
@@ -292,6 +296,112 @@ function liveIncludesLookalike(payloadText) {
   return units.some((unit) => unit.content.includes(lookalike) || unit.content.includes(FIELDS));
 }
 
+async function pinShrunkGoldMap(goldBytesByKey, trackedReads, workspace, cell) {
+  if (!cell?.pinShrunkGold) return goldBytesByKey;
+  const current = String(await workspace.read(PARSE_PATH)).replaceAll("\r\n", "\n");
+  const shrunk = extractRegion(current, cell.startLine, cell.startLine + 1);
+  if (shrunk !== SHRUNK_FIELDS) {
+    throw new Error(`${cell.id} shrunk gold drifted from stored start`);
+  }
+  const next = { ...goldBytesByKey };
+  for (const read of trackedReads) {
+    next[read.key] = shrunk;
+  }
+  return next;
+}
+
+export async function runDeleteUnitFailCloseTrace(trace, cell, { workspaceRoot } = {}) {
+  const baseline = createBaseline("freshctx-region");
+  const root = workspaceRoot ?? await mkdtemp(join(tmpdir(), "freshctx-delete-unit-fail-close-"));
+  const owned = !workspaceRoot;
+  const workspace = await Workspace.fromInitialFiles(root, trace.initialFiles);
+  const trackedReads = [];
+  const captures = [];
+
+  try {
+    for (const event of trace.events) {
+      if (event.type === "read") {
+        const fileContent = await workspace.read(event.path);
+        let content = fileContent;
+        if (event.scope === "region") {
+          const lines = fileContent.split("\n");
+          content = lines.slice(event.startLine - 1, event.endLine).join("\n");
+        }
+        const meta = {
+          key: unitKey({
+            path: event.path,
+            scope: event.scope,
+            startLine: event.startLine,
+            endLine: event.endLine,
+            selector: event.selector,
+          }),
+          path: event.path,
+          scope: event.scope,
+          startLine: event.startLine,
+          endLine: event.endLine,
+          selector: event.selector,
+          fileContent,
+          unitId: stableUnitId({
+            path: event.path,
+            scope: event.scope,
+            selector: event.selector,
+            startLine: event.startLine,
+            endLine: event.endLine,
+          }),
+          initialContent: content,
+        };
+        trackedReads.push(meta);
+        await baseline.read(event, content, meta);
+        continue;
+      }
+
+      if (event.type === "replace-exact") {
+        await workspace.replaceExact(event.path, event.expected, event.replacement);
+        continue;
+      }
+
+      if (event.type === "capture-request") {
+        const goldBytesByKey = await pinShrunkGoldMap(
+          await buildGoldMap(workspace, event.requiredUnits, trackedReads),
+          trackedReads,
+          workspace,
+          cell,
+        );
+        const requiredUnits = requiredUnitsFromCapture(event, goldBytesByKey, trackedReads);
+        const result = await baseline.capture(event, workspace);
+        const priorPayloadText = captures.at(-1)?.payloadText ?? "";
+        const metrics = analyzeCapture({
+          baseline: "freshctx-region",
+          payloadText: result.payloadText,
+          payloadBytes: Buffer.byteLength(result.payloadText, "utf8"),
+          projectionText: result.projectionText,
+          trackedReads,
+          requiredUnits,
+          goldBytesByKey,
+          priorPayloadText,
+          telemetry: result.telemetry,
+        });
+        captures.push({
+          event,
+          requiredUnits,
+          payloadText: result.payloadText,
+          payloadSha256: sha256(result.payloadText),
+          metrics,
+          telemetry: result.telemetry,
+        });
+      }
+    }
+
+    return {
+      traceName: trace.name,
+      captures,
+      trackedReads,
+    };
+  } finally {
+    if (owned) await rm(root, { recursive: true, force: true });
+  }
+}
+
 export async function runDeleteUnitFailCloseLab({ root, pack, implementationCommitSha }) {
   const cellsByName = new Map(DELETE_UNIT_FAIL_CLOSE_LAB_CELLS.map((cell) => [cell.name, cell]));
   const names = (await readdir(join(root, pack.tracesDir)))
@@ -301,7 +411,7 @@ export async function runDeleteUnitFailCloseLab({ root, pack, implementationComm
   for (const name of names) {
     const trace = JSON.parse(await readFile(join(root, pack.tracesDir, name), "utf8"));
     const cell = cellsByName.get(trace.name);
-    const result = await runTrace(trace, "freshctx-region");
+    const result = await runDeleteUnitFailCloseTrace(trace, cell);
     const capture = finalCapture(result);
     if (!capture) continue;
     jsonlLines.push(
