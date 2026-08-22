@@ -8,6 +8,7 @@ import test from "node:test";
 import { hermesFreshMatchesRegion } from "../bench/budget-pressure-hermes-fresh.mjs";
 import {
   HOLDOUT_ADAPTER_BAKEOFF_LABEL,
+  corvusFileStaleRecallVsRegion,
   runHoldoutAdapterBakeoffPack,
   summarizeHermesNativeModes,
 } from "../bench/holdout-adapter-bakeoff.mjs";
@@ -39,13 +40,16 @@ test("holdout adapter bakeoff runner emits required baselines per trace", async 
   assert.equal(summary.label, HOLDOUT_ADAPTER_BAKEOFF_LABEL);
   assert.equal(summary.packId, "holdout-v0.1");
   assert.equal(summary.traces, 10);
-  assert.ok(summary.records >= 50, "expected at least 5 baselines × 10 traces");
+  assert.ok(summary.records >= 60, "expected at least 6 baselines × 10 traces");
 
   const match = hermesFreshMatchesRegion(summary.rows);
   assert.ok(match.matched, match.mismatches.join("; "));
   assert.equal(summary.hermesFreshMatchesRegion, true);
 
-  for (const baseline of ["freshctx-region", "freshctx-file", "hermes-fresh", "pi-native", "pi-fresh"]) {
+  const corvusMatch = corvusFileStaleRecallVsRegion(summary.rows);
+  assert.equal(summary.corvusFileStaleRecallMatchesRegion, corvusMatch.matched);
+
+  for (const baseline of ["freshctx-region", "freshctx-file", "corvus-file", "hermes-fresh", "pi-native", "pi-fresh"]) {
     const count = summary.rows.filter((row) => row.baseline === baseline).length;
     assert.equal(count, 10, `${baseline}: expected 10 aggregated rows`);
   }
@@ -66,6 +70,8 @@ test("holdout adapter bakeoff report states hermes-fresh and native-no-op findin
   const report = await readFile(reportPath, "utf8");
   assert.match(report, /holdout-adapter-bakeoff-dev-v0\.1/u);
   assert.match(report, /resultSetHash: null/u);
+  assert.match(report, /corvus-file source: live run/u);
+  assert.match(report, /corvus-file vs freshctx-region/u);
   assert.match(report, /hermes-fresh vs freshctx-region/u);
   assert.match(report, /Hermes native compression/u);
   assert.match(report, /door blob/u);

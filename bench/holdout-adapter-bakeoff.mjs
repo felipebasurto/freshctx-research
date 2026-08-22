@@ -24,7 +24,7 @@ const REPOS_LOCK_PATH = join(ROOT, "bench", "repos.lock.json");
 const NATIVE_HOLDOUT_REPORT_PATH = join(REPORTS_DIR, "native-holdout.md");
 const HERMES_HOST_MODULE = join(ROOT, "bench", "hosts", "hermes", "agent", "context_engine.py");
 const HOST_VERSION = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8")).version;
-const PCR_0037_SQUASH = "5efb5fd0375ab43e8e46313398a51c8ea632c3fe";
+const PCR_0038_SQUASH = "e45b2cdbf15aec2b4133e232e5b005dd832f49cb";
 const DOOR_BLOB = "f8771c93894095348185ef3453a3c2498355b3c6";
 const REPOS_LOCK_BLOB = "79e29d09a9ec12b1128617f683f50a35a3c8809e";
 
@@ -33,6 +33,7 @@ export const HOLDOUT_ADAPTER_BAKEOFF_LABEL = "holdout-adapter-bakeoff-dev-v0.1";
 const COMPARISON_BASELINES = Object.freeze([
   "freshctx-region",
   "freshctx-file",
+  "corvus-file",
   "hermes-fresh",
   "hermes-native",
   "pi-native",
@@ -207,6 +208,35 @@ function aggregateRows(rows) {
   }));
 }
 
+export function corvusFileStaleRecallVsRegion(rows) {
+  const regionByKey = new Map(
+    rows.filter((row) => row.baseline === "freshctx-region").map((row) => [`${row.repo}\t${row.family}`, row]),
+  );
+  const corvusRows = rows.filter((row) => row.baseline === "corvus-file");
+  const mismatches = [];
+  for (const corvus of corvusRows) {
+    const region = regionByKey.get(`${corvus.repo}\t${corvus.family}`);
+    if (!region) {
+      mismatches.push(`${corvus.repo}/${corvus.family}: missing freshctx-region control`);
+      continue;
+    }
+    if (corvus.staleBytes !== region.staleBytes) {
+      mismatches.push(
+        `${corvus.repo}/${corvus.family}: stale-bytes corvus-file=${corvus.staleBytes} region=${region.staleBytes}`,
+      );
+    }
+    if (corvus.requiredRecall !== region.requiredRecall) {
+      mismatches.push(
+        `${corvus.repo}/${corvus.family}: required-recall corvus-file=${corvus.requiredRecall} region=${region.requiredRecall}`,
+      );
+    }
+  }
+  return {
+    matched: mismatches.length === 0,
+    mismatches,
+  };
+}
+
 export function summarizeHermesNativeModes(rows) {
   const nativeRows = rows.filter((row) => row.baseline === "hermes-native");
   const modes = new Set(nativeRows.map((row) => row.nativeMode ?? "native-no-op"));
@@ -228,6 +258,8 @@ function formatReport(rows, hostsLock, {
   systemCommit,
   mergeBaseCommit,
   matchResult,
+  corvusMatchResult,
+  corvusFileSource,
   hermesNativeSummary,
   hermesNativeSource,
 }) {
@@ -240,13 +272,20 @@ function formatReport(rows, hostsLock, {
     `- status: candidate`,
     `- resultSetHash: null`,
     `- HEAD: \`${systemCommit}\``,
-    `- merge-base vs ${PCR_0037_SQUASH.slice(0, 8)}: \`${mergeBaseCommit}\``,
+    `- merge-base vs ${PCR_0038_SQUASH.slice(0, 8)}: \`${mergeBaseCommit}\``,
     `- door blob (src/anchors.mjs): \`${DOOR_BLOB}\``,
     `- repos.lock blob: \`${REPOS_LOCK_BLOB}\``,
     `- hosts.lock SHA-256: \`${hostsLock.sha256}\``,
     `- pi host SHA: \`${hostsLock.pi}\``,
     `- hermes host SHA: \`${hostsLock.hermes}\``,
     `- hermes-native source: ${hermesNativeSource}`,
+    `- corvus-file source: ${corvusFileSource}`,
+    "",
+    "## corvus-file vs freshctx-region (stale/recall)",
+    "",
+    corvusMatchResult.matched
+      ? "**Finding:** corvus-file matched freshctx-region on required-recall and stale-bytes for all 10 holdout cells."
+      : `**Finding:** corvus-file did **not** match freshctx-region on stale/recall:\n\n${corvusMatchResult.mismatches.map((item) => `- ${item}`).join("\n")}`,
     "",
     "## hermes-fresh vs freshctx-region (stale/recall)",
     "",
@@ -334,7 +373,8 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
   const hostsLock = JSON.parse(hostsLockBytes.toString("utf8"));
   const reposLock = await loadJson(REPOS_LOCK_PATH);
   const systemCommit = gitCommit();
-  const mergeBaseCommit = mergeBase(PCR_0037_SQUASH);
+  const mergeBaseCommit = mergeBase(PCR_0038_SQUASH);
+  const corvusFileSource = "live run (bench/corvus.mjs via trace-runner; not replayed)";
   const environmentSha256 = environmentDigest();
   const runId = createHash("sha256")
     .update(`${systemCommit}:holdout-adapter-bakeoff:${Date.now()}:${traces.length}`)
@@ -369,12 +409,14 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
     const [
       regionResult,
       fileResult,
+      corvusResult,
       hermesFreshResult,
       piFreshResult,
       piNativeResult,
     ] = await Promise.all([
       runTrace(trace, "freshctx-region"),
       runTrace(trace, "freshctx-file"),
+      runTrace(trace, "corvus-file"),
       runHermesTrace(trace),
       runPiTrace(trace),
       runPiNativeTrace(trace),
@@ -383,6 +425,7 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
     const rowsForTrace = [
       captureRow("freshctx-region", regionResult, finalCapture),
       captureRow("freshctx-file", fileResult, finalCapture),
+      captureRow("corvus-file", corvusResult, finalCapture),
       captureRow("hermes-fresh", hermesFreshResult, finalHermesCapture),
       captureRow("pi-fresh", piFreshResult, finalPiCapture),
       captureRow("pi-native", piNativeResult, finalPiNativeCapture),
@@ -448,6 +491,7 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
 
   const rows = aggregateRows(perTraceRows);
   const matchResult = hermesFreshMatchesRegion(rows);
+  const corvusMatchResult = corvusFileStaleRecallVsRegion(rows);
   const hermesNativeSummary = summarizeHermesNativeModes(rows);
   const report = formatReport(rows, {
     sha256: sha256(hostsLockBytes),
@@ -457,6 +501,8 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
     systemCommit,
     mergeBaseCommit,
     matchResult,
+    corvusMatchResult,
+    corvusFileSource,
     hermesNativeSummary,
     hermesNativeSource,
   });
@@ -476,6 +522,9 @@ export async function runHoldoutAdapterBakeoffPack({ skipReportWrite = false, in
     rows,
     hermesFreshMatchesRegion: matchResult.matched,
     hermesFreshMismatches: matchResult.mismatches,
+    corvusFileStaleRecallMatchesRegion: corvusMatchResult.matched,
+    corvusFileStaleRecallMismatches: corvusMatchResult.mismatches,
+    corvusFileSource,
     hermesNativeSummary,
     hermesNativeSource,
     hermesHostReady,
