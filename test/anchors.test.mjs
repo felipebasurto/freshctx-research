@@ -140,6 +140,96 @@ test("exact match elsewhere does not replay when stored boundaries still anchor 
   assert.equal(result.startLine, 1);
 });
 
+test("exact match elsewhere does not replay when stored region grew in place", () => {
+  const previous = [
+    "BEGIN",
+    "keep-a",
+    "keep-b",
+    "END",
+  ].join("\n");
+  const grown = [
+    "BEGIN",
+    "keep-a",
+    "inserted",
+    "keep-b",
+    "END",
+  ].join("\n");
+  const current = [
+    grown,
+    "",
+    previous,
+  ].join("\n");
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors: makeAnchors(previous, { startLine: 1 }),
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "boundary-anchors");
+  assert.equal(result.content, grown);
+  assert.equal(result.startLine, 1);
+});
+
+test("exact match elsewhere does not replay when stored region shrank to a contiguous prefix", () => {
+  const previous = [
+    "BEGIN",
+    "line-a",
+    "line-b",
+    "line-c",
+    "END",
+  ].join("\n");
+  const shrunk = [
+    "BEGIN",
+    "line-a",
+    "line-b",
+  ].join("\n");
+  const current = [
+    shrunk,
+    "",
+    previous,
+  ].join("\n");
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors: makeAnchors(previous, { startLine: 1 }),
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "boundary-anchors");
+  assert.equal(result.content, shrunk);
+  assert.equal(result.startLine, 1);
+});
+
+test("relocated exact still wins over stored-start lookalike that is not a contiguous prefix", () => {
+  const previous = [
+    "BEGIN",
+    "line-a",
+    "line-b",
+    "line-c",
+    "END",
+  ].join("\n");
+  const lookalike = [
+    "BEGIN",
+    "END",
+  ].join("\n");
+  const current = [
+    lookalike,
+    "",
+    previous,
+  ].join("\n");
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors: makeAnchors(previous, { startLine: 1 }),
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "exact");
+  assert.equal(result.content, previous);
+  assert.equal(result.startLine, 4);
+});
+
 test("equally plausible boundary matches fail closed", () => {
   const previous = "BEGIN\nold\nEND";
   const current = [
