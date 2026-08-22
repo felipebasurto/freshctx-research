@@ -25,6 +25,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-21 | (PCR 0016) insert-before-interior-dev-v0.1 pack | 91/91 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0016](pcr/0016-insert-before-interior-dev-pack.md) |
 | 2026-08-21 | (PCR 0017) insert-before-tie-dev-v0.1 pack | 92/92 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0017](pcr/0017-insert-before-tie-dev-pack.md) |
 | 2026-08-22 | (PCR 0018) insert-before-unique-last-dev-v0.1 pack | 93/93 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0018](pcr/0018-insert-before-unique-last-dev-pack.md) |
+| 2026-08-22 | (PCR 0019) grow-inside-dev-v0.1 pack | 94/94 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0019](pcr/0019-grow-inside-dev-pack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
