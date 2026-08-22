@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "move-cross-file-dev-v0.1",
+  "classification": "locally-frozen",
+  "manifestPath": "bench/splits/move-cross-file-dev-v0.1.json",
+  "manifestSha256": "7053b25abd6fba594f0b74cab70f5a235b6d5dedd049b2d50fc7532155e134c3",
+  "freezeCommitSha": "9bb9590be71cc872fc7d0284f3f23bea032efb63",
+  "implementationCommitSha": "9bb9590be71cc872fc7d0284f3f23bea032efb63",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": "a272d7a6e270000c33b18bb62fbe2f14a4594a4a55254e1f8c4cc69d64f6ae99",
+  "resultSetHash": "dad27e007a5d52b133c4f2ea4f78e23bdc77fae35d713a693ede1b490e63d4b4",
+  "reportHash": "8f5a4dc3ebb292837a41bff8c6f93c3c826ba61aae1f626e6fc1b77fcd260794",
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T16:25:08.122Z"
+}

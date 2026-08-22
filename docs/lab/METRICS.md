@@ -37,6 +37,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0028) duplicate-boundary-markers-dev-v0.1 pack | 105/105 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0028](pcr/0028-duplicate-boundary-markers-dev-pack.md) |
 | 2026-08-22 | (PCR 0029) grow-shrink exact-decoy door change | 109/109 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0029](pcr/0029-grow-shrink-exact-decoy-door.md) |
 | 2026-08-22 | (PCR 0030) stored-start leftover fail-close door change | 110/110 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0030](pcr/0030-stored-start-leftover-fail-close-door.md) |
+| 2026-08-22 | (PCR 0031) move-cross-file-dev-v0.1 pack | 111/111 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0031](pcr/0031-move-cross-file-dev-pack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
