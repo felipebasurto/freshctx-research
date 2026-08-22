@@ -46,8 +46,8 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0038) holdout adapter bake-off | 137/137 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0038](pcr/0038-holdout-adapter-bakeoff.md) |
 | 2026-08-22 | (PCR 0040) empty envelope without boilerplate | 138/138 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) |
 | 2026-08-22 | (PCR 0041) live DeepSeek Hermes session (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0041](pcr/0041-live-deepseek-hermes-session.md) |
-| 2026-08-22 | (PCR 0042) live Hermes ctor re-run (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0042](pcr/0042-live-hermes-ctor-rerun.md) |
 | 2026-08-22 | (PCR 0043) live Pi official-hook CLI (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0043](pcr/0043-live-pi-cli-official-hook.md) |
+| 2026-08-22 | (PCR 0044) live Hermes ctor re-run (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -84,9 +84,9 @@ Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/repor
 Hermes here is NousResearch/hermes-agent, not a Hermes LLM. Model is DeepSeek.
 Official score is token-in-request. Cell B is a confounded region test (literal backslash-n). Not a paper result.
 
-| UTC | FreshCtx | Hermes Agent | Model requested / response | Cells | Note | PCR |
-|---|---|---|---|---|---|---|
-| 2026-08-22 | `4ccb0083` | `999703fd` | deepseek-chat / deepseek-v4-flash | 15 | File-scope current vs native stale; cell B invalid; not a paper result | [0041](pcr/0041-live-deepseek-hermes-session.md) |
-| 2026-08-22 | `4ccb0083` | `999703fd` | deepseek-v4-flash | 1 | Ctor yes, gold no on A-append; freshctx-state empty; not a paper result | [0042](pcr/0042-live-hermes-ctor-rerun.md) |
-| 2026-08-22 | `4ccb0083` | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 16 | Official Pi hook pi-cli; 8 cells × fresh/native; not pi-adapter-replay | [0043](pcr/0043-live-pi-cli-official-hook.md) |
-| 2026-08-22 | `fa6e2011` base | `999703fd` | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
+| UTC | FreshCtx | Hermes Agent | Pi host | Model requested / response | Cells | Note | PCR |
+|---|---|---|---|---|---|---|---|
+| 2026-08-22 | `4ccb0083` | `999703fd` | — | deepseek-chat / deepseek-v4-flash | 15 | File-scope current vs native stale; cell B invalid; not a paper result | [0041](pcr/0041-live-deepseek-hermes-session.md) |
+| 2026-08-22 | `4ccb0083` | `999703fd` | — | deepseek-v4-flash | 1 | Post-ctor-fix plugin `f2048257`; gold miss; freshctx-state empty | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
+| 2026-08-22 | `4ccb0083` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 16 | Official Pi hook pi-cli; 8 cells × fresh/native; not pi-adapter-replay | [0043](pcr/0043-live-pi-cli-official-hook.md) |
+| 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |

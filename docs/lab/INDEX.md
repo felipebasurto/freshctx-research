@@ -43,5 +43,5 @@
 | [0039](pcr/0039-holdout-corvus-file.md) | 2026-08-22 | Holdout v0.1 corvus-file column on adapter bake-off | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) | 2026-08-22 | Empty envelope without boilerplate prose on delete cells | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0041](pcr/0041-live-deepseek-hermes-session.md) | 2026-08-22 | Live DeepSeek session on Hermes Agent + FreshCtx | `synthetic`; `live-host`; `hermes-fresh` | review |
-| [0042](pcr/0042-live-hermes-ctor-rerun.md) | 2026-08-22 | Live Hermes ctor re-run (gold miss on A-append) | `synthetic`; `live-host`; `hermes-fresh`; `live-ctor` | review |
 | [0043](pcr/0043-live-pi-cli-official-hook.md) | 2026-08-22 | Live Pi official-hook CLI (`pi-cli`) | `synthetic`; `live-host`; `pi-fresh`; `pi-cli` | review |
+| [0044](pcr/0044-live-hermes-ctor-rerun.md) | 2026-08-22 | Live Hermes ctor re-run (post-ctor-fix, gold miss) | `synthetic`; `live-host`; `hermes-fresh`; `live-ctor`; `post-ctor-fix`; `pre-lifecycle-fix` | review |
