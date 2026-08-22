@@ -46,6 +46,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0038) holdout adapter bake-off | 137/137 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0038](pcr/0038-holdout-adapter-bakeoff.md) |
 | 2026-08-22 | (PCR 0040) empty envelope without boilerplate | 138/138 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) |
 | 2026-08-22 | (PCR 0041) live DeepSeek Hermes session (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0041](pcr/0041-live-deepseek-hermes-session.md) |
+| 2026-08-22 | (PCR 0042) Hermes zero-arg engine env defaults | 139/139 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0042](pcr/0042-hermes-zero-arg-engine.md) |
 | 2026-08-22 | (PCR 0043) live Pi official-hook CLI (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0043](pcr/0043-live-pi-cli-official-hook.md) |
 | 2026-08-22 | (PCR 0044) live Hermes ctor re-run (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0044](pcr/0044-live-hermes-ctor-rerun.md) |
 
