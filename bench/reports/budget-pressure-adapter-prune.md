@@ -1,12 +1,12 @@
 # CtxBench budget-pressure adapter prune (budget-pressure-adapter-prune-dev-v0.1)
 
-Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops unserved read tool pairs under 4k budget (untracked or omitted from projection); keeps gold markers and FreshCtx region projection.
+Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops unserved read tool pairs whenever a projection is applied (untracked or omitted from projection); keeps gold markers and FreshCtx region projection.
 
 - pack: `budget-pressure-dev-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `4cd1fd1`
-- merge-base vs 7b02a1db: `7b02a1dba0a2bb7536a4a4106eb31b540df9caff`
+- HEAD: `939a22109ee5925a40921e5c6eea876b18959d47`
+- merge-base vs bfb9bb20: `bfb9bb20d6aaeb378c0b4052942792288a75f357`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
 - hosts.lock SHA-256: `54ab03119a253b8afa2dd7c8e392e74a5fad169b75df21958aa97b1df82a8b77`
@@ -21,7 +21,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 
 **Finding:** pruned hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 6 cells.
 
-Generated: 2026-08-22T18:08:14.608Z
+Generated: 2026-08-22T18:20:30.106Z
 
 ## Per-cell metrics (final capture)
 

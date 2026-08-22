@@ -8,7 +8,6 @@ import {
   dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
-  shouldPruneAdapterRequest,
 } from "../request-prune.mjs";
 
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
@@ -151,16 +150,16 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
           return Number.isFinite(configured) && configured > 0 ? configured : 24_000;
         })(),
       });
-      const pruneRequest = shouldPruneAdapterRequest(budgetChars);
       const projection = engine.project({
         task: lastUserTask(event.messages),
         budgetChars,
       });
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
-      const assembled = pruneRequest
-        ? dropUnservedReadToolPairs(rewritten, { readTools: new Set(["read"]), servedCallIds })
-        : rewritten;
+      const assembled = dropUnservedReadToolPairs(rewritten, {
+        readTools: new Set(["read"]),
+        servedCallIds,
+      });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
 
       return {
