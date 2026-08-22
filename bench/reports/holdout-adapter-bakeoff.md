@@ -5,7 +5,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 - pack: `holdout-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `b06d9c8643bee8d28e7ab6105555c299751dcee1`
+- HEAD: `40760d50b2d89a96e84d7895f8a62871644d3720`
 - merge-base vs e45b2cdb: `e45b2cdbf15aec2b4133e232e5b005dd832f49cb`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -19,6 +19,10 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** corvus-file matched freshctx-region on required-recall and stale-bytes for all 10 holdout cells.
 
+## Empty-envelope delete cells vs corvus-file (projection-bytes)
+
+**Finding:** Holdout delete cells dropped from **164** to **78** bytes (empty envelope without boilerplate prose; `selected=0`, `unresolved=1`, no unit body). corvus-file remains smaller (go-tools **68**, neovim **73**). The other **8** non-delete cells held **stale-bytes 0** and **required-recall 1.000** vs PCR 0039 region values; hermes-fresh still matches region on stale/recall/bytes.
+
 ## hermes-fresh vs freshctx-region (stale/recall)
 
 **Finding:** hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 10 holdout cells.
@@ -27,7 +31,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** Hermes native stayed **native-no-op** on all 10 cells (holdout window below `should_compress` threshold; no Hermes quality number claimed).
 
-Generated: 2026-08-22T18:51:49.334Z
+Generated: 2026-08-22T19:00:47.000Z
 
 ## Per-cell metrics (10 traces)
 
@@ -40,13 +44,13 @@ Generated: 2026-08-22T18:51:49.334Z
 | hermes-native | go-tools | append | 0.000 | 0.000 | 0 | 1.000 | 277 |
 | pi-native | go-tools | append | 0.000 | 0.000 | 0 | 1.000 | 277 |
 | pi-fresh | go-tools | append | 1.000 | 0.000 | 0 | 1.000 | 604 |
-| freshctx-region | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
-| freshctx-file | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| freshctx-region | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
+| freshctx-file | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | corvus-file | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 68 |
-| hermes-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| hermes-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | hermes-native | go-tools | delete | 0.000 | 1.000 | 66 | 1.000 | 124 |
 | pi-native | go-tools | delete | 0.000 | 1.000 | 66 | 1.000 | 124 |
-| pi-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| pi-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | freshctx-region | go-tools | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 809 |
 | freshctx-file | go-tools | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 6501 |
 | corvus-file | go-tools | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 6150 |
@@ -75,13 +79,13 @@ Generated: 2026-08-22T18:51:49.334Z
 | hermes-native | neovim | append | 0.000 | 1.000 | 645 | 0.000 | 705 |
 | pi-native | neovim | append | 0.000 | 1.000 | 645 | 0.000 | 705 |
 | pi-fresh | neovim | append | 1.000 | 0.000 | 0 | 1.000 | 1029 |
-| freshctx-region | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
-| freshctx-file | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| freshctx-region | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
+| freshctx-file | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | corvus-file | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 73 |
-| hermes-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| hermes-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | hermes-native | neovim | delete | 0.000 | 1.000 | 69 | 1.000 | 127 |
 | pi-native | neovim | delete | 0.000 | 1.000 | 69 | 1.000 | 127 |
-| pi-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| pi-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | freshctx-region | neovim | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 561 |
 | freshctx-file | neovim | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 7518 |
 | corvus-file | neovim | duplicate-boundary | 0.000 | 0.000 | 0 | 1.000 | 7167 |
@@ -115,13 +119,13 @@ Generated: 2026-08-22T18:51:49.334Z
 | go-tools | append | hermes-native | 1.000 | 0.000 | 0.000 | 0 | 277 | -327 |
 | go-tools | append | pi-native | 1.000 | 0.000 | 0.000 | 0 | 277 | -327 |
 | go-tools | append | pi-fresh | 1.000 | 1.000 | 0.000 | 0 | 604 | 0 |
-| go-tools | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| go-tools | delete | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| go-tools | delete | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 68 | -96 |
-| go-tools | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| go-tools | delete | hermes-native | 1.000 | 0.000 | 1.000 | 66 | 124 | -40 |
-| go-tools | delete | pi-native | 1.000 | 0.000 | 1.000 | 66 | 124 | -40 |
-| go-tools | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
+| go-tools | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| go-tools | delete | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| go-tools | delete | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 68 | -10 |
+| go-tools | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| go-tools | delete | hermes-native | 1.000 | 0.000 | 1.000 | 66 | 124 | 46 |
+| go-tools | delete | pi-native | 1.000 | 0.000 | 1.000 | 66 | 124 | 46 |
+| go-tools | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
 | go-tools | duplicate-boundary | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 809 | 0 |
 | go-tools | duplicate-boundary | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 6501 | 5692 |
 | go-tools | duplicate-boundary | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 6150 | 5341 |
@@ -150,13 +154,13 @@ Generated: 2026-08-22T18:51:49.334Z
 | neovim | append | hermes-native | 0.000 | 0.000 | 1.000 | 645 | 705 | -324 |
 | neovim | append | pi-native | 0.000 | 0.000 | 1.000 | 645 | 705 | -324 |
 | neovim | append | pi-fresh | 1.000 | 1.000 | 0.000 | 0 | 1029 | 0 |
-| neovim | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| neovim | delete | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| neovim | delete | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 73 | -91 |
-| neovim | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| neovim | delete | hermes-native | 1.000 | 0.000 | 1.000 | 69 | 127 | -37 |
-| neovim | delete | pi-native | 1.000 | 0.000 | 1.000 | 69 | 127 | -37 |
-| neovim | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
+| neovim | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| neovim | delete | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| neovim | delete | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 73 | -5 |
+| neovim | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| neovim | delete | hermes-native | 1.000 | 0.000 | 1.000 | 69 | 127 | 49 |
+| neovim | delete | pi-native | 1.000 | 0.000 | 1.000 | 69 | 127 | 49 |
+| neovim | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
 | neovim | duplicate-boundary | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 561 | 0 |
 | neovim | duplicate-boundary | freshctx-file | 1.000 | 0.000 | 0.000 | 0 | 7518 | 6957 |
 | neovim | duplicate-boundary | corvus-file | 1.000 | 0.000 | 0.000 | 0 | 7167 | 6606 |
