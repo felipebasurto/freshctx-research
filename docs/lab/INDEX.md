@@ -23,3 +23,4 @@
 | [0019](pcr/0019-grow-inside-dev-pack.md) | 2026-08-22 | grow-inside development pack (not a public benchmark) | `synthetic`; `grow-inside-dev` | review |
 | [0020](pcr/0020-delete-unit-dev-pack.md) | 2026-08-22 | delete-unit development pack (not a public benchmark) | `synthetic`; `delete-unit-dev` | review |
 | [0021](pcr/0021-rename-boundary-dev-pack.md) | 2026-08-22 | rename-boundary development pack (not a public benchmark) | `synthetic`; `rename-boundary-dev` | review |
+| [0022](pcr/0022-delete-unit-fail-close-dev-pack.md) | 2026-08-22 | delete-unit fail-close door change (not a public benchmark) | `synthetic`; `delete-unit-fail-close-dev` | review |

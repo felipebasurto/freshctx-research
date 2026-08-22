@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T08:30:33.559Z",
+  "packId": "delete-unit-fail-close-dev-v0.1",
+  "manifestPath": "bench/splits/delete-unit-fail-close-dev-v0.1.json",
+  "manifestSha256": "39b91fe8bf27e51834878da80f36f3de7b1579f895850fe2fdf946420dbb9590",
+  "freezeCommitSha": "dbe2cbf8c56c5ae371b3041c4dae646d957f0c23",
+  "implementationCommitSha": "b487b4dcc3916991e70c190a2b2f50362c7115df",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "generateProvenancePath": "bench/packs/delete-unit-fail-close-dev-v0.1/provenance/generate.json",
+  "records": 2,
+  "summary": "Ran 2 delete-unit fail-close lab cell(s).",
+  "recordsWritten": 2,
+  "resultSetHash": "f740b97383ce2f0914f27008c4146f28b13e372fdf03d6a59c6bc75cae4e7de6"
+}

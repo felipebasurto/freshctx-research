@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T08:30:33.480Z",
+  "packId": "delete-unit-fail-close-dev-v0.1",
+  "manifestPath": "bench/splits/delete-unit-fail-close-dev-v0.1.json",
+  "manifestSha256": "39b91fe8bf27e51834878da80f36f3de7b1579f895850fe2fdf946420dbb9590",
+  "freezeCommitSha": "dbe2cbf8c56c5ae371b3041c4dae646d957f0c23",
+  "implementationCommitSha": "0abaa70284207d95213e89f9d03553ebe021c4bb",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 2,
+  "traceNames": [
+    "go-tools/delete-unit-fail-close/benchmark-fields-lookalike-decoy",
+    "go-tools/delete-unit-fail-close/benchmark-fields-in-place-shrink"
+  ],
+  "traceSetHash": "f7d8d44fb0aa43b82af3f0c42ccd1b36cc16405fecf7c6951c214f6415b9e61b"
+}

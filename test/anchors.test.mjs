@@ -45,6 +45,70 @@ test("boundary anchors recover a region whose interior changed", () => {
   assert.doesNotMatch(result.content, /role ===/);
 });
 
+test("displaced shrunk first+last after delete fails closed", () => {
+  const previous = [
+    "\tName              string  // benchmark name",
+    "\tN                 int     // number of iterations",
+    "\tNsPerOp           float64 // nanoseconds per iteration",
+    "\tAllocedBytesPerOp uint64  // bytes allocated per iteration",
+    "\tAllocsPerOp       uint64  // allocs per iteration",
+    "\tMBPerS            float64 // MB processed per second",
+    "\tMeasured          int     // which measurements were recorded",
+    "\tOrd               int     // ordinal position within a benchmark run",
+  ].join("\n");
+  const lookalike = [
+    "\tName              string  // benchmark name",
+    "\tOrd               int     // ordinal position within a benchmark run",
+  ].join("\n");
+  const current = [
+    "type Benchmark struct {",
+    "}",
+    "// gap",
+    lookalike,
+    "",
+    "// ParseLine extracts a Benchmark from a single line of testing.B",
+  ].join("\n");
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors: makeAnchors(previous, { startLine: 29 }),
+  });
+
+  assert.deepEqual(result, {
+    state: "unresolved",
+    method: "displaced-shrunk-boundary-anchors",
+  });
+});
+
+test("in-place shrink at stored start is not treated as displaced leftover", () => {
+  const previous = [
+    "\tName              string  // benchmark name",
+    "\tN                 int     // number of iterations",
+    "\tNsPerOp           float64 // nanoseconds per iteration",
+    "\tAllocedBytesPerOp uint64  // bytes allocated per iteration",
+    "\tAllocsPerOp       uint64  // allocs per iteration",
+    "\tMBPerS            float64 // MB processed per second",
+    "\tMeasured          int     // which measurements were recorded",
+    "\tOrd               int     // ordinal position within a benchmark run",
+  ].join("\n");
+  const shrunk = [
+    "\tName              string  // benchmark name",
+    "\tOrd               int     // ordinal position within a benchmark run",
+  ].join("\n");
+  const pad = Array.from({ length: 28 }, (_, index) => `// pad ${index}`).join("\n");
+  const current = `${pad}\n${shrunk}\n// tail`;
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: current,
+    anchors: makeAnchors(previous, { startLine: 29 }),
+  });
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.method, "boundary-anchors");
+  assert.equal(result.content, shrunk);
+  assert.equal(result.startLine, 29);
+});
+
 test("equally plausible boundary matches fail closed", () => {
   const previous = "BEGIN\nold\nEND";
   const current = [

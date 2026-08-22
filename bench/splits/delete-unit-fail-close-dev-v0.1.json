@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "delete-unit-fail-close-dev-v0.1",
+  "benchmarkVersion": "delete-unit-fail-close-dev-v0.1",
+  "label": "delete-unit-fail-close-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "delete-unit"
+  ],
+  "seeds": {
+    "traceSelection": "delete-unit-fail-close-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 2
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/delete-unit-fail-close-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/delete-unit-fail-close-dev-v0.1",
+  "reportsDir": "bench/packs/delete-unit-fail-close-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/delete-unit-fail-close-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T08:28:16.043Z",
+  "implementationCommitSha": "0abaa70284207d95213e89f9d03553ebe021c4bb",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "39b91fe8bf27e51834878da80f36f3de7b1579f895850fe2fdf946420dbb9590"
+}
