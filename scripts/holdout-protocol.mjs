@@ -72,6 +72,11 @@ import {
   runGrowShrinkExactDecoyLab,
 } from "../bench/grow-shrink-exact-decoy-lab.mjs";
 import {
+  generateStoredStartLeftoverFailCloseLabTraces,
+  storedStartLeftoverFailCloseLabManifestDraft,
+  runStoredStartLeftoverFailCloseLab,
+} from "../bench/stored-start-leftover-fail-close-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -100,6 +105,7 @@ const TRACE_GENERATORS = {
   "parse-broken-lab": generateParseBrokenLabTraces,
   "move-lookalike-lab": generateMoveLookalikeLabTraces,
   "grow-shrink-exact-decoy-lab": generateGrowShrinkExactDecoyLabTraces,
+  "stored-start-leftover-fail-close-lab": generateStoredStartLeftoverFailCloseLabTraces,
 };
 
 const TRACE_RUNNERS = {
@@ -117,6 +123,7 @@ const TRACE_RUNNERS = {
   "parse-broken-lab": runParseBrokenLab,
   "move-lookalike-lab": runMoveLookalikeLab,
   "grow-shrink-exact-decoy-lab": runGrowShrinkExactDecoyLab,
+  "stored-start-leftover-fail-close-lab": runStoredStartLeftoverFailCloseLab,
 };
 
 const MANIFEST_DRAFTS = {
@@ -133,6 +140,7 @@ const MANIFEST_DRAFTS = {
   "parse-broken-lab": parseBrokenLabManifestDraft,
   "move-lookalike-lab": moveLookalikeLabManifestDraft,
   "grow-shrink-exact-decoy-lab": growShrinkExactDecoyLabManifestDraft,
+  "stored-start-leftover-fail-close-lab": storedStartLeftoverFailCloseLabManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -153,9 +161,9 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab]
+  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.

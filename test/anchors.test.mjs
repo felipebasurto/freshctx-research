@@ -80,7 +80,7 @@ test("displaced shrunk first+last after delete fails closed", () => {
   });
 });
 
-test("in-place shrink at stored start is not treated as displaced leftover", () => {
+test("stored-start leftover first+last after interior delete fails closed", () => {
   const previous = [
     "\tName              string  // benchmark name",
     "\tN                 int     // number of iterations",
@@ -91,22 +91,22 @@ test("in-place shrink at stored start is not treated as displaced leftover", () 
     "\tMeasured          int     // which measurements were recorded",
     "\tOrd               int     // ordinal position within a benchmark run",
   ].join("\n");
-  const shrunk = [
+  const leftover = [
     "\tName              string  // benchmark name",
     "\tOrd               int     // ordinal position within a benchmark run",
   ].join("\n");
   const pad = Array.from({ length: 28 }, (_, index) => `// pad ${index}`).join("\n");
-  const current = `${pad}\n${shrunk}\n// tail`;
+  const current = `${pad}\n${leftover}\n// tail`;
   const result = resolveRegion({
     previousContent: previous,
     currentFileContent: current,
     anchors: makeAnchors(previous, { startLine: 29 }),
   });
 
-  assert.equal(result.state, "resolved");
-  assert.equal(result.method, "boundary-anchors");
-  assert.equal(result.content, shrunk);
-  assert.equal(result.startLine, 29);
+  assert.deepEqual(result, {
+    state: "unresolved",
+    method: "displaced-shrunk-boundary-anchors",
+  });
 });
 
 test("exact match elsewhere does not replay when stored boundaries still anchor changed bytes", () => {
