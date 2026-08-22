@@ -13,6 +13,7 @@ import { analyzeCapture } from "./metrics.mjs";
 import { buildGoldMap, requiredUnitsFromCapture, unitKey } from "./oracle.mjs";
 import { Workspace } from "./workspace.mjs";
 import { sha256, stableUnitId } from "../src/hash.mjs";
+import { isBudgetPressureTrace } from "./budget-pressure-lab.mjs";
 import { HERMES_BRIDGE_PATH } from "./hosts-path.mjs";
 
 function parseMutationFamily(name) {
@@ -45,11 +46,34 @@ function invokeHermesNativeBridge(payload) {
   return JSON.parse(run.stdout);
 }
 
+function resolveHermesBridgePayload({
+  captureMessages,
+  persistedMessages,
+  incomingMessage,
+  event,
+  budgetPressure,
+}) {
+  const budgetChars = event.budgetChars ?? 12_000;
+  const budgetTokens = Math.ceil(budgetChars / 4);
+  const payload = {
+    messages: structuredClone(captureMessages),
+    conversationMessages: structuredClone(persistedMessages),
+    incomingMessage,
+    budgetTokens,
+    budgetPressure: Boolean(budgetPressure),
+  };
+  if (!budgetPressure) {
+    payload.contextLength = Math.max(32_000, Math.ceil(budgetChars * 8));
+  }
+  return payload;
+}
+
 /**
  * Hermes native context replay via frozen ContextCompressor checkout.
  * Does not call FreshCtx resolveRegion/registry or adapter bridge paths.
  */
-export async function runHermesNativeTrace(trace, { workspaceRoot } = {}) {
+export async function runHermesNativeTrace(trace, { workspaceRoot, budgetPressure } = {}) {
+  const pressure = budgetPressure ?? isBudgetPressureTrace(trace);
   nextToolCallId = 0;
   const root = workspaceRoot ?? await mkdtemp(join(tmpdir(), "freshctx-hermes-native-trace-"));
   const owned = !workspaceRoot;
@@ -128,13 +152,15 @@ export async function runHermesNativeTrace(trace, { workspaceRoot } = {}) {
         const goldBytesByKey = await buildGoldMap(workspace, event.requiredUnits, trackedReads);
         const requiredUnits = requiredUnitsFromCapture(event, goldBytesByKey, trackedReads);
         const started = performance.now();
-        const bridgeResult = invokeHermesNativeBridge({
-          messages: structuredClone(captureMessages),
-          conversationMessages: structuredClone(persistedMessages),
-          incomingMessage,
-          budgetTokens: Math.ceil((event.budgetChars ?? 12_000) / 4),
-          contextLength: Math.max(32_000, Math.ceil((event.budgetChars ?? 12_000) * 8)),
-        });
+        const bridgeResult = invokeHermesNativeBridge(
+          resolveHermesBridgePayload({
+            captureMessages,
+            persistedMessages,
+            incomingMessage,
+            event,
+            budgetPressure: pressure,
+          }),
+        );
         const totalMs = performance.now() - started;
         const requestMessages = bridgeResult.messages ?? captureMessages;
         const payloadText = bridgeResult.payloadText ?? messageText(requestMessages);
