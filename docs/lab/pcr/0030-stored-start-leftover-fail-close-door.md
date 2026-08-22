@@ -3,8 +3,8 @@
 - Date (UTC): 2026-08-22
 - Author / agent: Cloud Agent (pcr-0030-stored-start-leftover-fail-close)
 - Branch / PR: `cursor/pcr-0030-stored-start-leftover-fail-close-a8e9`
-- Base SHA: `898510e32a5670cd31aebd1b8f3a61a88e89efa3` (PCR 0029 draft head)
-- Freeze commit: `84b09c409fb6de5bfc6ae40e7693c7e2d0d3e750`
+- Base SHA: `0671b5719f6d00e49e7cbb0f1d4cc755e25ac7b6` (main after PCR 0029 squash-merge)
+- Freeze commit: `ebe02a821cb238f5ac9c1f5b306c980e0265abb0`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `stored-start-leftover-fail-close-dev`
 - Door SHA (`src/anchors.mjs`): post-fix on branch
@@ -49,7 +49,7 @@ Locked go-tools `parse.go` is only the fixture. No Go parser, treesitter, keywor
 
 ## Measured cells
 
-`freshctx-region` on `stored-start-leftover-fail-close-dev-v0.1` after run commit `6fee605`.
+`freshctx-region` on `stored-start-leftover-fail-close-dev-v0.1` after door commit `4473727` (rebased onto main `0671b571`).
 
 | cell | recall | exact | stale | dup | method | proj bytes | payload sha256 |
 |---|---:|---:|---:|---:|---|---:|---|
