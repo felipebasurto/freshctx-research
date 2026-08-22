@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "delete-unit-dev-v0.1",
+  "classification": "candidate",
+  "manifestPath": "bench/splits/delete-unit-dev-v0.1.json",
+  "manifestSha256": "773ddf688396248887d50c5e2ea0c315698aaa4559263d6d95f7775845309632",
+  "freezeCommitSha": null,
+  "implementationCommitSha": "4ff9809b5f9944e4087be1b5a7862a7cfbfce6c6",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": null,
+  "resultSetHash": null,
+  "reportHash": null,
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T07:44:15.722Z"
+}
