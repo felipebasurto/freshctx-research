@@ -7,6 +7,7 @@ import { decodeProjectionUnits } from "../src/projector.mjs";
 import { createBaseline } from "./baselines.mjs";
 import { analyzeCapture } from "./metrics.mjs";
 import { buildGoldMap, goldBytesForRead, requiredUnitsFromCapture, unitKey } from "./oracle.mjs";
+import { finalCapture } from "./trace-runner.mjs";
 import { Workspace } from "./workspace.mjs";
 
 export const GROW_INSIDE_LAB_PACK_ID = "grow-inside-dev-v0.1";
@@ -186,7 +187,7 @@ async function oracleGoldBytes(content, cell, initialContent) {
   });
 }
 
-export async function secondCaptureBytes(mutated, cell, initialContent) {
+async function secondCaptureBytes(mutated, cell, initialContent) {
   const oracle = await oracleGoldBytes(mutated, cell, initialContent);
   if (!cell.pinGrownGold) return oracle;
 
@@ -329,7 +330,6 @@ function payloadResolutionMethod(payloadText) {
 async function pinGrownGoldMap(goldBytesByKey, trackedReads, workspace, cell) {
   if (!cell?.pinGrownGold) return goldBytesByKey;
   const current = String(await workspace.read(PARSE_PATH)).replaceAll("\r\n", "\n");
-  if (!current.includes(INSERT_ALPHA)) return goldBytesByKey;
   const grown = grownUnitBytes(current, BODY_FIRST, BODY_LAST);
   const next = { ...goldBytesByKey };
   for (const read of trackedReads) {
@@ -440,7 +440,7 @@ export async function runGrowInsideLab({ root, pack, implementationCommitSha }) 
     const trace = JSON.parse(await readFile(join(root, pack.tracesDir, name), "utf8"));
     const cell = cellsByName.get(trace.name);
     const result = await runGrowInsideTrace(trace, cell);
-    const capture = result.captures.at(-1);
+    const capture = finalCapture(result);
     if (!capture) continue;
     jsonlLines.push(
       JSON.stringify({
