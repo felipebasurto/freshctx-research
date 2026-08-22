@@ -70,6 +70,7 @@ export const DELETE_UNIT_FAIL_CLOSE_LAB_CELLS = [
     task: "review Benchmark fields",
     mutations: [IN_PLACE_SHRINK],
     absenceGold: false,
+    pinShrunkGold: true,
   },
 ];
 
@@ -142,6 +143,21 @@ async function oracleGoldBytes(content, cell, initialContent) {
   });
 }
 
+async function secondCaptureBytes(mutated, cell, initialContent) {
+  const oracle = await oracleGoldBytes(mutated, cell, initialContent);
+  if (cell.absenceGold) return null;
+  if (!cell.pinShrunkGold) return oracle;
+
+  const shrunk = extractRegion(mutated, cell.startLine, cell.startLine + 1);
+  if (shrunk !== SHRUNK_FIELDS) {
+    throw new Error(`${cell.id} did not retain Name+Ord at stored start`);
+  }
+  if (shrunk === oracle) {
+    throw new Error(`${cell.id} shrunk gold collapsed to line-number oracle`);
+  }
+  return shrunk;
+}
+
 function firstCaptureEvent(cell, digest) {
   return {
     type: "capture-request",
@@ -187,9 +203,8 @@ async function buildCellTrace(cell, sourceText, goCommit) {
   }
   const firstSha = sha256(await oracleGoldBytes(sourceText, cell, initialContent));
   const mutated = applyMutations(sourceText, cell.mutations);
-  const finalSha = cell.absenceGold
-    ? null
-    : sha256(await oracleGoldBytes(mutated, cell, initialContent));
+  const finalBytes = cell.absenceGold ? null : await secondCaptureBytes(mutated, cell, initialContent);
+  const finalSha = finalBytes === null ? null : sha256(finalBytes);
 
   if (cell.absenceGold && mutated.includes(FIELDS)) {
     throw new Error(`${cell.id} restored deleted unit bytes`);
