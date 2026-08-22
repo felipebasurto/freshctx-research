@@ -30,3 +30,4 @@
 | [0026](pcr/0026-parse-broken-exact-decoy-door.md) | 2026-08-22 | parse-broken exact-decoy door change (not a public benchmark) | `synthetic`; `parse-broken-dev` | review |
 | [0027](pcr/0027-move-lookalike-dev-pack.md) | 2026-08-22 | move-lookalike development pack (not a public benchmark) | `synthetic`; `move-lookalike-dev` | review |
 | [0028](pcr/0028-duplicate-boundary-markers-dev-pack.md) | 2026-08-22 | duplicate-boundary-markers development pack (not a public benchmark) | `synthetic`; `duplicate-boundary-markers-dev` | review |
+| [0029](pcr/0029-grow-shrink-exact-decoy-door.md) | 2026-08-22 | grow-shrink exact-decoy door change (not a public benchmark) | `synthetic`; `grow-shrink-exact-decoy-dev` | review |

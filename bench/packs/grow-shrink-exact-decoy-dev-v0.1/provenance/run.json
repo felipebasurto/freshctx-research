@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-22T15:31:33.128Z",
+  "packId": "grow-shrink-exact-decoy-dev-v0.1",
+  "manifestPath": "bench/splits/grow-shrink-exact-decoy-dev-v0.1.json",
+  "manifestSha256": "d70d92773da8ae71a8c6f1398b0f1ea346dfe83ee1ed8c7764d36668bb00d30c",
+  "freezeCommitSha": "90ec3ee67ced11b631b69aea2c41598147c3dd92",
+  "implementationCommitSha": "bbbdbcdb891e5dc9327a96045ebeb776f07dd006",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "generateProvenancePath": "bench/packs/grow-shrink-exact-decoy-dev-v0.1/provenance/generate.json",
+  "records": 3,
+  "summary": "Ran 3 grow-shrink-exact-decoy lab cell(s).",
+  "recordsWritten": 3,
+  "resultSetHash": "67c6d2e8745777eeadd480baf0dbd43458952987c5bc58787961e7fb5400d4bb"
+}
