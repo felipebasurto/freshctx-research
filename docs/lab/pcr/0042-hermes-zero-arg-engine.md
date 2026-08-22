@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: Cloud Agent (Hermes CLI live-session follow-up)
 - Branch / PR: `cursor/hermes-zero-arg-engine-2820`
-- Commit: `8612c85`
+- Commit: `2ca2958`
 - Merge-base: `64e8af0bb8261efcb9559d79a03375647502d6dd` (PCR 0041 live-session lab note)
 - Paper-manifest digest: unchanged
 - Result labels used: `synthetic`; `hermes-fresh`; `adapter-only`
