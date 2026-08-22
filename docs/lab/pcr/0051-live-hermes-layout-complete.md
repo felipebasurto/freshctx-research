@@ -19,7 +19,7 @@ skip or persist algorithm.
 
 This PCR runs the **next measurement** PCR 0050 prescribed: re-run the live
 one-shot hook trace with persist2 plugin `832713a` **and sibling imports**
-(`adapters/request-prune.mjs` + core `src/`). bun loaded `bridge.mjs` with no
+(`adapters/request-prune.mjs` + `src/index.mjs`). bun loaded `bridge.mjs` with no
 `MODULE_NOT_FOUND`. Not a paper result. Not an A-append gold claim. No persist
 merge.
 
@@ -31,15 +31,27 @@ Session: `20260822_232051_a8cf8a` (`hermes-home-clean`).
 
 ## Scored cell
 
-Thinker scores the **box files directly**; not `REPORT.md`.
+Thinker scored the **box files**, not `REPORT.md`. PCR 0051 is docs-only from
+`09776e76`.
+
+**Score `gold/`** (session `20260822_232051_a8cf8a`, state
+`233d965fd31f58e35ce1`), **not** `collision-resume`.
 
 | field | value |
 |---|---|
-| Scored cell | `hermes-home-clean` **first turn** |
-| Session | `20260822_232051_a8cf8a` |
-| `hook_trace.jsonl` | select **list/2** then **list/5** (`n_read` 0 then 1); bridge rc=0 |
-| `on_turn_complete` | **yes** (observe rc=0) |
-| State file | `233d965fd31f58e35ce1.json` — `calls` + `tracked` (`HOOK_PROBE_OK`); not `{}` |
+| `select_context` | return_kind=**list** len **2** then **5** (`n_read` 0 then 1); bridge rc=0 |
+| `on_turn_complete` | observe `{"observedCalls":1}` |
+| State | `calls` + `tracked` for `hook_probe.txt` with `HOOK_PROBE_OK`; not `{}` |
+| Gold `req_002` | 5 msgs; tool payload is `[freshctx:…]` projection, **not** raw Hermes read |
+| Probe file | `HOOK_PROBE_OK` + real `0x0a` |
+| Siblings | present (`request-prune.mjs` + `src/index.mjs`) |
+
+**Collision:** `--continue` is a **later session**; do **not** score it as turn 1.
+Parallel resume under `artifacts/collision-resume/` is **not** the scored cell.
+
+**Vs hermes-only extract:** `None` + empty state. **Layout unblocks the bridge.**
+
+Frozen door. No persist-adapter merge from PR 38. No A-append. No 0045/0046.
 
 ## Named why
 
@@ -51,11 +63,10 @@ Hermes tool payload). `on_turn_complete` observe rc=0;
 `{"observedCalls":1}`. State file populated with `calls` + `tracked` for
 `read_file` of `hook_probe.txt` containing `HOOK_PROBE_OK` — not empty `{}`.
 
-**Collision (honest):** a later `--continue` overwrote some live turn-1 request
-logs. A parallel resume titled **layout-oneshot** against the first
-`hermes-home` lives under `artifacts/collision-resume/` and is **not** the
-scored cell. Score from **gold captures** + current `hook_trace.jsonl`; do not
-hide the collision.
+**Collision (honest):** `--continue` is a **later session**; do **not** score it
+as turn 1. Parallel resume under `artifacts/collision-resume/` is **not** the
+scored cell. Score **`gold/`** + current `hook_trace.jsonl`; do not hide the
+collision.
 
 ## Hook table (from `artifacts/hook_trace.jsonl`)
 
@@ -73,7 +84,7 @@ Thinker scored the box files directly. Not `REPORT.md`.
 | run | plugin layout | select call 1 | select call 2 | observe | state |
 |---|---|---|---|---|---|
 | PCR 0050 / hooktrace (hermes-only extract) | adapters/hermes only; missing siblings | **None** | **None** | never ran | `{}` |
-| PCR 0051 (this box) | `832713a` + siblings (`request-prune.mjs` + `src/`) | **list** (len 2) | **list** (len 5) | rc=0 `observedCalls=1` | `calls` + `tracked` populated |
+| PCR 0051 (this box) | `832713a` + siblings (`request-prune.mjs` + `src/index.mjs`) | **list** (len 2) | **list** (len 5) | rc=0 `observedCalls=1` | `calls` + `tracked` populated |
 
 ## First-chat gold (collision-safe)
 
@@ -96,13 +107,14 @@ slot.
 
 | item | value |
 |---|---|
-| Plugin layout | persist2 `832713a` **with siblings** (`adapters/request-prune.mjs` + `src/`) |
+| Plugin layout | persist2 `832713a` **with siblings** (`adapters/request-prune.mjs` + `src/index.mjs`) |
+| Probe file | `hook_probe.txt` = `HOOK_PROBE_OK` + real `0x0a` |
 | Bridge load | bun loaded `bridge.mjs`; **no** `MODULE_NOT_FOUND` |
 | Live `select_context` call 1 | return_kind=list; return_len=2; bridge_rc=0 |
 | Live `select_context` call 2 | return_kind=list; return_len=5; n_read=1; bridge_rc=0 |
 | Live `on_turn_complete` | observe rc=0; stdout `{"observedCalls":1}` |
 | State file | `hermes-home-clean/artifacts/freshctx-state/233d965fd31f58e35ce1.json` — **`calls` + `tracked` populated** for `read_file` of `hook_probe.txt` (`HOOK_PROBE_OK`); not `{}` |
-| Collision | later `--continue` overwrote some live turn-1 request logs; parallel resume under `artifacts/collision-resume/` is **not** the scored cell; score from gold + `hook_trace.jsonl` |
+| Collision | `--continue` is a later session; do not score as turn 1; `artifacts/collision-resume/` is **not** the scored cell; score `gold/` + `hook_trace.jsonl` |
 | Model | `deepseek-chat` |
 | Host | `999703fd` untouched |
 
@@ -123,7 +135,7 @@ that closed PR only — not pending, not filed here.
 ## What we did
 
 - Ran live Hermes CLI one-shot with persist2 plugin `832713a` **and sibling
-  layout** (`request-prune.mjs` + `src/`) and captured hook trace, gold
+  layout** (`request-prune.mjs` + `src/index.mjs`) and captured hook trace, gold
   captures, and state file from box workdir.
 - Did **not** edit `src/anchors.mjs`, door, holdout traces/gold,
   `bench/repos.lock.json`, `bench/hosts.lock.json`, adapter bridge logic, or
