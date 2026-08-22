@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "manifestSha256": "860317bb0aecfa1d791cc537522aaeb1e683d39b68f9452d847d8329540894a7",
+  "scope": "native-host-bakeoff",
+  "resolvedAt": "2026-08-22T16:45:00.000Z",
+  "hosts": {
+    "pi": {
+      "url": "https://github.com/earendil-works/pi.git",
+      "requestedRef": "c49906ec77788625aacbdc53ebca6fbe65bd20f5",
+      "commit": "c49906ec77788625aacbdc53ebca6fbe65bd20f5",
+      "contextModule": "packages/coding-agent/src/core/extensions/runner.ts",
+      "license": "MIT"
+    },
+    "hermes": {
+      "url": "https://github.com/NousResearch/hermes-agent.git",
+      "requestedRef": "999703fd43ab6d75c4a5c7bc8b610dd73ecece76",
+      "commit": "999703fd43ab6d75c4a5c7bc8b610dd73ecece76",
+      "contextModule": "agent/context_engine.py",
+      "license": "MIT"
+    }
+  }
+}

@@ -5,6 +5,7 @@ __pycache__/
 .freshctx/
 papers/cache/
 bench/repos/
+bench/hosts/
 capture/results/
 bench/reports/*.jsonl
 *.tmp
