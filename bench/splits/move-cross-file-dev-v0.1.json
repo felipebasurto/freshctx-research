@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "move-cross-file-dev-v0.1",
+  "benchmarkVersion": "move-cross-file-dev-v0.1",
+  "label": "move-cross-file-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "move-cross-file"
+  ],
+  "seeds": {
+    "traceSelection": "move-cross-file-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/move-cross-file-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/move-cross-file-dev-v0.1",
+  "reportsDir": "bench/packs/move-cross-file-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/move-cross-file-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T16:25:01.392Z",
+  "implementationCommitSha": "247c3577a51bedf870000260fb7271d728b5e993",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "7053b25abd6fba594f0b74cab70f5a235b6d5dedd049b2d50fc7532155e134c3"
+}

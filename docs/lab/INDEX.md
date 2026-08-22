@@ -32,3 +32,4 @@
 | [0028](pcr/0028-duplicate-boundary-markers-dev-pack.md) | 2026-08-22 | duplicate-boundary-markers development pack (not a public benchmark) | `synthetic`; `duplicate-boundary-markers-dev` | review |
 | [0029](pcr/0029-grow-shrink-exact-decoy-door.md) | 2026-08-22 | grow-shrink exact-decoy door change (not a public benchmark) | `synthetic`; `grow-shrink-exact-decoy-dev` | review |
 | [0030](pcr/0030-stored-start-leftover-fail-close-door.md) | 2026-08-22 | stored-start leftover fail-close door change (not a public benchmark) | `synthetic`; `stored-start-leftover-fail-close-dev` | review |
+| [0031](pcr/0031-move-cross-file-dev-pack.md) | 2026-08-22 | move-cross-file development pack (not a public benchmark) | `synthetic`; `move-cross-file-dev` | review |
