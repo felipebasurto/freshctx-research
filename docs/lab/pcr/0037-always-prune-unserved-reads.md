@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0037-drop-unserved-reads-e838`
-- Commit: `9941b97705ecff02562a7b822ecaeb58e464386f`
+- Commit: `939a22109ee5925a40921e5c6eea876b18959d47` (implementation); branch tip includes lab note
 - Merge-base vs PCR 0036 squash (`bfb9bb20`): `bfb9bb20d6aaeb378c0b4052942792288a75f357`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `budget-pressure-dev`; `adapter-prune`
