@@ -92,13 +92,16 @@ export function projectContext(
     .sort((a, b) => a.changeCount - b.changeCount || a.id.localeCompare(b.id));
   const unresolved = selection.omitted.filter((item) => item.reason === "unresolved");
   const budgetOmitted = selection.omitted.filter((item) => item.reason === "budget");
-  const header = [
+  const envelopeOpen = [
     `<freshctx turn="${turn}" selected="${renderOrder.length}"`,
     ` unresolved="${unresolved.length}" budget-omitted="${budgetOmitted.length}">`,
-    "The following code is the current workspace state. Historical read markers refer here.",
   ].join("");
+  const preamble =
+    renderOrder.length === 0
+      ? ""
+      : "The following code is the current workspace state. Historical read markers refer here.";
   const footer = "</freshctx>";
-  const text = [header, ...renderOrder.map(renderUnit), footer].join("\n");
+  const text = [envelopeOpen + preamble, ...renderOrder.map(renderUnit), footer].join("\n");
 
   return {
     text,

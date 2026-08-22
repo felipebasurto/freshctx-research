@@ -40,3 +40,4 @@
 | [0037](pcr/0037-always-prune-unserved-reads.md) | 2026-08-22 | Always prune unserved read pairs on projection | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
 | [0038](pcr/0038-holdout-adapter-bakeoff.md) | 2026-08-22 | Holdout v0.1 adapter bake-off after prune | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
 | [0039](pcr/0039-holdout-corvus-file.md) | 2026-08-22 | Holdout v0.1 corvus-file column on adapter bake-off | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |
+| [0040](pcr/0040-empty-envelope-no-boilerplate.md) | 2026-08-22 | Empty envelope without boilerplate prose on delete cells | `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff` | review |

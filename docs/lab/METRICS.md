@@ -44,6 +44,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0036) budget-pressure adapter prune | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0036](pcr/0036-budget-pressure-adapter-prune.md) |
 | 2026-08-22 | (PCR 0037) always prune unserved reads | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0037](pcr/0037-always-prune-unserved-reads.md) |
 | 2026-08-22 | (PCR 0038) holdout adapter bake-off | 137/137 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0038](pcr/0038-holdout-adapter-bakeoff.md) |
+| 2026-08-22 | (PCR 0040) empty envelope without boilerplate | 138/138 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0040](pcr/0040-empty-envelope-no-boilerplate.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -70,6 +71,7 @@ Lock (unchanged): Flask `d318b683471101618febed18996405ad26462110`, Express
 | 2026-08-22 | (PCR 0037) | `budget-pressure-dev` / `adapter-prune` | Always-on adapter prune: 4k gate removed; 12k unit tests drop budget-omitted unserved reads; 6 cells still match region; draft only. | [0037](pcr/0037-always-prune-unserved-reads.md) |
 | 2026-08-22 | (PCR 0038) | `public-repo-holdout` / `holdout-adapter-bakeoff` | Holdout v0.1 adapter bake-off: hermes-fresh matched region on stale/recall/bytes (10 cells); Hermes native-no-op; native stale gaps reproduced; draft only. | [0038](pcr/0038-holdout-adapter-bakeoff.md) |
 | 2026-08-22 | (PCR 0039) | `public-repo-holdout` / `holdout-adapter-bakeoff` | Holdout v0.1 corvus-file column: live-run whole-file baseline; stale/recall matched region (10 cells); whole-file bytes >> region; delete cells smaller; draft only. | [0039](pcr/0039-holdout-corvus-file.md) |
+| 2026-08-22 | (PCR 0040) | `public-repo-holdout` / `holdout-adapter-bakeoff` | Empty envelope without boilerplate: delete cells 164→78; other 8 cells held stale/recall; hermes-fresh matched region; draft only. | [0040](pcr/0040-empty-envelope-no-boilerplate.md) |
 | 2026-08-21 | (PCR 0014) | `public-repo-holdout` | Stop pinning live unsealed jsonl; resultSetHash null; jsonl stays gitignored; historical holdout.md unchanged. | [0014](pcr/0014-unsealed-hash-anchor-refresh.md) |
 
 Full tables: `bench/reports/latest.md`, `bench/reports/holdout.md`, `bench/reports/pi-smoke.md`, `bench/reports/hermes-smoke.md`, `bench/reports/pi-holdout.md`, `bench/reports/hermes-holdout.md`, `bench/reports/native-holdout.md`, `bench/reports/holdout-adapter-bakeoff.md`.
