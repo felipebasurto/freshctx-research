@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { messageText, observeTurn, selectContext, toProviderPayload } from "./bridge.mjs";
+import { resolveAdapterBudgetChars } from "../request-prune.mjs";
 
 const DEFAULT_BUDGET_CHARS = 24_000;
 
@@ -32,9 +33,12 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
       });
     },
 
-    async onSelectContext(messages, ctx, { budgetTokens = 0, incomingMessage } = {}) {
-      const configured = Number(process.env.FRESHCTX_BUDGET_CHARS ?? budgetChars);
-      const budget = Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_BUDGET_CHARS;
+    async onSelectContext(messages, ctx, { budgetTokens = 0, budgetChars: eventBudgetChars, incomingMessage } = {}) {
+      const budget = resolveAdapterBudgetChars({
+        budgetChars: eventBudgetChars,
+        budgetTokens,
+        defaultBudget: budgetChars,
+      });
       return selectContext({
         stateFile,
         messages,

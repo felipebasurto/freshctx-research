@@ -1,6 +1,12 @@
 import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
+import {
+  dropUnservedReadToolPairs,
+  resolveAdapterBudgetChars,
+  servedReadCallIdsFromProjection,
+  shouldPruneAdapterRequest,
+} from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
@@ -154,17 +160,26 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         await engine.refresh(async (filePath) =>
           (await safeWorkspaceFile(ctx.cwd, filePath)).content,
         );
-        const configured = Number(process.env.FRESHCTX_BUDGET_CHARS ?? budgetChars);
+        const budgetChars = resolveAdapterBudgetChars({
+          budgetChars: event.budgetChars,
+          budgetTokens: event.budgetTokens,
+          defaultBudget: DEFAULT_BUDGET_CHARS,
+        });
+        const pruneRequest = shouldPruneAdapterRequest(budgetChars);
         const projection = engine.project({
           task: lastUserTask(event.messages),
-          budgetChars: Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_BUDGET_CHARS,
+          budgetChars,
         });
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
+        const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
+        const assembled = pruneRequest
+          ? dropUnservedReadToolPairs(rewritten, { readTools: new Set(["read"]), servedCallIds })
+          : rewritten;
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 
         return {
           messages: [
-            ...rewritten,
+            ...assembled,
             {
               role: "user",
               content: [{ type: "text", text: projection.text }],
@@ -264,7 +279,13 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
   }
 
   await adapter.onTurnStart({ turnIndex: adapter.turn + 1 });
-  const contextResult = await adapter.onContext({ messages: structuredClone(persistedMessages) }, ctx);
+  const contextResult = await adapter.onContext(
+    {
+      messages: structuredClone(persistedMessages),
+      budgetChars,
+    },
+    ctx,
+  );
   const requestMessages = contextResult?.messages ?? persistedMessages;
   const payload = toProviderPayload(requestMessages);
 

@@ -130,7 +130,11 @@ export async function runPiTrace(trace, { workspaceRoot } = {}) {
         const started = performance.now();
         await adapter.onTurnStart({ turnIndex: adapter.turn + 1 });
         const contextResult = await adapter.onContext(
-          { messages: structuredClone(captureMessages) },
+          {
+            messages: structuredClone(captureMessages),
+            budgetChars: event.budgetChars,
+            budgetTokens: Math.ceil((event.budgetChars ?? 12_000) / 4),
+          },
           ctx,
         );
         const totalMs = performance.now() - started;

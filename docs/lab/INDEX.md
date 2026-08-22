@@ -36,3 +36,4 @@
 | [0032](pcr/0032-native-host-context-bakeoff.md) | 2026-08-22 | Native host context bake-off scaffold on holdout v0.1 | `synthetic`; `public-repo-holdout`; `native-host` | review |
 | [0033](pcr/0033-budget-pressure-native-bakeoff.md) | 2026-08-22 | Budget-pressure native bake-off (Hermes compress photo) | `synthetic`; `budget-pressure-dev`; `native-host` | review |
 | [0035](pcr/0035-budget-pressure-hermes-fresh.md) | 2026-08-22 | Budget-pressure Hermes FreshCtx adapter (hermes-fresh) | `synthetic`; `budget-pressure-dev`; `hermes-fresh` | review |
+| [0036](pcr/0036-budget-pressure-adapter-prune.md) | 2026-08-22 | Budget-pressure adapter request prune under 4k | `synthetic`; `budget-pressure-dev`; `adapter-prune` | review |
