@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0033-budget-pressure-bakeoff-8ee7`
-- Commit: (see final report HEAD)
+- Commit: `632d195`
 - Merge-base vs PCR 0032 squash: `a62c9153c1c9892a480061e29b3d3125a7de1d45`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `budget-pressure-dev`; `native-host`
