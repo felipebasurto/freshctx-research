@@ -25,7 +25,7 @@ as the Hermes live session, but through Pi's published extension seam with real
 ## What we did
 
 - Workdir on research box: `/workspace/freshctx-live-2026-08-22-pi/` (not in
-  git; evidence summarized here).
+  git; canonical table in `REPORT-cli.md` on that box).
 - Pins: FreshCtx `4ccb008385e223c0e67eb95080d5398dc3f8cc5e`, Pi host
   `c49906ec77788625aacbdc53ebca6fbe65bd20f5`, isolated Node v22.23.2, isolated
   `@earendil-works/pi-coding-agent` 0.84.2.
@@ -56,19 +56,26 @@ as the Hermes live session, but through Pi's published extension seam with real
 
 ## Metric snapshot
 
-Official score is **token-in-request** on turn-2 request JSON. Transform ms was
-not instrumented on the Pi CLI path (`n/a` below).
+Official score is **token-in-request** on turn-2 request JSON (stale-bytes /
+current-present columns unchanged from the first pass). **Projection bytes** in
+this table count the `<freshctx>` envelope only (replay methodology), not
+envelope plus served marker text. Box-local `cells.json` stores the wider
+envelope+marker totals (583 / 547 / 178 on A / B / C-delete); those wider
+numbers are **not** published here.
+
+Transform ms was not instrumented on the Pi CLI path (`unknown` below; do not
+invent a value). Source: `/workspace/freshctx-live-2026-08-22-pi/REPORT-cli.md`.
 
 | cell | mode | stale-bytes | current-present | request bytes | projection bytes | transform ms | model HTTP ms | DeepSeek model | error |
 |---|---|---|---|---|---|---|---|---|---|
-| A-append | pi-fresh | no | yes | 4005 | 583 | n/a | 1278 | deepseek-v4-flash | no |
-| A-append | pi-native | yes | no | 3374 | 0 | n/a | 1327 | deepseek-v4-flash | no |
-| B-interior | pi-fresh | no | yes | 3997 | 547 | n/a | 1669 | deepseek-v4-flash | no |
-| B-interior | pi-native | yes | no | 3492 | 0 | n/a | 1748 | deepseek-v4-flash | no |
-| B2-file-scope | pi-fresh | no | yes | 3964 | 547 | n/a | 1270 | deepseek-v4-flash | no |
-| B2-file-scope | pi-native | yes | no | 3405 | 0 | n/a | 1249 | deepseek-v4-flash | no |
-| C-delete | pi-fresh | no | yes | 3555 | 178 | n/a | 1483 | deepseek-v4-flash | no |
-| C-delete | pi-native | yes | yes | 3354 | 0 | n/a | 1310 | deepseek-v4-flash | no |
+| A-append | pi-fresh | no | yes | 4001 | 484 | unknown | 1469 | deepseek-v4-flash | no |
+| A-append | pi-native | yes | no | 3403 | 0 | unknown | 1895 | deepseek-v4-flash | no |
+| B-interior | pi-fresh | no | yes | 3997 | 447 | unknown | 1687 | deepseek-v4-flash | no |
+| B-interior | pi-native | yes | no | 3461 | 0 | unknown | 1263 | deepseek-v4-flash | no |
+| B2-file-scope | pi-fresh | no | yes | 3994 | 447 | unknown | 1619 | deepseek-v4-flash | no |
+| B2-file-scope | pi-native | yes | no | 3430 | 0 | unknown | 1154 | deepseek-v4-flash | no |
+| C-delete | pi-fresh | no | yes | 3580 | 78 | unknown | 1591 | deepseek-v4-flash | no |
+| C-delete | pi-native | yes | yes | 3354 | 0 | unknown | 1063 | deepseek-v4-flash | no |
 
 ### Findings
 
@@ -83,8 +90,10 @@ not instrumented on the Pi CLI path (`n/a` below).
    fresh result.
 
 3. **C-delete pi-fresh dropped `GAMMA`** while the engine stayed alive across
-   `unlink` (empty envelope in request). Replay C **fail-opened** (stale bytes
-   remained). Same pattern as PCR 0041 Hermes delete cell.
+   `unlink` (empty envelope in request). Projection bytes **78** match PCR 0040
+   empty-envelope holdout delete cells (envelope-only count). Replay C
+   **fail-opened** (stale bytes remained). Same pattern as PCR 0041 Hermes delete
+   cell.
 
 4. **pi-native** held stale tool-result bytes on every cell where mutation
    occurred; projection bytes 0 on all native rows (no FreshCtx projection).
@@ -109,7 +118,9 @@ none observed. Labelled `synthetic` / lab note.
 
 - n=1, synthetic markers, scripted turn sequence (not interactive Pi chat).
 - Full request JSON not archived in git (table + box-local evidence only).
-- Transform ms not measured on CLI path.
+- Transform ms unknown (not instrumented; do not backfill).
+- Published projection bytes are envelope-only; `cells.json` envelope+marker
+  totals differ and stay off the published table.
 - B-interior fresh result is file-scope, not region-grain; do not cite as
   region-scope product behavior.
 - Model FRESH/STALE prose is not the score.
