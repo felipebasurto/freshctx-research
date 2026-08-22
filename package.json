@@ -36,6 +36,7 @@
     "ctxbench:native-budget-pressure": "node bench/native-budget-pressure.mjs",
     "ctxbench:budget-pressure-hermes-fresh": "node bench/budget-pressure-hermes-fresh.mjs",
     "ctxbench:budget-pressure-adapter-prune": "node bench/budget-pressure-adapter-prune.mjs",
+    "ctxbench:holdout-adapter-bakeoff": "node bench/holdout-adapter-bakeoff.mjs",
     "holdout:freeze": "node scripts/holdout-protocol.mjs freeze",
     "holdout:generate": "node scripts/holdout-protocol.mjs generate",
     "holdout:run": "node scripts/holdout-protocol.mjs run",
