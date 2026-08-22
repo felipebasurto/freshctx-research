@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: repository maintainers
 - Branch / PR: `cursor/pcr-0040-empty-render-no-boilerplate-e1c2`
-- Commit: `40760d5`
+- Commit: `b45b7f0`
 - Merge-base vs PCR 0039 squash (`1c14fdb9`): `1c14fdb92bc4e8bee42e676bddf956f687b1d895`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `public-repo-holdout`; `holdout-adapter-bakeoff`

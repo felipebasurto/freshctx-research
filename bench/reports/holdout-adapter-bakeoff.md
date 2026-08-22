@@ -5,7 +5,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 - pack: `holdout-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `40760d50b2d89a96e84d7895f8a62871644d3720`
+- HEAD: `b45b7f0176c6bb2341fb3d417237f44d59e26ef7`
 - merge-base vs e45b2cdb: `e45b2cdbf15aec2b4133e232e5b005dd832f49cb`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -19,10 +19,6 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** corvus-file matched freshctx-region on required-recall and stale-bytes for all 10 holdout cells.
 
-## Empty-envelope delete cells vs corvus-file (projection-bytes)
-
-**Finding:** Holdout delete cells dropped from **164** to **78** bytes (empty envelope without boilerplate prose; `selected=0`, `unresolved=1`, no unit body). corvus-file remains smaller (go-tools **68**, neovim **73**). The other **8** non-delete cells held **stale-bytes 0** and **required-recall 1.000** vs PCR 0039 region values; hermes-fresh still matches region on stale/recall/bytes.
-
 ## hermes-fresh vs freshctx-region (stale/recall)
 
 **Finding:** hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 10 holdout cells.
@@ -31,7 +27,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** Hermes native stayed **native-no-op** on all 10 cells (holdout window below `should_compress` threshold; no Hermes quality number claimed).
 
-Generated: 2026-08-22T19:00:47.000Z
+Generated: 2026-08-22T19:01:11.232Z
 
 ## Per-cell metrics (10 traces)
 
