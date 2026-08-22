@@ -137,6 +137,15 @@ export function resolveRegion({ previousContent, currentFileContent, anchors }) 
   let end = best.end;
   const span = end - best.start + 1;
 
+  // A displaced first+last pair with missing interiors is not the deleted unit.
+  if (
+    span < expectedLineCount &&
+    best.locationDelta > 0 &&
+    anchors.startLine != null
+  ) {
+    return { state: "unresolved", method: "displaced-shrunk-boundary-anchors" };
+  }
+
   // When the first-to-last span grew but the prefix before the last anchor is
   // unchanged, treat the tail as append-inside-before-closer and crop to the
   // original lineCount (oracle: first line + lineCount). Interior edits change

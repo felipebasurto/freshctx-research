@@ -27,6 +27,11 @@ import {
   runGrowInsideLab,
 } from "../bench/grow-inside-lab.mjs";
 import {
+  generateDeleteUnitFailCloseLabTraces,
+  deleteUnitFailCloseLabManifestDraft,
+  runDeleteUnitFailCloseLab,
+} from "../bench/delete-unit-fail-close-lab.mjs";
+import {
   generateDeleteUnitLabTraces,
   deleteUnitLabManifestDraft,
   runDeleteUnitLab,
@@ -57,6 +62,7 @@ const TRACE_GENERATORS = {
   "insert-before-unique-last-lab": generateInsertBeforeUniqueLastLabTraces,
   "grow-inside-lab": generateGrowInsideLabTraces,
   "delete-unit-lab": generateDeleteUnitLabTraces,
+  "delete-unit-fail-close-lab": generateDeleteUnitFailCloseLabTraces,
   "rename-boundary-lab": generateRenameBoundaryLabTraces,
 };
 
@@ -67,6 +73,7 @@ const TRACE_RUNNERS = {
   "insert-before-unique-last-lab": runInsertBeforeUniqueLastLab,
   "grow-inside-lab": runGrowInsideLab,
   "delete-unit-lab": runDeleteUnitLab,
+  "delete-unit-fail-close-lab": runDeleteUnitFailCloseLab,
   "rename-boundary-lab": runRenameBoundaryLab,
 };
 
@@ -76,6 +83,7 @@ const MANIFEST_DRAFTS = {
   "insert-before-unique-last-lab": insertBeforeUniqueLastLabManifestDraft,
   "grow-inside-lab": growInsideLabManifestDraft,
   "delete-unit-lab": deleteUnitLabManifestDraft,
+  "delete-unit-fail-close-lab": deleteUnitFailCloseLabManifestDraft,
   "rename-boundary-lab": renameBoundaryLabManifestDraft,
 };
 
