@@ -52,7 +52,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0047) live Hermes newline-fixed cell B rerun (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0047](pcr/0047-live-hermes-newline-cell-b.md) |
 | 2026-08-23 | (PCR 0048) Hermes CLI hook skip host investigation (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0048](pcr/0048-hermes-cli-hook-skip.md) |
 | 2026-08-23 | (PCR 0049) live Hermes CLI hook trace one-shot (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0049](pcr/0049-live-hermes-cli-hook-trace.md) |
-| 2026-08-23 | (PCR 0050) Hermes bridge extract import probe (+ layout test) | 141/141 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0050](pcr/0050-hermes-bridge-extract-import.md) |
+| 2026-08-23 | (PCR 0050) Hermes bridge extract import failure (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0050](pcr/0050-hermes-bridge-extract-import.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

@@ -6,8 +6,8 @@
 - Commit: (this docs commit)
 - Merge-base: `25aae6cf3b846af5d7dec90f02b4fa6a2560ba4c` (main; PCR 0049 squash)
 - Paper-manifest digest: unchanged
-- Result labels used: `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `failing-probe`; `extract-layout`
-- Decision: **review** (documentation + layout probe; no product change)
+- Result labels used: `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `extract-layout`
+- Decision: **review** (documentation only; no product change)
 
 ## Hypothesis or change
 
@@ -16,18 +16,25 @@ with a completed read pair, but the adapter returns `None` and state stays empty
 The remaining hole named there was **why** the bridge subprocess fails.
 
 This PCR runs the **next measurement** PCR 0049 prescribed: diagnose bridge
-subprocess exit / import / layout. Live one-shot and persist2 plugin runs used a
-`git archive` of **only** `adapters/hermes` from plugin source `832713a`. The
-extracted `bridge.mjs` retains top-level ESM imports on sibling paths that the
-archive omits:
-
-- `../request-prune.mjs`
-- `../../src/index.mjs`
-
-Those files are missing next to the extract. Not a paper result.
+subprocess exit / import / layout. Live one-shot and persist2 plugin runs used an
+isolated persist2 plugin that is **adapters/hermes only** (plugin source
+`832713a`). Not a paper result.
 
 Workdir (not in git): `/workspace/freshctx-live-2026-08-23-cli-noneprobe/`
-(`REPORT.md`, `logs/probe_select.json`, `logs/raw_bridge_control.json`).
+(`logs/probe_select.json`, `logs/raw_bridge_control.json`). Thinker scored the
+box files directly; not `REPORT.md`.
+
+## Named why
+
+Isolated persist2 plugin is adapters/hermes only. `plugin/freshctx/bridge.mjs`
+imports `../request-prune.mjs` (and `../../src/index.mjs`). Sibling
+request-prune is absent. bun+node both rc=1 in `<0.1` s, stderr
+`Cannot find module '../request-prune.mjs'`. Not timeout. Not session id. Not
+message shape (`discoveredCalls=1`, `shape_matches_bridge=true`).
+
+In-tree `adapters/hermes` control: rc=0 `applied=true` `selected=1`
+(`product-bun-req002` and `layout_ok_832713a`). Empty state is observe never
+running, same import fail.
 
 ## Bridge probe table (from box logs)
 
@@ -35,40 +42,39 @@ Thinker scored the box files directly. Not `REPORT.md`.
 
 | probe | layout | runtime | rc | stdout | stderr / error | elapsed | bridge result |
 |---|---|---|---|---|---|---|---|
-| live call 1 | hermes-only extract `832713a` | bun | 1 | empty | `Cannot find module '../request-prune.mjs'` | ~0.015–0.091 s | `_call_bridge` → None; `select_context` → None |
-| live call 2 (req_002) | hermes-only extract `832713a` | bun | 1 | empty | same import fail | ~0.015–0.091 s | `_call_bridge` → None; `select_context` → None |
-| live call 1 | hermes-only extract `832713a` | node | 1 | empty | `ERR_MODULE_NOT_FOUND` … `/plugin/request-prune.mjs` | ~0.015–0.091 s | same |
-| live call 2 (req_002) | hermes-only extract `832713a` | node | 1 | empty | same | ~0.015–0.091 s | same |
-| control (req_002) | in-tree `adapters/hermes` (siblings present) | node | 0 | JSON | — | — | `messages` list of 5 dicts; `applied=true`; `selected=1` |
+| live call 1 | hermes-only extract `832713a` | bun | 1 | empty | `Cannot find module '../request-prune.mjs'` | `<0.1` s | `_call_bridge` → None; `select_context` → None |
+| live call 2 (req_002) | hermes-only extract `832713a` | bun | 1 | empty | same import fail | `<0.1` s | `_call_bridge` → None; `select_context` → None |
+| live call 1 | hermes-only extract `832713a` | node | 1 | empty | `Cannot find module '../request-prune.mjs'` | `<0.1` s | same |
+| live call 2 (req_002) | hermes-only extract `832713a` | node | 1 | empty | same | `<0.1` s | same |
+| control (req_002) | in-tree `adapters/hermes` (siblings present) | bun | 0 | JSON | — | — | `applied=true`; `selected=1` (`product-bun-req002`) |
+| control (req_002) | in-tree `adapters/hermes` (siblings present) | node | 0 | JSON | — | — | `applied=true`; `selected=1` (`layout_ok_832713a`) |
 
 **req_002 context:** Hermes `api_messages` with one completed `read_file` pair
-(`discoveredCalls=1`). Live call 1 (0 pairs) also returned None — same import
-fail, so message shape is not the differentiator.
+(`discoveredCalls=1`, `shape_matches_bridge=true`). Live call 1 (0 pairs) also
+returned None — same import fail.
 
-**Ruled out for this box run:** timeout, `state_file` None, session-id mismatch,
-message shape as sole cause.
+**Ruled out for this box run:** timeout, session id, message shape.
 
 ## Box evidence
 
 | item | value |
 |---|---|
-| Plugin extract | `git archive` of **only** `adapters/hermes` @ `832713a` |
-| Missing siblings | `adapters/request-prune.mjs`, `src/index.mjs` |
-| Bridge failure mode | ESM import resolution; rc=1; stdout empty; sub-100 ms (not timeout) |
+| Plugin layout | isolated persist2 plugin is adapters/hermes only |
+| Bridge path | `plugin/freshctx/bridge.mjs` |
+| Missing sibling | `../request-prune.mjs` (and `../../src/index.mjs`) |
+| Bridge failure mode | bun+node rc=1; stderr `Cannot find module '../request-prune.mjs'`; `<0.1` s (not timeout) |
 | Live `select_context` | returns None (both calls) |
-| Live `observe` | never ran (`calls` / `tracked` empty) |
-| Control | identical `bridge.mjs` bytes in-tree + req_002 → rc=0, rewrite applied |
+| Live `observe` | never ran — empty state; same import fail |
+| Control | in-tree `adapters/hermes` + req_002 → rc=0 `applied=true` `selected=1` |
 | Model | `deepseek-chat` |
 | Host | `999703fd` untouched |
 
 ## Honest finding
 
-**The live `None` is an incomplete plugin extract / install layout, not a host
-skip and not a persist-algorithm miss.**
-
-In-tree layout works. Isolated hermes-only extract fails at import time before
+See **Named why** above. Not a host skip and not a persist-algorithm miss.
+In-tree layout works; isolated hermes-only plugin fails at import time before
 bridge logic runs. This closes PCR 0049’s “why bridge returns None” hole for the
-measured box path: subprocess never reached `discoveredCalls()` or observe.
+measured box path.
 
 **PR 38 (closed, discard):** unit persist probes passed but did **not** clear
 live gold. Do **not** merge any persist adapter. PCR 0045 / 0046 remain on
@@ -76,10 +82,9 @@ that closed PR only — not pending, not filed here.
 
 ## What we did
 
-- Ran live Hermes CLI one-shot with persist2 extract `832713a` (hermes-only
-  archive) and captured bridge subprocess probes + control replay.
-- Added invariant probe `test/hermes-bridge-extract-layout.test.mjs`: hermes-only
-  layout fails import; in-tree layout succeeds.
+- Ran live Hermes CLI one-shot with persist2 plugin `832713a` (adapters/hermes
+  only) and captured bridge subprocess probes + in-tree control replay from box
+  files.
 - Did **not** edit `src/anchors.mjs`, door, holdout traces/gold,
   `bench/repos.lock.json`, `bench/hosts.lock.json`, adapter bridge logic, or
   persist behavior. Door stays `f8771c93894095348185ef3453a3c2498355b3c6`.
@@ -109,7 +114,7 @@ that closed PR only — not pending, not filed here.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | +1 layout probe; no metric delta |
+| `npm test` | no | — | docs-only PCR |
 | `hermes chat -q` live bridge probe | yes | 0 | box workdir; import fail on extract |
 | in-tree bridge control (req_002) | yes | 0 | rc=0; applied=true |
 | A-append gold matrix | no | — | explicitly not re-run |
@@ -121,7 +126,7 @@ that closed PR only — not pending, not filed here.
 | bridge import on hermes-only extract | **fail** (rc=1; MODULE_NOT_FOUND) |
 | bridge import in-tree | **pass** (rc=0) |
 | live `select_context` rewrite | **no** (subprocess never started) |
-| state populated after read | **no** (`observe` never ran) |
+| state populated after read | **no** (observe never ran; same import fail) |
 | skip class (0048/0049) | **fail-open delivery** — root cause here: import/layout |
 | class 1 (never calls) | **ruled out** (0049) |
 | door / lock / score | unchanged |
@@ -144,11 +149,10 @@ none observed. Labelled `synthetic` / lab note.
 - Does not fix plugin packaging / install layout for Hermes.
 - PR 38 closed (discard); persist adapter not mergeable.
 - No A-append re-run. Workdir evidence is box-local; not vendored in git.
-- Probe test simulates extract layout; does not re-run live Hermes CLI in CI.
 
 ## Protocol gap?
 
-**No.** Docs + layout probe only. Holdout seal, door, and locks untouched.
+**No.** Docs only. Holdout seal, door, and locks untouched.
 
 ## Next measurement
 
