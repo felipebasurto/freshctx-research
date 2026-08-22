@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "move-lookalike-dev-v0.1",
+  "classification": "locally-frozen",
+  "manifestPath": "bench/splits/move-lookalike-dev-v0.1.json",
+  "manifestSha256": "bf90453bcb432ad88a14fb14e91bb607545a491b096e6c8c596230aec003e848",
+  "freezeCommitSha": "17b1a377a1655947bf5b3108f8344fa714e38e94",
+  "implementationCommitSha": "17b1a377a1655947bf5b3108f8344fa714e38e94",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": "dea036a907551fc24b391bf0bcaccae31c0a48159f3cb22e4bd851346a6d3eb4",
+  "resultSetHash": "0e8e84748ad64c1decc8d1e5c7c4c46de3709c0d47d0f73d41ad610c7856681f",
+  "reportHash": "e3d66d0eea60bfae7c44c18a0d79cd4cebe41f1f11b37c0022867ac0f097ee62",
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T14:55:40.609Z"
+}

@@ -32,6 +32,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-22 | (PCR 0024) duplicate-boundary-dev-v0.1 pack | 101/101 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0024](pcr/0024-duplicate-boundary-dev-pack.md) |
 | 2026-08-22 | (PCR 0025) parse-broken-dev-v0.1 pack | 97/97 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0025](pcr/0025-parse-broken-dev-pack.md) |
 | 2026-08-22 | (PCR 0026) parse-broken exact-decoy door change | 103/103 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0026](pcr/0026-parse-broken-exact-decoy-door.md) |
+| 2026-08-22 | (PCR 0027) move-lookalike-dev-v0.1 pack | 104/104 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0027](pcr/0027-move-lookalike-dev-pack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

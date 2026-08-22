@@ -28,3 +28,4 @@
 | [0024](pcr/0024-duplicate-boundary-dev-pack.md) | 2026-08-22 | duplicate-boundary development pack (not a public benchmark) | `synthetic`; `duplicate-boundary-dev` | review |
 | [0025](pcr/0025-parse-broken-dev-pack.md) | 2026-08-22 | parse-broken development pack (not a public benchmark) | `synthetic`; `parse-broken-dev` | review |
 | [0026](pcr/0026-parse-broken-exact-decoy-door.md) | 2026-08-22 | parse-broken exact-decoy door change (not a public benchmark) | `synthetic`; `parse-broken-dev` | review |
+| [0027](pcr/0027-move-lookalike-dev-pack.md) | 2026-08-22 | move-lookalike development pack (not a public benchmark) | `synthetic`; `move-lookalike-dev` | review |

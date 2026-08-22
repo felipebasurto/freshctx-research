@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T14:55:36.860Z",
+  "packId": "move-lookalike-dev-v0.1",
+  "manifestPath": "bench/splits/move-lookalike-dev-v0.1.json",
+  "manifestSha256": "bf90453bcb432ad88a14fb14e91bb607545a491b096e6c8c596230aec003e848",
+  "freezeCommitSha": "17b1a377a1655947bf5b3108f8344fa714e38e94",
+  "implementationCommitSha": "af829dd2a4ee84e4437f829be7f36d34028c2b4f",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/move-lookalike/benchmark-fields",
+    "go-tools/move-lookalike/benchmark-fields-lookalike-decoy",
+    "go-tools/move-lookalike/benchmark-fields-leftover-markers"
+  ],
+  "traceSetHash": "dea036a907551fc24b391bf0bcaccae31c0a48159f3cb22e4bd851346a6d3eb4"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "move-lookalike-dev-v0.1",
+  "benchmarkVersion": "move-lookalike-dev-v0.1",
+  "label": "move-lookalike-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "move-in-file"
+  ],
+  "seeds": {
+    "traceSelection": "move-lookalike-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/move-lookalike-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/move-lookalike-dev-v0.1",
+  "reportsDir": "bench/packs/move-lookalike-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/move-lookalike-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T14:55:34.778Z",
+  "implementationCommitSha": "af829dd2a4ee84e4437f829be7f36d34028c2b4f",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "bf90453bcb432ad88a14fb14e91bb607545a491b096e6c8c596230aec003e848"
+}
