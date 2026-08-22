@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-22T08:33:11.763Z",
+  "packId": "move-in-file-dev-v0.1",
+  "manifestPath": "bench/splits/move-in-file-dev-v0.1.json",
+  "manifestSha256": "c4d4df7a39846bfe56a2cf2a19f88de0de6644b27ee5506c580f2bf2020dbd13",
+  "freezeCommitSha": "ded6fb4b3bf858f1dec954ceaafbdc0c7a2e65bf",
+  "implementationCommitSha": "c2513a3807a4d306f2a19a551f97a2e7fb8d9612",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "tracesWritten": 3,
+  "traceNames": [
+    "go-tools/move-in-file/benchmark-fields",
+    "go-tools/move-in-file/benchmark-fields-duplicate-decoy",
+    "go-tools/move-in-file/benchmark-fields-leftover-markers"
+  ],
+  "traceSetHash": "e85efaec8011c5ce32f2750e311fb22e1bc0970df2c86622568dee8a750b046c"
+}
