@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "duplicate-boundary-markers-dev-v0.1",
+  "benchmarkVersion": "duplicate-boundary-markers-dev-v0.1",
+  "label": "duplicate-boundary-markers-dev",
+  "repositoryIds": [
+    "go-tools"
+  ],
+  "mutationFamilies": [
+    "duplicate-boundary"
+  ],
+  "seeds": {
+    "traceSelection": "duplicate-boundary-markers-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 3
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/duplicate-boundary-markers-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/duplicate-boundary-markers-dev-v0.1",
+  "reportsDir": "bench/packs/duplicate-boundary-markers-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/duplicate-boundary-markers-dev-v0.1/provenance",
+  "status": "frozen",
+  "frozenAt": "2026-08-22T15:00:21.555Z",
+  "implementationCommitSha": "d99fe15c7886ed48023e77078986da338d3702ed",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "classification": "candidate",
+  "manifestSha256": "299040af19d06bd56fa415d34d3ca7f1b8d5cdbe415faa959d075f4beeff11b1"
+}
