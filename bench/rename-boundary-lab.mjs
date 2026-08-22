@@ -23,40 +23,12 @@ const GO_TOOLS_SOURCE = {
 const ORIGINAL_FIRST = "func ParseLine(line string) (*Benchmark, error) {";
 const RENAMED_FIRST = "func ParseLineRenamed(line string) (*Benchmark, error) {";
 const SET_COMMENT = "// Set is a collection of benchmarks from one";
-
-const RENAMED_UNIT = [
-  RENAMED_FIRST,
-  "\tfields := strings.Fields(line)",
-  "",
-  "\t// Two required, positional fields: Name and iterations.",
-  "\tif len(fields) < 2 {",
-  '\t\treturn nil, fmt.Errorf("two fields required, have %d", len(fields))',
-  "\t}",
-  '\tif !strings.HasPrefix(fields[0], "Benchmark") {',
-  "\t\treturn nil, fmt.Errorf(`first field does not start with \"Benchmark\"`)",
-  "\t}",
-  "\tn, err := strconv.Atoi(fields[1])",
-  "\tif err != nil {",
-  "\t\treturn nil, err",
-  "\t}",
-  "\tb := &Benchmark{Name: fields[0], N: n}",
-  "",
-  "\t// Parse any remaining pairs of fields; we've parsed one pair already.",
-  "\tfor i := 1; i < len(fields)/2; i++ {",
-  "\t\tb.parseMeasurement(fields[i*2], fields[i*2+1])",
-  "\t}",
-  "\treturn b, nil",
-  "}",
-].join("\n");
+const UNIT_START = 41;
+const UNIT_END = 62;
 
 const RENAME_FIRST = {
   expected: ORIGINAL_FIRST,
   replacement: RENAMED_FIRST,
-};
-
-const INSERT_LOOKALIKE = {
-  expected: SET_COMMENT,
-  replacement: `${RENAMED_UNIT}\n${SET_COMMENT}`,
 };
 
 export const RENAME_BOUNDARY_LAB_CELLS = [
@@ -64,42 +36,59 @@ export const RENAME_BOUNDARY_LAB_CELLS = [
     id: "door",
     name: "go-tools/rename-boundary/parse-line",
     family: "rename-boundary",
-    startLine: 41,
-    endLine: 62,
+    startLine: UNIT_START,
+    endLine: UNIT_END,
     selector: "ParseLine.fn",
     task: "review ParseLine function",
-    mutations: [RENAME_FIRST],
+    mutationIds: ["rename-first"],
     pinRenamedGold: true,
   },
   {
     id: "decoy",
     name: "go-tools/rename-boundary/parse-line-renamed-lookalike",
     family: "rename-boundary",
-    startLine: 41,
-    endLine: 62,
+    startLine: UNIT_START,
+    endLine: UNIT_END,
     selector: "ParseLine.fn",
     task: "review ParseLine function",
-    mutations: [RENAME_FIRST, INSERT_LOOKALIKE],
+    mutationIds: ["rename-first", "insert-lookalike"],
     pinRenamedGold: true,
   },
   {
     id: "codex",
     name: "go-tools/rename-boundary/parse-line-double-rename",
     family: "rename-boundary",
-    startLine: 41,
-    endLine: 62,
+    startLine: UNIT_START,
+    endLine: UNIT_END,
     selector: "ParseLine.fn",
     task: "review ParseLine function",
-    mutations: [
-      {
-        expected: ORIGINAL_FIRST,
-        replacement: `${MARKER_ALPHA}\n${MARKER_BETA}\n${ORIGINAL_FIRST}`,
-      },
-      RENAME_FIRST,
-    ],
+    mutationIds: ["insert-markers", "rename-first"],
     pinRenamedGold: false,
   },
 ];
+
+function cellMutations(cell, sourceText) {
+  const renamedUnit = extractRegion(sourceText, UNIT_START, UNIT_END).replace(
+    ORIGINAL_FIRST,
+    RENAMED_FIRST,
+  );
+  const byId = {
+    "rename-first": RENAME_FIRST,
+    "insert-markers": {
+      expected: ORIGINAL_FIRST,
+      replacement: `${MARKER_ALPHA}\n${MARKER_BETA}\n${ORIGINAL_FIRST}`,
+    },
+    "insert-lookalike": {
+      expected: SET_COMMENT,
+      replacement: `${renamedUnit}\n${SET_COMMENT}`,
+    },
+  };
+  return cell.mutationIds.map((id) => {
+    const mutation = byId[id];
+    if (!mutation) throw new Error(`unknown mutation ${id}`);
+    return mutation;
+  });
+}
 
 export function renameBoundaryLabManifestDraft() {
   return {
@@ -193,7 +182,11 @@ async function secondCaptureBytes(mutated, cell, initialContent, sourceText) {
       throw new Error("decoy mutated file missing second renamed first line");
     }
     const door = RENAME_BOUNDARY_LAB_CELLS.find((entry) => entry.id === "door");
-    const doorGold = extractRegion(applyMutations(sourceText, door.mutations), door.startLine, door.endLine);
+    const doorGold = extractRegion(
+      applyMutations(sourceText, cellMutations(door, sourceText)),
+      door.startLine,
+      door.endLine,
+    );
     if (renamed !== doorGold) {
       throw new Error("decoy gold diverged from door renamed unit");
     }
@@ -219,7 +212,8 @@ function captureEvent(cell, digest) {
 async function buildCellTrace(cell, sourceText, goCommit) {
   const initialContent = extractRegion(sourceText, cell.startLine, cell.endLine);
   const firstSha = sha256(await oracleGoldBytes(sourceText, cell, initialContent));
-  const mutated = applyMutations(sourceText, cell.mutations);
+  const mutations = cellMutations(cell, sourceText);
+  const mutated = applyMutations(sourceText, mutations);
   const secondSha = sha256(await secondCaptureBytes(mutated, cell, initialContent, sourceText));
 
   return {
@@ -242,7 +236,7 @@ async function buildCellTrace(cell, sourceText, goCommit) {
         selector: cell.selector,
       },
       captureEvent(cell, firstSha),
-      ...cell.mutations.map((mutation) => ({
+      ...mutations.map((mutation) => ({
         type: "replace-exact",
         path: PARSE_PATH,
         expected: mutation.expected,
