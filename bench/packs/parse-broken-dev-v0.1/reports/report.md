@@ -6,15 +6,15 @@ Label: `parse-broken-dev`
 
 - pack ID: `parse-broken-dev-v0.1`
 - classification: `locally-frozen`
-- freeze commit SHA: `b3abf7dcb44a58727d10bc5e3a767d28c7b71fb2`
-- manifest SHA-256: `5c83df40349761dc950dab17b5b69c9cd327802f7593e471d8eb6fc8bfc086b8`
-- implementation commit SHA: `b3abf7dcb44a58727d10bc5e3a767d28c7b71fb2`
+- freeze commit SHA: `21e98676afbc41b06a972eec1ca39338537ad1aa`
+- manifest SHA-256: `7f213531016ccfcb49d236feb5ab7b7cfd986ed122c8fc8101578f5d70ca416b`
+- implementation commit SHA: `21e98676afbc41b06a972eec1ca39338537ad1aa`
 - repos.lock SHA-256: `4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067`
 - go-tools lock SHA: `ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49`
 - trace-set hash: `c998768e6323cbe9657faaeed02652038f13d3cc72adc736e895ec7c0814cd8c`
-- result-set hash: `e3c9e4d503799342017ab33439f8da55c23b78d44a9c7c196295d41b6c29469a`
+- result-set hash: `458c30afdda011e144768a257028f34b4cb7ca42d162b6674fbec487699d53c7`
 - remote attestation: none — local pipeline only (not sealed for external preregistration)
 
-Generated: 2026-08-22T08:30:41.384Z
+Generated: 2026-08-22T14:29:15.084Z
 
 Ran 3 parse-broken lab cell(s).

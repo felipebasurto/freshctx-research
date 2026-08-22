@@ -104,10 +104,10 @@ test(
     const decoyResult = results[traces.indexOf(decoy)];
     const codex = byName.get("go-tools/parse-broken/parse-line-markers-shift");
     const codexResult = results[traces.indexOf(codex)];
-    assert.equal(liveMethod(decoyResult), "exact");
-    assert.equal(finalCapture(decoyResult)?.metrics?.staleUnitRate, 1);
-    assert.equal(liveUnits(decoyResult)[0]?.content, lookalikeRegion);
-    assert.notEqual(liveUnits(decoyResult)[0]?.content, brokenRegion);
+    assert.equal(liveMethod(decoyResult), "boundary-anchors");
+    assert.equal(finalCapture(decoyResult)?.metrics?.staleUnitRate, 0);
+    assert.equal(liveUnits(decoyResult)[0]?.content, brokenRegion);
+    assert.notEqual(liveUnits(decoyResult)[0]?.content, lookalikeRegion);
     assert.equal(liveMethod(codexResult), "unresolved");
     assert.equal(liveUnits(codexResult)[0]?.content ?? "", "");
     assert.doesNotMatch(liveUnits(codexResult)[0]?.content ?? "", /lab-parse-broken unique marker/u);
