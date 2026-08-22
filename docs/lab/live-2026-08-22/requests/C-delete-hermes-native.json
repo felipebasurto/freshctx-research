@@ -1,0 +1,17 @@
+{
+  "cell": "C-delete",
+  "mode": "hermes-native",
+  "snippets": {
+    "GAMMA_DELETE_MARKER": ": \"cC\", \"content\": \"GAMMA_DELETE_MARKER file that will be removed\\\\n\"}, {\"role\": \"user\", \"content\": \"Quote every unique"
+  },
+  "stale_bytes": true,
+  "current_present": true,
+  "request_bytes": 540,
+  "transform_ms": 0.05,
+  "model_http_ms": 1852.62,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the following unique marker tokens in the file content: **GAMMA_DELETE_MARKER** (which contains both GAMMA_ and DELTA_ as substrings, but the only explicit token is GAMMA_DELETE_MARKER). No ALPHA_, BETA_, EPSILON_, or NEW tokens are present.\n\nThe file looks **FRESH** \u2014 it contains a single, clearly defined marker with no signs of corruption, truncation, or age-related degradation.",
+  "error": null
+}

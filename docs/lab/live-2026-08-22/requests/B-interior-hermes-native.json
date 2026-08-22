@@ -1,0 +1,18 @@
+{
+  "cell": "B-interior",
+  "mode": "hermes-native",
+  "snippets": {
+    "BETA_OLD_INTERIOR": " 2, \\\"selector\\\": \\\"BETA_OLD_INTERIOR\\\"}}}]}, {\"role\": \"tool\", \"tool_call_id\": \"cB\", \"content\": \"line1 header\\\\nBETA",
+    "BETA_NEW_INTERIOR": null
+  },
+  "stale_bytes": true,
+  "current_present": false,
+  "request_bytes": 658,
+  "transform_ms": 0.05,
+  "model_http_ms": 1758.09,
+  "deepseek_model": "deepseek-v4-flash",
+  "compress_happened": false,
+  "mode_detail": "native-no-op",
+  "model_reply": "I can see the marker token **BETA_OLD_INTERIOR** in the file content. No ALPHA_, GAMMA_, DELTA_, EPSILON_, or NEW tokens are present in the provided snippet.\n\nThe files look **STALE** because the only marker present is `BETA_OLD_INTERIOR` (containing \"OLD\"), and there is no `NEW` token to indicate a fresh update.",
+  "error": null
+}
