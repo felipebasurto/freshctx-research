@@ -22,3 +22,4 @@
 | [0018](pcr/0018-insert-before-unique-last-dev-pack.md) | 2026-08-22 | insert-before unique-last door pack (not a public benchmark) | `synthetic`; `insert-before-unique-last-dev` | review |
 | [0019](pcr/0019-grow-inside-dev-pack.md) | 2026-08-22 | grow-inside development pack (not a public benchmark) | `synthetic`; `grow-inside-dev` | review |
 | [0020](pcr/0020-delete-unit-dev-pack.md) | 2026-08-22 | delete-unit development pack (not a public benchmark) | `synthetic`; `delete-unit-dev` | review |
+| [0021](pcr/0021-rename-boundary-dev-pack.md) | 2026-08-22 | rename-boundary development pack (not a public benchmark) | `synthetic`; `rename-boundary-dev` | review |
