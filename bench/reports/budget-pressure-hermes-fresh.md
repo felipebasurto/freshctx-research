@@ -5,7 +5,7 @@ Label: `budget-pressure-dev` / `hermes-fresh`. FreshCtx region grain on the Herm
 - pack: `budget-pressure-dev-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `fa6e2011d08b2f5f0ace283d866c0ea6a416b8af`
+- HEAD: `b2db751239b12f816a44ad085e87f4413353510f`
 - merge-base vs fa6e2011: `fa6e2011d08b2f5f0ace283d866c0ea6a416b8af`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -18,7 +18,7 @@ Label: `budget-pressure-dev` / `hermes-fresh`. FreshCtx region grain on the Herm
 
 **Finding:** hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 6 cells.
 
-Generated: 2026-08-22T17:46:45.284Z
+Generated: 2026-08-22T17:49:42.912Z
 
 ## Per-cell metrics (final capture)
 
