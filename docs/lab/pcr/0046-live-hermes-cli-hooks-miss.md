@@ -3,7 +3,7 @@
 - Date (UTC): 2026-08-22
 - Author / agent: UltraCtxt Thinker (box session; documented after the run)
 - Branch / PR: `cursor/hermes-zero-arg-engine-2820` (draft PR #38)
-- Commit: (this docs commit)
+- Commit: `40b57e7`
 - Merge-base: `620d7257dc35e8e7364bf641d2d3bd4b4c209928` (main at PCR 0043–0044)
 - Paper-manifest digest: unchanged
 - Result labels used: `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `post-lifecycle-fix`; `pre-hook-delivery`
