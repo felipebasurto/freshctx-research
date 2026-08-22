@@ -25,7 +25,7 @@ const REPOS_LOCK_PATH = join(ROOT, "bench", "repos.lock.json");
 const NATIVE_REPORT_PATH = join(REPORTS_DIR, "budget-pressure-native.md");
 const HERMES_HOST_MODULE = join(ROOT, "bench", "hosts", "hermes", "agent", "context_engine.py");
 const HOST_VERSION = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8")).version;
-const PCR_0035_SQUASH = "7b02a1dba0a2bb7536a4a4106eb31b540df9caff";
+const PCR_0036_SQUASH = "bfb9bb20d6aaeb378c0b4052942792288a75f357";
 
 export const BUDGET_PRESSURE_ADAPTER_PRUNE_LABEL = "budget-pressure-adapter-prune-dev-v0.1";
 
@@ -220,13 +220,13 @@ function formatReport(rows, hostsLock, {
   const lines = [
     `# CtxBench budget-pressure adapter prune (${BUDGET_PRESSURE_ADAPTER_PRUNE_LABEL})`,
     "",
-    "Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops stale filler tool bodies under 4k budget; keeps gold markers and FreshCtx region projection.",
+    "Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops unserved read tool pairs whenever a projection is applied (untracked or omitted from projection); keeps gold markers and FreshCtx region projection.",
     "",
     `- pack: \`${BUDGET_PRESSURE_LAB_PACK_ID}\``,
     `- status: candidate`,
     `- resultSetHash: null`,
     `- HEAD: \`${systemCommit}\``,
-    `- merge-base vs ${PCR_0035_SQUASH.slice(0, 8)}: \`${mergeBaseCommit}\``,
+    `- merge-base vs ${PCR_0036_SQUASH.slice(0, 8)}: \`${mergeBaseCommit}\``,
     `- door blob (src/anchors.mjs): \`f8771c93894095348185ef3453a3c2498355b3c6\``,
     `- repos.lock blob: \`79e29d09a9ec12b1128617f683f50a35a3c8809e\``,
     `- hosts.lock SHA-256: \`${hostsLock.sha256}\``,
@@ -317,7 +317,7 @@ export async function runBudgetPressureAdapterPrunePack({ skipReportWrite = fals
   const hostsLock = JSON.parse(hostsLockBytes.toString("utf8"));
   const reposLock = await loadJson(REPOS_LOCK_PATH);
   const systemCommit = gitCommit();
-  const mergeBaseCommit = mergeBase(PCR_0035_SQUASH);
+  const mergeBaseCommit = mergeBase(PCR_0036_SQUASH);
   const environmentSha256 = environmentDigest();
   const runId = createHash("sha256")
     .update(`${systemCommit}:budget-pressure-adapter-prune:${Date.now()}:${traces.length}`)

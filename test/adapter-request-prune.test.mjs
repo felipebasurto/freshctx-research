@@ -11,9 +11,7 @@ import {
   createHermesStateFile,
 } from "../adapters/hermes/replay.mjs";
 import {
-  BUDGET_PRUNE_CHARS_THRESHOLD,
   dropUnservedReadToolPairs,
-  shouldPruneAdapterRequest,
   unservedReadToolCallIds,
 } from "../adapters/request-prune.mjs";
 import {
@@ -21,14 +19,9 @@ import {
 } from "../adapters/pi/replay.mjs";
 
 const UNUSED_BODY = Array.from(
-  { length: 120 },
+  { length: 320 },
   (_, line) => `// freshctx-unused-context-padding line ${line}\n`,
 ).join("");
-
-test("shouldPruneAdapterRequest is true at budget-pressure threshold", () => {
-  assert.equal(shouldPruneAdapterRequest(BUDGET_PRUNE_CHARS_THRESHOLD), true);
-  assert.equal(shouldPruneAdapterRequest(BUDGET_PRUNE_CHARS_THRESHOLD + 1), false);
-});
 
 test("dropUnservedReadToolPairs removes unserved read pairs but keeps served markers", () => {
   const readTools = new Set(["read_file"]);
@@ -86,12 +79,47 @@ test("Hermes adapter drops unserved read at normal path under 4k and keeps gold 
     cwd: workspace,
     persistedMessages: persisted,
     stateFile,
-    budgetChars: BUDGET_PRUNE_CHARS_THRESHOLD,
+    budgetChars: 4_000,
   });
 
   assert.doesNotMatch(capture.payloadText, /unused-context-padding line 0/u);
   assert.match(capture.payloadText, /ParseFile/u);
   assert.ok(capture.telemetry.projectionBytes < 2000);
+  assert.match(capture.payloadText, /freshctx:/u);
+});
+
+test("Hermes adapter drops unserved read at normal path at 12k and keeps gold projection", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-hermes-prune-12k-"));
+  const gold = "func ParseFile() {}\n";
+  await mkdir(join(workspace, "src"), { recursive: true });
+  await writeFile(join(workspace, "sample.go"), gold);
+  await writeFile(join(workspace, "src/unused.go"), UNUSED_BODY);
+  const stateFile = await createHermesStateFile();
+
+  const persisted = [
+    buildReadToolCall({ toolCallId: "unused-1", path: "src/unused.go" }),
+    buildToolResultMessage({ toolCallId: "unused-1", content: UNUSED_BODY }),
+    buildReadToolCall({
+      toolCallId: "gold-1",
+      path: "sample.go",
+      scope: "region",
+      startLine: 1,
+      endLine: 1,
+      selector: "sig",
+    }),
+    buildToolResultMessage({ toolCallId: "gold-1", content: gold }),
+    { role: "user", content: "refresh sample.go signature" },
+  ];
+
+  const capture = await captureProviderRequest({
+    cwd: workspace,
+    persistedMessages: persisted,
+    stateFile,
+    budgetChars: 12_000,
+  });
+
+  assert.doesNotMatch(capture.payloadText, /unused-context-padding line 0/u);
+  assert.match(capture.payloadText, /ParseFile/u);
   assert.match(capture.payloadText, /freshctx:/u);
 });
 
@@ -145,7 +173,7 @@ test("Pi adapter drops unserved read at normal path under 4k and keeps gold proj
   const capture = await capturePiRequest({
     cwd: workspace,
     persistedMessages: persisted,
-    budgetChars: BUDGET_PRUNE_CHARS_THRESHOLD,
+    budgetChars: 4_000,
   });
 
   assert.doesNotMatch(capture.payloadText, /unused-context-padding line 0/u);
@@ -153,8 +181,8 @@ test("Pi adapter drops unserved read at normal path under 4k and keeps gold proj
   assert.ok(capture.telemetry.projectionBytes < 2000);
 });
 
-test("Pi adapter keeps unserved read transcript above budget threshold", async () => {
-  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-no-prune-"));
+test("Pi adapter drops unserved read at normal path at 12k and keeps gold projection", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-prune-12k-"));
   const gold = "func KeepMe() {}\n";
   await mkdir(join(workspace, "src"), { recursive: true });
   await writeFile(join(workspace, "sample.go"), gold);
@@ -191,7 +219,7 @@ test("Pi adapter keeps unserved read transcript above budget threshold", async (
       ],
     },
     { role: "tool", toolCallId: "gold-1", content: gold },
-    { role: "user", content: "keep unused transcript" },
+    { role: "user", content: "keep gold at 12k" },
   ];
 
   const capture = await capturePiRequest({
@@ -200,6 +228,6 @@ test("Pi adapter keeps unserved read transcript above budget threshold", async (
     budgetChars: 12_000,
   });
 
-  assert.match(capture.payloadText, /path=src\/unused\.go/u);
+  assert.doesNotMatch(capture.payloadText, /unused-context-padding line 0/u);
   assert.match(capture.payloadText, /KeepMe/u);
 });

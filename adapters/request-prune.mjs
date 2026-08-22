@@ -1,10 +1,4 @@
-/** Budget-pressure request assembly: drop unserved read tool pairs under tight budgets. */
-
-export const BUDGET_PRUNE_CHARS_THRESHOLD = 4_000;
-
-export function shouldPruneAdapterRequest(budgetChars) {
-  return Number.isFinite(budgetChars) && budgetChars > 0 && budgetChars <= BUDGET_PRUNE_CHARS_THRESHOLD;
-}
+/** Adapter request assembly: drop unserved read tool pairs whenever a projection is applied. */
 
 export function resolveAdapterBudgetChars({
   budgetChars,
@@ -47,11 +41,21 @@ export function unservedReadToolCallIds(messages, readTools, servedCallIds) {
   return drop;
 }
 
+function unitIdsFromProjectionOmission(projection, reason) {
+  return new Set(
+    projection.omitted
+      .filter((item) => item.reason === reason)
+      .map((item) => item.unit?.id ?? item.id),
+  );
+}
+
 export function servedReadCallIdsFromProjection(callToUnit, projection) {
   const selectedIds = new Set(projection.selected.map((unit) => unit.id));
+  const unresolvedIds = unitIdsFromProjectionOmission(projection, "unresolved");
   const served = new Set();
   for (const [callId, unitId] of callToUnit.entries()) {
-    if (selectedIds.has(unitId)) served.add(callId);
+    const id = typeof unitId === "object" ? unitId.id : unitId;
+    if (selectedIds.has(id) || unresolvedIds.has(id)) served.add(callId);
   }
   return served;
 }
@@ -59,9 +63,10 @@ export function servedReadCallIdsFromProjection(callToUnit, projection) {
 /** Map callId -> unit object (Hermes bridge uses unit objects, Pi uses unit ids). */
 export function servedReadCallIdsFromUnitsByCall(unitsByCall, projection) {
   const selectedIds = new Set(projection.selected.map((unit) => unit.id));
+  const unresolvedIds = unitIdsFromProjectionOmission(projection, "unresolved");
   const served = new Set();
   for (const [callId, unit] of unitsByCall.entries()) {
-    if (selectedIds.has(unit.id)) served.add(callId);
+    if (selectedIds.has(unit.id) || unresolvedIds.has(unit.id)) served.add(callId);
   }
   return served;
 }

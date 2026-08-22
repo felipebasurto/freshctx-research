@@ -5,7 +5,6 @@ import {
   dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
-  shouldPruneAdapterRequest,
 } from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
@@ -170,8 +169,6 @@ export async function selectContext(payload) {
     budgetTokens: payload.budgetTokens,
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
-  const pruneRequest = shouldPruneAdapterRequest(budgetChars);
-
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
   for (const [callId, observation] of Object.entries(tracked)) {
@@ -216,9 +213,7 @@ export async function selectContext(payload) {
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
-  const assembled = pruneRequest
-    ? dropUnservedReadToolPairs(rewritten, { readTools: READ_TOOLS, servedCallIds })
-    : rewritten;
+  const assembled = dropUnservedReadToolPairs(rewritten, { readTools: READ_TOOLS, servedCallIds });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],
     selected: projection.selected.length,

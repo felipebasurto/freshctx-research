@@ -5,7 +5,6 @@ import {
   dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
-  shouldPruneAdapterRequest,
 } from "../request-prune.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
@@ -165,16 +164,16 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           budgetTokens: event.budgetTokens,
           defaultBudget: DEFAULT_BUDGET_CHARS,
         });
-        const pruneRequest = shouldPruneAdapterRequest(budgetChars);
         const projection = engine.project({
           task: lastUserTask(event.messages),
           budgetChars,
         });
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
-        const assembled = pruneRequest
-          ? dropUnservedReadToolPairs(rewritten, { readTools: new Set(["read"]), servedCallIds })
-          : rewritten;
+        const assembled = dropUnservedReadToolPairs(rewritten, {
+          readTools: new Set(["read"]),
+          servedCallIds,
+        });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 
         return {
