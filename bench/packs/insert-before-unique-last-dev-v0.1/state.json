@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "packId": "insert-before-unique-last-dev-v0.1",
+  "classification": "candidate",
+  "manifestPath": "bench/splits/insert-before-unique-last-dev-v0.1.json",
+  "manifestSha256": "8ea4205a7e202cb942de7ebe4b9fcbb6f6219d3e2e469a744d628df594f70623",
+  "freezeCommitSha": null,
+  "implementationCommitSha": "fd990be472ddbe00b57b73083c39903e7ddd6880",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49"
+  },
+  "traceSetHash": null,
+  "resultSetHash": null,
+  "reportHash": null,
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-22T07:13:52.774Z"
+}
