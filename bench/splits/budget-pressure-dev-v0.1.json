@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "budget-pressure-dev-v0.1",
+  "benchmarkVersion": "budget-pressure-dev-v0.1",
+  "label": "budget-pressure-dev",
+  "repositoryIds": [
+    "go-tools",
+    "neovim"
+  ],
+  "mutationFamilies": [
+    "append",
+    "interior-edit",
+    "delete"
+  ],
+  "seeds": {
+    "traceSelection": "budget-pressure-dev-v0.1"
+  },
+  "samplingRules": {
+    "method": "enumerated-cells",
+    "unitsPerFamily": 2
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate",
+    "duplicate-units",
+    "projection-bytes"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": null,
+    "duplicateUnitsMax": null
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "manifestPath": "bench/splits/budget-pressure-dev-v0.1.json",
+  "tracePackDir": "bench/traces/lab/budget-pressure-dev-v0.1",
+  "reportsDir": "bench/packs/budget-pressure-dev-v0.1/reports",
+  "provenanceDir": "bench/packs/budget-pressure-dev-v0.1/provenance",
+  "status": "candidate",
+  "resultSetHash": null,
+  "frozenAt": "2026-08-22T17:06:57.036Z",
+  "implementationCommitSha": "pending",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49",
+    "neovim": "2dd6e9d6a2482069cfe9d12a09f761c5713f246b"
+  },
+  "classification": "candidate",
+  "manifestSha256": "7b0d5ebb075e93a429cbf36b3e22606c9c9958c5ed7fd3d5f55389825b947d84"
+}

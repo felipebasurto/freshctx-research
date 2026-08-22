@@ -73,7 +73,13 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
     conversation_messages = payload.get("conversationMessages", messages)
     incoming_message = payload.get("incomingMessage")
     budget_tokens = int(payload.get("budgetTokens") or 128_000)
-    context_length = int(payload.get("contextLength") or budget_tokens or 128_000)
+    budget_pressure = bool(payload.get("budgetPressure"))
+
+    if budget_pressure:
+        rough_tokens = estimate_messages_tokens_rough(messages)
+        context_length = max(256, int(rough_tokens * 1.1))
+    else:
+        context_length = int(payload.get("contextLength") or budget_tokens or 128_000)
 
     engine = ContextCompressor(
         model=str(payload.get("model") or "freshctx-capture"),
