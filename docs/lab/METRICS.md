@@ -55,6 +55,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-23 | (PCR 0050) Hermes bridge extract import failure (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0050](pcr/0050-hermes-bridge-extract-import.md) |
 | 2026-08-23 | (PCR 0051) Live Hermes layout complete (docs) | n/a | n/a | n/a | n/a | n/a | n/a live host | n/a | [0051](pcr/0051-live-hermes-layout-complete.md) |
 | 2026-08-23 | (PCR 0052) Hermes plugin install ships siblings | 141/141 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0052](pcr/0052-hermes-plugin-install-siblings.md) |
+| 2026-08-23 | (PCR 0055) region single-line interior refresh | 122/122 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0055](pcr/0055-region-interior-line-refresh.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
