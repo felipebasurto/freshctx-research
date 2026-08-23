@@ -102,4 +102,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 0 | Bridge import fail on hermes-only extract; in-tree control rc=0; not host skip | [0050](pcr/0050-hermes-bridge-extract-import.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | Layout-complete plugin; select list; observe ran; state populated; collision on live logs | [0051](pcr/0051-live-hermes-layout-complete.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | install.mjs one-shot; select list + observe; not a paper result | [0053](pcr/0053-live-hermes-install-oneshot.md) |
+| 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | install.mjs t2-append put NEW in live projection; not a paper result | [0054](pcr/0054-live-hermes-install-t2-append.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
