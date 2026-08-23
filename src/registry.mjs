@@ -5,6 +5,28 @@ function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
 }
 
+function splitLines(value) {
+  return String(value).replaceAll("\r\n", "\n").split("\n");
+}
+
+function resolveStoredLineSpan(normalizedFile, startLine, endLine) {
+  if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return null;
+  if (startLine < 1 || endLine < startLine) return null;
+  // Honor explicit line-addressed single-line reads when content anchors are gone.
+  if (startLine !== endLine) return null;
+
+  const lines = splitLines(normalizedFile);
+  if (endLine > lines.length) return null;
+
+  return {
+    state: "resolved",
+    method: "stored-line-span",
+    content: lines.slice(startLine - 1, endLine).join("\n"),
+    startLine,
+    endLine,
+  };
+}
+
 async function readSource(provider, filePath) {
   if (typeof provider === "function") return provider(filePath);
   if (provider instanceof Map) return provider.get(filePath);
@@ -117,7 +139,7 @@ export class FreshRegistry {
       }
 
       const normalizedFile = currentFileContent.replaceAll("\r\n", "\n");
-      const resolved = unit.scope === "file"
+      let resolved = unit.scope === "file"
         ? {
             state: "resolved",
             method: "whole-file",
@@ -130,6 +152,11 @@ export class FreshRegistry {
             currentFileContent: normalizedFile,
             anchors: unit.anchors,
           });
+
+      if (resolved.state !== "resolved" && unit.scope === "region") {
+        const span = resolveStoredLineSpan(normalizedFile, unit.startLine, unit.endLine);
+        if (span) resolved = span;
+      }
 
       if (resolved.state !== "resolved") {
         unit.state = "unresolved";
