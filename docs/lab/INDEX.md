@@ -53,3 +53,4 @@
 | [0051](pcr/0051-live-hermes-layout-complete.md) | 2026-08-23 | Live Hermes layout complete (CLI list + observe) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `layout-complete` | review |
 | [0052](pcr/0052-hermes-plugin-install-siblings.md) | 2026-08-23 | Hermes plugin install ships siblings by default | `synthetic`; `hermes-fresh`; `adapter-only`; `packaging` | review |
 | [0053](pcr/0053-live-hermes-install-oneshot.md) | 2026-08-23 | Live Hermes install.mjs one-shot (CLI list + observe) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `pack-install` | review |
+| [0054](pcr/0054-live-hermes-install-t2-append.md) | 2026-08-23 | Live Hermes install.mjs two-turn append (NEW in request) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `pack-install`; `t2-append` | review |
