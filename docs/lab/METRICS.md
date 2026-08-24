@@ -64,6 +64,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-24 | (PCR 0064) Hermes default limit=2000 past-EOF file-scope | 147/147 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0064](pcr/0064-hermes-default-limit-clamp.md) |
 | 2026-08-24 | (PCR 0065) observe-after-delete re-pin triad | 151/151 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0065](pcr/0065-observe-after-delete-repin.md) |
 | 2026-08-24 | (PCR 0067) delete-repin identity leftover | 153/153 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0067](pcr/0067-delete-repin-identity-leftover.md) |
+| 2026-08-24 | (PCR 0066) in-bounds exact-EOF region leftover | 163/163 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0066](pcr/0066-in-bounds-exact-eof-region.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
