@@ -62,6 +62,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-24 | (PCR 0062) insert-above observe-then-mutate boards post-0059 | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0062](pcr/0062-insert-above-post-0059.md) |
 | 2026-08-24 | (PCR 0063) Hermes default-limit region leftover | 141/141 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0063](pcr/0063-hermes-default-limit-region.md) |
 | 2026-08-24 | (PCR 0064) Hermes default limit=2000 past-EOF file-scope | 147/147 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0064](pcr/0064-hermes-default-limit-clamp.md) |
+| 2026-08-24 | (PCR 0065) observe-after-delete re-pin triad | 151/151 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0065](pcr/0065-observe-after-delete-repin.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

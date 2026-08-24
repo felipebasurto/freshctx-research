@@ -62,3 +62,4 @@
 | [0062](pcr/0062-insert-above-post-0059.md) | 2026-08-24 | Insert-above observe-then-mutate boards post-0059 (door exact vs fail-close) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `insert-above`; `measurement` | review |
 | [0063](pcr/0063-hermes-default-limit-region.md) | 2026-08-24 | Hermes default-limit region leftover after 0059 (measurement) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
 | [0064](pcr/0064-hermes-default-limit-clamp.md) | 2026-08-24 | Hermes default limit=2000 pagination promotes past-EOF reads to file-scope | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `default-pagination` | review |
+| [0065](pcr/0065-observe-after-delete-repin.md) | 2026-08-24 | Observe-after-delete re-pin triad post-0059 (measurement) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
