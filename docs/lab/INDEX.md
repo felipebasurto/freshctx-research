@@ -55,4 +55,6 @@
 | [0053](pcr/0053-live-hermes-install-oneshot.md) | 2026-08-23 | Live Hermes install.mjs one-shot (CLI list + observe) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `pack-install` | review |
 | [0054](pcr/0054-live-hermes-install-t2-append.md) | 2026-08-23 | Live Hermes install.mjs two-turn append (NEW in request) | `synthetic`; `live-host`; `hermes-fresh`; `live-cli`; `pack-install`; `t2-append` | review |
 | [0055](pcr/0055-region-interior-line-refresh.md) | 2026-08-23 | Region single-line interior refresh (`stored-line-span`) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span` | review |
+| [0057](pcr/0057-multiline-region-interior.md) | 2026-08-23 | Multi-line region interior measurement (middle-only door-resolve) | `synthetic`; `hermes-fresh`; `region-refresh`; `boundary-anchors`; `multi-line`; `measurement` | review |
 | [0059](pcr/0059-offset-region-and-delete-failclose.md) | 2026-08-24 | Hermes offset/limit region mapping; delete fail-close on line-count shift | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit` | review |
+| [0060](pcr/0060-post-0059-evaluate.md) | 2026-08-24 | Post-0059/0057 evaluate record on main (door/lock/score unchanged) | `synthetic`; `hermes-fresh`; `region-refresh`; `measurement` | review |
