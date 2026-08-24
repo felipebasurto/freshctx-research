@@ -57,6 +57,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-23 | (PCR 0052) Hermes plugin install ships siblings | 141/141 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0052](pcr/0052-hermes-plugin-install-siblings.md) |
 | 2026-08-23 | (PCR 0055) region single-line interior refresh | 122/122 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0055](pcr/0055-region-interior-line-refresh.md) |
 | 2026-08-24 | (PCR 0059) Hermes offset/limit region + delete fail-close | 128/128 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0059](pcr/0059-offset-region-and-delete-failclose.md) |
+| 2026-08-24 | `3bcbfb5` post-0059/0057 main evaluate | 132/132 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0060](pcr/0060-post-0059-evaluate.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
