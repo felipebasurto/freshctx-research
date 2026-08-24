@@ -58,3 +58,4 @@
 | [0057](pcr/0057-multiline-region-interior.md) | 2026-08-23 | Multi-line region interior measurement (middle-only door-resolve) | `synthetic`; `hermes-fresh`; `region-refresh`; `boundary-anchors`; `multi-line`; `measurement` | review |
 | [0059](pcr/0059-offset-region-and-delete-failclose.md) | 2026-08-24 | Hermes offset/limit region mapping; delete fail-close on line-count shift | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit` | review |
 | [0060](pcr/0060-post-0059-evaluate.md) | 2026-08-24 | Post-0059/0057 evaluate record on main (door/lock/score unchanged) | `synthetic`; `hermes-fresh`; `region-refresh`; `measurement` | review |
+| [0062](pcr/0062-insert-above-post-0059.md) | 2026-08-24 | Insert-above observe-then-mutate boards post-0059 (door exact vs fail-close) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `insert-above`; `measurement` | review |
