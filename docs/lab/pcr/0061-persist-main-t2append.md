@@ -87,7 +87,7 @@ on the request-only adapter.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | 133 pass, 22 skip (repo fetch) |
+| `npm test` | yes | 0 | 135 pass, 22 skip (repo fetch) |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; ctxbench payload sha unchanged |
 | live Hermes t2-append reconfirm | yes (pre-merged) | 0 | gold re-scored 2026-08-24 on extract `3bcbfb5` |
 

@@ -59,7 +59,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-24 | (PCR 0059) Hermes offset/limit region + delete fail-close | 128/128 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0059](pcr/0059-offset-region-and-delete-failclose.md) |
 | 2026-08-24 | `3bcbfb5` post-0059/0057 main evaluate | 132/132 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0060](pcr/0060-post-0059-evaluate.md) |
 | 2026-08-24 | (PCR 0062) insert-above observe-then-mutate boards post-0059 | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0062](pcr/0062-insert-above-post-0059.md) |
-| 2026-08-24 | (PCR 0061) product main t2-append hold lock | 133/133 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0061](pcr/0061-persist-main-t2append.md) |
+| 2026-08-24 | (PCR 0061) product main t2-append hold lock | 135/135 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0061](pcr/0061-persist-main-t2append.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
