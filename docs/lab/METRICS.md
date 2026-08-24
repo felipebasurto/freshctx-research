@@ -59,6 +59,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-24 | (PCR 0059) Hermes offset/limit region + delete fail-close | 128/128 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0059](pcr/0059-offset-region-and-delete-failclose.md) |
 | 2026-08-24 | `3bcbfb5` post-0059/0057 main evaluate | 132/132 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0060](pcr/0060-post-0059-evaluate.md) |
 | 2026-08-24 | (PCR 0062) insert-above observe-then-mutate boards post-0059 | 134/134 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0062](pcr/0062-insert-above-post-0059.md) |
+| 2026-08-24 | (PCR 0061) product main t2-append hold lock | 133/133 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0061](pcr/0061-persist-main-t2append.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -107,4 +108,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | Layout-complete plugin; select list; observe ran; state populated; collision on live logs | [0051](pcr/0051-live-hermes-layout-complete.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | install.mjs one-shot; select list + observe; not a paper result | [0053](pcr/0053-live-hermes-install-oneshot.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | install.mjs t2-append put NEW in live projection; not a paper result | [0054](pcr/0054-live-hermes-install-t2-append.md) |
+| 2026-08-24 | `3bcbfb5` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | product main hold; no persist-38; NEW in turn-2 projection (content-bytes=36) | [0061](pcr/0061-persist-main-t2append.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
