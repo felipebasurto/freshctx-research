@@ -77,7 +77,7 @@ test("Hermes default page offset=1 limit=2000 discovered as region 1-2000", asyn
   assert.equal(calls["call-default-page"].endLine, 2000);
 });
 
-test("blown default-page region 1-2000 stays unresolved after interior line-2 replace", async () => {
+test("blown default-page region 1-2000 promotes to whole-file and serves NEW after interior line-2 replace", async () => {
   const workspace = await writeWorkspace(REGION_PATH, threeLineFile(NEW_INTERIOR));
   const stateFile = await createHermesStateFile();
 
@@ -102,14 +102,10 @@ test("blown default-page region 1-2000 stays unresolved after interior line-2 re
     budgetChars: 8_000,
   });
 
-  assert.match(capture.projectionText, /selected="0"/u);
-  assert.match(capture.projectionText, /unresolved="1"/u);
-  assert.doesNotMatch(capture.projectionText, /<freshctx-unit/u);
-  assert.doesNotMatch(capture.payloadText, /BETA_NEW_INTERIOR/u);
   assert.doesNotMatch(capture.payloadText, /BETA_OLD_INTERIOR/u);
-  assert.doesNotMatch(capture.payloadText, /line1 header/u);
-  assert.doesNotMatch(capture.payloadText, /line3 footer/u);
-  assert.doesNotMatch(capture.payloadText, /stored-line-span/u);
+  assert.match(capture.payloadText, /BETA_NEW_INTERIOR/u);
+  assert.match(capture.payloadText, /resolution="whole-file"/u);
+  assert.doesNotMatch(capture.payloadText, /resolution="stored-line-span"/u);
 });
 
 test("control offset=2 limit=1 serves NEW via stored-line-span after interior replace", async () => {
