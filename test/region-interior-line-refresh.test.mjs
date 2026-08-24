@@ -70,6 +70,7 @@ test("core region refresh serves current bytes for single-line interior edit", a
     startLine: 2,
     endLine: 2,
     selector: OLD_INTERIOR,
+    observedFileLineCount: 4,
   });
 
   const { readFile } = await import("node:fs/promises");
