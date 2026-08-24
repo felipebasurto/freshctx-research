@@ -16,27 +16,45 @@ function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
 }
 
-export function readScopeFromHermesArgs(args) {
+export function readScopeFromHermesArgs(args, fileLineCount) {
   if (!args || typeof args !== "object") return { scope: "file" };
   if (args.scope === "region") {
-    return {
-      scope: "region",
-      startLine: args.startLine,
-      endLine: args.endLine,
-      selector: args.selector,
-    };
+    return normalizeHermesReadScope(
+      {
+        scope: "region",
+        startLine: args.startLine,
+        endLine: args.endLine,
+        selector: args.selector,
+      },
+      fileLineCount,
+    );
   }
   const offset = args.offset;
   const limit = args.limit;
   if (Number.isFinite(offset) && Number.isFinite(limit) && offset >= 1 && limit >= 1) {
-    return {
-      scope: "region",
-      startLine: offset,
-      endLine: offset + limit - 1,
-      selector: args.selector,
-    };
+    return normalizeHermesReadScope(
+      {
+        scope: "region",
+        startLine: offset,
+        endLine: offset + limit - 1,
+        selector: args.selector,
+      },
+      fileLineCount,
+    );
   }
   return { scope: "file" };
+}
+
+export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
+  if (!scopeMeta || scopeMeta.scope !== "region") return scopeMeta ?? { scope: "file" };
+  if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
+  const { startLine, endLine } = scopeMeta;
+  if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return scopeMeta;
+  // Hermes default pagination (limit=2000) blows past EOF on small files. A region
+  // whose endLine is past the file cannot refresh after interior edits; treat as
+  // whole-file so current bytes still project without inventing neighbor lines.
+  if (endLine > fileLineCount) return { scope: "file" };
+  return scopeMeta;
 }
 
 async function readStdin() {
@@ -159,17 +177,30 @@ export function trackedCallsFromMessages(messages) {
   return tracked;
 }
 
+function scopeFromObservation(observation, fileLineCount) {
+  const scopeMeta = {
+    scope: observation.scope ?? "file",
+    startLine: observation.startLine,
+    endLine: observation.endLine,
+    selector: observation.selector,
+  };
+  return normalizeHermesReadScope(scopeMeta, fileLineCount);
+}
+
 async function enrichTrackedWithLineCounts(cwd, tracked) {
   if (!cwd) return tracked;
   const enriched = {};
   for (const [callId, observation] of Object.entries(tracked)) {
     try {
       const file = await safeWorkspaceFile(cwd, observation.path);
+      const observedFileLineCount = Number.isInteger(observation.observedFileLineCount)
+        ? observation.observedFileLineCount
+        : lineCount(file.content);
+      const scopeMeta = scopeFromObservation(observation, observedFileLineCount);
       enriched[callId] = {
         ...observation,
-        ...(Number.isInteger(observation.observedFileLineCount)
-          ? {}
-          : { observedFileLineCount: lineCount(file.content) }),
+        ...scopeMeta,
+        observedFileLineCount,
       };
     } catch {
       enriched[callId] = observation;
@@ -208,9 +239,12 @@ export async function observeTurn(payload) {
 export async function selectContext(payload) {
   const state = await loadState(payload.stateFile);
   const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
-  const tracked = mergeTrackedCalls(
-    state.tracked ?? {},
-    trackedCallsFromMessages(payload.messages),
+  const tracked = await enrichTrackedWithLineCounts(
+    payload.cwd,
+    mergeTrackedCalls(
+      state.tracked ?? {},
+      trackedCallsFromMessages(payload.messages),
+    ),
   );
   const paths = [...new Set(Object.values(calls).map((call) => call.path ?? call))].sort();
   if (paths.length === 0) {
