@@ -65,3 +65,4 @@
 | [0065](pcr/0065-observe-after-delete-repin.md) | 2026-08-24 | Observe-after-delete re-pin triad post-0059 (measurement) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
 | [0067](pcr/0067-delete-repin-identity-leftover.md) | 2026-08-24 | Delete-repin identity leftover (header 1-1; replaced neighbor 2-2) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
 | [0066](pcr/0066-in-bounds-exact-eof-region.md) | 2026-08-24 | In-bounds exact-EOF Hermes page stays region after 0064 (measurement) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
+| [0068](pcr/0068-header-1-1-delete-reobserve.md) | 2026-08-24 | Header 1-1 observe then delete then re-observe (identity leftover) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
