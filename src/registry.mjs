@@ -9,13 +9,15 @@ function splitLines(value) {
   return String(value).replaceAll("\r\n", "\n").split("\n");
 }
 
-function resolveStoredLineSpan(normalizedFile, startLine, endLine) {
+function resolveStoredLineSpan(normalizedFile, startLine, endLine, observedFileLineCount) {
   if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return null;
   if (startLine < 1 || endLine < startLine) return null;
   // Honor explicit line-addressed single-line reads when content anchors are gone.
   if (startLine !== endLine) return null;
+  if (!Number.isInteger(observedFileLineCount)) return null;
 
   const lines = splitLines(normalizedFile);
+  if (lineCount(normalizedFile) !== observedFileLineCount) return null;
   if (endLine > lines.length) return null;
 
   return {
@@ -48,6 +50,7 @@ export class FreshRegistry {
     selector,
     scope = "region",
     pinned = false,
+    observedFileLineCount,
   }) {
     const filePath = normalizePath(path);
     const normalizedContent = String(content).replaceAll("\r\n", "\n");
@@ -74,6 +77,9 @@ export class FreshRegistry {
       existing.resolutionMethod = "observed";
       existing.anchors = makeAnchors(normalizedContent, { startLine });
       existing.pinned ||= pinned;
+      if (Number.isInteger(observedFileLineCount)) {
+        existing.observedFileLineCount = observedFileLineCount;
+      }
       if (changed) {
         existing.changedAt = turn;
         existing.changeCount += 1;
@@ -101,6 +107,9 @@ export class FreshRegistry {
       changedAt: turn,
       changeCount: 0,
       pinned,
+      observedFileLineCount: Number.isInteger(observedFileLineCount)
+        ? observedFileLineCount
+        : undefined,
       state: "resolved",
       resolutionMethod: "observed",
       anchors: makeAnchors(normalizedContent, { startLine }),
@@ -154,7 +163,12 @@ export class FreshRegistry {
           });
 
       if (resolved.state !== "resolved" && unit.scope === "region") {
-        const span = resolveStoredLineSpan(normalizedFile, unit.startLine, unit.endLine);
+        const span = resolveStoredLineSpan(
+          normalizedFile,
+          unit.startLine,
+          unit.endLine,
+          unit.observedFileLineCount,
+        );
         if (span) resolved = span;
       }
 

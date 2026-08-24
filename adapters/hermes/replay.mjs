@@ -51,13 +51,26 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
   };
 }
 
-export function buildReadToolCall({ toolCallId, path, toolName = "read_file", scope, startLine, endLine, selector }) {
+export function buildReadToolCall({
+  toolCallId,
+  path,
+  toolName = "read_file",
+  scope,
+  startLine,
+  endLine,
+  selector,
+  offset,
+  limit,
+}) {
   const args = { path };
   if (scope === "region") {
     args.scope = "region";
     if (startLine != null) args.startLine = startLine;
     if (endLine != null) args.endLine = endLine;
     if (selector != null) args.selector = selector;
+  } else if (offset != null && limit != null) {
+    args.offset = offset;
+    args.limit = limit;
   }
   return {
     role: "assistant",

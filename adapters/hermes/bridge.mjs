@@ -12,6 +12,33 @@ export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
 const MAX_FILE_BYTES = 512 * 1024;
 const DEFAULT_BUDGET_CHARS = 24_000;
 
+function lineCount(content) {
+  return String(content).replaceAll("\r\n", "\n").split("\n").length;
+}
+
+export function readScopeFromHermesArgs(args) {
+  if (!args || typeof args !== "object") return { scope: "file" };
+  if (args.scope === "region") {
+    return {
+      scope: "region",
+      startLine: args.startLine,
+      endLine: args.endLine,
+      selector: args.selector,
+    };
+  }
+  const offset = args.offset;
+  const limit = args.limit;
+  if (Number.isFinite(offset) && Number.isFinite(limit) && offset >= 1 && limit >= 1) {
+    return {
+      scope: "region",
+      startLine: offset,
+      endLine: offset + limit - 1,
+      selector: args.selector,
+    };
+  }
+  return { scope: "file" };
+}
+
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
@@ -57,12 +84,10 @@ export function discoveredCalls(messages) {
         const args = parseArguments(call?.function?.arguments ?? call?.arguments);
         const path = args.path ?? args.file_path;
         if (typeof path !== "string") continue;
+        const scopeMeta = readScopeFromHermesArgs(args);
         candidates.set(call.id, {
           path,
-          scope: args.scope === "region" ? "region" : "file",
-          startLine: args.startLine,
-          endLine: args.endLine,
-          selector: args.selector,
+          ...scopeMeta,
         });
       }
     }
@@ -134,13 +159,47 @@ export function trackedCallsFromMessages(messages) {
   return tracked;
 }
 
+async function enrichTrackedWithLineCounts(cwd, tracked) {
+  if (!cwd) return tracked;
+  const enriched = {};
+  for (const [callId, observation] of Object.entries(tracked)) {
+    try {
+      const file = await safeWorkspaceFile(cwd, observation.path);
+      enriched[callId] = {
+        ...observation,
+        ...(Number.isInteger(observation.observedFileLineCount)
+          ? {}
+          : { observedFileLineCount: lineCount(file.content) }),
+      };
+    } catch {
+      enriched[callId] = observation;
+    }
+  }
+  return enriched;
+}
+
+function mergeTrackedCalls(stored, incoming) {
+  const merged = { ...stored };
+  for (const [callId, observation] of Object.entries(incoming)) {
+    const previous = stored[callId];
+    merged[callId] = {
+      ...observation,
+      ...(Number.isInteger(previous?.observedFileLineCount)
+        ? { observedFileLineCount: previous.observedFileLineCount }
+        : {}),
+    };
+  }
+  return merged;
+}
+
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
   state.calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
-  state.tracked = {
-    ...(state.tracked ?? {}),
-    ...trackedCallsFromMessages(payload.messages),
-  };
+  const tracked = mergeTrackedCalls(
+    state.tracked ?? {},
+    trackedCallsFromMessages(payload.messages),
+  );
+  state.tracked = await enrichTrackedWithLineCounts(payload.cwd, tracked);
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
   return { observedCalls: Object.keys(state.calls).length };
@@ -149,10 +208,10 @@ export async function observeTurn(payload) {
 export async function selectContext(payload) {
   const state = await loadState(payload.stateFile);
   const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
-  const tracked = {
-    ...(state.tracked ?? {}),
-    ...trackedCallsFromMessages(payload.messages),
-  };
+  const tracked = mergeTrackedCalls(
+    state.tracked ?? {},
+    trackedCallsFromMessages(payload.messages),
+  );
   const paths = [...new Set(Object.values(calls).map((call) => call.path ?? call))].sort();
   if (paths.length === 0) {
     return {
@@ -181,6 +240,7 @@ export async function selectContext(payload) {
             startLine: observation.startLine,
             endLine: observation.endLine,
             selector: observation.selector,
+            observedFileLineCount: observation.observedFileLineCount,
           }
         : {
             path: observation.path,
