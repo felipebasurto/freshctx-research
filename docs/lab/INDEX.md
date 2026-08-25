@@ -67,3 +67,4 @@
 | [0066](pcr/0066-in-bounds-exact-eof-region.md) | 2026-08-24 | In-bounds exact-EOF Hermes page stays region after 0064 (measurement) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
 | [0068](pcr/0068-header-1-1-delete-reobserve.md) | 2026-08-24 | Header 1-1 observe then delete then re-observe (identity leftover) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
 | [0069](pcr/0069-exact-eof-file-scope-clamp.md) | 2026-08-25 | Hermes exact-EOF page promotes to file-scope (sibling of 0064) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `default-pagination` | review |
+| [0071](pcr/0071-exact-eof-extra-boards.md) | 2026-08-25 | Exact-EOF clamp extra boards (trailing NL; startLine=2) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
