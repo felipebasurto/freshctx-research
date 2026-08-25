@@ -232,6 +232,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           servedCallIds,
           observedCallIds: new Set(callToUnit.keys()),
           trackedPaths: engine.registry.list().map((unit) => unit.path),
+          projection,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 

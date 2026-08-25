@@ -188,6 +188,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         servedCallIds,
         observedCallIds: new Set(callToUnit.keys()),
         trackedPaths: engine.registry.list().map((unit) => unit.path),
+        projection,
       });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
 
