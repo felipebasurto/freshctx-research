@@ -133,7 +133,10 @@ export function staleShellDumpCallIds(messages, { trackedPaths, servedCallIds } 
   return new Set(staleShellDumpPathByCallId(messages, { trackedPaths, servedCallIds }).keys());
 }
 
-export function staleShellDumpPathByCallId(messages, { trackedPaths, servedCallIds } = {}) {
+export function staleShellDumpPathByCallId(
+  messages,
+  { trackedPaths, servedCallIds, pathDispositions } = {},
+) {
   const served = servedCallIds instanceof Set ? servedCallIds : new Set(servedCallIds ?? []);
   const paths = Array.isArray(trackedPaths) ? trackedPaths : [];
   const replace = new Map();
@@ -144,22 +147,45 @@ export function staleShellDumpPathByCallId(messages, { trackedPaths, servedCallI
       const name = callName(call);
       const id = callId(call);
       if (!SHELL_TOOLS.has(name) || typeof id !== "string") continue;
-      if (served.has(id)) continue;
       const command = shellCommandFromInput(toolCallArguments(call));
       if (!command) continue;
       const hits = trackedPathsMentionedInCommand(command, paths);
-      if (hits.length === 1) replace.set(id, hits[0]);
+      if (hits.length !== 1) continue;
+      if (served.has(id) && pathDispositions?.get(hits[0]) !== "unresolved") continue;
+      replace.set(id, hits[0]);
     }
   }
   return replace;
 }
 
-function staleDumpMarker(path) {
-  return `[freshctx:stale-dump path=${path}] Current content is supplied in the live projection.`;
+function projectionDispositionByPath(projection) {
+  const dispositions = new Map();
+  for (const unit of projection?.selected ?? []) {
+    dispositions.set(unit.path, "selected");
+  }
+  for (const item of projection?.omitted ?? []) {
+    const path = item.unit?.path;
+    if (typeof path !== "string" || dispositions.has(path)) continue;
+    dispositions.set(path, item.reason === "budget" ? "budget" : "unresolved");
+  }
+  return dispositions;
 }
 
-function withReplacedDumpBody(message, path) {
-  const marker = staleDumpMarker(path);
+function staleDumpMarker(path, disposition) {
+  if (disposition === "selected") {
+    return `[freshctx:stale-dump path=${path}] Current content is supplied in the live projection.`;
+  }
+  if (disposition === "budget") {
+    return `[freshctx:stale-dump path=${path}] Current content was omitted from the live projection for budget.`;
+  }
+  if (disposition === "unresolved") {
+    return `[freshctx:stale-dump path=${path}] Current content is not supplied because the tracked unit is unresolved.`;
+  }
+  return `[freshctx:stale-dump path=${path}] Current content is not supplied in the live projection.`;
+}
+
+function withReplacedDumpBody(message, path, disposition) {
+  const marker = staleDumpMarker(path, disposition);
   const content = Array.isArray(message.content)
     ? [{ type: "text", text: marker }]
     : marker;
@@ -171,10 +197,16 @@ export function dropUnservedReadToolPairs(messages, {
   servedCallIds,
   trackedPaths,
   observedCallIds,
+  projection,
 } = {}) {
   const dropIds = unservedReadToolCallIds(messages, readTools, servedCallIds, observedCallIds);
-  const dumpPaths = staleShellDumpPathByCallId(messages, { trackedPaths, servedCallIds });
-  for (const id of dropIds) dumpPaths.delete(id);
+  const dispositions = projectionDispositionByPath(projection);
+  const dumpPaths = staleShellDumpPathByCallId(messages, {
+    trackedPaths,
+    servedCallIds,
+    pathDispositions: dispositions,
+  });
+  for (const id of dumpPaths.keys()) dropIds.delete(id);
 
   if (dropIds.size === 0 && dumpPaths.size === 0) {
     return messages.map((message) => structuredClone(message));
@@ -186,7 +218,8 @@ export function dropUnservedReadToolPairs(messages, {
     if (resultId) {
       if (dropIds.has(resultId)) continue;
       if (dumpPaths.has(resultId)) {
-        kept.push(withReplacedDumpBody(message, dumpPaths.get(resultId)));
+        const path = dumpPaths.get(resultId);
+        kept.push(withReplacedDumpBody(message, path, dispositions.get(path)));
         continue;
       }
       kept.push(structuredClone(message));

@@ -357,6 +357,7 @@ export async function selectContext(payload) {
     servedCallIds,
     observedCallIds: new Set(unitsByCall.keys()),
     trackedPaths: engine.registry.list().map((unit) => unit.path),
+    projection,
   });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],
