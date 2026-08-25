@@ -143,6 +143,7 @@ bench/repos.manifest.json Public repository corpus and frozen refs
 docs/ROADMAP.md           Milestones and release gates
 docs/LAUNCH.md            GitHub, paper, and LinkedIn launch plan
 docs/RESUMEN_ES.md        Short Spanish project brief
+docs/explainer/           Interactive Spanish explainer, single file, unpublished
 docs/lab/                 Public Change Records and per-iteration metric ledger
 ```
 
