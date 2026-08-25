@@ -109,14 +109,16 @@ test("Hermes sends one current body in every stateless request", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0079-hermes-"));
   try {
     await writeFile(join(workspace, PROBE_PATH), PROBE_BODY);
+    const stateFile = join(workspace, "state", "session.json");
     const adapter = createHermesAdapter({
-      stateFile: join(workspace, "state", "session.json"),
+      stateFile,
       budgetChars: BUDGET_CHARS,
     });
     const messages = hermesMessages();
     const ctx = { cwd: workspace };
 
     await adapter.onTurnComplete(structuredClone(messages), ctx);
+    const stateBeforeSelect = await readFile(stateFile, "utf8");
     const turn1 = await adapter.onSelectContext(structuredClone(messages), ctx);
     const turn2 = await adapter.onSelectContext(structuredClone(messages), ctx);
 
@@ -124,6 +126,7 @@ test("Hermes sends one current body in every stateless request", async () => {
     assert.equal(countOccurrences(hermesMessageText(turn2.messages), PROBE_BODY), 1);
     assert.equal(countOccurrences(turn2.projectionText, PROBE_BODY), 1);
     assert.doesNotMatch(turn2.projectionText, /unchanged="true"/u);
+    assert.equal(await readFile(stateFile, "utf8"), stateBeforeSelect);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
@@ -148,25 +151,6 @@ test("Hermes removes obsolete revision state on the next state write", async () 
 
     const state = JSON.parse(await readFile(stateFile, "utf8"));
     assert.equal("lastInjectedRevision" in state, false);
-  } finally {
-    await rm(workspace, { recursive: true, force: true });
-  }
-});
-
-test("Hermes selection leaves persisted state byte-identical", async () => {
-  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0079-read-only-"));
-  try {
-    const stateFile = join(workspace, "session.json");
-    const stateText = `${JSON.stringify({
-      calls: {},
-      updatedAt: "2026-08-25T00:00:00.000Z",
-    }, null, 2)}\n`;
-    await writeFile(stateFile, stateText);
-    const adapter = createHermesAdapter({ stateFile });
-
-    await adapter.onSelectContext([], { cwd: workspace });
-
-    assert.equal(await readFile(stateFile, "utf8"), stateText);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

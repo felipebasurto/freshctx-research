@@ -113,7 +113,7 @@ Not a paper result. Not SOTA. Gold language-agnostic.
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | targeted adapter suite | yes | 0 | **48 pass**, 0 skip, 0 fail |
-| `npm test` | yes | 0 | **235 pass**, **22 skip**, **0 fail** (257 total; same runnable count as 0078) |
+| `npm test` | yes | 0 | **234 pass**, **22 skip**, **0 fail** (256 total; −1 vs 0078) |
 | `npm run check` | yes | 0 | syntax check across core, bench, scripts, adapters |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; all four hard gates true |
 | `npm run ctxbench` | yes | 0 | payload sha256 unchanged; all six hard gates true |
@@ -134,7 +134,7 @@ node --test test/pi-adapter.test.mjs test/hermes-adapter.test.mjs \
   test/pcr-0079-stateless-request-bodies.test.mjs
 ```
 
-Five PCR 0077 boards were deleted and five PCR 0079 boards were added.
+Five PCR 0077 boards were deleted and four PCR 0079 boards were added.
 
 ## Metric snapshot
 
@@ -143,7 +143,7 @@ Five PCR 0077 boards were deleted and five PCR 0079 boards were added.
 | `AUTORESEARCH_SCORE` | 89.107165 | 89.107165 | 0 |
 | ctxbench payload sha256 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 0 |
 | paper-manifest digest | `442cd9e2…` | `442cd9e2…` | 0 |
-| npm test pass | 235/235 runnable | 235/235 runnable | 0 |
+| npm test pass | 235/235 runnable | 234/234 runnable | −1 test |
 | door blob | `f8771c93…` | `f8771c93…` | 0 |
 | lock blob | `79e29d09…` | `79e29d09…` | 0 |
 
@@ -177,9 +177,8 @@ the model needs are not a saving.
 | test | claim locked |
 |---|---|
 | Pi stateless bodies | one current body copy in the request and in the projection on turn 1 and turn 2; no `unchanged="true"` |
-| Hermes stateless bodies | same on two consecutive `select_context` calls against one state file |
+| Hermes stateless bodies | same on two successful `select_context` calls; persisted state stays byte-identical |
 | Hermes state cleanup | a state file containing `lastInjectedRevision` loses the key on the next ordinary write |
-| Hermes select-state immutability | `select_context` leaves the persisted state bytes unchanged |
 | metric honesty | a marker-only frame scores `requiredRecall=0` and `exactCurrentRate=0` |
 | adapter/core parity | Pi and Hermes `projectionBytes` equal live core `freshctx-region`, no longer merely `<=` |
 
