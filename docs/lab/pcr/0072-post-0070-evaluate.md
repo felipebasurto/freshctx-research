@@ -20,14 +20,15 @@ the door, locks, or benchmark fixtures.
 
 | PCR | Squash commit | Change vs door/lock/score hold |
 |---|---|---|
-| [0064](0064-hermes-default-limit-clamp.md) | `460ff94` | Adapter product: past-EOF default `limit=2000` promotes to file-scope; +6 tests |
-| [0065](0065-observe-after-delete-repin.md) | `a86b384` | Measurement: delete re-pin triad; +4 tests |
-| [0067](0067-delete-repin-identity-leftover.md) | `9f906b5` | Measurement: delete-repin identity leftover; +2 tests |
-| [0066](0066-in-bounds-exact-eof-region.md) | `feec8fc` | Measurement: in-bounds exact-EOF page stays region; empty leftover; +10 tests |
-| [0068](0068-header-1-1-delete-reobserve.md) | `feec8fc` | Measurement: header 1–1 delete re-observe re-pin; +2 tests |
-| [0069](0069-exact-eof-file-scope-clamp.md) | `5e6f4c3` | Adapter product: `endLine >= fileLineCount` promotes to file-scope; +9 tests |
-| [0071](0071-exact-eof-extra-boards.md) | `a7059be` | Measurement: exact-EOF boards A/B/C + Board C core fail-close; +7 tests |
-| [0070](0070-no-over-promote-guard.md) | `e5576db` | Measurement: in-bounds non-whole-file pages stay region; +15 tests |
+| [0064](0064-hermes-default-limit-clamp.md) | `460ff944` | Adapter product: past-EOF default `limit=2000` promotes to file-scope; +6 tests |
+| [0065](0065-observe-after-delete-repin.md) | `49f029ec` | Measurement: delete re-pin triad; +4 tests |
+| [0067](0067-delete-repin-identity-leftover.md) | `a86b3848` | Measurement: delete-repin identity leftover; +2 tests |
+| [0066](0066-in-bounds-exact-eof-region.md) | `9f906b5b` | Measurement: in-bounds exact-EOF page stays region; empty leftover; +10 tests |
+| [0068](0068-header-1-1-delete-reobserve.md) | `feec8fc2` | Measurement: header 1–1 delete re-observe re-pin; +2 tests |
+| [0069](0069-exact-eof-file-scope-clamp.md) | `5e6f4c3b` | Adapter product: `endLine >= fileLineCount` promotes to file-scope; +9 tests |
+| [0071](0071-exact-eof-extra-boards.md) | `a7059be4` | Measurement: exact-EOF boards A/B/C; +7 tests |
+| [0071](0071-exact-eof-extra-boards.md) | `a7769c51` | PR 65 Board C core `2–4` fail-close follow-up (not attributed to `a7059be4` alone) |
+| [0070](0070-no-over-promote-guard.md) | `e5576db1` | Measurement: in-bounds non-whole-file pages stay region; +15 tests |
 
 All rows above held `AUTORESEARCH_SCORE=89.107165`, ctxbench payload sha256, door blob,
 and lock blob at their respective ledger entries. This PCR confirms **no drift** after
