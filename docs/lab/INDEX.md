@@ -70,3 +70,4 @@
 | [0071](pcr/0071-exact-eof-extra-boards.md) | 2026-08-25 | Exact-EOF clamp extra boards (trailing NL; startLine=2) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
 | [0070](pcr/0070-no-over-promote-guard.md) | 2026-08-25 | Do not over-promote non-whole-file Hermes pages | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
 | [0072](pcr/0072-post-0070-evaluate.md) | 2026-08-25 | Post-0070 evaluate + holdout bakeoff (door/lock/score hold) | `synthetic`; `hermes-fresh`; `measurement` | review |
+| [0073](pcr/0073-pi-offset-limit-hermes-parity.md) | 2026-08-25 | Pi offset/limit Hermes-parity clamp (adapter) | `synthetic`; `pi-fresh`; `region-refresh`; `offset-limit` | review |

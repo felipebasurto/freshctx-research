@@ -33,15 +33,46 @@ function observedToolContent(content) {
   return textFromContent(content);
 }
 
-export function readScopeFromInput(input) {
+function lineCount(content) {
+  return String(content).replaceAll("\r\n", "\n").split("\n").length;
+}
+
+export function normalizePiReadScope(scopeMeta, fileLineCount) {
+  if (!scopeMeta || scopeMeta.scope !== "region") return scopeMeta ?? { scope: "file" };
+  if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
+  const { startLine, endLine } = scopeMeta;
+  if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return scopeMeta;
+  // Pi pagination that reaches EOF (0064 past-EOF, 0069 exact-EOF) promotes to whole-file
+  // so interior edits on multi-line spans still project without neighbor injection.
+  if (endLine >= fileLineCount) return { scope: "file" };
+  return scopeMeta;
+}
+
+export function readScopeFromInput(input, fileLineCount) {
   if (!input || typeof input !== "object") return { scope: "file" };
   if (input.scope === "region") {
-    return {
-      scope: "region",
-      startLine: input.startLine,
-      endLine: input.endLine,
-      selector: input.selector,
-    };
+    return normalizePiReadScope(
+      {
+        scope: "region",
+        startLine: input.startLine,
+        endLine: input.endLine,
+        selector: input.selector,
+      },
+      fileLineCount,
+    );
+  }
+  const offset = input.offset;
+  const limit = input.limit;
+  if (Number.isFinite(offset) && Number.isFinite(limit) && offset >= 1 && limit >= 1) {
+    return normalizePiReadScope(
+      {
+        scope: "region",
+        startLine: offset,
+        endLine: offset + limit - 1,
+        selector: input.selector,
+      },
+      fileLineCount,
+    );
   }
   return { scope: "file" };
 }
@@ -125,7 +156,8 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
 
       try {
         const file = await safeWorkspaceFile(ctx.cwd, requestedPath);
-        const scopeMeta = readScopeFromInput(event.input);
+        const observedFileLineCount = lineCount(file.content);
+        const scopeMeta = readScopeFromInput(event.input, observedFileLineCount);
         if (scopeMeta.scope === "region") {
           const content = observedToolContent(event.content);
           if (!content) return;
@@ -136,6 +168,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
             startLine: scopeMeta.startLine,
             endLine: scopeMeta.endLine,
             selector: scopeMeta.selector,
+            observedFileLineCount,
           });
           callToUnit.set(event.toolCallId, unit.id);
           return;
@@ -198,13 +231,25 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   };
 }
 
-export function buildReadToolCall({ toolCallId, path, scope, startLine, endLine, selector }) {
+export function buildReadToolCall({
+  toolCallId,
+  path,
+  scope,
+  startLine,
+  endLine,
+  selector,
+  offset,
+  limit,
+}) {
   const args = { path };
   if (scope === "region") {
     args.scope = "region";
     if (startLine != null) args.startLine = startLine;
     if (endLine != null) args.endLine = endLine;
     if (selector != null) args.selector = selector;
+  } else if (offset != null && limit != null) {
+    args.offset = offset;
+    args.limit = limit;
   }
   return {
     role: "assistant",
