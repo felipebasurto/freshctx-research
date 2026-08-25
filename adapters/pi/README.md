@@ -33,12 +33,19 @@ All FreshCtx state lives in the Pi process and is lost when Pi exits:
 |---|---|---|
 | Tracked read units (`FreshCtxEngine` registry) | extension heap | no |
 | `toolCallId → unitId` map (`callToUnit`) | extension heap | no |
+| `unitId → revision` last inject map (`lastInjectedRevision`) | extension heap | no |
 | Persisted Pi session / tool results | Pi session (unchanged by adapter) | yes (Pi) |
 
 The `callToUnit` mapping is a plain in-process `Map`. It lets turn 2 reuse
 turn-1 read metadata without a re-read **within the same Pi process**. After
 restart, previously tracked reads are not refreshed until Pi reads the file
 again.
+
+`lastInjectedRevision` records the revision hash last sent with a full body in
+the live projection. When disk bytes are unchanged on the next `context` hook,
+FreshCtx emits a marker-only unit frame (`unchanged="true"`, `content-bytes="0"`)
+instead of repeating the file body, so the request suffix can stay stable for
+prefix-cache reuse. When disk changes, NEW bytes are injected as before.
 
 Deterministic replay (no Pi package required at bench time):
 
