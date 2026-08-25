@@ -41,11 +41,9 @@ async function writeMutatedWorkspace(interiorLine) {
   return workspace;
 }
 
-test("readScopeFromHermesArgs maps in-bounds exact-EOF page offset=1 limit=4 to region 1-4", () => {
+test("readScopeFromHermesArgs maps exact-EOF page offset=1 limit=4 to file-scope (0069)", () => {
   const scope = readScopeFromHermesArgs({ offset: 1, limit: EXACT_EOF_LIMIT }, OBSERVED_FILE_LINE_COUNT);
-  assert.equal(scope.scope, "region");
-  assert.equal(scope.startLine, 1);
-  assert.equal(scope.endLine, 4);
+  assert.equal(scope.scope, "file");
 });
 
 test("readScopeFromHermesArgs keeps 0064 hold: default offset=1 limit=2000 promotes to file-scope", () => {
@@ -68,7 +66,7 @@ test("readScopeFromHermesArgs keeps path-only reads at file scope", () => {
   assert.equal(scope.scope, "file");
 });
 
-test("Hermes offset=1 limit=4 discovered as region 1-4 (not promoted)", async () => {
+test("discoveredCalls without fileLineCount defers exact-EOF promotion to enrich", () => {
   const calls = discoveredCalls([
     buildReadToolCall({
       toolCallId: "call-exact-eof",
@@ -129,7 +127,7 @@ test("core in-bounds exact-EOF region 1-4 fail-closes after interior line-2 repl
   assert.doesNotMatch(projection.text, /<freshctx-unit/u);
 });
 
-test("Hermes in-bounds exact-EOF region 1-4 projects empty after interior line-2 replace", async () => {
+test("Hermes exact-EOF offset=1 limit=4 serves NEW via whole-file after interior line-2 replace (0069)", async () => {
   const workspace = await writeMutatedWorkspace(NEW_INTERIOR);
   const stateFile = await createHermesStateFile();
 
@@ -154,13 +152,10 @@ test("Hermes in-bounds exact-EOF region 1-4 projects empty after interior line-2
     budgetChars: 8_000,
   });
 
-  assert.match(capture.projectionText, /selected="0"/u);
-  assert.match(capture.projectionText, /unresolved="1"/u);
-  assert.doesNotMatch(capture.payloadText, /BETA_NEW_INTERIOR/u);
   assert.doesNotMatch(capture.payloadText, /BETA_OLD_INTERIOR/u);
-  assert.doesNotMatch(capture.payloadText, /line1 header/u);
-  assert.doesNotMatch(capture.payloadText, /line3 footer/u);
-  assert.doesNotMatch(capture.payloadText, /resolution="/u);
+  assert.match(capture.payloadText, /BETA_NEW_INTERIOR/u);
+  assert.match(capture.payloadText, /resolution="whole-file"/u);
+  assert.doesNotMatch(capture.payloadText, /resolution="stored-line-span"/u);
 });
 
 test("control offset=2 limit=1 serves NEW via stored-line-span after interior replace", async () => {
