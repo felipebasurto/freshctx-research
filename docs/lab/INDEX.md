@@ -73,3 +73,4 @@
 | [0073](pcr/0073-pi-offset-limit-hermes-parity.md) | 2026-08-25 | Pi offset/limit Hermes-parity clamp (adapter) | `synthetic`; `pi-fresh`; `region-refresh`; `offset-limit` | review |
 | [0074](pcr/0074-live-pi-cli-confirm.md) | 2026-08-25 | Live Pi official-hook confirm post-0073 (research box) | `synthetic`; `live-host`; `pi-fresh`; `pi-cli`; `offset-limit`; `measurement` | review |
 | [0075](pcr/0075-holdout-adapter-bakeoff-with-vs-without.md) | 2026-08-25 | Holdout adapter bake-off WITH vs WITHOUT (Hermes + Pi) post-0073 | `synthetic`; `hermes-fresh`; `pi-fresh`; `holdout-adapter-bakeoff`; `measurement` | review |
+| [0076](pcr/0076-honest-pi-install-path.md) | 2026-08-25 | Honest Pi install path (README + fail-open + two-turn replay) | `synthetic`; `pi-fresh`; `replay`; `adapter-only` | review |
