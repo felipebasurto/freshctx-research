@@ -9,6 +9,7 @@ import {
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
+import { readScopeFromInput } from "./replay.mjs";
 
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
 
@@ -83,8 +84,10 @@ function replaceCapturedReads(
  * It is deliberately request-only: persisted tool results remain untouched.
  * If this extension fails, returning undefined makes Pi use its original
  * context. This adapter synchronizes whole text files or region-scoped reads
- * when the read tool arguments include `scope: "region"` plus line metadata;
- * the core and benchmark already exercise finer region synchronization.
+ * when the read tool arguments include `scope: "region"` plus line metadata,
+ * or finite `offset`/`limit` pagination mapped to line ranges with the same
+ * EOF promotion rule as Hermes; the core and benchmark already exercise finer
+ * region synchronization.
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = new FreshCtxEngine();
@@ -107,17 +110,22 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         startLine?: number;
         endLine?: number;
         selector?: string;
+        offset?: number;
+        limit?: number;
       };
-      if (input.scope === "region") {
+      const observedFileLineCount = file.content.split("\n").length;
+      const scopeMeta = readScopeFromInput(input, observedFileLineCount);
+      if (scopeMeta.scope === "region") {
         const content = textFromContent(event.content);
         if (!content) return;
         const unit = engine.trackRead({
           path: file.path,
           content,
           scope: "region",
-          startLine: input.startLine,
-          endLine: input.endLine,
-          selector: input.selector,
+          startLine: scopeMeta.startLine,
+          endLine: scopeMeta.endLine,
+          selector: scopeMeta.selector,
+          observedFileLineCount,
         });
         callToUnit.set(event.toolCallId, unit.id);
         return;
