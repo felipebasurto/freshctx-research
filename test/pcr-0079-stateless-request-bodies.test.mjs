@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -124,6 +124,30 @@ test("Hermes sends one current body in every stateless request", async () => {
     assert.equal(countOccurrences(hermesMessageText(turn2.messages), PROBE_BODY), 1);
     assert.equal(countOccurrences(turn2.projectionText, PROBE_BODY), 1);
     assert.doesNotMatch(turn2.projectionText, /unchanged="true"/u);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Hermes removes obsolete revision state on the next state write", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0079-state-"));
+  try {
+    const stateFile = join(workspace, "session.json");
+    await writeFile(
+      stateFile,
+      `${JSON.stringify({
+        calls: {},
+        lastInjectedRevision: {
+          fc_old: `sha256:${sha256(PROBE_BODY)}`,
+        },
+      })}\n`,
+    );
+    const adapter = createHermesAdapter({ stateFile });
+
+    await adapter.onTurnComplete([], { cwd: workspace });
+
+    const state = JSON.parse(await readFile(stateFile, "utf8"));
+    assert.equal("lastInjectedRevision" in state, false);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

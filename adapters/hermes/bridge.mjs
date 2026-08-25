@@ -72,7 +72,10 @@ async function readStdin() {
 export async function loadState(path) {
   try {
     const value = JSON.parse(await readFile(path, "utf8"));
-    return value && typeof value === "object" ? value : { calls: {} };
+    if (!value || typeof value !== "object" || Array.isArray(value)) return { calls: {} };
+    const state = { ...value };
+    delete state.lastInjectedRevision;
+    return state;
   } catch {
     return { calls: {} };
   }
@@ -239,16 +242,6 @@ function mergeTrackedCalls(stored, incoming) {
   return merged;
 }
 
-function lastInjectedRevisionFromState(state) {
-  const raw = state?.lastInjectedRevision;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return new Map();
-  return new Map(
-    Object.entries(raw).filter(
-      ([unitId, revision]) => typeof unitId === "string" && typeof revision === "string",
-    ),
-  );
-}
-
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
   state.calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
@@ -288,7 +281,6 @@ export async function selectContext(payload) {
     budgetTokens: payload.budgetTokens,
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
-  const lastInjectedRevision = lastInjectedRevisionFromState(state);
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
@@ -356,12 +348,7 @@ export async function selectContext(payload) {
   const projection = engine.project({
     task: taskFrom(payload),
     budgetChars,
-    lastInjectedRevision,
   });
-
-  state.lastInjectedRevision = Object.fromEntries(lastInjectedRevision);
-  state.updatedAt = new Date().toISOString();
-  await saveState(payload.stateFile, state);
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);

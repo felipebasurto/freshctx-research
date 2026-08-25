@@ -18,6 +18,7 @@ import {
   shellCommandFromInput,
   tokenizeShellCommand,
 } from "../adapters/shell-read.mjs";
+import { decodeProjectionUnits } from "../src/projector.mjs";
 
 const PROBE_PATH = "probe.ts";
 const OLD_BODY = "export const marker = 'T78_OLD';\n".repeat(40);
@@ -392,7 +393,7 @@ test("PCR 0078: budget-omitted whole-file read is pruned not left as stale cat b
   }
 });
 
-test("PCR 0078: large-workspace turn 2 unchanged skips bodies under new default", async () => {
+test("PCR 0078: large-workspace turn 2 unchanged includes current bodies", async () => {
   const { workspace, adapter, ctx, messages, turn1 } = await buildLargeWorkspaceBoard();
   try {
     await adapter.onTurnStart({ turnIndex: 2 });
@@ -403,9 +404,15 @@ test("PCR 0078: large-workspace turn 2 unchanged skips bodies under new default"
     assert.ok(turn2);
     const turn1Bytes = Buffer.byteLength(turn1.projection.text, "utf8");
     const turn2Bytes = Buffer.byteLength(turn2.projection.text, "utf8");
-    assert.match(turn2.projection.text, /unchanged="true"/u);
-    assert.ok(turn2Bytes < turn1Bytes);
-    assert.ok(turn2Bytes < 6_000, `turn2Bytes=${turn2Bytes}`);
+    const units = decodeProjectionUnits(turn2.projection.text);
+    assert.equal(units.length, turn2.projection.selected.length);
+    for (const unit of units) {
+      assert.ok(unit.content.length > 0);
+      assert.equal(unit.contentBytes, Buffer.byteLength(unit.content, "utf8"));
+    }
+    assert.match(turn2.projection.text, /LARGE_OLD/u);
+    assert.doesNotMatch(turn2.projection.text, /unchanged="true"/u);
+    assert.equal(turn2Bytes, turn1Bytes);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

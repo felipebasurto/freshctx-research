@@ -24,17 +24,8 @@ function parseAttributes(header) {
   return attributes;
 }
 
-function unitIsUnchangedSinceLastInject(unit, lastInjectedRevision) {
-  return (
-    lastInjectedRevision instanceof Map
-    && lastInjectedRevision.has(unit.id)
-    && lastInjectedRevision.get(unit.id) === unit.revision
-  );
-}
-
-export function renderUnit(unit, { unchanged = false } = {}) {
-  const content = unchanged ? "" : unit.content;
-  const contentBytes = Buffer.byteLength(content, "utf8");
+export function renderUnit(unit) {
+  const contentBytes = Buffer.byteLength(unit.content, "utf8");
   const attributes = [
     `id="${escapeAttribute(unit.id)}"`,
     `path="${escapeAttribute(unit.path)}"`,
@@ -42,10 +33,9 @@ export function renderUnit(unit, { unchanged = false } = {}) {
     `revision="${escapeAttribute(unit.revision)}"`,
     `resolution="${escapeAttribute(unit.resolutionMethod)}"`,
     `content-bytes="${contentBytes}"`,
-    ...(unchanged ? [`unchanged="true"`] : []),
   ].join(" ");
 
-  return `<freshctx-unit ${attributes}>\n${content}\n</freshctx-unit>`;
+  return `<freshctx-unit ${attributes}>\n${unit.content}\n</freshctx-unit>`;
 }
 
 /**
@@ -94,7 +84,7 @@ export function decodeProjectionUnits(text) {
 
 export function projectContext(
   units,
-  { turn = 0, task = "", budgetChars, policy = {}, lastInjectedRevision = null } = {},
+  { turn = 0, task = "", budgetChars, policy = {} } = {},
 ) {
   const selection = selectWorkingSet(units, { turn, task, budgetChars, policy });
   const renderOrder = selection.selected
@@ -111,18 +101,8 @@ export function projectContext(
       ? ""
       : "The following code is the current workspace state. Historical read markers refer here.";
   const footer = "</freshctx>";
-  const renderedUnits = renderOrder.map((unit) =>
-    renderUnit(unit, {
-      unchanged: unitIsUnchangedSinceLastInject(unit, lastInjectedRevision),
-    }),
-  );
+  const renderedUnits = renderOrder.map((unit) => renderUnit(unit));
   const text = [envelopeOpen + preamble, ...renderedUnits, footer].join("\n");
-  const injectedRevisions = new Map();
-  for (const unit of renderOrder) {
-    if (!unitIsUnchangedSinceLastInject(unit, lastInjectedRevision)) {
-      injectedRevisions.set(unit.id, unit.revision);
-    }
-  }
 
   return {
     text,
@@ -131,6 +111,5 @@ export function projectContext(
     rawCodeChars: selection.usedChars,
     renderedChars: text.length,
     estimatedTokens: Math.ceil(text.length / 4),
-    injectedRevisions,
   };
 }

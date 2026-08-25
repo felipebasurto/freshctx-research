@@ -17,20 +17,14 @@ export class FreshCtxEngine {
     return this.registry.refresh(sourceProvider, this.turn);
   }
 
-  project({ task = "", budgetChars, policy = {}, lastInjectedRevision = null } = {}) {
+  project({ task = "", budgetChars, policy = {} } = {}) {
     const projection = projectContext(this.registry.list(), {
       turn: this.turn,
       task,
       budgetChars,
       policy: { ...this.policy, ...policy },
-      lastInjectedRevision,
     });
     this.registry.markUsed(projection.selected.map((unit) => unit.id), this.turn);
-    if (lastInjectedRevision instanceof Map) {
-      for (const [unitId, revision] of projection.injectedRevisions) {
-        lastInjectedRevision.set(unitId, revision);
-      }
-    }
     return projection;
   }
 

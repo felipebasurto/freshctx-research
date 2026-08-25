@@ -31,7 +31,7 @@ test("hermes-fresh stale/recall match freshctx-region on holdout v0.1 cells", as
     const regionCapture = finalCapture(region);
     assert.equal(hermesCapture.metrics.staleBytes, regionCapture.metrics.staleBytes, `${trace.name}: stale-bytes`);
     assert.equal(hermesCapture.metrics.requiredRecall, regionCapture.metrics.requiredRecall, `${trace.name}: recall`);
-    assert.ok(hermesCapture.metrics.projectionBytes <= regionCapture.metrics.projectionBytes, `${trace.name}: projection-bytes`);
+    assert.equal(hermesCapture.metrics.projectionBytes, regionCapture.metrics.projectionBytes, `${trace.name}: projection-bytes`);
   }
 });
 
