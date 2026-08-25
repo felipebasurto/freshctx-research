@@ -72,6 +72,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | `e5576db` post-0070 evaluate + holdout bakeoff | 196/196 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0072](pcr/0072-post-0070-evaluate.md) |
 | 2026-08-25 | (PCR 0073) Pi offset/limit Hermes-parity clamp | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0073](pcr/0073-pi-offset-limit-hermes-parity.md) |
 | 2026-08-25 | (PCR 0074) live Pi 0073 confirm (docs) | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0074](pcr/0074-live-pi-cli-confirm.md) |
+| 2026-08-25 | `8cd3abed` holdout adapter bake-off WITH vs WITHOUT (Hermes + Pi) | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0075](pcr/0075-holdout-adapter-bakeoff-with-vs-without.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
