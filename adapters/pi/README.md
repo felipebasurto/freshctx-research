@@ -74,9 +74,12 @@ is 0 only when the current unit itself is empty. There is no `unchanged`
 attribute and no cross-turn revision map.
 
 A unit is either sent with its current bytes or counted as unresolved or
-budget-omitted in the envelope. Sending a revision hash in place of the body
-would make the request depend on what Pi sent earlier, and a provider is not
-obliged to have kept it. See
+budget-omitted in the envelope. Each omitted unit also has a metadata-only
+record naming its stable ID, path, and reason. Historical read and single-path
+shell-dump markers only say that availability is reported by the live
+projection; they never claim that the body was selected. Sending a revision
+hash in place of the body would make the request depend on what Pi sent
+earlier, and a provider is not obliged to have kept it. See
 `docs/lab/pcr/0079-stateless-byte-exact-requests.md`.
 
 This costs bytes on repeated turns. Projection bytes for an unchanged
@@ -125,8 +128,9 @@ failure never blocks the model call.
 
 The default selection budget is 32 768 chars. Selection is all-or-nothing per
 unit. A first-time whole-file read larger than the budget stays omitted and is
-reported in the envelope's `budget-omitted` count. A tracked file whose disk
-bytes change this turn is sent even over the cap (PCR 0080). Raise
+reported in the envelope's `budget-omitted` count and a path-specific
+`freshctx-omitted` record. A tracked file whose disk bytes change this turn is
+sent even over the cap (PCR 0080). Raise
 `FRESHCTX_BUDGET_CHARS` for a first read of that file, or read it in slices, which the
 cat-class `head`, `tail`, and `sed -n` paths and the official `offset`/`limit`
 reads both produce as region units.

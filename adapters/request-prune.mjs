@@ -155,7 +155,7 @@ export function staleShellDumpPathByCallId(messages, { trackedPaths, servedCallI
 }
 
 function staleDumpMarker(path) {
-  return `[freshctx:stale-dump path=${path}] Current content is supplied in the live projection.`;
+  return `[freshctx:stale-dump path=${path}] Shell dump removed. Check the live projection.`;
 }
 
 function withReplacedDumpBody(message, path) {

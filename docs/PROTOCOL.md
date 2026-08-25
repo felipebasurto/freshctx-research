@@ -88,11 +88,24 @@ The marker depends only on stable unit identity and path, never current content,
 revision, score, or turn:
 
 ```text
-[freshctx:fc_0123456789abcdef path=src/auth.ts] Current content is supplied in the live projection.
+[freshctx:fc_0123456789abcdef path=src/auth.ts] Read body removed. Check the live projection.
 ```
 
 Changing marker bytes for a file revision defeats prefix stability and is a
 protocol regression.
+
+The marker does not claim that the unit was selected. The projection records
+every absent tracked unit by stable identity, path, and reason:
+
+```text
+<freshctx-omitted id="fc_0123456789abcdef" path="src/auth.ts" reason="budget"/>
+```
+
+`reason` is `budget` or `unresolved`. Omission records contain metadata only,
+never last-known source bytes. They are sorted by stable unit identity
+independently from selected-unit render order. This is an additive
+`freshctx/1` rendering field: existing decoders that consume only
+`freshctx-unit` bodies continue to decode selected code unchanged.
 
 Projected units carry a `content-bytes` UTF-8 length. Evaluators and adapters
 decode by that length, not by searching for the closing tag: source files may

@@ -1,5 +1,5 @@
 export function stableReadMarker(unit) {
-  return `[freshctx:${unit.id} path=${unit.path}] Current content is supplied in the live projection.`;
+  return `[freshctx:${unit.id} path=${unit.path}] Read body removed. Check the live projection.`;
 }
 
 function unitIdFromMessage(message) {

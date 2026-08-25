@@ -136,7 +136,9 @@ protects trace data, gold labels, metrics, thresholds, and held-out splits.
 The projector emits a single self-describing live block. Each unit includes
 stable ID, path, range, current revision, resolution method, and the UTF-8
 length of its rendered body. Units appear at most once. Unresolved and
-budget-omitted counts are explicit.
+budget-omitted counts are explicit, and every omitted unit has a metadata-only
+record containing stable ID, path, and reason. Omission records are sorted by
+stable identity separately from selected-unit render order.
 
 Rendering is stateless. `renderUnit` is a function of one unit, and
 `projectContext` is a function of the registry, the turn, the task, and the
@@ -147,7 +149,9 @@ than the bytes. [PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md) record
 where that temptation led and why the state was removed.
 
 A unit is either selected with its full current bytes or reported as unresolved
-or budget-omitted. There is no third rendering.
+or budget-omitted. Historical read and shell-dump markers make no presence
+claim; the live projection is the authority for whether the unit was selected
+or omitted. There is no third rendering.
 
 The XML-like prototype format is not a security boundary. Production should use
 a host-native data/content distinction when the provider supports one, escape
@@ -166,6 +170,8 @@ An adapter owns protocol-specific work:
 - mask only observations it can refresh;
 - marker-replace request-copy dumps of a single already-tracked path
   (PCR 0081); multi-path dumps stay;
+- use stable neutral marker wording; selected or omitted status comes from the
+  live projection (PCR 0082);
 - append or inject the projection in a schema-valid location;
 - return the original request on adapter failure;
 - expose telemetry and version information.

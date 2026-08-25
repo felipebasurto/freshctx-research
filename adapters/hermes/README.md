@@ -53,9 +53,13 @@ rendered body and is 0 only when the current unit itself is empty. There is no
 `unchanged` attribute and no cross-request revision map.
 
 A unit is either sent with its current bytes or counted as unresolved or
-budget-omitted in the envelope. A revision hash in place of the body would make
-the request depend on what Hermes sent earlier, and a provider is not obliged to
-have kept it. See `docs/lab/pcr/0079-stateless-byte-exact-requests.md`.
+budget-omitted in the envelope. Each omitted unit also has a metadata-only
+record naming its stable ID, path, and reason. Historical read and single-path
+shell-dump markers only say that availability is reported by the live
+projection; they never claim that the body was selected. A revision hash in
+place of the body would make the request depend on what Hermes sent earlier,
+and a provider is not obliged to have kept it. See
+`docs/lab/pcr/0079-stateless-byte-exact-requests.md`.
 
 `select_context()` is read-only. It reads the session state file and never
 writes it, so one request cannot change what the next request contains. The
@@ -80,9 +84,10 @@ over 512 KiB, and it returns `None` on bridge failure so Hermes uses its
 untouched request.
 
 The default selection budget is 32 768 chars, and selection is all-or-nothing
-per unit. A first-time whole-file read larger than the budget stays omitted. A
-tracked file whose disk bytes change this turn is sent even over the cap
-(PCR 0080). Override with `FRESHCTX_BUDGET_CHARS` or read the file in slices.
+per unit. A first-time whole-file read larger than the budget stays omitted and
+gets a path-specific `freshctx-omitted` record. A tracked file whose disk bytes
+change this turn is sent even over the cap (PCR 0080). Override with
+`FRESHCTX_BUDGET_CHARS` or read the file in slices.
 
 Single-path shell dumps of already-tracked files are marker-replaced in the
 request copy (PCR 0081); multi-path dumps are left in place.

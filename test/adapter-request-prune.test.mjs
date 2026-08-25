@@ -38,7 +38,7 @@ test("dropUnservedReadToolPairs removes unserved read pairs but keeps served mar
     }),
     buildToolResultMessage({
       toolCallId: "gold-1",
-      content: "[freshctx:fc_gold path=sample.go] Current content is supplied in the live projection.",
+      content: "[freshctx:fc_gold path=sample.go] Read body removed. Check the live projection.",
     }),
   ];
 

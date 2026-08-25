@@ -117,7 +117,17 @@ test("Board 2 delete then path-only re-observe: new whole-file unit; old region 
   assert.match(projection.text, /resolution="whole-file"/u);
   assert.match(projection.text, /line1 header/u);
   assert.match(projection.text, /line3 footer/u);
-  assert.doesNotMatch(projection.text, new RegExp(`id="${regionUnit.id}"`, "u"));
+  assert.match(
+    projection.text,
+    new RegExp(
+      `<freshctx-omitted id="${regionUnit.id}" path="${REGION_PATH}" reason="unresolved"/>`,
+      "u",
+    ),
+  );
+  assert.doesNotMatch(
+    projection.text,
+    new RegExp(`<freshctx-unit id="${regionUnit.id}"`, "u"),
+  );
   assert.doesNotMatch(projection.text, /BETA_OLD_INTERIOR/u);
   assert.doesNotMatch(projection.text, /stored-line-span/u);
 });

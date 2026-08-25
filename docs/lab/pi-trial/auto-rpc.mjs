@@ -47,6 +47,11 @@ MODELS=
 TODO=
 FLIGHTS=`;
 
+const PROMPT_COLD_OMIT = `Lee entero src/viajante/cli.py con una herramienta, sin offset.
+No edites ni crees archivos. No uses comandos que nombren más de un path.
+Si no puedes ver MARKER_CLI después de leer, responde exactamente: CLI=unknown
+Si puedes verlo, responde una línea: CLI=<valor>`;
+
 const CELLS = [
   { id: "1-read", mutate: null, prompt: PROMPT_READ, timeoutMs: 15 * 60 * 1000 },
   { id: "2-cli", mutate: "flip-cli", prompt: PROMPT_CLI, timeoutMs: 6 * 60 * 1000 },
@@ -54,6 +59,14 @@ const CELLS = [
   { id: "4-todo", mutate: "delete-todo", prompt: PROMPT_TODO, timeoutMs: 6 * 60 * 1000 },
   { id: "5-inventory", mutate: null, prompt: PROMPT_INVENTORY, timeoutMs: 6 * 60 * 1000 },
 ];
+
+const COLD_OMIT_CELLS = [
+  { id: "cold-omit", mutate: null, prompt: PROMPT_COLD_OMIT, timeoutMs: 30 * 1000 },
+];
+
+function cellsForMode(mode) {
+  return mode === "cold-omit" ? COLD_OMIT_CELLS : CELLS;
+}
 
 function live(args) {
   return new Promise((resolve, reject) => {
@@ -229,7 +242,7 @@ function markerHits(text) {
   };
 }
 
-async function runArm(arm) {
+async function runArm(arm, cellsToRun, { recordPromptFailure = false } = {}) {
   const dumpDir = join(CAPTURE, arm, "requests");
   await mkdir(dumpDir, { recursive: true });
   await live(["reset", arm, "--source", SOURCE]);
@@ -264,13 +277,21 @@ async function runArm(arm) {
     if (!state.success) throw new Error(`get_state failed: ${JSON.stringify(state)}`);
     await client.send({ type: "set_auto_compaction", enabled: false });
     await client.send({ type: "set_auto_retry", enabled: true });
-    for (const cell of CELLS) {
+    for (const cell of cellsToRun) {
       if (cell.mutate) await live(["mutate", arm, cell.mutate]);
       const disk = JSON.parse(await live(["status", arm]));
       const dumpsBefore = await listScans(dumpDir);
-      const events = await client.prompt(cell.prompt, cell.timeoutMs);
-      const replyMsg = await client.send({ type: "get_last_assistant_text" });
-      const reply = replyMsg.data?.text ?? "";
+      let events = [];
+      let reply = "";
+      let promptError = null;
+      try {
+        events = await client.prompt(cell.prompt, cell.timeoutMs);
+        const replyMsg = await client.send({ type: "get_last_assistant_text" });
+        reply = replyMsg.data?.text ?? "";
+      } catch (error) {
+        if (!recordPromptFailure) throw error;
+        promptError = error instanceof Error ? error.message : String(error);
+      }
       const dumpsAfter = await listScans(dumpDir);
       const newDumps = dumpsAfter.filter((name) => !dumpsBefore.includes(name));
       const requests = [];
@@ -285,12 +306,13 @@ async function runArm(arm) {
         tools: toolsFromEvents(events),
         reply,
         replyScan: markerHits(reply),
+        promptError,
         requests,
         requestBytes: requests.map((item) => item.utf8Bytes),
       };
       cells.push(row);
       await writeFile(join(CAPTURE, arm, `${cell.id}.json`), `${JSON.stringify(row, null, 2)}\n`);
-      process.stdout.write(`${arm} ${cell.id} replyBytes=${Buffer.byteLength(reply)} tools=${row.tools.length} requests=${requests.length} requestBytes=${row.requestBytes.join(",")}\n`);
+      process.stdout.write(`${arm} ${cell.id} replyBytes=${Buffer.byteLength(reply)} tools=${row.tools.length} requests=${requests.length} requestBytes=${row.requestBytes.join(",")} promptError=${promptError ?? "none"}\n`);
     }
   } finally {
     await client.stop();
@@ -298,9 +320,9 @@ async function runArm(arm) {
   return cells;
 }
 
-async function loadCells(arm) {
+async function loadCells(arm, cellsToLoad) {
   const cells = [];
-  for (const cell of CELLS) {
+  for (const cell of cellsToLoad) {
     const path = join(CAPTURE, arm, `${cell.id}.json`);
     try {
       cells.push(JSON.parse(await readFile(path, "utf8")));
@@ -317,18 +339,28 @@ async function main() {
   }
   const only = process.argv[2];
   if (only && only !== "without" && only !== "with") {
-    throw new Error("usage: auto-rpc.mjs [without|with]");
+    throw new Error("usage: auto-rpc.mjs [without|with] [battery|cold-omit]");
   }
+  const mode = process.argv[3] ?? "battery";
+  if (mode !== "battery" && mode !== "cold-omit") {
+    throw new Error("usage: auto-rpc.mjs [without|with] [battery|cold-omit]");
+  }
+  if (mode === "cold-omit" && only !== "with") {
+    throw new Error("cold-omit is a focused with-FreshCtx board");
+  }
+  const selectedCells = cellsForMode(mode);
   await mkdir(CAPTURE, { recursive: true });
   const started = new Date().toISOString();
   const arms = only ? [only] : ["without", "with"];
   const captured = {};
   for (const arm of arms) {
     await rm(join(CAPTURE, arm), { recursive: true, force: true });
-    captured[arm] = await runArm(arm);
+    captured[arm] = await runArm(arm, selectedCells, {
+      recordPromptFailure: mode === "cold-omit",
+    });
   }
-  const without = captured.without ?? (await loadCells("without"));
-  const withArm = captured.with ?? (await loadCells("with"));
+  const without = captured.without ?? (mode === "battery" ? await loadCells("without", CELLS) : []);
+  const withArm = captured.with ?? (await loadCells("with", selectedCells));
   const summary = {
     label: "live-host",
     notAPaperResult: true,
@@ -336,6 +368,7 @@ async function main() {
     started,
     ended: new Date().toISOString(),
     model: "deepseek-v4-pro",
+    mode,
     budgetEnv: process.env.FRESHCTX_BUDGET_CHARS ?? null,
     arms: { without, with: withArm },
   };

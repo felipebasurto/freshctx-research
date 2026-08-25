@@ -51,6 +51,31 @@ test("rendering puts stable units before change-prone units", () => {
   assert.ok(projection.text.indexOf("z-stable") < projection.text.indexOf("a-volatile"));
 });
 
+test("rendering sorts omission records by stable unit identity", () => {
+  const projection = projectContext(
+    [
+      unit("z-pinned", "z".repeat(10), { pinned: true }),
+      unit("a-normal", "a".repeat(10)),
+    ],
+    { budgetChars: 1 },
+  );
+
+  assert.ok(projection.text.indexOf('id="a-normal"') < projection.text.indexOf('id="z-pinned"'));
+});
+
+test("rendering escapes omission metadata without changing source bytes", () => {
+  const projection = projectContext(
+    [unit('unit<&"', "body", { path: 'src/<unsafe&".ts', state: "unresolved" })],
+    { budgetChars: 100 },
+  );
+
+  assert.match(
+    projection.text,
+    /<freshctx-omitted id="unit&lt;&amp;&quot;" path="src\/&lt;unsafe&amp;&quot;\.ts" reason="unresolved"\/>/u,
+  );
+  assert.doesNotMatch(projection.text, /<unsafe/u);
+});
+
 test("unresolved units cannot be selected even when pinned", () => {
   const unresolved = unit("missing", "stale-secret", { state: "unresolved", pinned: true });
   const result = selectWorkingSet([unresolved], { budgetChars: 100 });
@@ -66,11 +91,11 @@ test("empty renderOrder emits envelope header and close without boilerplate pros
   assert.equal(projection.selected.length, 0);
   assert.match(
     projection.text,
-    /^<freshctx turn="1" selected="0" unresolved="1" budget-omitted="0">\n<\/freshctx>$/u,
+    /^<freshctx turn="1" selected="0" unresolved="1" budget-omitted="0">\n<freshctx-omitted id="missing" path="src\/missing.ts" reason="unresolved"\/>\n<\/freshctx>$/u,
   );
   assert.doesNotMatch(
     projection.text,
     /The following code is the current workspace state/u,
   );
-  assert.equal(Buffer.byteLength(projection.text, "utf8"), 78);
+  assert.equal(Buffer.byteLength(projection.text, "utf8"), 153);
 });

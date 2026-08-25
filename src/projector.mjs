@@ -38,6 +38,16 @@ export function renderUnit(unit) {
   return `<freshctx-unit ${attributes}>\n${unit.content}\n</freshctx-unit>`;
 }
 
+function renderOmittedUnit(item) {
+  const unit = item.unit;
+  const attributes = [
+    `id="${escapeAttribute(unit.id)}"`,
+    `path="${escapeAttribute(unit.path)}"`,
+    `reason="${escapeAttribute(item.reason)}"`,
+  ].join(" ");
+  return `<freshctx-omitted ${attributes}/>`;
+}
+
 /**
  * Decode rendered units using their UTF-8 byte length rather than delimiter
  * search. Source code may legally contain FreshCtx's closing tag; length
@@ -101,8 +111,16 @@ export function projectContext(
       ? ""
       : "The following code is the current workspace state. Historical read markers refer here.";
   const footer = "</freshctx>";
+  const renderedOmissions = selection.omitted
+    .toSorted((left, right) => left.unit.id.localeCompare(right.unit.id))
+    .map((item) => renderOmittedUnit(item));
   const renderedUnits = renderOrder.map((unit) => renderUnit(unit));
-  const text = [envelopeOpen + preamble, ...renderedUnits, footer].join("\n");
+  const text = [
+    envelopeOpen + preamble,
+    ...renderedOmissions,
+    ...renderedUnits,
+    footer,
+  ].join("\n");
 
   return {
     text,

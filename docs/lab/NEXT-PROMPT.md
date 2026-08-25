@@ -10,6 +10,7 @@ agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
 `docs/lab/pcr/0010-holdout-protocol-enforcement.md`,
 `docs/lab/pcr/0011-test-hygiene-sealed-hash-gate.md`,
 `docs/lab/pcr/0079-stateless-byte-exact-requests.md`,
+`docs/lab/pcr/0082-truthful-omission-markers.md`,
 `bench/holdout-protocol.mjs`, `bench/holdout-verify.mjs`, `bench/README.md`.
 
 Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions. Record conflicts in
@@ -48,6 +49,10 @@ including as a cache, an opt-in flag, or an adapter-local map.
   `observeTurn` alone.
 - Pi and Hermes `projectionBytes` must equal live core `freshctx-region`, not
   merely stay under it.
+- Historical read and single-path dump markers are stable and neutral; they do
+  not claim that current bytes were selected.
+- Every budget-omitted or unresolved unit has a path-specific
+  `freshctx-omitted` record containing metadata only.
 
 If a byte or prefix-cache idea needs any of the above relaxed, it is the wrong
 idea. Work through selection, ordering, or unit grain instead.
@@ -71,9 +76,8 @@ idea. Work through selection, ordering, or unit grain instead.
 - Do not tune `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs` on holdout feedback.
 - Do not change smoke gold labels, weights, thresholds, or existing test bodies.
 - Do not weaken any adapter/core parity assertion from equality back to `<=`.
-- Synthetic score 89.107165 and ctxbench payload sha256
-  `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` must remain
-  unchanged.
+- The current synthetic score is 89.179361. Every correctness gate must remain
+  unchanged; record any score or payload-hash delta explicitly.
 - Do not generate holdout-v0.2 seeds, traces, manifests, or reports.
 
 ## Required loop
@@ -88,7 +92,7 @@ npm run holdout:verify -- --pack=holdout-v0.1
 npm run holdout:ci-guard -- --base=origin/main
 ```
 
-Baseline at PCR 0079: `npm test` gives 234 pass, 22 skip, 0 fail out of 256.
+Baseline at PCR 0082: `npm test` gives 251 pass, 22 skip, 0 fail out of 273.
 
 File the next PCR, update lab index and metrics, append `decision=review` to
 `autoresearch/results.tsv`.

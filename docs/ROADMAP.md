@@ -17,7 +17,8 @@ would produce numbers nobody can check.
 - Dependency-free Node core with stable unit identity, SHA-256 content identity,
   exact and anchor-based region relocation, and fail-closed ambiguity handling.
 - Deterministic budgeted selection with separate selection order and render
-  order, and explicit unresolved and budget-omitted counts.
+  order, explicit unresolved and budget-omitted counts, and path-specific
+  metadata-only omission records.
 - Stateless projection. Every selected unit carries its current bytes in every
   provider request. See P0 below.
 - Pi extension and replay harness, and a Hermes `ContextEngine` plugin with a
@@ -31,7 +32,7 @@ would produce numbers nobody can check.
   makes zero inference calls.
 - Holdout freeze, generate, run, report, and verify commands with negative tests
   for the protocol invariant.
-- 75 Public Change Records and an append-only metric ledger
+- 78 Public Change Records and an append-only metric ledger
   (`ls docs/lab/pcr/*.md | wc -l`).
 
 Holdout v0.1 is an unsealed regression pack that predates the freeze protocol.
@@ -55,11 +56,32 @@ Exit gate, held at the current branch head:
 - Pi and Hermes projection bytes equal live core `freshctx-region`, asserted for
   equality rather than an upper bound;
 - a marker-only frame scores zero recall and zero exact-current;
-- `AUTORESEARCH_SCORE` and the ctxbench payload hash are unchanged.
+- PCR 0079 itself left `AUTORESEARCH_SCORE` and the ctxbench payload hash
+  unchanged. Later protocol rendering changes may move them only with all
+  correctness gates held and the raw delta recorded.
 
-Nothing else is open at P0. A regression that puts a digest, a summary, or a
-prior request in place of selected current bytes returns here ahead of every
-other item.
+A regression that puts a digest, a summary, or a prior request in place of
+selected current bytes returns here ahead of every other item.
+
+## P0: truthful omission markers
+
+**Resolved by [PCR 0082](lab/pcr/0082-truthful-omission-markers.md).**
+
+Historical read and single-path shell-dump markers used to say current content
+was supplied in the live projection even when a cold oversized unit was
+budget-omitted. Markers are now stable and neutral. Every omitted unit is named
+in the projection by stable ID, path, and `budget` or `unresolved` reason,
+without injecting last-known bytes.
+
+Exit gate:
+
+- a cold 39 kB first read remains omitted at the 32,768-char default;
+- Pi and Hermes provider requests contain a path-specific omission record and
+  no false presence claim;
+- same-turn refresh still sends the full current body over cap;
+- unresolved records expose metadata only, never last-known content.
+
+Nothing else is open at P0.
 
 ## P1: research readiness
 

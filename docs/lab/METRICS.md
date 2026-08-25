@@ -79,8 +79,11 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | (PCR 0079) stateless byte-exact requests (0077 revert) | 234/234 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0079](pcr/0079-stateless-byte-exact-requests.md) |
 | 2026-08-25 | (PCR 0080) refresh over cap | 243/243 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0080](pcr/0080-refresh-over-budget.md) |
 | 2026-08-25 | (PCR 0081) drop piped dumps of already-tracked paths | 243/243 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0081](pcr/0081-stale-shell-dump.md) |
+| 2026-08-25 | (PCR 0082) truthful omission markers | 251/251 | 89.179361 | 0 | 1 | 1 | `331a17914bb356cbd4f458dbaa434311672ad13581f80800d594aa3a024081c1` | 1.0 | [0082](pcr/0082-truthful-omission-markers.md) |
 
-No synthetic metric delta. Label: `synthetic`.
+PCR 0082 changes stable marker bytes and adds metadata-only omission records.
+Correctness metrics remain unchanged; the synthetic score delta is +0.072196.
+Label: `synthetic`.
 
 ## Public-repo smoke
 
@@ -131,4 +134,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-24 | `3bcbfb5` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | product main hold; no persist-38; NEW in turn-2 projection (content-bytes=36) | [0061](pcr/0061-persist-main-t2append.md) |
 | 2026-08-25 | `363a03c8` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 10 | Official Pi hook post-0073; offset/limit boards; args_matched; not 0043 hole | [0074](pcr/0074-live-pi-cli-confirm.md) |
 | 2026-08-25 | `9741d00` + 0080/0081 (uncommitted) | — | official Pi (`/Users/felipe/.hermes/node/bin/pi`) | deepseek-v4-pro | 5 cells × 2 arms | Trial 2.2: with-arm CLI/README/todo current after disk flip (cell 2 266,986 CL0=0; cell 5 222,450, not 20% below 171,172); five-file dump leftover; not a paper result | [0081](pcr/0081-stale-shell-dump.md) / [REPORT-2.2](pi-trial/REPORT-2.2.md) |
+| 2026-08-25 | PCR 0082 working tree | — | official Pi (`/Users/felipe/.hermes/node/bin/pi`) | deepseek-v4-pro | 1 focused cold-omit cell | 202 requests in 346 s before termination; requests 2–202 named `cli.py` as budget-omitted, carried no CL0/CL1 and no false presence claim; no terminal reply because the pruned read pair triggered a retry loop; not a paper result | [0082](pcr/0082-truthful-omission-markers.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
