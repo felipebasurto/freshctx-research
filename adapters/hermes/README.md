@@ -80,9 +80,12 @@ over 512 KiB, and it returns `None` on bridge failure so Hermes uses its
 untouched request.
 
 The default selection budget is 32 768 chars, and selection is all-or-nothing
-per unit. A file larger than the budget never fits: a 39 kB file stays
-budget-omitted and is reported in the envelope. Override with
-`FRESHCTX_BUDGET_CHARS` or read the file in slices.
+per unit. A first-time whole-file read larger than the budget stays omitted. A
+tracked file whose disk bytes change this turn is sent even over the cap
+(PCR 0080). Override with `FRESHCTX_BUDGET_CHARS` or read the file in slices.
+
+Single-path shell dumps of already-tracked files are marker-replaced in the
+request copy (PCR 0081); multi-path dumps are left in place.
 
 ## Remaining gates
 

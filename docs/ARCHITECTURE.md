@@ -122,6 +122,9 @@ language-provider confidence.
 Selection order and render order are intentionally separate:
 
 - selection maximizes required-set coverage under a byte budget;
+  same-turn `refresh()` of an already-tracked unit is always selected even when
+  its body exceeds the cap; a first-time read still competes for the cap
+  (PCR 0080);
 - rendering places stable, low-change units before volatile units to improve
   prefix reuse.
 
@@ -161,6 +164,8 @@ An adapter owns protocol-specific work:
 - enforce the workspace root and file limits;
 - call refresh before every provider payload;
 - mask only observations it can refresh;
+- marker-replace request-copy dumps of a single already-tracked path
+  (PCR 0081); multi-path dumps stay;
 - append or inject the projection in a schema-valid location;
 - return the original request on adapter failure;
 - expose telemetry and version information.

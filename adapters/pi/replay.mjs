@@ -230,6 +230,8 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         const assembled = dropUnservedReadToolPairs(rewritten, {
           readTools: PI_READ_TOOLS,
           servedCallIds,
+          observedCallIds: new Set(callToUnit.keys()),
+          trackedPaths: engine.registry.list().map((unit) => unit.path),
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 
