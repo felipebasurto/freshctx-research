@@ -92,3 +92,9 @@ Same question, real `pi` process, real model of your choice. Prompts and
 mutate/status commands: `docs/lab/pi-trial/BATTERY.md`. Fixture lives in
 `docs/lab/pi-trial/fixture/`. Working copies are `docs/lab/pi-trial/.work/`
 (gitignored). Two arms, two resets, same cell order.
+
+Live reports (not paper results):
+
+- [REPORT.md](REPORT.md) — first viajante battery with `FRESHCTX_BUDGET_CHARS=200000`.
+- [REPORT-2.1.md](REPORT-2.1.md) — same battery at the 32,768 default cap (CLI stayed CL0).
+- [REPORT-2.2.md](REPORT-2.2.md) — after PCR 0080/0081: CLI/README/todo current; later-turn bytes still large.

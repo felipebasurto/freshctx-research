@@ -40,6 +40,16 @@ export function scoreUnit(unit, { turn = 0, task = "", policy = DEFAULT_POLICY }
   );
 }
 
+export function refreshedThisTurn(unit, turn) {
+  return unit?.state === "resolved"
+    && Number(unit.changeCount) >= 1
+    && unit.changedAt === turn;
+}
+
+function selectionSize(unit) {
+  return String(unit.content ?? "").length;
+}
+
 export function selectWorkingSet(
   units,
   { turn = 0, task = "", budgetChars, policy = {} } = {},
@@ -59,6 +69,7 @@ export function selectWorkingSet(
 
   const selected = [];
   const omitted = [];
+  const selectedIds = new Set();
   let usedChars = 0;
 
   for (const candidate of ranked) {
@@ -66,14 +77,24 @@ export function selectWorkingSet(
       omitted.push({ ...candidate, reason: "unresolved" });
       continue;
     }
+    if (!refreshedThisTurn(candidate.unit, turn)) continue;
+    selected.push(candidate);
+    selectedIds.add(candidate.unit.id);
+    usedChars += selectionSize(candidate.unit);
+  }
 
-    const size = candidate.unit.content.length;
-    if (usedChars + size > effective.budgetChars) {
+  for (const candidate of ranked) {
+    if (selectedIds.has(candidate.unit.id)) continue;
+    if (!Number.isFinite(candidate.score)) continue;
+
+    const size = selectionSize(candidate.unit);
+    if (size > 0 && usedChars + size > effective.budgetChars) {
       omitted.push({ ...candidate, reason: "budget" });
       continue;
     }
 
     selected.push(candidate);
+    selectedIds.add(candidate.unit.id);
     usedChars += size;
   }
 

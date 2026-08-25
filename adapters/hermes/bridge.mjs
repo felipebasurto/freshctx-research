@@ -352,7 +352,12 @@ export async function selectContext(payload) {
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
-  const assembled = dropUnservedReadToolPairs(rewritten, { readTools: HERMES_TRACKED_TOOLS, servedCallIds });
+  const assembled = dropUnservedReadToolPairs(rewritten, {
+    readTools: HERMES_TRACKED_TOOLS,
+    servedCallIds,
+    observedCallIds: new Set(unitsByCall.keys()),
+    trackedPaths: engine.registry.list().map((unit) => unit.path),
+  });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],
     selected: projection.selected.length,

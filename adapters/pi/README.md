@@ -43,6 +43,18 @@ again.
 The adapter keeps no record of what earlier requests contained. See
 [stateless requests](#stateless-requests).
 
+When a tracked file's disk bytes change this turn, that body is sent even if it
+exceeds the 32,768-character default cap (PCR 0080). First-time whole-file reads
+still compete for the cap: a ~39 kB file that was never injected stays omitted
+until it changes.
+
+If `bash` / `shell` names **exactly one** already-tracked path and that call is
+not served by the live projection, the request copy replaces the dump body with
+`[freshctx:stale-dump path=…]` and keeps the tool pair so the model does not
+retry (PCR 0081). Pi-native `toolCall` / `toolResult` messages are walked, not
+only OpenAI `tool_calls`. Commands that name two or more tracked paths stay as
+ordinary shell results.
+
 Deterministic replay (no Pi package required at bench time):
 
 ```bash
@@ -112,9 +124,10 @@ failure never blocks the model call.
 ## Budget limits
 
 The default selection budget is 32 768 chars. Selection is all-or-nothing per
-unit, so a file larger than the budget never fits: a 39 kB file stays
-budget-omitted and is reported in the envelope's `budget-omitted` count. Raise
-`FRESHCTX_BUDGET_CHARS` for that file, or read it in slices, which the
+unit. A first-time whole-file read larger than the budget stays omitted and is
+reported in the envelope's `budget-omitted` count. A tracked file whose disk
+bytes change this turn is sent even over the cap (PCR 0080). Raise
+`FRESHCTX_BUDGET_CHARS` for a first read of that file, or read it in slices, which the
 cat-class `head`, `tail`, and `sed -n` paths and the official `offset`/`limit`
 reads both produce as region units.
 

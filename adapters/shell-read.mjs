@@ -127,6 +127,23 @@ function lineCountFlag(tokens) {
   return lineCount;
 }
 
+export function trackedPathsMentionedInCommand(command, trackedPaths) {
+  const text = String(command ?? "");
+  if (!text || !Array.isArray(trackedPaths) || trackedPaths.length === 0) return [];
+
+  const unique = [...new Set(trackedPaths.filter((path) => typeof path === "string" && path.length > 0))];
+  unique.sort((left, right) => right.length - left.length);
+
+  const hits = [];
+  let remaining = text;
+  for (const path of unique) {
+    if (!remaining.includes(path)) continue;
+    hits.push(path);
+    remaining = remaining.split(path).join("\0");
+  }
+  return hits;
+}
+
 /**
  * @returns {{ path: string, scope: "file" | "region", startLine?: number, endLine?: number } | null}
  */

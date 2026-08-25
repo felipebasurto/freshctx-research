@@ -419,7 +419,7 @@ test("PCR 0078: large-workspace turn 2 unchanged includes current bodies", async
 });
 
 test("PCR 0078: large-workspace turn 2 after head-line edit injects NEW not stale shell body", async () => {
-  const { workspace, adapter, ctx, messages, turn1 } = await buildLargeWorkspaceBoard();
+  const { workspace, adapter, ctx, messages } = await buildLargeWorkspaceBoard();
   try {
     await editLargeHeadLine(workspace);
     await adapter.onTurnStart({ turnIndex: 2 });
@@ -429,10 +429,19 @@ test("PCR 0078: large-workspace turn 2 after head-line edit injects NEW not stal
     );
     assert.ok(turn2);
     assert.match(turn2.projection.text, /LARGE_NEW/u);
-    assert.ok(!messageText(turn2.messages).includes('TAIL_ONLY_LARGE_OLD'));
-    const turn1Bytes = Buffer.byteLength(turn1.projection.text, "utf8");
-    const turn2Bytes = Buffer.byteLength(turn2.projection.text, "utf8");
-    assert.ok(turn2Bytes <= turn1Bytes + 500);
+    assert.match(turn2.projection.text, /TAIL_ONLY_LARGE_OLD/u);
+    assert.ok(
+      turn2.projection.selected.some(
+        (unit) => unit.path === LARGE_PATH && unit.startLine === 1 && unit.endLine > HEAD_LINES + 1,
+      ),
+      "refreshed whole-file unit is selected even over the default cap (PCR 0080)",
+    );
+    const payload = messageText(turn2.messages);
+    assert.equal(
+      payload.split("TAIL_ONLY_LARGE_OLD").length - 1,
+      1,
+      "current tail is only in the live projection, not a leftover tool body",
+    );
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
