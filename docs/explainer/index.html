@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tu agente lee un archivo. Luego el archivo cambia.</title>
+  <style>
+    :root {
+      --bg: #0e0e0c;
+      --ink: #ebe6dc;
+      --muted: #9a9488;
+      --faint: #6b665c;
+      --rule: #2c2a26;
+      --panel: #161614;
+      --panel-2: #1c1b18;
+      --stale: #e85d4c;
+      --fresh: #5dba8a;
+      --mark: #b8a4e8;
+      --accent: #d97757;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); }
+    body {
+      font-family: var(--serif);
+      font-size: 19px;
+      line-height: 1.6;
+      font-feature-settings: "onum" 1, "kern" 1;
+    }
+
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: var(--ink); }
+
+    .wrap {
+      max-width: 54rem;
+      margin: 0 auto;
+      padding: 4.5rem 1.4rem 8rem;
+    }
+
+    h1, h2 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.18;
+    }
+    h1 { font-size: 2.4rem; margin: 0 0 0.7rem; max-width: 38rem; }
+    h2 { font-size: 1.5rem; margin: 3.4rem 0 0.9rem; max-width: 40rem; }
+
+    p { margin: 0 0 1.1rem; max-width: 40rem; }
+    .lede { font-size: 1.22rem; color: var(--muted); margin-bottom: 2.2rem; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .objection {
+      max-width: 40rem;
+      margin: 1.8rem 0;
+      padding-left: 1.1rem;
+      border-left: 2px solid var(--accent);
+      font-size: 1.12rem;
+      color: var(--ink);
+    }
+    .objection p { margin: 0; max-width: none; }
+
+    .note {
+      max-width: 40rem;
+      font-size: 0.94rem;
+      color: var(--muted);
+      border-left: 1px solid var(--rule);
+      padding-left: 1rem;
+      margin: 1.6rem 0 2rem;
+    }
+    .note p { max-width: none; }
+
+    code, .tok {
+      font-family: var(--mono);
+      font-size: 0.82em;
+    }
+    .tok-old { color: var(--stale); }
+    .tok-new { color: var(--fresh); }
+    .tok-mark { color: var(--mark); }
+
+    .scene {
+      margin: 2.2rem 0 2.8rem;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+    }
+    .scene-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .scene-head strong { color: var(--ink); font-weight: 500; letter-spacing: 0.08em; }
+    .stages {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      padding: 0.7rem 0.9rem 0;
+    }
+    .stage {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--faint);
+      padding: 0.2rem 0.45rem;
+      border: 1px solid transparent;
+    }
+    .stage.on {
+      color: var(--ink);
+      border-color: var(--rule);
+      background: var(--panel-2);
+    }
+    .stage.done { color: var(--muted); }
+
+    .board {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      min-height: 220px;
+    }
+    .col {
+      padding: 0.85rem 0.9rem 1rem;
+      border-top: 1px solid var(--rule);
+    }
+    .col + .col { border-left: 1px solid var(--rule); }
+    .col h4 {
+      margin: 0 0 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+    }
+    .box {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      line-height: 1.5;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      padding: 0.55rem 0.6rem;
+      min-height: 4.4rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .box.stale { border-color: color-mix(in srgb, var(--stale) 55%, var(--rule)); }
+    .box.fresh { border-color: color-mix(in srgb, var(--fresh) 55%, var(--rule)); }
+    .box.empty { color: var(--faint); }
+    .msg { margin-bottom: 0.4rem; }
+    .msg:last-child { margin-bottom: 0; }
+    .pill {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 0.15rem;
+    }
+
+    .caption {
+      padding: 0.8rem 0.9rem;
+      border-top: 1px solid var(--rule);
+      font-size: 0.98rem;
+      color: var(--muted);
+      min-height: 3.4rem;
+    }
+    .caption em { color: var(--ink); font-style: normal; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.7rem;
+      padding: 0.65rem 0.9rem 0.8rem;
+      border-top: 1px solid var(--rule);
+    }
+    button {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: var(--panel-2);
+      border: 1px solid var(--rule);
+      padding: 0.38rem 0.65rem;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--muted); }
+    button:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+    button[disabled] { opacity: 0.35; cursor: default; }
+
+    label.ctrl {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    select {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      padding: 0.3rem 0.4rem;
+    }
+
+    .meter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.3rem;
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .meter b { color: var(--ink); font-weight: 500; }
+    .meter .bad b { color: var(--stale); }
+    .meter .ok b { color: var(--fresh); }
+
+    .chart-wrap { margin: 2rem 0 0.6rem; }
+    .chart-title { font-size: 1.2rem; margin: 0 0 0.3rem; max-width: 40rem; font-weight: 600; }
+    .chart-sub { font-size: 0.95rem; color: var(--muted); margin-bottom: 1rem; max-width: 40rem; }
+    svg.chart { width: 100%; height: auto; display: block; }
+    .src {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--faint);
+      margin-top: 0.5rem;
+      max-width: none;
+    }
+
+    .claim {
+      max-width: 40rem;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      padding: 1.1rem 1.2rem;
+      margin: 1.8rem 0;
+    }
+    .claim p { max-width: none; }
+    .claim p:last-child { margin-bottom: 0; }
+
+    footer {
+      margin-top: 4.5rem;
+      padding-top: 1.3rem;
+      border-top: 1px solid var(--rule);
+      font-size: 0.9rem;
+      color: var(--faint);
+      max-width: 40rem;
+    }
+    footer p { max-width: none; }
+
+    @media (max-width: 760px) {
+      .board { grid-template-columns: 1fr; }
+      .col + .col { border-left: 0; }
+      body { font-size: 17px; }
+      h1 { font-size: 1.9rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <article class="wrap">
+    <p class="kicker">FreshCtx · prototipo · números medidos</p>
+    <h1>Tu agente lee un archivo. Luego el archivo cambia.</h1>
+    <p class="lede">
+      Nadie se lo dice. Sigue trabajando con lo que leyó hace diez
+      minutos y con la misma confianza que si lo acabara de abrir.
+    </p>
+
+    <p>
+      Le pides a un agente que arregle el login. Abre <code>auth.py</code>,
+      lee las líneas que le interesan y las guarda en la conversación.
+      Hasta aquí todo bien.
+    </p>
+    <p>
+      Entonces tú tocas ese archivo. O lo toca otro agente que corre en
+      paralelo. O lo toca el formateador al guardar. Da igual quién
+      fuera. En el disco ahora pone otra cosa.
+    </p>
+    <p>
+      La conversación no se entera. Un chat es una lista de cosas que
+      pasaron, y aquella lectura pasó de verdad. El mensaje se queda
+      ahí, con el texto viejo dentro, hasta el final de la sesión.
+      El agente escribe parches contra un archivo que ya no existe.
+    </p>
+    <p>
+      Dale a Play. Las tres columnas empiezan diciendo lo mismo.
+      En el segundo paso cambia el disco. Mira las otras dos.
+    </p>
+
+    <div class="scene" id="scene-stale"></div>
+
+    <div class="objection">
+      <p>Vale, pues que lo lea otra vez.</p>
+    </div>
+
+    <p>
+      Lo he pensado, y no funciona. El motivo es aburrido. Leer otra vez
+      añade un mensaje nuevo, no borra el viejo. Ahora el prompt tiene
+      dos respuestas distintas a la misma pregunta y ninguna lleva
+      fecha. El modelo elige una. A veces elige la de antes.
+    </p>
+    <p>
+      Además has pagado dos veces por el mismo archivo, y el prefijo de
+      la conversación cambió, así que la caché del proveedor se
+      invalida. Releer es caro y encima no resuelve el problema.
+    </p>
+
+    <div class="objection">
+      <p>Pues borra el mensaje viejo antes de enviar.</p>
+    </div>
+
+    <p>
+      Eso es exactamente lo que hace FreshCtx. Lo interesante no es la
+      idea, que es obvia. Lo interesante es todo lo que hay que cuidar
+      para que no te explote en la cara.
+    </p>
+
+    <h2>Qué pasa justo antes de enviar</h2>
+    <p>
+      FreshCtx no es un agente ni un buscador. Es un trozo de código
+      que se sienta entre el agente y el modelo, y toca el mensaje
+      solo en el último momento.
+    </p>
+    <p>
+      Cuando el agente lee un archivo, FreshCtx se queda una copia
+      exacta de esos bytes en disco, fuera del chat. En el chat, donde
+      estaba el texto, deja un recibo: aquí hubo una lectura de
+      <code>auth.py</code>, líneas 1 a 3. El recibo es corto y no
+      caduca, porque no contiene código.
+    </p>
+    <p>
+      Justo antes de llamar al modelo, va al disco, busca ese trozo tal
+      y como está ahora y lo pega al final del mensaje. Una sola vez.
+      La conversación que se guarda no se toca; lo que se reescribe es
+      la copia que sale por el cable. Si algo falla en el proceso, el
+      agente envía su mensaje original y no se entera de nada.
+    </p>
+
+    <div class="scene" id="scene-fresh"></div>
+
+    <h2>La parte que casi nadie hace bien</h2>
+    <p>
+      Buscar el trozo suena fácil hasta que alguien renombra la
+      función, o mueve el bloque, o deja dos copias casi idénticas en
+      el archivo. Entonces hay dos candidatos y ninguno es claramente
+      el bueno.
+    </p>
+    <p>
+      Aquí aparece la tentación que hunde estos sistemas. Si no lo
+      encuentras, mandas el último texto que tenías. Nunca. Un texto
+      viejo disfrazado de actual es peor que no mandar nada, porque el
+      modelo no tiene forma de saber que le estás mintiendo. Si no lo
+      encuentra, FreshCtx no manda ese trozo y lo dice.
+    </p>
+    <p>
+      El resultado parece un fallo y no lo es. En el hueco donde iría
+      el código aparece un bloque vacío. Es la respuesta correcta a
+      una pregunta ambigua.
+    </p>
+
+    <div class="scene" id="scene-fail"></div>
+
+    <h2>Cómo se mide esto sin engañarse</h2>
+    <p>
+      No medimos si el agente programa mejor. Suena a excusa, así que
+      déjame defenderlo. Manda el mismo prompt dos veces y te llegan
+      dos respuestas distintas. Cambia de modelo, de temperatura o de
+      proveedor y cambia todo otra vez. Medir eso es medir el dado, no
+      la mesa.
+    </p>
+    <p>
+      Lo que sí se puede comprobar sin lanzar el dado es lo que va
+      dentro del mensaje. En las pruebas no hay modelo: hay un servidor
+      falso que recibe la petición, la guarda y contesta siempre lo
+      mismo. Luego se le hacen tres preguntas.
+    </p>
+    <p>
+      ¿Llegó el código que hacía falta? ¿Va algún trozo de una versión
+      que ya no existe en disco? ¿Cuántos bytes ha costado? La primera
+      debería ser siempre que sí. La segunda debería ser siempre cero.
+      La tercera es la que se negocia.
+    </p>
+
+    <h2>Tres formas de resolverlo, medidas en el mismo caso</h2>
+    <p>
+      Diez casos de prueba sobre dos repos reales, Go tools y Neovim.
+      Cinco tipos de cambio: añadir al final, borrar, editar por
+      dentro, mover el bloque y dejar dos bloques iguales. Compiten
+      tres formas de hacerlo.
+    </p>
+    <p>
+      La primera es el agente tal cual, que se queda con el mensaje de
+      la lectura original y ya está. La segunda es mandar el archivo
+      entero cada vez, que es lo que hace CORVUS, el trabajo previo
+      contra el que hay que competir. La tercera es FreshCtx, que
+      manda solo el trozo que estaba siguiendo.
+    </p>
+    <p>
+      Elige un caso y compara las tres columnas.
+    </p>
+
+    <div class="scene" id="scene-bakeoff"></div>
+
+    <div class="chart-wrap">
+      <p class="chart-title">Mandar menos bytes no es lo mismo que mandar los buenos</p>
+      <p class="chart-sub">
+        Bytes que llegan al modelo en cada caso. Mandar el archivo
+        entero cuesta entre 6000 y 7500 bytes y no cabe en el gráfico.
+      </p>
+      <svg class="chart" id="bakeoff-chart" viewBox="0 0 900 400" role="img" aria-label="Bytes enviados en diez casos. FreshCtx entre 78 y 1029 bytes. El agente sin nada manda menos bytes pero en cinco de los diez casos manda código viejo."></svg>
+      <p class="src">Diez casos, repos Go tools y Neovim. Medido el 22 de agosto de 2026, repetido el 25. Archivo: bench/reports/holdout-adapter-bakeoff.md</p>
+    </div>
+
+    <p>
+      Lo que más me gusta de esta tabla es lo incómoda que es. El
+      agente sin nada casi siempre manda menos bytes. En cinco de los
+      diez casos, esos bytes son mentira. En tres de ellos el código
+      que hacía falta directamente no llega.
+    </p>
+    <p>
+      Mandar el archivo entero también acierta, y por eso hay que
+      medirlo en serio en vez de despacharlo. Lo que cuesta es el
+      tamaño. Unos 6000 bytes por vuelta donde FreshCtx gasta 600. En
+      una sesión larga con veinte archivos abiertos, esa diferencia se
+      come la sesión entera.
+    </p>
+
+    <h2>La vez que estaba fresco y gordo</h2>
+    <p>
+      Una prueba con el contexto apretado a propósito. FreshCtx
+      acertaba en todo y aun así mandaba unos 20 000 bytes por
+      petición. Fui a mirar por qué.
+    </p>
+    <p>
+      Eran lecturas de relleno que el agente había hecho antes, que
+      nadie iba a usar y que seguían viajando enteras. FreshCtx
+      arreglaba el trozo que vigilaba e ignoraba el resto del mensaje.
+      Ahora, cuando pega el bloque de código actual, tira también esas
+      lecturas muertas. Los seis casos bajaron exactamente 19 696
+      bytes.
+    </p>
+
+    <div class="scene" id="scene-prune"></div>
+
+    <h2>Una vez funcionó por el motivo equivocado</h2>
+    <p>
+      Esta es la que me hizo desconfiar de las buenas noticias.
+      Probando con Pi, uno de los agentes soportados, un caso de
+      edición por dentro salía verde. Perfecto, pensé.
+    </p>
+    <p>
+      No era perfecto. Pi pedía las líneas 2 a 2 del archivo, y
+      FreshCtx estaba ignorando esa parte de la petición y mandando el
+      archivo completo. Salía fresco porque el archivo entero incluye
+      la línea 2. Habría salido fresco igual con el código roto.
+    </p>
+    <p>
+      Ahora sí lee cuántas líneas pide. La prueba de que lo hace está
+      en dos casos que se contradicen. Si pide 2000 líneas de un
+      archivo de 4, está pidiendo el archivo entero, y llega entero.
+      Si pide las líneas 1 a 3 de ese mismo archivo, está pidiendo un
+      trozo. Ese trozo cambió por dentro y ya no se puede localizar
+      sin adivinar, así que no llega nada. Los dos comportamientos a
+      la vez solo salen si de verdad está mirando el tamaño del
+      archivo.
+    </p>
+    <p>
+      Prueba los cinco casos. La columna del medio es el agente sin
+      FreshCtx, que se queda con el texto viejo en todos.
+    </p>
+
+    <div class="scene" id="scene-grain"></div>
+
+    <h2>Lo que esto todavía no es</h2>
+    <div class="claim">
+      <p>
+        Es un prototipo. No es lo mejor que hay, ni le gana a CORVUS,
+        y hay un caso importante que sigue fallando. Una edición por
+        dentro, contra un agente de verdad, con el trozo bien
+        delimitado, todavía no la resuelve.
+      </p>
+      <p>
+        Las pruebas con modelo real son de una sola pasada, sobre
+        archivos de juguete, con DeepSeek al otro lado. Lo que puntúa
+        son los bytes del mensaje, nunca la opinión del modelo sobre
+        si el código le parece actualizado. Los casos de prueba
+        difíciles están guardados pero no sellados, así que no valen
+        como resultado publicable.
+      </p>
+      <p>
+        Lo que sí puedo decir es que en las diez pruebas FreshCtx
+        nunca mandó código de una versión que ya no existía, y el
+        agente sin nada lo hizo en cinco. Añadir el bloque cuesta
+        entre 64 y 73 milisegundos, contra el segundo y medio o dos
+        que tarda el modelo en contestar.
+      </p>
+    </div>
+
+    <h2>Dónde está el código</h2>
+    <p>
+      El núcleo es Node sin dependencias. La parte que busca el trozo
+      en el disco vive en <code>src/anchors.mjs</code> y es la que hay
+      que leer primero. Las piezas que hablan con cada agente están en
+      <code>adapters/pi</code> y <code>adapters/hermes</code>. Cómo se
+      mide todo esto está en <code>docs/EVALUATION.md</code>, y cada
+      número medido, con su fecha, en <code>docs/lab/METRICS.md</code>.
+    </p>
+
+    <footer>
+      <p>
+        Ensayo local sobre FreshCtx. El formato de máquinas que se
+        pueden parar y romper está tomado de
+        <a href="https://cursor.com/es/blog/git-at-any-scale">Git a cualquier escala</a>,
+        de Cursor. Los gráficos siguen las reglas de Tufte: sin
+        adornos, sin leyenda, etiquetas pegadas al dato. Todos los
+        números salen del repositorio.
+      </p>
+    </footer>
+  </article>
+
+  <script>
+    const $ = (sel, root) => (root || document).querySelector(sel);
+
+    function tok(kind, text) {
+      return `<span class="tok tok-${kind}">${text}</span>`;
+    }
+
+    function box(html, cls) {
+      return `<div class="box ${cls || ""}">${html}</div>`;
+    }
+
+    function msg(role, body, cls) {
+      return `<div class="msg">${box(`<span class="pill">${role}</span>${body}`, cls)}</div>`;
+    }
+
+    function player(root, spec) {
+      const state = { i: 0, playing: false, timer: 0, extra: spec.extra ? spec.extra() : {} };
+
+      root.innerHTML = `
+        <div class="scene-head"><strong>${spec.title}</strong><span>${spec.kicker}</span></div>
+        <div class="stages"></div>
+        <div class="board"></div>
+        ${spec.meter ? `<div class="meter"></div>` : ""}
+        <div class="caption"></div>
+        <div class="controls"></div>
+      `;
+
+      const stagesEl = $(".stages", root);
+      const boardEl = $(".board", root);
+      const capEl = $(".caption", root);
+      const ctrlEl = $(".controls", root);
+      const meterEl = spec.meter ? $(".meter", root) : null;
+
+      stagesEl.innerHTML = spec.steps.map((s, n) =>
+        `<span class="stage" data-i="${n}">${s.label}</span>`
+      ).join("");
+
+      ctrlEl.innerHTML = `
+        <button type="button" data-act="back">Atrás</button>
+        <button type="button" data-act="play">Play</button>
+        <button type="button" data-act="next">Siguiente</button>
+        ${spec.controls || ""}
+      `;
+
+      function paint() {
+        const step = spec.steps[state.i];
+        const world = spec.world(state.i, state.extra);
+        boardEl.innerHTML = world.html;
+        capEl.innerHTML = step.caption;
+        if (meterEl) meterEl.innerHTML = world.meter || "";
+        stagesEl.querySelectorAll(".stage").forEach((el, n) => {
+          el.classList.toggle("on", n === state.i);
+          el.classList.toggle("done", n < state.i);
+        });
+        ctrlEl.querySelector('[data-act="play"]').textContent = state.playing ? "Pausa" : "Play";
+        ctrlEl.querySelector('[data-act="back"]').disabled = state.i === 0;
+        ctrlEl.querySelector('[data-act="next"]').disabled = state.i === spec.steps.length - 1;
+      }
+
+      function stop() {
+        state.playing = false;
+        clearInterval(state.timer);
+      }
+
+      function go(i) {
+        state.i = Math.max(0, Math.min(spec.steps.length - 1, i));
+        if (state.i === spec.steps.length - 1) stop();
+        paint();
+      }
+
+      ctrlEl.addEventListener("click", (e) => {
+        const act = e.target.getAttribute("data-act");
+        if (act === "back") { stop(); go(state.i - 1); }
+        if (act === "next") { stop(); go(state.i + 1); }
+        if (act === "play") {
+          if (state.playing) { stop(); paint(); return; }
+          if (state.i === spec.steps.length - 1) state.i = 0;
+          state.playing = true;
+          paint();
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            go(spec.steps.length - 1);
+            stop();
+            return;
+          }
+          state.timer = setInterval(() => go(state.i + 1), 1400);
+        }
+      });
+
+      if (spec.bind) spec.bind(ctrlEl, state, () => { stop(); paint(); });
+      paint();
+      return { go, paint, state };
+    }
+
+    const stalePlayer = player($("#scene-stale"), {
+      title: "Sin FreshCtx",
+      kicker: "el mensaje no mira el disco",
+      steps: [
+        {
+          label: "1 · lee",
+          caption: "El agente abre <em>auth.py</em>. Disco, conversación y mensaje dicen lo mismo. De momento no hay ningún problema."
+        },
+        {
+          label: "2 · alguien escribe",
+          caption: "Cambia el archivo en disco. La conversación ni se inmuta, porque nadie le ha avisado. Ya hay dos verdades."
+        },
+        {
+          label: "3 · envía",
+          caption: "El modelo recibe el texto de antes y no tiene forma de saberlo. Esto le pasa al agente sin FreshCtx en 5 de los 10 casos medidos."
+        }
+      ],
+      world(i) {
+        const disk = i === 0
+          ? box(`auth.py\nlogin():\n  ALPHA_OLD`)
+          : box(`auth.py\nlogin():\n  ${tok("new", "ALPHA_NEW")}`, "fresh");
+        const hist = `
+          ${msg("tú", "arregla el login")}
+          ${msg("el agente lee", "auth.py líneas 1 a 3")}
+          ${msg("lo que leyó", i ? tok("old", "ALPHA_OLD") : "ALPHA_OLD", i ? "stale" : "")}
+        `;
+        const req = i < 2
+          ? box("todavía no se ha enviado", "empty")
+          : `${msg("lo que ve el modelo", tok("old", "ALPHA_OLD"), "stale")}`;
+        return {
+          html: `
+            <div class="col"><h4>En el disco</h4>${disk}</div>
+            <div class="col"><h4>La conversación</h4>${hist}</div>
+            <div class="col"><h4>Lo que se envía</h4>${req}</div>
+          `,
+          meter: `
+            <span class="${i === 2 ? "bad" : ""}">¿manda código viejo? <b>${i === 2 ? "sí" : "todavía no"}</b></span>
+            <span>copias del archivo <b>1</b></span>
+          `
+        };
+      },
+      meter: true
+    });
+
+    const freshPlayer = player($("#scene-fresh"), {
+      title: "Con FreshCtx",
+      kicker: "un recibo arriba, el código de ahora abajo",
+      steps: [
+        {
+          label: "1 · guarda y sustituye",
+          caption: "Los bytes leídos se guardan fuera del chat. En su lugar queda un recibo que dice qué se leyó y de dónde, sin código dentro."
+        },
+        {
+          label: "2 · alguien escribe",
+          caption: "Cambia el disco. El recibo sigue valiendo, porque no describe el contenido sino qué trozo estamos siguiendo."
+        },
+        {
+          label: "3 · busca",
+          caption: "Justo antes de llamar al modelo, va al archivo y localiza ese trozo tal y como está ahora."
+        },
+        {
+          label: "4 · pega",
+          caption: "Un bloque al final con el código actual. Una sola copia. Así se comportan los casos de añadir y de mover el bloque."
+        }
+      ],
+      world(i) {
+        const disk = i === 0
+          ? box(`auth.py\nlogin():\n  ALPHA_OLD`)
+          : box(`auth.py\nlogin():\n  ${tok("new", "ALPHA_NEW")}`, "fresh");
+        const recibo = msg("en vez del texto", `${tok("mark", "lectura de auth.py")}\n${tok("mark", "líneas 1 a 3")}`);
+        const proj = i < 3
+          ? box("todavía no", "empty")
+          : box(`${tok("mark", "código de ahora:")}\nlogin():\n  ${tok("new", "ALPHA_NEW")}`, "fresh");
+        return {
+          html: `
+            <div class="col"><h4>En el disco</h4>${disk}</div>
+            <div class="col"><h4>La conversación</h4>${recibo}</div>
+            <div class="col"><h4>Al final del mensaje</h4>${proj}</div>
+          `,
+          meter: `
+            <span class="ok">¿manda código viejo? <b>no</b></span>
+            <span>copias del archivo <b>1</b></span>
+            <span>bytes viejos en el chat <b>0</b></span>
+          `
+        };
+      },
+      meter: true
+    });
+
+    const failPlayer = player($("#scene-fail"), {
+      title: "Cuando duda",
+      kicker: "dos candidatos, cero código",
+      steps: [
+        {
+          label: "1 · vigila",
+          caption: "El agente leyó un bloque concreto. FreshCtx se apunta cómo empieza y cómo acaba para poder reconocerlo luego."
+        },
+        {
+          label: "2 · aparece un gemelo",
+          caption: "Ahora hay dos bloques que encajan igual de bien con lo que apuntó. No hay forma honesta de elegir."
+        },
+        {
+          label: "3 · calla",
+          caption: "No manda ninguno. Un bloque vacío es la respuesta correcta aquí. Mandar el que tenía guardado sería inventarse la respuesta."
+        }
+      ],
+      world(i) {
+        const disk = i === 0
+          ? box(`parse.go\n\ntype Benchmark struct {\n  Name string\n}`)
+          : box(`parse.go\n\ntype Benchmark struct {\n  Name string\n}\n\ntype Benchmark struct {\n  Name string\n}`, i === 2 ? "stale" : "");
+        const cand = i === 0
+          ? box("1 sitio posible\ntodo claro")
+          : box(`2 sitios posibles\n${tok("old", "empate")}`, "stale");
+        const live = i < 2
+          ? box(`type Benchmark struct {\n  Name string\n}`, "fresh")
+          : box(`${tok("mark", "no sé cuál es")}\n${tok("mark", "no mando nada")}`, "empty");
+        return {
+          html: `
+            <div class="col"><h4>En el disco</h4>${disk}</div>
+            <div class="col"><h4>¿Dónde está el bloque?</h4>${cand}</div>
+            <div class="col"><h4>Al final del mensaje</h4>${live}</div>
+          `,
+          meter: `
+            <span class="ok">¿manda código viejo? <b>no</b></span>
+            <span>¿manda algo? <b>${i === 2 ? "no" : "sí"}</b></span>
+          `
+        };
+      },
+      meter: true
+    });
+
+    const CELLS = {
+      "Go tools · añadir al final": {
+        region: { bytes: 604, texto: "el bloque, actualizado", cls: "fresh", viejo: false, llego: true },
+        nada: { bytes: 277, texto: "lo que leyó, y sigue valiendo", cls: "", viejo: false, llego: true },
+        entero: { bytes: 6290, texto: "el archivo completo", cls: "", viejo: false, llego: true }
+      },
+      "Go tools · borrar el bloque": {
+        region: { bytes: 78, texto: "bloque vacío, el código ya no existe", cls: "empty", viejo: false, llego: true },
+        nada: { bytes: 124, texto: "el código borrado, como si existiera", cls: "stale", viejo: true, llego: true },
+        entero: { bytes: 78, texto: "bloque vacío", cls: "empty", viejo: false, llego: true }
+      },
+      "Go tools · editar por dentro": {
+        region: { bytes: 562, texto: "el bloque, actualizado", cls: "fresh", viejo: false, llego: true },
+        nada: { bytes: 185, texto: "la versión de antes de la edición", cls: "stale", viejo: true, llego: false },
+        entero: { bytes: 6289, texto: "el archivo completo", cls: "", viejo: false, llego: true }
+      },
+      "Neovim · añadir al final": {
+        region: { bytes: 1029, texto: "el bloque, actualizado", cls: "fresh", viejo: false, llego: true },
+        nada: { bytes: 705, texto: "la versión de antes", cls: "stale", viejo: true, llego: false },
+        entero: { bytes: 7484, texto: "el archivo completo", cls: "", viejo: false, llego: true }
+      },
+      "Neovim · editar por dentro": {
+        region: { bytes: 872, texto: "el bloque, actualizado", cls: "fresh", viejo: false, llego: true },
+        nada: { bytes: 506, texto: "la versión de antes", cls: "stale", viejo: true, llego: false },
+        entero: { bytes: 7483, texto: "el archivo completo", cls: "", viejo: false, llego: true }
+      },
+      "Neovim · mover el bloque": {
+        region: { bytes: 698, texto: "el bloque, en su sitio nuevo", cls: "fresh", viejo: false, llego: true },
+        nada: { bytes: 363, texto: "lo que leyó, y sigue valiendo", cls: "", viejo: false, llego: true },
+        entero: { bytes: 7457, texto: "el archivo completo", cls: "", viejo: false, llego: true }
+      }
+    };
+
+    const bakeoffPlayer = player($("#scene-bakeoff"), {
+      title: "El mismo caso, tres formas",
+      kicker: "diez casos medidos, elige uno",
+      steps: [
+        {
+          label: "1 · elige el caso",
+          caption: "Cambia el desplegable. Estos son los números reales de la prueba, no un ejemplo inventado."
+        },
+        {
+          label: "2 · compara",
+          caption: "El agente sin nada casi siempre manda menos bytes. Fíjate en cuándo esos bytes son de una versión que ya no existe."
+        }
+      ],
+      extra: () => ({ cell: "Go tools · editar por dentro" }),
+      controls: `<label class="ctrl">caso <select data-cell></select></label>`,
+      bind(ctrl, state, redraw) {
+        const sel = ctrl.querySelector("[data-cell]");
+        sel.innerHTML = Object.keys(CELLS).map((k) => `<option>${k}</option>`).join("");
+        sel.value = state.extra.cell;
+        sel.addEventListener("change", () => {
+          state.extra.cell = sel.value;
+          redraw();
+        });
+      },
+      world(i, extra) {
+        const c = CELLS[extra.cell];
+        const col = (name, d) => `
+          <div class="col">
+            <h4>${name}</h4>
+            ${box(`${d.texto}\n\n${d.bytes} bytes`, d.cls)}
+            <span class="pill" style="margin-top:.5rem">
+              ${d.viejo ? "manda código viejo" : "nada de código viejo"} ·
+              ${d.llego ? "llegó lo que hacía falta" : "falta lo que hacía falta"}
+            </span>
+          </div>`;
+        return {
+          html: col("FreshCtx", c.region) + col("El agente sin nada", c.nada) + col("El archivo entero", c.entero),
+          meter: `
+            <span>${extra.cell}</span>
+            <span class="${c.nada.viejo ? "bad" : "ok"}">sin FreshCtx: <b>${c.nada.viejo ? "código viejo" : "correcto aquí"}</b></span>
+          `
+        };
+      },
+      meter: true
+    });
+
+    const prunePlayer = player($("#scene-prune"), {
+      title: "La limpieza",
+      kicker: "20 300 bytes a 604",
+      steps: [
+        {
+          label: "antes",
+          caption: "El código actual llegaba bien. Al lado viajaban cuatro lecturas antiguas que nadie iba a usar, y ocupaban casi 20 000 bytes."
+        },
+        {
+          label: "después",
+          caption: "Al pegar el bloque actual, esas lecturas muertas se tiran. Mismo resultado, 19 696 bytes menos. En los seis casos, exactamente la misma cifra."
+        }
+      ],
+      world(i) {
+        const fillers = i === 0
+          ? box(`lectura vieja 1\nlectura vieja 2\nlectura vieja 3\nlectura vieja 4\n\n19 696 bytes`, "stale")
+          : box("tiradas", "empty");
+        const gold = box(`el bloque actualizado\n\n604 bytes`, "fresh");
+        return {
+          html: `
+            <div class="col"><h4>Lecturas que nadie usa</h4>${fillers}</div>
+            <div class="col"><h4>Lo que sí hace falta</h4>${gold}</div>
+            <div class="col"><h4>Total enviado</h4>${box(i === 0 ? "20 300 bytes" : "604 bytes", i === 0 ? "stale" : "fresh")}</div>
+          `,
+          meter: `<span>caso: Go tools, añadir al final</span><span>total <b>${i === 0 ? "20 300 bytes" : "604 bytes"}</b></span>`
+        };
+      },
+      meter: true
+    });
+
+    const BOARDS = [
+      { id: "1", label: "pide 2000 líneas", offset: 1, limit: 2000 },
+      { id: "2", label: "pide 4 líneas", offset: 1, limit: 4 },
+      { id: "3", label: "pide 3 líneas", offset: 1, limit: 3 },
+      { id: "4", label: "pide solo la 2", offset: 2, limit: 1 },
+      { id: "5", label: "no dice cuántas", offset: 1, limit: 99 }
+    ];
+
+    function grainWorld(offset, limit) {
+      const lineCount = 4;
+      const end = offset + limit - 1;
+      if (offset === 1 && limit === 3) {
+        return {
+          grano: "es un trozo, y cambió por dentro",
+          texto: `${tok("mark", "no sé dónde empieza ahora")}\n${tok("mark", "no mando nada")}`,
+          cls: "empty",
+          bytes: 178,
+          end
+        };
+      }
+      if (offset === 2 && limit === 1) {
+        return {
+          grano: "es una línea suelta",
+          texto: `línea 2:\n  ${tok("new", "NUEVO")}`,
+          cls: "fresh",
+          bytes: 39,
+          end
+        };
+      }
+      return {
+        grano: "pide 4 líneas o más de un archivo de 4",
+        texto: `el archivo entero:\n1 CABECERA\n2 ${tok("new", "NUEVO")}\n3 PIE`,
+        cls: "fresh",
+        bytes: 65,
+        end
+      };
+    }
+
+    const grainPlayer = player($("#scene-grain"), {
+      title: "Cuántas líneas pides",
+      kicker: "archivo de 4 líneas, la 2 cambió",
+      steps: [
+        {
+          label: "1 · el montaje",
+          caption: "Un archivo de cuatro líneas. El agente lo leyó, y después alguien cambió la línea 2. Ahora el agente pide contexto otra vez sin releer."
+        },
+        {
+          label: "2 · según lo que pida",
+          caption: "Pulsa los botones. Pedir 2000 líneas de un archivo de 4 es pedirlo entero, y llega entero. Pedir 3 es pedir un trozo, y ese trozo ya no se puede localizar sin adivinar."
+        }
+      ],
+      extra: () => ({ offset: 1, limit: 2000 }),
+      controls: BOARDS.map((b) => `<button type="button" data-board="${b.id}">${b.label}</button>`).join(""),
+      bind(ctrl, state, redraw) {
+        function mark() {
+          ctrl.querySelectorAll("[data-board]").forEach((btn) => {
+            const b = BOARDS.find((x) => x.id === btn.getAttribute("data-board"));
+            const on = b.offset === state.extra.offset && b.limit === state.extra.limit;
+            btn.style.borderColor = on ? "var(--ink)" : "";
+          });
+        }
+        mark();
+        ctrl.addEventListener("click", (e) => {
+          const id = e.target.getAttribute("data-board");
+          if (!id) return;
+          const b = BOARDS.find((x) => x.id === id);
+          state.extra.offset = b.offset;
+          state.extra.limit = b.limit;
+          redraw();
+          mark();
+        });
+      },
+      world(i, extra) {
+        const g = grainWorld(extra.offset, extra.limit);
+        const disk = box(`1 CABECERA\n2 ${tok("new", "NUEVO")}\n3 PIE`, "fresh");
+        const sinFresh = box(`línea 2:\n  ${tok("old", "VIEJO")}`, "stale");
+        const conFresh = i === 0
+          ? box("todavía no ha pedido nada", "empty")
+          : box(`${g.grano}\n\n${g.texto}`, g.cls);
+        return {
+          html: `
+            <div class="col"><h4>En el disco</h4>${disk}</div>
+            <div class="col"><h4>Sin FreshCtx</h4>${sinFresh}</div>
+            <div class="col"><h4>Con FreshCtx</h4>${conFresh}</div>
+          `,
+          meter: `
+            <span>pide desde la línea ${extra.offset}, ${extra.limit} líneas</span>
+            <span class="bad">sin FreshCtx <b>viejo</b></span>
+            <span>enviado <b>${i === 0 ? "nada" : g.bytes + " bytes"}</b></span>
+          `
+        };
+      },
+      meter: true
+    });
+
+    (function drawBakeoff() {
+      const svg = $("#bakeoff-chart");
+      const cats = [
+        ["añadir", 604, 277, false],
+        ["borrar", 78, 124, true],
+        ["dos iguales", 809, 522, false],
+        ["editar dentro", 562, 185, true],
+        ["mover", 538, 205, false],
+        ["añadir", 1029, 705, true],
+        ["borrar", 78, 127, true],
+        ["dos iguales", 561, 254, false],
+        ["editar dentro", 872, 506, true],
+        ["mover", 698, 363, false]
+      ];
+      const W = 900, H = 400, L = 46, R = 20, T = 76, B = 84;
+      const max = 1100;
+      const innerW = W - L - R;
+      const innerH = H - T - B;
+      const group = innerW / cats.length;
+      const base = T + innerH;
+      let bars = "";
+      cats.forEach((c, i) => {
+        const x = L + i * group;
+        const h1 = (c[1] / max) * innerH;
+        const h2 = (c[2] / max) * innerH;
+        const color = c[3] ? "#e85d4c" : "#6b665c";
+        bars += `<rect x="${x + 12}" y="${base - h1}" width="16" height="${h1}" fill="#cfc8ba"/>`;
+        bars += `<rect x="${x + 32}" y="${base - h2}" width="16" height="${h2}" fill="${color}"/>`;
+        bars += `<text x="${x + 20}" y="${base - h1 - 7}" fill="#cfc8ba" font-size="11.5" font-family="Georgia, serif" text-anchor="middle">${c[1]}</text>`;
+        bars += `<text x="${x + 40}" y="${base - h2 - 7}" fill="${c[3] ? "#e85d4c" : "#8a8478"}" font-size="11.5" font-family="Georgia, serif" text-anchor="middle">${c[2]}</text>`;
+        bars += `<text x="${x + group / 2}" y="${H - 46}" fill="#8a8478" font-size="11" font-family="Georgia, serif" text-anchor="middle">${c[0]}</text>`;
+      });
+      const x0 = L;
+      const h0a = (cats[0][1] / max) * innerH;
+      const h0b = (cats[0][2] / max) * innerH;
+      svg.innerHTML = `
+        <rect width="${W}" height="${H}" fill="#151513"/>
+        <line x1="${L}" y1="${base}" x2="${L + innerW / 2 - 6}" y2="${base}" stroke="#3a382f" stroke-width="1"/>
+        <line x1="${L + innerW / 2 + 6}" y1="${base}" x2="${L + innerW}" y2="${base}" stroke="#3a382f" stroke-width="1"/>
+        <text x="${L + innerW / 4}" y="${H - 22}" fill="#9a9488" font-size="12.5" font-family="Georgia, serif" text-anchor="middle">Go tools</text>
+        <text x="${L + innerW * 0.75}" y="${H - 22}" fill="#9a9488" font-size="12.5" font-family="Georgia, serif" text-anchor="middle">Neovim</text>
+        ${bars}
+        <line x1="${x0 + 20}" y1="26" x2="${x0 + 20}" y2="${base - h0a - 20}" stroke="#3a382f"/>
+        <text x="${x0 + 28}" y="24" fill="#cfc8ba" font-size="12.5" font-family="Georgia, serif">FreshCtx</text>
+        <line x1="${x0 + 40}" y1="52" x2="${x0 + 40}" y2="${base - h0b - 20}" stroke="#3a382f"/>
+        <text x="${x0 + 48}" y="50" fill="#9a9488" font-size="12.5" font-family="Georgia, serif">el agente sin nada. <tspan fill="#e85d4c">Rojo si manda código viejo.</tspan></text>
+      `;
+    })();
+
+    if (new URLSearchParams(location.search).has("verify")) {
+      const out = document.createElement("pre");
+      out.id = "verify-out";
+      document.body.prepend(out);
+      $("#scene-stale [data-act=next]").click();
+      $("#scene-stale [data-act=next]").click();
+      freshPlayer.go(3);
+      failPlayer.go(2);
+      const sel = $("#scene-bakeoff [data-cell]");
+      sel.value = "Neovim · añadir al final";
+      sel.dispatchEvent(new Event("change"));
+      bakeoffPlayer.go(1);
+      prunePlayer.go(1);
+      $("#scene-grain [data-board='3']").click();
+      grainPlayer.go(1);
+      out.textContent = JSON.stringify({
+        staleStep: stalePlayer.state.i,
+        staleDiscoNuevo: $("#scene-stale").innerText.includes("ALPHA_NEW"),
+        staleEnviaViejo: $("#scene-stale .col:last-child").innerText.includes("ALPHA_OLD"),
+        freshPegaNuevo: $("#scene-fresh").innerText.includes("ALPHA_NEW"),
+        failCalla: $("#scene-fail").innerText.includes("no mando nada"),
+        bakeoffNeovim705: $("#scene-bakeoff").innerText.includes("705"),
+        prune604: $("#scene-prune").innerText.includes("604 bytes"),
+        grainCalla: $("#scene-grain").innerText.includes("no mando nada")
+      }, null, 2);
+    }
+  </script>
+</body>
+</html>
