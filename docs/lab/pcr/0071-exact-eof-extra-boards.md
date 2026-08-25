@@ -30,7 +30,8 @@ Not a paper result. Not SOTA. Not holdout.
 ## What we did
 
 - Added `test/pcr-0071-exact-eof-extra-boards.test.mjs`: mapper + Hermes replay
-  locks for Boards A–C on 0069 Rule A (`endLine >= fileLineCount`).
+  locks for Boards A–C on 0069 Rule A (`endLine >= fileLineCount`); core explicit
+  region `2–4` fail-close retained (door leftover, same shape as 0066 core `1–4`).
 - Rebased onto main @ PCR 0069; flipped Board C from pre-0069 region lock to
   file-scope + whole-file NEW.
 - Gold is language-agnostic: first/last lines, span, location, exact bytes.
@@ -90,13 +91,14 @@ Same trailing-NL fixture as Board A (`lineCount()=4`).
 | Hermes args | `{offset:2, limit:3}` → `endLine=4 === fileLineCount` |
 | Mapped scope (0069 Rule A) | **file-scope** (startLine=2 still promotes) |
 | Rejected Rule B | would stay region `2–4` + empty leftover |
-| Interior replace | `NEW` via whole-file |
+| Interior replace (Hermes) | `NEW` via whole-file |
+| Core explicit region `2–4` | **unresolved** (`displaced-shrunk-boundary-anchors`; door leftover) |
 
 ## Benchmarks run
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | 180 pass, 22 skip (repo fetch) |
+| `npm test` | yes | 0 | 181 pass, 22 skip (repo fetch) |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; ctxbench payload sha unchanged |
 | live Hermes exact-EOF confirm | no | — | synthetic lock only |
 
@@ -107,10 +109,10 @@ Same trailing-NL fixture as Board A (`lineCount()=4`).
 | `AUTORESEARCH_SCORE` | 89.107165 | 89.107165 | 0 |
 | ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | 0 |
 | `resultSetHash` | null | null | — |
-| npm test pass | 174/174 runnable | 180/180 runnable | +6 tests (0071 file) |
+| npm test pass | 174/174 runnable | 181/181 runnable | +7 tests (0071 file) |
 | Board A `1/4` trailing NL exact-EOF (synthetic) | pass (0069 overlap) | locked on Rule A | 0 |
 | Board B `1/3` no trailing NL exact-EOF (synthetic) | unmeasured | locked file-scope + NEW | new |
-| Board C `2/3` startLine=2 exact-EOF (synthetic) | unmeasured | locked file-scope + NEW | new |
+| Board C `2/3` startLine=2 exact-EOF (synthetic) | unmeasured | locked file-scope + NEW; core 2–4 fail-close | new |
 
 ## Comparison
 

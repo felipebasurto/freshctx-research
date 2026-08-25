@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -11,6 +11,7 @@ import {
   captureProviderRequest,
   createHermesStateFile,
 } from "../adapters/hermes/replay.mjs";
+import { FreshCtxEngine } from "../src/index.mjs";
 
 const REGION_PATH = "ws/region_b.txt";
 const HEADER_LINE = "line1 header";
@@ -102,4 +103,40 @@ test("Board C: Hermes offset=2 limit=3 serves NEW via whole-file after interior 
     limit: 3,
     contentFactory: threeLineFileWithTrailingNl,
   });
+});
+
+test("Board C: core explicit region 2-4 fail-closes after interior line-2 replace (door leftover)", async () => {
+  const workspace = await writeMutatedWorkspace(threeLineFileWithTrailingNl, NEW_INTERIOR);
+  const observedContent = threeLineFileWithTrailingNl(OLD_INTERIOR);
+  const engine = new FreshCtxEngine();
+
+  engine.trackRead({
+    path: REGION_PATH,
+    content: observedContent,
+    scope: "region",
+    startLine: 2,
+    endLine: 4,
+    observedFileLineCount: 4,
+  });
+
+  await engine.refresh(async (relativePath) =>
+    readFile(join(workspace, relativePath), "utf8").then((value) => value.replaceAll("\r\n", "\n")),
+  );
+
+  const unit = engine.registry.list()[0];
+  const projection = engine.project({ budgetChars: 8_000 });
+
+  assert.equal(unit.state, "unresolved");
+  assert.equal(unit.resolutionMethod, "displaced-shrunk-boundary-anchors");
+  assert.equal(unit.startLine, 2);
+  assert.equal(unit.endLine, 4);
+  assert.equal(unit.observedFileLineCount, 4);
+  assert.match(projection.text, /selected="0"/u);
+  assert.match(projection.text, /unresolved="1"/u);
+  assert.doesNotMatch(projection.text, /BETA_NEW_INTERIOR/u);
+  assert.doesNotMatch(projection.text, /BETA_OLD_INTERIOR/u);
+  assert.doesNotMatch(projection.text, /line1 header/u);
+  assert.doesNotMatch(projection.text, /line3 footer/u);
+  assert.doesNotMatch(projection.text, /resolution="/u);
+  assert.doesNotMatch(projection.text, /<freshctx-unit/u);
 });
