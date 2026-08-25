@@ -88,7 +88,7 @@ npm run holdout:verify -- --pack=holdout-v0.1
 npm run holdout:ci-guard -- --base=origin/main
 ```
 
-Baseline at PCR 0079: `npm test` gives 234 pass, 22 skip, 0 fail out of 256.
+Baseline at PCR 0079: `npm test` gives 235 pass, 22 skip, 0 fail out of 257.
 
 File the next PCR, update lab index and metrics, append `decision=review` to
 `autoresearch/results.tsv`.

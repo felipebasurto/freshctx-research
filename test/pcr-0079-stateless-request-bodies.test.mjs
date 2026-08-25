@@ -153,6 +153,25 @@ test("Hermes removes obsolete revision state on the next state write", async () 
   }
 });
 
+test("Hermes selection leaves persisted state byte-identical", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0079-read-only-"));
+  try {
+    const stateFile = join(workspace, "session.json");
+    const stateText = `${JSON.stringify({
+      calls: {},
+      updatedAt: "2026-08-25T00:00:00.000Z",
+    }, null, 2)}\n`;
+    await writeFile(stateFile, stateText);
+    const adapter = createHermesAdapter({ stateFile });
+
+    await adapter.onSelectContext([], { cwd: workspace });
+
+    assert.equal(await readFile(stateFile, "utf8"), stateText);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
 test("marker-only frames do not count as byte-exact recall", () => {
   const revision = `sha256:${sha256(PROBE_BODY)}`;
   const projectionText = [
