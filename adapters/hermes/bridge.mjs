@@ -50,10 +50,11 @@ export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
   if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
   const { startLine, endLine } = scopeMeta;
   if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return scopeMeta;
-  // Hermes default pagination (limit=2000) blows past EOF on small files. A region
-  // whose endLine is past the file cannot refresh after interior edits; treat as
-  // whole-file so current bytes still project without inventing neighbor lines.
-  if (endLine > fileLineCount) return { scope: "file" };
+  // Hermes pagination that reaches EOF (0064 past-EOF, 0069 exact-EOF) cannot refresh
+  // after interior edits on multi-line spans; promote to whole-file so current bytes
+  // still project without inventing neighbor lines. Rule shipped: endLine >= fileLineCount
+  // (not startLine===1 && endLine===fileLineCount; 0071 may lock the stricter form).
+  if (endLine >= fileLineCount) return { scope: "file" };
   return scopeMeta;
 }
 
