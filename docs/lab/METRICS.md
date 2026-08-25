@@ -68,6 +68,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-24 | (PCR 0068) header 1-1 delete re-observe | 165/165 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0068](pcr/0068-header-1-1-delete-reobserve.md) |
 | 2026-08-25 | (PCR 0069) exact-EOF file-scope clamp | 174/174 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0069](pcr/0069-exact-eof-file-scope-clamp.md) |
 | 2026-08-25 | (PCR 0071) exact-EOF clamp extra boards | 181/181 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0071](pcr/0071-exact-eof-extra-boards.md) |
+| 2026-08-25 | (PCR 0070) do-not-over-promote guard | 196/196 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0070](pcr/0070-no-over-promote-guard.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

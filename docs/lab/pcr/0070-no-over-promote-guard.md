@@ -4,30 +4,33 @@
 - Author / agent: Cloud Agent
 - Branch / PR: `cursor/pcr-0070-no-over-promote-guard-bb62` (draft PR)
 - Commit: (this docs commit)
-- Merge-base: `feec8fc22492626d4d6e42fd5a8b877e2b6d1e85` (main; PCR 0068)
+- Merge-base: `a7769c51` (main; PCR 0071 Board C core fail-close follow-up merged)
 - Paper-manifest digest: unchanged
 - Result labels used: `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement`
 - Decision: **review** (measurement + guard tests; no adapter clamp)
 
 ## Hypothesis or change
 
-PCR 0064 promotes Hermes pagination to file-scope only when `endLine > fileLineCount`.
-In-bounds pages that do **not** cover the whole file must stay region-scoped. A future
-exact-EOF clamp (PCR 0069, sibling branch) must not silently over-promote these pages to
-file-scope.
+PCR 0064 promotes Hermes pagination to file-scope when `endLine > fileLineCount`.
+PCR 0069 (merged on main) extends promotion to exact-EOF pages (`endLine >= fileLineCount`).
+PCR 0071 (merged on main) locks Hermes exact-EOF boards A/B/C as file-scope NEW; Board C
+core explicit region `2–4` fail-closes (PR 65 follow-up on main).
+In-bounds pages that do **not** cover the whole file must stay region-scoped — the 0069/0071
+clamps must not silently over-promote these guard boards to file-scope.
 
 **Guard boards:** on the usual three-content-line + trailing-NL fixture (`lineCount=4`):
 
 - `{offset:1, limit:3}` → region `1–3` (not whole file; `endLine=3 < fileLineCount=4`)
-- `{offset:2, limit:2}` → region `2–3`
+- `{offset:2, limit:2}` → region `2–3` (`endLine=3 < fileLineCount=4`)
 
-After an interior line-2 replace, both boards fail-close to the same empty leftover as
-PCR 0066 exact-EOF region `1–4`: unit unresolved (`displaced-shrunk-boundary-anchors`);
-`stored-line-span` does not apply (`startLine !== endLine`); projection `selected=0`,
-`unresolved=1`. Door does **not** serve NEW.
+After an interior line-2 replace, both boards fail-close to empty leftover: unit unresolved
+(`displaced-shrunk-boundary-anchors`); `stored-line-span` does not apply
+(`startLine !== endLine`); projection `selected=0`, `unresolved=1`. Door does **not**
+serve NEW. Exact-EOF whole-file pages `{offset:1, limit:4}`, `{offset:2, limit:3}`, and
+no-trailing-NL variants are covered by 0069/0071 — **not** asserted here.
 
 This PCR is **measurement + guard tests only**. No adapter clamp. No door retune. Does
-**not** revive persist-38 / PR 38. Does **not** implement PCR 0069.
+**not** revive persist-38 / PR 38. Rebased onto main after PCR 0069, 0071, and PR 65 follow-up.
 
 Not a paper result. Not SOTA. Not holdout.
 
@@ -117,7 +120,7 @@ Same leftover shape as PCR 0066 exact-EOF board. Honest fail-close; no invented 
 | `AUTORESEARCH_SCORE` | 89.107165 | 89.107165 | 0 |
 | ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | 0 |
 | `resultSetHash` | null | null | — |
-| npm test pass | 165/165 runnable (0068 ledger) | 180/180 runnable | +15 tests (0070 file) |
+| npm test pass | 181/181 runnable (0071 ledger) | 196/196 runnable | +15 tests (0070 file) |
 | `{offset:1, limit:3} → 1–3` mapper (synthetic) | unmeasured | locked region | new |
 | `{offset:2, limit:2} → 2–3` mapper (synthetic) | unmeasured | locked region | new |
 | region 1–3 interior replace (synthetic) | unmeasured | empty projection | new |
@@ -131,8 +134,9 @@ Same leftover shape as PCR 0066 exact-EOF board. Honest fail-close; no invented 
 - PCR 0064: past-EOF default page promotes to file-scope; in-bounds regions unchanged.
 - PCR 0066: in-bounds exact-EOF page `1–4` stays region; empty leftover after interior replace.
 - PCR 0068: header 1–1 delete re-observe identity path.
+- PCR 0069: exact-EOF clamp (`endLine >= fileLineCount` → file-scope); `{offset:1, limit:4}` promotes.
 - PCR 0070: in-bounds non-whole-file pages `1–3` and `2–3` stay region; guard against
-  silent over-promotion by a future exact-EOF clamp (0069 sibling).
+  silent over-promotion beyond 0069's EOF rule.
 
 ## Conflicts with constitutions
 
@@ -146,7 +150,7 @@ exact bytes).
 - No adapter clamp in this PCR; non-whole-file in-bounds pages remain region-scoped.
 - Interior-only edit on multi-line spans fails door refresh despite unchanged boundary
   bytes outside the edited line (displaced-shrunk-boundary-anchors).
-- Rebase onto PCR 0069 only if Thinker/UltraCtxt requests after 0069 lands.
+- Rebased onto main @ PCR 0069; guard file unchanged — boards A/B still region-scoped.
 - Not holdout / not public performance claim.
 
 ## Protocol gap?
@@ -155,5 +159,5 @@ exact bytes).
 
 ## Next measurement
 
-If PCR 0069 exact-EOF clamp lands: re-run this guard file unchanged; any promotion of
-boards A/B to file-scope is a regression. Optional live Hermes confirm on research box.
+Post-0069: re-run this guard file after any adapter scope change; promotion of boards A/B
+to file-scope is a regression. Optional live Hermes confirm on research box.
