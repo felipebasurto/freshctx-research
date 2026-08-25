@@ -33,7 +33,6 @@ All FreshCtx state lives in the Pi process and is lost when Pi exits:
 |---|---|---|
 | Tracked read units (`FreshCtxEngine` registry) | extension heap | no |
 | `toolCallId → unitId` map (`callToUnit`) | extension heap | no |
-| `unitId → revision` last inject map (`lastInjectedRevision`) | extension heap | no |
 | Persisted Pi session / tool results | Pi session (unchanged by adapter) | yes (Pi) |
 
 The `callToUnit` mapping is a plain in-process `Map`. It lets turn 2 reuse
@@ -41,11 +40,8 @@ turn-1 read metadata without a re-read **within the same Pi process**. After
 restart, previously tracked reads are not refreshed until Pi reads the file
 again.
 
-`lastInjectedRevision` records the revision hash last sent with a full body in
-the live projection. When disk bytes are unchanged on the next `context` hook,
-FreshCtx emits a marker-only unit frame (`unchanged="true"`, `content-bytes="0"`)
-instead of repeating the file body, so the request suffix can stay stable for
-prefix-cache reuse. When disk changes, NEW bytes are injected as before.
+The adapter keeps no record of what earlier requests contained. See
+[stateless requests](#stateless-requests).
 
 Deterministic replay (no Pi package required at bench time):
 
@@ -57,14 +53,37 @@ The replay harness in `adapters/pi/replay.mjs` mirrors the extension's
 `tool_result`, `turn_start`, and `context` handlers. See
 `docs/lab/pcr/0003-pi-smoke-capture.md`.
 
+## Stateless requests
+
+Every unit the adapter selects carries its full current bytes in every request.
+That holds on the first turn, on the tenth turn, and whether or not the file
+changed in between. `content-bytes` is the UTF-8 length of the rendered body and
+is 0 only when the current unit itself is empty. There is no `unchanged`
+attribute and no cross-turn revision map.
+
+A unit is either sent with its current bytes or counted as unresolved or
+budget-omitted in the envelope. Sending a revision hash in place of the body
+would make the request depend on what Pi sent earlier, and a provider is not
+obliged to have kept it. See
+`docs/lab/pcr/0079-stateless-byte-exact-requests.md`.
+
+This costs bytes on repeated turns. Projection bytes for an unchanged
+selection are the same on turn 2 as on turn 1, and the adapter's projection
+bytes equal the core `freshctx-region` baseline exactly.
+
 ## Read scope
 
 The adapter synchronizes:
 
-- **Whole files** — path-only reads and pagination that promotes to file scope
-  (Hermes-parity EOF rules; see PCR 0073/0074).
-- **Regions** — explicit `scope: "region"` with `startLine`/`endLine`, or finite
-  `offset`/`limit` mapped to line ranges.
+- **Whole files.** Path-only reads, and pagination that promotes to file scope
+  under the Hermes-parity end-of-file rules (see PCR 0073 and PCR 0074).
+- **Regions.** Explicit `scope: "region"` with `startLine` and `endLine`, or a
+  finite `offset` and `limit` pair mapped to a line range.
+- **Cat-class shell reads.** A single-file `cat`, `head`, `tail`, `sed -n`, or
+  `nl` issued through the `bash` or `shell` tool goes through the same workspace
+  guard and tracking path as an official `read` (see PCR 0078). The parser is
+  deliberately narrow. It rejects pipes, subshells, multiple files, and anything
+  it does not recognize, and those stay ordinary shell results.
 
 Region reads store the observed tool-result body at track time plus disk line
 count for refresh. Interior edits can project via `stored-line-span` without a
@@ -89,6 +108,18 @@ payload, and projection may be empty for that unit.
 When the FreshCtx registry is empty, or when the `context` handler throws, the
 extension returns `undefined` and Pi sends its original request unchanged. Adapter
 failure never blocks the model call.
+
+## Budget limits
+
+The default selection budget is 32 768 chars. Selection is all-or-nothing per
+unit, so a file larger than the budget never fits: a 39 kB file stays
+budget-omitted and is reported in the envelope's `budget-omitted` count. Raise
+`FRESHCTX_BUDGET_CHARS` for that file, or read it in slices, which the
+cat-class `head`, `tail`, and `sed -n` paths and the official `offset`/`limit`
+reads both produce as region units.
+
+Raising the default further was rejected in PCR 0078. A default that fits every
+whole file is a whole-repo dump.
 
 ## Not supported yet
 

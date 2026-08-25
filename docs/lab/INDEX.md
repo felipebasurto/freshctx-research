@@ -76,3 +76,4 @@
 | [0076](pcr/0076-honest-pi-install-path.md) | 2026-08-25 | Honest Pi install path (README + fail-open + two-turn replay) | `synthetic`; `pi-fresh`; `replay`; `adapter-only` | review |
 | [0077](pcr/0077-skip-unchanged-inject.md) | 2026-08-25 | Skip re-injecting unchanged unit bodies (prefix-cache path) | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0078](pcr/0078-cat-tracked-read.md) | 2026-08-25 | Track cat-class shell reads; default budget 32k (not dump-world) | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0079](pcr/0079-stateless-byte-exact-requests.md) | 2026-08-25 | Stateless byte-exact requests; revert 0077 marker-only bodies and metric shortcut | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |

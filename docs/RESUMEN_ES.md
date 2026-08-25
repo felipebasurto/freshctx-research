@@ -13,6 +13,19 @@ región no se puede localizar de forma inequívoca, la omite y declara la
 incertidumbre. La observación original sigue siendo recuperable fuera del
 prompt.
 
+## La regla sin estado
+
+Cada request al proveedor es independiente. Si FreshCtx selecciona una unidad,
+los bytes vigentes de esa unidad tienen que viajar en ese mismo request, haya
+cambiado el archivo o no. Un hash de revisión, una marca `unchanged` o un
+request anterior son referencias a los bytes, no los bytes. Seleccionar una
+unidad y enviar cero bytes es un fallo de corrección, y ningún ahorro de bytes
+lo compensa.
+
+FreshCtx rompió esta regla en la PCR 0077 y la reparó en la
+[PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md). La reparación
+aumenta a propósito el tamaño de los requests repetidos.
+
 ## Qué producto es
 
 No es otro agente, un MCP de búsqueda, un vector DB ni una lista de reglas para
@@ -57,10 +70,23 @@ experimentar.
 
 ## Estado actual
 
-El starter incluye tesis, `SOUL.md`, núcleo funcional sin dependencias, tests,
-benchmark sintético repetido, manifiestos de papers y repos públicos, contrato
-completo de CtxBench y scaffolds para Pi y Hermes.
+El repositorio incluye la tesis, `SOUL.md`, un núcleo sin dependencias con
+identidad estable y relocalización por anclas, tests de invariantes, benchmark
+sintético repetido, manifiestos de papers y repos públicos con locks, y el
+contrato completo de CtxBench.
 
-Todavía no incluye el generador multi-lenguaje, un corpus público congelado ni
-una reproducción revisada de CORVUS. Por tanto, el claim correcto hoy es
+Pi y Hermes Agent ya no son scaffolds. Hay una extensión de Pi y un plugin
+`ContextEngine` de Hermes que sincronizan archivos completos y regiones de
+líneas, rastrean lecturas de shell tipo `cat`, reescriben sólo la copia del
+request y devuelven el request original del host si algo falla. Sus bytes de
+proyección coinciden exactamente con el baseline `freshctx-region` del núcleo, y
+los tests lo comprueban por igualdad.
+
+Falta el generador multi-lenguaje, el muestreador determinista de la §5.1,
+tiempos por etapa y memoria en los adaptadores, tests fijados a una versión
+publicada de Pi o Hermes, y una reproducción revisada de CORVUS. La holdout v0.1
+es un pack de regresión sin sellar, no un resultado.
+
+El autoresearch está en pausa hasta cerrar la prioridad P1 de
+[docs/ROADMAP.md](ROADMAP.md). Por tanto, el claim correcto hoy sigue siendo
 “prototipo de invariantes”, no “estado del arte”.

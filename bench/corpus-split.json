@@ -54,6 +54,6 @@
     "FreshCtx beats CORVUS",
     "agents program better",
     "full multi-language 50-units-per-family holdout suite",
-    "Pi/Hermes request-capture on holdout traces (deferred)"
+    "sealed Pi/Hermes request-capture result on a holdout v0.2+ pack (v0.1 request capture is implemented but unsealed regression evidence)"
   ]
 }

@@ -11,9 +11,10 @@ The project starts from a simple observation: source code is mutable state, not
 conversation history. An agent that read `auth.ts` ten turns ago should not keep
 reasoning over that old snapshot after the file has changed.
 
-FreshCtx is intended to become a reusable context substrate for open agent
-harnesses such as Pi, Hermes Agent, and Oh My Pi. It is not another coding
-agent, another vector database, or another set of prompting rules.
+FreshCtx aims to be a reusable context layer for open agent harnesses. Pi and
+Hermes Agent have working adapters in this repository. Oh My Pi does not yet.
+FreshCtx is not another coding agent, another vector database, or another set of
+prompting rules.
 
 > Status: research prototype. The included MVP is dependency-free and
 > demonstrates the central invariant on deterministic fixtures. It does not yet
@@ -28,6 +29,19 @@ For every tracked code region in a model request:
 3. Historical read results are represented by stable, cache-friendly markers.
 4. If a region cannot be resolved safely, FreshCtx omits it and reports the
    uncertainty instead of injecting stale code.
+
+## The stateless rule
+
+A provider request is stateless. If FreshCtx selects a unit, that unit's current
+bytes must be present in the request that selects it, on every request, whether
+or not the file changed since the last one. A revision digest, an
+`unchanged` marker, or an earlier request is a reference to the bytes and not the
+bytes themselves. Selecting a unit and then sending zero bytes for it is a
+correctness failure, and no byte saving redeems it.
+
+FreshCtx broke this rule in PCR 0077 and repaired it in
+[PCR 0079](docs/lab/pcr/0079-stateless-byte-exact-requests.md). The repair makes
+repeated requests larger on purpose.
 
 ## Why this project
 
@@ -95,6 +109,8 @@ autoresearch loop; hard correctness gates always take precedence over it.
 
 ## What already works
 
+These behaviors are in the core:
+
 - Stable IDs for observed code regions.
 - Content-addressed revisions using SHA-256.
 - Exact and anchor-based region relocation after a file changes.
@@ -103,11 +119,28 @@ autoresearch loop; hard correctness gates always take precedence over it.
 - Stable historical markers that do not change with file revisions.
 - Cache-aware ordering of selected units.
 - Exact local recovery of previously observed revisions.
+
+These behaviors are in both the Pi extension and the Hermes context engine:
+
+- Whole-file and line-region units, including pagination that promotes to file
+  scope under shared end-of-file rules.
+- Cat-class shell reads (`cat`, `head`, `tail`, `sed -n`, `nl`) tracked through
+  the same workspace guard as official read tools.
+- Request-only rewriting. The persisted host transcript is not modified.
+- Unserved read pairs pruned from the request instead of left as stale bodies.
+- Fail open. Adapter failure sends the untouched host request.
+- Projection bytes equal to the core `freshctx-region` baseline, asserted for
+  equality in the test suite.
+
+These evaluation tools exist:
+
 - Synthetic benchmark, regression tests, and an autoresearch score contract.
 - Loopback OpenAI-compatible request recorder that returns a fixed, zero-model
   response for adapter tests.
+- Frozen public-repo and host commit locks, a JSON trace runner, an independent
+  byte oracle, and five comparison baselines.
 
-## Planned product shape
+## Product shape
 
 ```text
 Pi extension          ┐
@@ -115,7 +148,8 @@ Hermes context engine ├──> FreshCtx core ──> synchronized request proj
 OMP extension         ┘
 ```
 
-The core remains harness-agnostic. Adapters translate native read/write events
+The Pi extension and the Hermes context engine exist. The OMP extension does
+not. The core stays harness-agnostic, and adapters translate native read events
 and per-request message arrays into the FreshCtx contract.
 
 An MCP server may be offered for explicit retrieval, but MCP alone cannot
@@ -133,14 +167,14 @@ test/                     Invariant and policy tests
 bench/                    Deterministic replay benchmark
 capture/                  No-model provider payload recorder
 autoresearch/             Search contract, score, and experiment ledger
-adapters/pi/              Pi integration design and reference extension
-adapters/hermes/          Hermes ContextEngine integration design
+adapters/pi/              Pi extension, replay harness, and adapter notes
+adapters/hermes/          Hermes ContextEngine plugin, Node bridge, and installer
 docs/ARCHITECTURE.md      Runtime architecture and data model
 docs/BENCHMARK.md         Evaluation methodology
 docs/EVALUATION.md        Normative CtxBench protocol and metric definitions
 papers/manifest.json      Required and adjacent research corpus
 bench/repos.manifest.json Public repository corpus and frozen refs
-docs/ROADMAP.md           Milestones and release gates
+docs/ROADMAP.md           Priority bands and release gates
 docs/LAUNCH.md            GitHub, paper, and LinkedIn launch plan
 docs/RESUMEN_ES.md        Short Spanish project brief
 docs/explainer/           Interactive Spanish explainer, single file, unpublished

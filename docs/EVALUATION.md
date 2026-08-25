@@ -543,14 +543,29 @@ Implemented now:
 - a loopback OpenAI-compatible capture provider with fixed responses and
   request hashes;
 - paper and public-repository manifests plus fetch/verify tooling;
-- Pi and Hermes adapter scaffolds.
+- a Pi extension and a Hermes `ContextEngine` plugin, both tracking whole files,
+  line regions, and cat-class shell reads, both request-only, both fail-open;
+- request capture through both adapters on smoke and holdout v0.1 traces, with
+  adapter projection bytes asserted equal to the live core `freshctx-region`
+  baseline.
+
+The stateless rule constrains §8.1 and §8.2. `bytes(p)` means the bytes present
+in the captured request. A revision attribute that names the gold digest is not
+`bytes(p)`, and a body sent in an earlier request is not `bytes(p)` either. A
+marker-only frame for a selected unit therefore scores zero on both metrics.
+PCR 0077 scored it as a pass, and
+[PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md) restored
+content-only comparison in `bench/metrics.mjs`.
 
 Not yet implemented and therefore not claimable:
 
 - language parsers and deterministic public-repo trace generator;
+- the §5.1 deterministic unit sampler;
 - independent multi-language unit oracle;
-- full stage-level timing in every adapter;
-- pinned Pi/Hermes compatibility tests;
+- full stage-level timing and peak-memory reporting in every adapter (§9.2 and
+  §9.5 cannot be filled from this repository today);
+- pinned Pi/Hermes compatibility tests against released host packages;
+- production remote freeze attestation consumption;
 - reviewed CORVUS reproduction.
 
 Partially implemented (holdout v0.1 first slice; see PCR 0007, **unsealed**; freeze protocol in PCR 0009):
