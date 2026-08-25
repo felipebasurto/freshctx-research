@@ -71,6 +71,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | (PCR 0070) do-not-over-promote guard | 196/196 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0070](pcr/0070-no-over-promote-guard.md) |
 | 2026-08-25 | `e5576db` post-0070 evaluate + holdout bakeoff | 196/196 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0072](pcr/0072-post-0070-evaluate.md) |
 | 2026-08-25 | (PCR 0073) Pi offset/limit Hermes-parity clamp | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0073](pcr/0073-pi-offset-limit-hermes-parity.md) |
+| 2026-08-25 | (PCR 0074) live Pi 0073 confirm (docs) | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0074](pcr/0074-live-pi-cli-confirm.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -120,4 +121,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 | install.mjs one-shot; select list + observe; not a paper result | [0053](pcr/0053-live-hermes-install-oneshot.md) |
 | 2026-08-23 | `4ccb0083` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | install.mjs t2-append put NEW in live projection; not a paper result | [0054](pcr/0054-live-hermes-install-t2-append.md) |
 | 2026-08-24 | `3bcbfb5` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | product main hold; no persist-38; NEW in turn-2 projection (content-bytes=36) | [0061](pcr/0061-persist-main-t2append.md) |
+| 2026-08-25 | `363a03c8` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 10 | Official Pi hook post-0073; offset/limit boards; args_matched; not 0043 hole | [0074](pcr/0074-live-pi-cli-confirm.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
