@@ -1,11 +1,11 @@
 # CtxBench holdout adapter bake-off (holdout-adapter-bakeoff-dev-v0.1)
 
-Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on sealed holdout v0.1 traces; not a SOTA claim.
+Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Replay table on unsealed holdout v0.1 regression traces; not a performance or SOTA claim.
 
 - pack: `holdout-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `b45b7f0176c6bb2341fb3d417237f44d59e26ef7`
+- HEAD: `3a886516a9194fa282e6579a9a5a038c485b93cf`
 - merge-base vs e45b2cdb: `e45b2cdbf15aec2b4133e232e5b005dd832f49cb`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -27,7 +27,7 @@ Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on s
 
 **Finding:** Hermes native stayed **native-no-op** on all 10 cells (holdout window below `should_compress` threshold; no Hermes quality number claimed).
 
-Generated: 2026-08-22T19:01:11.232Z
+Generated: 2026-08-25T18:07:03.038Z
 
 ## Per-cell metrics (10 traces)
 

@@ -69,6 +69,8 @@ test("holdout adapter bakeoff report states hermes-fresh and native-no-op findin
   }
   const report = await readFile(reportPath, "utf8");
   assert.match(report, /holdout-adapter-bakeoff-dev-v0\.1/u);
+  assert.match(report, /unsealed holdout v0\.1 regression traces/u);
+  assert.doesNotMatch(report, /sealed holdout v0\.1 traces/u);
   assert.match(report, /resultSetHash: null/u);
   assert.match(report, /corvus-file source: live run/u);
   assert.match(report, /corvus-file vs freshctx-region/u);

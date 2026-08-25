@@ -116,6 +116,12 @@ Not a paper result. Not SOTA. Gold language-agnostic.
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; all four hard gates true |
 | `npm run ctxbench` | yes | 0 | payload sha256 unchanged; all six hard gates true |
 | `npm run papers:verify` | yes | 0 | manifest sha256 `442cd9e2…` |
+| `npm run ctxbench:pi-smoke` | yes | 0 | adapter/core projection bytes equal in all 10 cells |
+| `npm run ctxbench:hermes-smoke` | yes | 0 | adapter/core projection bytes equal in all 10 cells |
+| `npm run ctxbench:pi-holdout` | yes | 0 | unsealed v0.1 replay; supported true; failures `[]` |
+| `npm run ctxbench:hermes-holdout` | yes | 0 | unsealed v0.1 replay; supported true; failures `[]` |
+| `npm run ctxbench:budget-pressure-adapter-prune` | yes | 0 | Pi and Hermes equal core in all 6 cells |
+| `npm run ctxbench:holdout-adapter-bakeoff` | yes | 0 | Pi and Hermes equal core in all 10 cells |
 
 The targeted suite is:
 
@@ -143,6 +149,12 @@ PCR 0079 boards were added.
 The core score and payload hash are unchanged because the core ctxbench path
 never passed `lastInjectedRevision`. PCR 0077 was opt-in at the adapter, which
 is exactly why the synthetic score could not see it.
+
+The refreshed Pi smoke ledger row moved from 402 to 502 projection bytes on its
+final representative capture. That `+100` is the cost of putting the selected
+current body back in that request. The smoke and unsealed holdout reports now
+show strict byte equality between Pi, Hermes, and live core on every cell. Their
+stale rate remains 0 and required recall remains 1.
 
 ## Byte tradeoff
 
