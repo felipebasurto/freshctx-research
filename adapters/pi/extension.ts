@@ -92,6 +92,7 @@ function replaceCapturedReads(
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map<string, string>();
+  const lastInjectedRevision = new Map<string, string>();
 
   pi.on("turn_start", async (event) => {
     engine.turn = event.turnIndex;
@@ -161,6 +162,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       const projection = engine.project({
         task: lastUserTask(event.messages),
         budgetChars,
+        lastInjectedRevision,
       });
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);

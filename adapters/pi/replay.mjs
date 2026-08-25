@@ -135,11 +135,13 @@ export function messageText(messages) {
 export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map();
+  const lastInjectedRevision = new Map();
   let turnIndex = 0;
 
   return {
     engine,
     callToUnit,
+    lastInjectedRevision,
     get turn() {
       return turnIndex;
     },
@@ -200,6 +202,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         const projection = engine.project({
           task: lastUserTask(event.messages),
           budgetChars,
+          lastInjectedRevision,
         });
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);

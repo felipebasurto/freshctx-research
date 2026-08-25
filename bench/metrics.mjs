@@ -36,6 +36,8 @@ export function extractCodeUnits(payloadText, baseline) {
         path: decoded.path,
         content: decoded.content,
         bytes: Buffer.byteLength(decoded.content, "utf8"),
+        revision: decoded.revision,
+        unchanged: decoded.unchanged === "true",
       });
     }
     return units;
@@ -88,6 +90,13 @@ export function extractCodeUnits(payloadText, baseline) {
   return units;
 }
 
+function projectedUnitMatchesGold(unit, goldBytes) {
+  const goldDigest = sha256(goldBytes);
+  if (sha256(unit.content) === goldDigest) return true;
+  if (unit.unchanged && unit.revision === `sha256:${goldDigest}`) return true;
+  return false;
+}
+
 export function analyzeCapture({
   baseline,
   payloadText,
@@ -105,9 +114,8 @@ export function analyzeCapture({
 
   for (const required of requiredUnits) {
     const goldBytes = goldBytesByKey[required.key];
-    const goldDigest = sha256(goldBytes);
     const matched = projectedUnits.some(
-      (unit) => unit.path === required.path && sha256(unit.content) === goldDigest,
+      (unit) => unit.path === required.path && projectedUnitMatchesGold(unit, goldBytes),
     );
     const rawMatch = goldBytes.length > 0 && countOccurrences(payloadText, goldBytes) > 0;
     if (matched || rawMatch) {
@@ -141,7 +149,7 @@ export function analyzeCapture({
   const exactCurrentUnits = projectedUnits.filter((unit) => {
     const required = requiredUnits.find((item) => item.path === unit.path);
     if (!required) return false;
-    return sha256(unit.content) === sha256(goldBytesByKey[required.key]);
+    return projectedUnitMatchesGold(unit, goldBytesByKey[required.key]);
   }).length;
 
   const requiredRecall = requiredUnits.length === 0
