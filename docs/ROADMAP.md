@@ -1,148 +1,173 @@
-# Roadmap and Release Gates
+# Roadmap and release gates
 
-The roadmap is ordered by evidence, not feature count. A milestone is complete
-only when its exit gates pass and its limitations are documented.
+Work is ordered by priority band, and each band is ordered by evidence rather
+than feature count. An item is done when its exit gate passes and its
+limitations are written down in a Public Change Record under `docs/lab/pcr/`.
 
-## M0 — Invariant prototype
+The claim today is "invariant prototype with adapter request capture on unsealed
+regression traces". It is not a state-of-the-art claim. The wording ladder lives
+in `docs/EVALUATION.md` §13 and this file does not widen it.
 
-Status: included in this starter.
+Autoresearch is paused. The campaign stays paused until every P1 item closes,
+because a search loop over unsealed traces with an incomplete attestation path
+would produce numbers nobody can check.
 
-Deliverables:
+## What is implemented today
 
-- dependency-free Node core;
-- stable unit and revision identity;
-- whole-file and anchored-region refresh;
-- conservative ambiguity behavior;
-- deterministic budgeted selection and cache-aware order;
-- exact in-memory revision recovery;
-- synthetic benchmark, repeated timing runner, and autoresearch contract;
-- Pi and Hermes integration scaffolds.
+- Dependency-free Node core with stable unit identity, SHA-256 content identity,
+  exact and anchor-based region relocation, and fail-closed ambiguity handling.
+- Deterministic budgeted selection with separate selection order and render
+  order, and explicit unresolved and budget-omitted counts.
+- Stateless projection. Every selected unit carries its current bytes in every
+  provider request. See P0 below.
+- Pi extension and replay harness, and a Hermes `ContextEngine` plugin with a
+  Node bridge. Both track whole files and line regions, track cat-class shell
+  reads, prune unserved read pairs, and fail open to the untouched host request.
+- Frozen public-repo locks (`bench/repos.lock.json`), pinned host commits
+  (`bench/hosts.lock.json`), a JSON trace runner over `bench/trace.schema.json`,
+  an independent byte oracle, and append-only, observation-mask, whole-file
+  CORVUS, FreshCtx-file, and FreshCtx-region baselines.
+- Loopback OpenAI-compatible capture provider that returns a fixed response and
+  makes zero inference calls.
+- Holdout freeze, generate, run, report, and verify commands with negative tests
+  for the protocol invariant.
+- 75 Public Change Records and an append-only metric ledger
+  (`ls docs/lab/pcr/*.md | wc -l`).
 
-Exit gates:
+Holdout v0.1 is an unsealed regression pack that predates the freeze protocol.
+Treat it as regression evidence. It is not sealed and it is not a result.
 
-- all local tests pass;
-- current synthetic trace has zero stale bytes, exactly one current copy, full
-  required recall, and deterministic hashes;
-- README says prototype, not SOTA.
+## P0: stateless byte correctness
 
-## M1 — CtxBench 0.1 corpus
+**Resolved by [PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md).**
 
-Deliverables:
+A provider request is stateless, so the selected current bytes must be present
+in the request itself. PCR 0077 sent marker-only frames for units whose revision
+matched a prior inject, and changed `bench/metrics.mjs` to score the revision
+attribute as if it were the bytes. PCR 0079 removed the cross-turn state, made
+`renderUnit` always emit `unit.content`, and restored content-only comparison in
+the metric path.
 
-- fetch and freeze required paper corpus;
-- fetch and lock Flask and Express smoke repositories;
-- implement trace runner for `trace.schema.json`;
-- generate at least eight mutation families over ten units per repository;
-- independent byte oracle and raw JSONL result schema;
-- append-only, observation-mask, whole-file CORVUS, FreshCtx-file, and
-  FreshCtx-region baselines;
-- disposable network-off sandbox recipe.
+Exit gate, held at the current branch head:
 
-Exit gates:
+- every selected unit carries current bytes, and `content-bytes` is the UTF-8
+  length of the rendered body;
+- Pi and Hermes projection bytes equal live core `freshctx-region`, asserted for
+  equality rather than an upper bound;
+- a marker-only frame scores zero recall and zero exact-current;
+- `AUTORESEARCH_SCORE` and the ctxbench payload hash are unchanged.
 
-- repo, trace, policy, code, paper, and environment digests reproduce;
-- correctness metrics recompute from released raw data;
-- no model SDK, API key, or sampled output is needed;
-- benchmark/gold code is outside the autoresearch write surface.
+Nothing else is open at P0. A regression that puts a digest, a summary, or a
+prior request in place of selected current bytes returns here ahead of every
+other item.
 
-## M2 — Production Pi adapter
+## P1: research readiness
 
-Deliverables:
+These gate the autoresearch campaign and the first sealed holdout.
 
-- package pinned to a tested Pi release range;
-- persistent tool-call/unit mappings across session resume and branch;
-- partial-read and truncation fidelity;
-- final post-sanitizer request capture through a fake provider;
-- failure injection for core crash, deleted file, path escape, and archive loss;
-- adapter telemetry and status command.
+**Remote freeze attestation and live verification.** `scripts/holdout-attest-stub.mjs`
+and `.github/workflows/holdout-freeze-attest.yml` exist, and production
+attestation consumption does not. Wire `holdout:verify` to consume a real remote
+attestation and exercise the whole path end to end on a protocol fixture rather
+than on holdout seeds. Exit gate: a fixture pack verifies from a remote
+attestation, and a tampered attestation fails closed with a distinct error.
 
-Exit gates:
+**Deterministic unit sampler for `docs/EVALUATION.md` §5.1.** Trace units are
+still authored per pack. Implement `sha256(commit + selector + scenario)`
+ordering, the exclusion rules, and the rejected-candidate record. Exit gate: two
+runs on the same commit produce identical candidate lists, and every rejection
+carries a reason.
 
-- persisted Pi transcript is byte-identical with and without FreshCtx;
-- request payload passes every satisfiable CtxBench gate;
-- forcing adapter failure sends the untouched native request;
-- native assistant/tool/result protocol remains valid.
+**Disposable canary pack.** Run freeze, generate, run, report, and verify over
+sampler output on a throwaway pack id. Exit gate: the canary completes and is
+deleted, and no holdout-v0.2 artifact is created by it.
 
-## M3 — Structural unit providers
+**First sealed holdout v0.2.** New seeds through the full protocol, including
+remote freeze attestation and sampler output. Exit gate: `classification`
+reads sealed, `state.resultSetHash` matches a committed
+`bench/packs/<packId>/reports/results.jsonl`, and the winning policy is frozen
+before the pack opens. This is the first item on this list that may not start
+before the three above are closed.
 
-Deliverables:
+**Pinned host compatibility and request capture.** `bench/hosts.lock.json` pins
+Pi at `c49906ec` and a Hermes commit for the native bake-off, and neither
+adapter has a test pinned to a released host package. Add pinned-release
+integration tests and post-sanitizer request capture through the loopback
+provider for both hosts. Exit gate: the persisted host transcript is
+byte-identical with and without FreshCtx, forcing adapter failure sends the
+untouched native request, and the captured payload passes every satisfiable
+CtxBench gate.
 
-- Tree-sitter provider interface and at least Python, TypeScript/JavaScript,
-  Rust, and Go providers;
-- qualified structural selectors and independent gold extractors;
-- rename, move, delete, overload, duplicate, macro, parse-error, and generated
-  code traces;
-- content/anchor fallback with explicit confidence evidence;
-- coherent workspace generation and bounded retry.
+**Full timing and memory evidence.** `npm run ctxbench` reports repeated
+transformation latency. Nothing reports peak resident memory or per-stage
+timing inside the adapters, so `docs/EVALUATION.md` §9.2 and §9.5 cannot be
+filled from this repository. Exit gate: refresh, resolve, select, render, and
+serialize timings plus peak memory land in the result rows for core and both
+adapters.
 
-Exit gates:
+**Fail cleanly when a checkout is absent.** `npm run repos:verify` and
+`npm run hosts:verify` currently crash with an unhandled `spawnSync git ENOENT`
+when the vendored checkout directory does not exist, which is the normal state
+of a fresh clone. Exit gate: both commands report the missing checkout and the
+command to create it, and exit non-zero without a stack trace.
 
-- zero wrong-symbol resolution on the frozen validation suite;
-- ambiguous cases fail closed;
-- exact required recall on budget-satisfiable traces;
-- public comparison against whole-file CORVUS scope.
+**Root-confined source provider in the core.** `FreshCtxEngine.refresh()` takes
+a caller-supplied provider, and every path guard lives in the adapters
+(`safeWorkspaceFile` and the shell-read parser). A core-side provider that takes
+one workspace root, canonicalizes paths, refuses escaping symlinks by default,
+and enforces the binary and size limits removes the chance that a future host
+integration forgets one guard. Exit gate: the core provider passes the escape,
+symlink, binary, and oversize cases, and both adapters use it instead of their
+own copy.
 
-## M4 — Hermes and OMP portability
+## P2: benchmark and product depth
 
-Deliverables:
+**Structural unit providers.** Tree-sitter provider interface with Python,
+TypeScript and JavaScript, Rust, and Go, qualified structural selectors, and
+independent gold extractors. Exit gate: zero wrong-symbol resolution on the
+frozen validation suite, ambiguous cases fail closed, and exact required recall
+on budget-satisfiable traces.
 
-- packaged Hermes engine composed with built-in compression;
-- per-session locking and persistent archive lifecycle;
-- pinned Hermes request-capture suite;
-- Oh My Pi adapter or an upstream-compatible patch using its strongest native
-  context seam;
-- cross-host canonical trace mapping.
+**Reviewed CORVUS reproduction.** `bench/corvus.mjs` is a documented
+whole-file baseline written from the paper, not a reviewed reproduction. Exit
+gate: a second maintainer signs off that the baseline is faithful on the same
+traces and budget, and the deviation table names every difference.
 
-Exit gates:
+**Broader corpus and the full matrix.** Six pinned public repositories across
+language families, and the complete mutation and read-pattern matrix from
+`docs/EVALUATION.md` §5.2 and §5.3 at the full sample target. Exit gate: repo,
+trace, policy, code, paper, and environment digests reproduce, and correctness
+metrics recompute from released raw data.
 
-- Pi and Hermes transform the same semantic trace into equivalent live-unit
-  sets;
-- host-specific payload differences are explained and captured;
-- exact compatibility matrix is published;
-- no fork is required for the two primary hosts.
+**Production packaging.** A Pi package pinned to a tested release range,
+durable `callToUnit` and registry persistence across restart and branch switch,
+a Hermes registry publish with per-session locking and archive lifecycle, a
+durable encrypted revision archive, and adapter telemetry with a status command.
+Exit gate: session resume keeps tracked units without a re-read, and the
+compatibility matrix is published.
 
-## M5 — Autoresearch campaign
+## P3: expansion
 
-Deliverables:
+**Oh My Pi adapter.** An adapter or an upstream-compatible patch against its
+strongest native context seam, plus cross-host canonical trace mapping. Exit
+gate: Pi, Hermes, and OMP transform the same semantic trace into equivalent live
+unit sets, and host-specific payload differences are explained and captured.
 
-- frozen train/validation split and sealed holdout traces;
-- paper-lock digest recorded in every experiment;
-- automated single-hypothesis experiment runner;
-- protected evaluator and append-only results ledger;
-- Pareto tracking over correctness, bytes, latency, memory, and prefix reuse;
-- negative-result and complexity-cost accounting.
+**Inspection plane and reporting.** An MCP server for explicit track, refresh,
+recover, and status calls, and a technical report once a sealed result exists.
+MCP stays a compatibility and inspection plane. It cannot remove an earlier tool
+result from a host request, so it is never the data plane.
 
-Exit gates:
+## Release gates
 
-- all accepted changes satisfy hard gates;
-- candidate selection uses no holdout feedback;
-- five-run stagnation rule and human review are enforced;
-- winning policy is frozen before the holdout is opened.
+A Level 4 statement that FreshCtx is a state-of-the-art context transformer
+requires everything in `docs/EVALUATION.md` §13. The short form: every
+correctness gate on development, validation, and sealed holdout traces, a
+reviewed CORVUS reproduction, a pre-registered material improvement with no
+material regression elsewhere, reproduction across all declared language
+families, request-capture reproduction through both Pi and Hermes, and public
+raw results with negative cases.
 
-## M6 — CtxBench 1.0 and research release
-
-Deliverables:
-
-- six pinned public repositories across language families;
-- complete mutation/read-pattern matrix;
-- reviewed CORVUS reproduction;
-- sealed holdout result;
-- raw results, trace pack, locks, analysis notebook/script, and environment;
-- technical report or preprint;
-- stable library/sidecar API and two production adapters.
-
-Level 4 exit gates:
-
-- every correctness and safety gate passes;
-- pre-registered material Pareto improvement over CORVUS whole-file sync;
-- result reproduces through Pi and Hermes request capture;
-- maintainers unaffiliated with the optimization reproduce the headline table;
-- wording remains “context transformer,” never “best coding agent.”
-
-## Recommended first five issues
-
-1. Implement the v1 JSON trace runner and oracle.
-2. Freeze Flask/Express commits and generate smoke traces.
-3. Build the exact observation-masking and CORVUS file baselines.
-4. Pin Pi and create a no-model provider recorder.
-5. Add Tree-sitter Python unit extraction with an independent offset oracle.
+Until then every result carries a label from `synthetic`, `replay`,
+`public-repo-smoke`, or `public-repo-holdout`, and agent task success is never a
+gate for the context-transformer claim.

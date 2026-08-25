@@ -5,7 +5,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 - pack: `budget-pressure-dev-v0.1`
 - status: candidate
 - resultSetHash: null
-- HEAD: `939a22109ee5925a40921e5c6eea876b18959d47`
+- HEAD: `3a886516a9194fa282e6579a9a5a038c485b93cf`
 - merge-base vs bfb9bb20: `bfb9bb20d6aaeb378c0b4052942792288a75f357`
 - door blob (src/anchors.mjs): `f8771c93894095348185ef3453a3c2498355b3c6`
 - repos.lock blob: `79e29d09a9ec12b1128617f683f50a35a3c8809e`
@@ -21,7 +21,7 @@ Label: `budget-pressure-dev` / adapter-prune. Hermes/Pi request assembly drops u
 
 **Finding:** pruned hermes-fresh matched freshctx-region on required-recall and stale-bytes for all 6 cells.
 
-Generated: 2026-08-22T18:20:30.106Z
+Generated: 2026-08-25T18:06:20.159Z
 
 ## Per-cell metrics (final capture)
 
@@ -31,10 +31,10 @@ Generated: 2026-08-22T18:20:30.106Z
 | hermes-native | go-tools | append | 0.000 | 0.000 | 0 | 1.000 | 4039 |
 | hermes-fresh | go-tools | append | 1.000 | 0.000 | 0 | 1.000 | 604 |
 | pi-fresh | go-tools | append | 1.000 | 0.000 | 0 | 1.000 | 604 |
-| freshctx-region | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| freshctx-region | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | hermes-native | go-tools | delete | 0.000 | 0.200 | 66 | 1.000 | 3886 |
-| hermes-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
-| pi-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| hermes-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
+| pi-fresh | go-tools | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | freshctx-region | go-tools | interior-edit | 1.000 | 0.000 | 0 | 1.000 | 562 |
 | hermes-native | go-tools | interior-edit | 0.000 | 0.200 | 137 | 0.000 | 3947 |
 | hermes-fresh | go-tools | interior-edit | 1.000 | 0.000 | 0 | 1.000 | 562 |
@@ -43,10 +43,10 @@ Generated: 2026-08-22T18:20:30.106Z
 | hermes-native | neovim | append | 0.000 | 0.200 | 645 | 0.000 | 4467 |
 | hermes-fresh | neovim | append | 1.000 | 0.000 | 0 | 1.000 | 1029 |
 | pi-fresh | neovim | append | 1.000 | 0.000 | 0 | 1.000 | 1029 |
-| freshctx-region | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| freshctx-region | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | hermes-native | neovim | delete | 0.000 | 0.200 | 69 | 1.000 | 3889 |
-| hermes-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
-| pi-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 164 |
+| hermes-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
+| pi-fresh | neovim | delete | 0.000 | 0.000 | 0 | 1.000 | 78 |
 | freshctx-region | neovim | interior-edit | 1.000 | 0.000 | 0 | 1.000 | 872 |
 | hermes-native | neovim | interior-edit | 0.000 | 0.200 | 444 | 0.000 | 4268 |
 | hermes-fresh | neovim | interior-edit | 1.000 | 0.000 | 0 | 1.000 | 872 |
@@ -60,10 +60,10 @@ Generated: 2026-08-22T18:20:30.106Z
 | go-tools | append | hermes-native | 1.000 | 0.000 | 0.000 | 0 | 4039 | 3435 |
 | go-tools | append | hermes-fresh | 1.000 | 1.000 | 0.000 | 0 | 604 | 0 |
 | go-tools | append | pi-fresh | 1.000 | 1.000 | 0.000 | 0 | 604 | 0 |
-| go-tools | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| go-tools | delete | hermes-native | 1.000 | 0.000 | 0.200 | 66 | 3886 | 3722 |
-| go-tools | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| go-tools | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
+| go-tools | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| go-tools | delete | hermes-native | 1.000 | 0.000 | 0.200 | 66 | 3886 | 3808 |
+| go-tools | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| go-tools | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
 | go-tools | interior-edit | freshctx-region | 1.000 | 1.000 | 0.000 | 0 | 562 | 0 |
 | go-tools | interior-edit | hermes-native | 0.000 | 0.000 | 0.200 | 137 | 3947 | 3385 |
 | go-tools | interior-edit | hermes-fresh | 1.000 | 1.000 | 0.000 | 0 | 562 | 0 |
@@ -72,10 +72,10 @@ Generated: 2026-08-22T18:20:30.106Z
 | neovim | append | hermes-native | 0.000 | 0.000 | 0.200 | 645 | 4467 | 3438 |
 | neovim | append | hermes-fresh | 1.000 | 1.000 | 0.000 | 0 | 1029 | 0 |
 | neovim | append | pi-fresh | 1.000 | 1.000 | 0.000 | 0 | 1029 | 0 |
-| neovim | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| neovim | delete | hermes-native | 1.000 | 0.000 | 0.200 | 69 | 3889 | 3725 |
-| neovim | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
-| neovim | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 164 | 0 |
+| neovim | delete | freshctx-region | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| neovim | delete | hermes-native | 1.000 | 0.000 | 0.200 | 69 | 3889 | 3811 |
+| neovim | delete | hermes-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
+| neovim | delete | pi-fresh | 1.000 | 0.000 | 0.000 | 0 | 78 | 0 |
 | neovim | interior-edit | freshctx-region | 1.000 | 1.000 | 0.000 | 0 | 872 | 0 |
 | neovim | interior-edit | hermes-native | 0.000 | 0.000 | 0.200 | 444 | 4268 | 3396 |
 | neovim | interior-edit | hermes-fresh | 1.000 | 1.000 | 0.000 | 0 | 872 | 0 |
@@ -86,8 +86,8 @@ Generated: 2026-08-22T18:20:30.106Z
 | repo | family | PCR 0035 projection-bytes | pruned projection-bytes | delta-bytes |
 | --- | --- | --- | --- | --- |
 | go-tools | append | 20300 | 604 | 19696 |
-| go-tools | delete | 19860 | 164 | 19696 |
+| go-tools | delete | 19860 | 78 | 19782 |
 | go-tools | interior-edit | 20258 | 562 | 19696 |
 | neovim | append | 20725 | 1029 | 19696 |
-| neovim | delete | 19860 | 164 | 19696 |
+| neovim | delete | 19860 | 78 | 19782 |
 | neovim | interior-edit | 20568 | 872 | 19696 |

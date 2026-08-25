@@ -36,8 +36,6 @@ export function extractCodeUnits(payloadText, baseline) {
         path: decoded.path,
         content: decoded.content,
         bytes: Buffer.byteLength(decoded.content, "utf8"),
-        revision: decoded.revision,
-        unchanged: decoded.unchanged === "true",
       });
     }
     return units;
@@ -91,10 +89,7 @@ export function extractCodeUnits(payloadText, baseline) {
 }
 
 function projectedUnitMatchesGold(unit, goldBytes) {
-  const goldDigest = sha256(goldBytes);
-  if (sha256(unit.content) === goldDigest) return true;
-  if (unit.unchanged && unit.revision === `sha256:${goldDigest}`) return true;
-  return false;
+  return sha256(unit.content) === sha256(goldBytes);
 }
 
 export function analyzeCapture({

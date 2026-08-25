@@ -131,8 +131,20 @@ protects trace data, gold labels, metrics, thresholds, and held-out splits.
 ### 6. Projector
 
 The projector emits a single self-describing live block. Each unit includes
-stable ID, path, range, current revision, and resolution method. Units appear at
-most once. Unresolved and budget-omitted counts are explicit.
+stable ID, path, range, current revision, resolution method, and the UTF-8
+length of its rendered body. Units appear at most once. Unresolved and
+budget-omitted counts are explicit.
+
+Rendering is stateless. `renderUnit` is a function of one unit, and
+`projectContext` is a function of the registry, the turn, the task, and the
+budget. Neither one knows what an earlier request contained, so a selected unit
+always carries its current bytes. If the projector knew, it could be tempted to
+send a revision digest instead, and a digest is a reference to the bytes rather
+than the bytes. [PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md) records
+where that temptation led and why the state was removed.
+
+A unit is either selected with its full current bytes or reported as unresolved
+or budget-omitted. There is no third rendering.
 
 The XML-like prototype format is not a security boundary. Production should use
 a host-native data/content distinction when the provider supports one, escape
@@ -163,9 +175,15 @@ each LLM call. The reference adapter records successful `read` calls, leaves the
 stored result untouched, then rewrites matching tool results in the request copy
 and appends the live projection through `context`.
 
-The current adapter synchronizes whole text files. Partial-read and symbol
-fidelity, persisted call mappings, pinned-package type checking, and native
-provider-capture tests are release gates.
+The adapter synchronizes whole text files and line regions. Path-only reads and
+pagination that reaches end of file resolve to file scope. Explicit
+`scope: "region"` reads and finite `offset` and `limit` pairs map to line ranges,
+and interior edits can refresh through a stored line span without a re-read. The
+adapter also recognizes cat-class shell reads and routes them through the same
+workspace guard as the official `read` tool.
+
+Symbol scope, persisted call mappings across restart, pinned-package type
+checking, and native provider-capture tests are release gates.
 
 ## Hermes integration
 
@@ -175,10 +193,13 @@ observe a completed turn. The preview plugin subclasses Hermes'
 `ContextCompressor`, preserving normal compaction, and invokes the Node core
 through a fail-open local bridge.
 
-The bridge recognizes common OpenAI-format read tools and currently projects
-whole files. It persists only tool-call/path mappings. Production should package
-the core as a stable sidecar or native library and add per-session locking,
-schema fixtures, and lifecycle cleanup.
+The bridge recognizes common OpenAI-format read tools and cat-class shell
+commands, and projects whole files and line regions under the same end-of-file
+rules as Pi. It persists only tool-call and path mappings, and it writes that
+state from `on_turn_complete()` alone. `select_context()` reads state and never
+writes it, which keeps one request from changing what the next request contains.
+Production should package the core as a stable sidecar or native library and add
+per-session locking, schema fixtures, and lifecycle cleanup.
 
 ## Why MCP is not the primary integration
 
@@ -201,6 +222,12 @@ invalidate a large prefix even if total bytes fall. The projector therefore
 keeps historical markers stable, renders unchanged units first, puts volatile
 units late, and reports prefix reuse plus delta amplification. Provider cache
 tokens are an optional external measurement, not inferred from token count.
+
+All three quantities are measured over requests that already satisfy the
+stateless rule. Dropping the body of a selected unit lowers every one of them
+and is still wrong, so byte and prefix work happens through selection, ordering,
+and unit grain. It never happens by omitting bytes the projection claims to
+carry.
 
 ## Workspace consistency
 

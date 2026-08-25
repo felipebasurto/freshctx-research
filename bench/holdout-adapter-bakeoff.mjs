@@ -266,7 +266,7 @@ function formatReport(rows, hostsLock, {
   const lines = [
     `# CtxBench holdout adapter bake-off (${HOLDOUT_ADAPTER_BAKEOFF_LABEL})`,
     "",
-    "Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Publishable table on sealed holdout v0.1 traces; not a SOTA claim.",
+    "Label: `public-repo-holdout` / `holdout-adapter-bakeoff`. Replay table on unsealed holdout v0.1 regression traces; not a performance or SOTA claim.",
     "",
     `- pack: \`holdout-v0.1\``,
     `- status: candidate`,
