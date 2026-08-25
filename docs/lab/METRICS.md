@@ -75,6 +75,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | `8cd3abed` holdout adapter bake-off WITH vs WITHOUT (Hermes + Pi) | 210/210 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0075](pcr/0075-holdout-adapter-bakeoff-with-vs-without.md) |
 | 2026-08-25 | (PCR 0076) honest Pi install path (README + replay tests) | 215/215 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0076](pcr/0076-honest-pi-install-path.md) |
 | 2026-08-25 | (PCR 0077) skip unchanged unit inject | 220/220 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0077](pcr/0077-skip-unchanged-inject.md) |
+| 2026-08-25 | (PCR 0078) cat-class shell read tracking + default 32k | 235/235 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0078](pcr/0078-cat-tracked-read.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
