@@ -68,3 +68,4 @@
 | [0068](pcr/0068-header-1-1-delete-reobserve.md) | 2026-08-24 | Header 1-1 observe then delete then re-observe (identity leftover) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `delete-repin`; `measurement` | review |
 | [0069](pcr/0069-exact-eof-file-scope-clamp.md) | 2026-08-25 | Hermes exact-EOF page promotes to file-scope (sibling of 0064) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `default-pagination` | review |
 | [0071](pcr/0071-exact-eof-extra-boards.md) | 2026-08-25 | Exact-EOF clamp extra boards (trailing NL; startLine=2) | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
+| [0070](pcr/0070-no-over-promote-guard.md) | 2026-08-25 | Do not over-promote non-whole-file Hermes pages | `synthetic`; `hermes-fresh`; `region-refresh`; `stored-line-span`; `offset-limit`; `measurement` | review |
