@@ -1,9 +1,16 @@
 /** Adapter request assembly: drop unserved read tool pairs whenever a projection is applied. */
 
+/**
+ * Live adapter default (chars counted in policy selection, not envelope bytes).
+ * Replay: 20 ordinary source files + one 64k-char file whose official read is
+ * budget-omitted while a tracked `head` slice is served (PCR 0078 large board).
+ */
+export const DEFAULT_BUDGET_CHARS = 32_768;
+
 export function resolveAdapterBudgetChars({
   budgetChars,
   budgetTokens = 0,
-  defaultBudget = 24_000,
+  defaultBudget = DEFAULT_BUDGET_CHARS,
 } = {}) {
   const envBudget = Number(process.env.FRESHCTX_BUDGET_CHARS);
   if (Number.isFinite(envBudget) && envBudget > 0) return envBudget;

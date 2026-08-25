@@ -9,7 +9,10 @@ import {
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
-import { readScopeFromInput } from "./replay.mjs";
+import { trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
+import { DEFAULT_BUDGET_CHARS, readScopeFromInput } from "./replay.mjs";
+
+const PI_READ_TOOLS = trackedReadTools(new Set(["read"]));
 
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
 
@@ -99,7 +102,26 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
   });
 
   pi.on("tool_result", async (event, ctx) => {
-    if (event.toolName !== "read" || event.isError) return;
+    if (event.isError) return;
+
+    if (event.toolName === "bash" || event.toolName === "shell") {
+      await tryTrackShellRead({
+        toolName: event.toolName,
+        input: event.input,
+        content: event.content,
+        isError: event.isError,
+        cwd: ctx.cwd,
+        engine,
+        callToUnit,
+        toolCallId: event.toolCallId,
+        safeWorkspaceFile,
+        observedToolContent: textFromContent,
+        lineCount: (content) => content.split("\n").length,
+      });
+      return;
+    }
+
+    if (event.toolName !== "read") return;
     const requestedPath = event.input.path;
     if (typeof requestedPath !== "string") return;
 
@@ -154,10 +176,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       const budgetChars = resolveAdapterBudgetChars({
         budgetChars: (event as { budgetChars?: number }).budgetChars,
         budgetTokens: (event as { budgetTokens?: number }).budgetTokens,
-        defaultBudget: (() => {
-          const configured = Number(process.env.FRESHCTX_BUDGET_CHARS ?? 24_000);
-          return Number.isFinite(configured) && configured > 0 ? configured : 24_000;
-        })(),
+        defaultBudget: DEFAULT_BUDGET_CHARS,
       });
       const projection = engine.project({
         task: lastUserTask(event.messages),
@@ -167,7 +186,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
       const assembled = dropUnservedReadToolPairs(rewritten, {
-        readTools: new Set(["read"]),
+        readTools: PI_READ_TOOLS,
         servedCallIds,
       });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;

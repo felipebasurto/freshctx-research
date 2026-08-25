@@ -2,15 +2,20 @@ import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
+  DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
 } from "../request-prune.mjs";
+import {
+  shellCallsFromMessages,
+  trackedReadTools,
+} from "../shell-read.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
 export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
+const HERMES_TRACKED_TOOLS = trackedReadTools(READ_TOOLS);
 const MAX_FILE_BYTES = 512 * 1024;
-const DEFAULT_BUDGET_CHARS = 24_000;
 
 function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
@@ -115,6 +120,16 @@ export function discoveredCalls(messages) {
       const id = message.tool_call_id ?? message.toolCallId;
       if (typeof id === "string") completed.add(id);
     }
+  }
+
+  for (const [id, meta] of Object.entries(shellCallsFromMessages(messages))) {
+    candidates.set(id, {
+      path: meta.path,
+      scope: meta.scope ?? "file",
+      startLine: meta.startLine,
+      endLine: meta.endLine,
+      shellRead: true,
+    });
   }
 
   return Object.fromEntries([...candidates].filter(([id]) => completed.has(id)));
@@ -276,23 +291,49 @@ export async function selectContext(payload) {
   const lastInjectedRevision = lastInjectedRevisionFromState(state);
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
+  const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
   for (const [callId, observation] of Object.entries(tracked)) {
     try {
-      const trackArgs = observation.scope === "region"
-        ? {
-            path: observation.path,
+      let trackArgs;
+      if (shellCallIds.has(callId)) {
+        const file = await safeWorkspaceFile(payload.cwd, observation.path);
+        const observedFileLineCount = observation.observedFileLineCount ?? lineCount(file.content);
+        const scopeMeta = scopeFromObservation(observation, observedFileLineCount);
+        if (scopeMeta.scope === "region") {
+          if (!observation.content) continue;
+          trackArgs = {
+            path: file.path,
             content: observation.content,
             scope: "region",
-            startLine: observation.startLine,
-            endLine: observation.endLine,
-            selector: observation.selector,
-            observedFileLineCount: observation.observedFileLineCount,
-          }
-        : {
-            path: observation.path,
-            content: observation.content,
+            startLine: scopeMeta.startLine,
+            endLine: scopeMeta.endLine,
+            selector: scopeMeta.selector,
+            observedFileLineCount,
+          };
+        } else {
+          trackArgs = {
+            path: file.path,
+            content: file.content,
             scope: "file",
           };
+        }
+      } else {
+        trackArgs = observation.scope === "region"
+          ? {
+              path: observation.path,
+              content: observation.content,
+              scope: "region",
+              startLine: observation.startLine,
+              endLine: observation.endLine,
+              selector: observation.selector,
+              observedFileLineCount: observation.observedFileLineCount,
+            }
+          : {
+              path: observation.path,
+              content: observation.content,
+              scope: "file",
+            };
+      }
       const unit = engine.trackRead(trackArgs);
       unitsByCall.set(callId, unit);
     } catch {
@@ -324,7 +365,7 @@ export async function selectContext(payload) {
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
-  const assembled = dropUnservedReadToolPairs(rewritten, { readTools: READ_TOOLS, servedCallIds });
+  const assembled = dropUnservedReadToolPairs(rewritten, { readTools: HERMES_TRACKED_TOOLS, servedCallIds });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],
     selected: projection.selected.length,

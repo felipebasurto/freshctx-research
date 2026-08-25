@@ -9,6 +9,7 @@ import {
   buildReadToolCall,
   buildToolResultMessage,
   captureProviderRequest,
+  DEFAULT_BUDGET_CHARS,
   messageText,
   toProviderPayload,
 } from "../../../adapters/pi/replay.mjs";
@@ -19,7 +20,7 @@ const OLD_MARK = "FRESHCTX_TRIAL_OLD";
 const NEW_MARK = "FRESHCTX_TRIAL_NEW";
 
 function parseArgs(argv) {
-  const out = { repo: "", paths: [], budgetChars: 24_000 };
+  const out = { repo: "", paths: [], budgetChars: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--repo") out.repo = argv[++i] ?? "";
@@ -222,10 +223,12 @@ async function main() {
     const withoutDump = payloadText(withoutPayload);
     const withoutBytes = utf8Bytes(withoutDump);
 
+    const budgetChars = args.budgetChars ?? DEFAULT_BUDGET_CHARS;
+
     const captured = await captureProviderRequest({
       cwd: root,
       persistedMessages: persisted,
-      budgetChars: args.budgetChars,
+      budgetChars,
     });
     const withDump = payloadText(captured.payload);
     const withBytes = utf8Bytes(withDump);
@@ -244,7 +247,7 @@ async function main() {
       source,
       workspace: root,
       editedPath: edited.path,
-      budgetChars: args.budgetChars,
+      budgetChars,
       capturedAt: new Date().toISOString(),
       totals: {
         without: {

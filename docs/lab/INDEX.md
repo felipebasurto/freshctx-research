@@ -75,3 +75,4 @@
 | [0075](pcr/0075-holdout-adapter-bakeoff-with-vs-without.md) | 2026-08-25 | Holdout adapter bake-off WITH vs WITHOUT (Hermes + Pi) post-0073 | `synthetic`; `hermes-fresh`; `pi-fresh`; `holdout-adapter-bakeoff`; `measurement` | review |
 | [0076](pcr/0076-honest-pi-install-path.md) | 2026-08-25 | Honest Pi install path (README + fail-open + two-turn replay) | `synthetic`; `pi-fresh`; `replay`; `adapter-only` | review |
 | [0077](pcr/0077-skip-unchanged-inject.md) | 2026-08-25 | Skip re-injecting unchanged unit bodies (prefix-cache path) | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0078](pcr/0078-cat-tracked-read.md) | 2026-08-25 | Track cat-class shell reads; default budget 32k (not dump-world) | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |

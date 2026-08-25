@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { messageText, observeTurn, selectContext, toProviderPayload } from "./bridge.mjs";
-import { resolveAdapterBudgetChars } from "../request-prune.mjs";
+import { DEFAULT_BUDGET_CHARS, resolveAdapterBudgetChars } from "../request-prune.mjs";
 
-const DEFAULT_BUDGET_CHARS = 24_000;
+export { DEFAULT_BUDGET_CHARS };
 
 export { messageText, toProviderPayload } from "./bridge.mjs";
 

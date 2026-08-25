@@ -15,7 +15,7 @@ From a FreshCtx source checkout (requires Node.js and the
 pi -e ./adapters/pi/extension.ts
 ```
 
-Optional projection budget (characters):
+Optional projection budget override (characters; default is 32768):
 
 ```bash
 FRESHCTX_BUDGET_CHARS=24000 pi -e ./adapters/pi/extension.ts

@@ -2,14 +2,19 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
+  DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
+import { SHELL_TOOLS, trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 
+const PI_READ_TOOLS = trackedReadTools(new Set(["read"]));
+
 const MAX_TRACKED_FILE_BYTES = 512 * 1024;
-const DEFAULT_BUDGET_CHARS = 24_000;
+
+export { DEFAULT_BUDGET_CHARS };
 
 function textFromContent(content) {
   if (typeof content === "string") return content;
@@ -152,7 +157,26 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
     },
 
     async onToolResult(event, ctx) {
-      if (event.toolName !== "read" || event.isError) return;
+      if (event.isError) return;
+
+      if (SHELL_TOOLS.has(event.toolName)) {
+        await tryTrackShellRead({
+          toolName: event.toolName,
+          input: event.input,
+          content: event.content,
+          isError: event.isError,
+          cwd: ctx.cwd,
+          engine,
+          callToUnit,
+          toolCallId: event.toolCallId,
+          safeWorkspaceFile,
+          observedToolContent,
+          lineCount,
+        });
+        return;
+      }
+
+      if (event.toolName !== "read") return;
       const requestedPath = event.input?.path;
       if (typeof requestedPath !== "string") return;
 
@@ -207,7 +231,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
         const assembled = dropUnservedReadToolPairs(rewritten, {
-          readTools: new Set(["read"]),
+          readTools: PI_READ_TOOLS,
           servedCallIds,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
@@ -231,6 +255,23 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         return undefined;
       }
     },
+  };
+}
+
+export function buildShellToolCall({ toolCallId, command, toolName = "bash" }) {
+  return {
+    role: "assistant",
+    content: "",
+    tool_calls: [
+      {
+        id: toolCallId,
+        type: "function",
+        function: {
+          name: toolName,
+          arguments: JSON.stringify({ command }),
+        },
+      },
+    ],
   };
 }
 
@@ -300,10 +341,12 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
     if (typeof toolCallId !== "string") continue;
 
     let input = {};
+    let toolName = "read";
     for (const prior of persistedMessages) {
       if (prior.role !== "assistant" || !Array.isArray(prior.tool_calls)) continue;
       const call = prior.tool_calls.find((item) => item.id === toolCallId);
       if (!call) continue;
+      toolName = call.function?.name ?? call.name ?? "read";
       try {
         const args = JSON.parse(call.function.arguments);
         input = args && typeof args === "object" ? args : {};
@@ -315,7 +358,7 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
 
     await adapter.onToolResult(
       {
-        toolName: "read",
+        toolName,
         toolCallId,
         input,
         content: message.content,
