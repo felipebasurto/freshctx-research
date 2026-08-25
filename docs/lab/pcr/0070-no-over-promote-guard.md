@@ -135,8 +135,9 @@ Same leftover shape as PCR 0066 exact-EOF board. Honest fail-close; no invented 
 - PCR 0066: in-bounds exact-EOF page `1–4` stays region; empty leftover after interior replace.
 - PCR 0068: header 1–1 delete re-observe identity path.
 - PCR 0069: exact-EOF clamp (`endLine >= fileLineCount` → file-scope); `{offset:1, limit:4}` promotes.
+- PCR 0071: Hermes exact-EOF boards A/B/C file-scope NEW; core explicit region `2–4` fail-closes.
 - PCR 0070: in-bounds non-whole-file pages `1–3` and `2–3` stay region; guard against
-  silent over-promotion beyond 0069's EOF rule.
+  silent over-promotion beyond 0069/0071 EOF rules.
 
 ## Conflicts with constitutions
 
@@ -150,7 +151,7 @@ exact bytes).
 - No adapter clamp in this PCR; non-whole-file in-bounds pages remain region-scoped.
 - Interior-only edit on multi-line spans fails door refresh despite unchanged boundary
   bytes outside the edited line (displaced-shrunk-boundary-anchors).
-- Rebased onto main @ PCR 0069; guard file unchanged — boards A/B still region-scoped.
+- Rebased onto main @ PCR 0071 + PR 65 follow-up; guard file unchanged — boards A/B still region-scoped.
 - Not holdout / not public performance claim.
 
 ## Protocol gap?
@@ -159,5 +160,5 @@ exact bytes).
 
 ## Next measurement
 
-Post-0069: re-run this guard file after any adapter scope change; promotion of boards A/B
-to file-scope is a regression. Optional live Hermes confirm on research box.
+Post-0069/0071: re-run this guard file after any adapter scope change; promotion of boards
+A/B to file-scope is a regression. Do not regress 0071 Board C core `2–4` fail-close.
