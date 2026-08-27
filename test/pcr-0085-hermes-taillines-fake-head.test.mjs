@@ -15,6 +15,9 @@ const REGION_PATH = "ws/tail.txt";
 const FILE_BODY = "line1 head\nline2 middle\nline3 tailA\nline4 tailB\n";
 const TAIL_BODY = "line3 tailA\nline4 tailB\n";
 const WRONG_SIZED_TAIL_BODY = "line1 head\nline2 middle\nline3 tailA\n";
+const UNDERSIZED_TAIL_BODY = "line4 tailB\n";
+const MIDDLE_TAIL_BODY = "line2 middle\nline3 tailA\nline4 tailB\n";
+const EXTRA_NL_TAIL_BODY = "line3 tailA\nline4 tailB\n\n";
 
 function buildTailReadMessages(content = TAIL_BODY) {
   return [
@@ -143,6 +146,52 @@ test("PCR 0086: Hermes first inject fail-closes a wrong-sized tailLines payload 
     assert.doesNotMatch(capture.payloadText, /line4 tailB/u);
   } finally {
     await rm(board.workspace, { recursive: true, force: true });
+  }
+});
+
+test("PCR 0088: Hermes first inject fail-closes undersized, middle, and extra-NL tail payloads without minting an EOF tail id", async () => {
+  const invalidBoards = [
+    { name: "undersized", content: UNDERSIZED_TAIL_BODY },
+    { name: "middle", content: MIDDLE_TAIL_BODY },
+    { name: "extra-nl", content: EXTRA_NL_TAIL_BODY },
+  ];
+  const expectedTailId = stableUnitId({
+    path: REGION_PATH,
+    scope: "region",
+    startLine: 3,
+    endLine: 5,
+  });
+
+  for (const invalidBoard of invalidBoards) {
+    const board = await setupBoard(invalidBoard.content);
+    const stateFile = await createHermesStateFile();
+
+    try {
+      const capture = await captureProviderRequest({
+        cwd: board.workspace,
+        persistedMessages: board.messages,
+        stateFile,
+        budgetChars: 8_000,
+      });
+
+      assert.match(capture.projectionText, /selected="0"/u, invalidBoard.name);
+      assert.match(capture.projectionText, /unresolved="1"/u, invalidBoard.name);
+      assert.doesNotMatch(
+        capture.payloadText,
+        new RegExp(`freshctx:${expectedTailId}\\b`, "u"),
+        invalidBoard.name,
+      );
+      assert.doesNotMatch(
+        capture.projectionText,
+        new RegExp(`id="${expectedTailId}"`, "u"),
+        invalidBoard.name,
+      );
+      assert.doesNotMatch(capture.projectionText, /lines="3-5"/u, invalidBoard.name);
+      assert.doesNotMatch(capture.projectionText, /line3 tailA/u, invalidBoard.name);
+      assert.doesNotMatch(capture.projectionText, /line4 tailB/u, invalidBoard.name);
+    } finally {
+      await rm(board.workspace, { recursive: true, force: true });
+    }
   }
 });
 

@@ -83,9 +83,7 @@ function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
   const fileLineCount = lineCount(fileContent);
   if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
   const observedText = typeof observedContent === "string" ? observedContent.replaceAll("\r\n", "\n") : "";
-  const observedLines = lineCount(observedText);
-  const spanLines = observedLines >= 1 ? observedLines : scopeMeta.tailLines;
-  const startLine = Math.max(1, fileLineCount - spanLines + 1);
+  const startLine = Math.max(1, fileLineCount - scopeMeta.tailLines);
   if (tailSpanContent(fileContent, startLine, fileLineCount) !== observedText) {
     return {
       scope: "region",
