@@ -112,3 +112,39 @@ test("PCR 0085: Hermes first inject serves tailLines with a tail unit id, not fa
     await rm(board.workspace, { recursive: true, force: true });
   }
 });
+
+test("PCR 0085: Hermes tailLines insert-above decoy fails closed instead of accepting a later tail boundary", async () => {
+  const board = await setupBoard();
+  const stateFile = await createHermesStateFile();
+  const adapter = createHermesAdapter({ stateFile, budgetChars: 8_000 });
+  const decoyFile = [
+    "line1 head",
+    "line2 middle",
+    "inserted above tail",
+    "line3 tailA changed",
+    "line4 tailB changed",
+    "line3 tailA",
+    "line4 tailB",
+    "",
+  ].join("\n");
+
+  try {
+    await adapter.onTurnComplete(structuredClone(board.messages), { cwd: board.workspace });
+    await writeFile(join(board.workspace, REGION_PATH), decoyFile, "utf8");
+
+    const result = await adapter.onSelectContext(
+      structuredClone(board.messages),
+      { cwd: board.workspace },
+      { budgetChars: 8_000 },
+    );
+
+    assert.match(result.projectionText, /selected="0"/u);
+    assert.match(result.projectionText, /unresolved="1"/u);
+    assert.doesNotMatch(result.projectionText, /lines="6-8"/u);
+    assert.doesNotMatch(result.projectionText, /resolution="exact"/u);
+    assert.doesNotMatch(result.projectionText, /line3 tailA/u);
+    assert.doesNotMatch(result.projectionText, /line4 tailB/u);
+  } finally {
+    await rm(board.workspace, { recursive: true, force: true });
+  }
+});

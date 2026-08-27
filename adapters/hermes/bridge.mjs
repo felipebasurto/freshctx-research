@@ -220,6 +220,20 @@ export function trackedCallsFromMessages(messages) {
 }
 
 function scopeFromObservation(observation, fileLineCount) {
+  if (
+    observation?.scope === "region"
+    && Number.isInteger(observation?.tailLines)
+    && Number.isInteger(observation?.startLine)
+    && Number.isInteger(observation?.endLine)
+  ) {
+    return {
+      scope: "region",
+      startLine: observation.startLine,
+      endLine: observation.endLine,
+      selector: observation.selector,
+      tailLines: observation.tailLines,
+    };
+  }
   const scopeMeta = tailRegionFromObservation({
     scope: observation.scope ?? "file",
     startLine: observation.startLine,
@@ -228,6 +242,39 @@ function scopeFromObservation(observation, fileLineCount) {
     selector: observation.selector,
   }, fileLineCount, observation.content);
   return normalizeHermesReadScope(scopeMeta, fileLineCount);
+}
+
+async function failClosedTailLineShiftedUnits(cwd, tracked, unitsByCall) {
+  if (!cwd) return;
+  for (const [callId, observation] of Object.entries(tracked)) {
+    if (
+      !Number.isInteger(observation?.tailLines)
+      || !Number.isInteger(observation?.observedFileLineCount)
+      || !Number.isInteger(observation?.startLine)
+      || !Number.isInteger(observation?.endLine)
+    ) {
+      continue;
+    }
+
+    const unit = unitsByCall.get(callId);
+    if (!unit || unit.scope !== "region" || unit.state !== "resolved") continue;
+
+    let currentFileLineCount;
+    try {
+      const file = await safeWorkspaceFile(cwd, observation.path);
+      currentFileLineCount = lineCount(file.content);
+    } catch {
+      continue;
+    }
+
+    if (currentFileLineCount === observation.observedFileLineCount) continue;
+    if (unit.startLine === observation.startLine && unit.endLine === observation.endLine) continue;
+
+    unit.state = "unresolved";
+    unit.resolutionMethod = "tail-lines-line-count-shift";
+    unit.startLine = observation.startLine;
+    unit.endLine = observation.endLine;
+  }
 }
 
 async function enrichTrackedWithLineCounts(cwd, tracked) {
@@ -385,13 +432,7 @@ export async function selectContext(payload) {
     (await safeWorkspaceFile(payload.cwd, filePath)).content,
   );
 
-  const rewritten = payload.messages.map((message) => {
-    if (message?.role !== "tool") return structuredClone(message);
-    const id = message.tool_call_id ?? message.toolCallId;
-    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
-    if (!unit) return structuredClone(message);
-    return { ...structuredClone(message), content: stableReadMarker(unit) };
-  });
+  await failClosedTailLineShiftedUnits(payload.cwd, tracked, unitsByCall);
 
   const projection = engine.project({
     task: taskFrom(payload),
@@ -401,6 +442,13 @@ export async function selectContext(payload) {
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
   const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
+  const rewritten = payload.messages.map((message) => {
+    if (message?.role !== "tool") return structuredClone(message);
+    const id = message.tool_call_id ?? message.toolCallId;
+    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
+    if (!unit) return structuredClone(message);
+    return { ...structuredClone(message), content: stableReadMarker(unit) };
+  });
   const assembled = dropUnservedReadToolPairs(rewritten, {
     readTools: HERMES_TRACKED_TOOLS,
     servedCallIds,
