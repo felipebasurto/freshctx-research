@@ -4,7 +4,7 @@
 - Author / agent: Cursor GPT-5.4
 - Branch / PR: `cursor/pcr-0084-multi-path-tracked-dumps-c774` / draft
 - Commit: (this commit)
-- Merge-base: `a71d24f1` (PCR 0082 squash of PR 76)
+- Merge-base: `9ad6c0b3db8697807179dec6ddb2b13af538b545` (current `main`, PCR 0083 squash of PR 80)
 - Paper-manifest digest: unchanged
 - Result labels used: `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only`
 - Decision: **review** (stay draft; do not merge)
@@ -80,10 +80,10 @@ language-agnostic.
 
 - `node --test test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 9 passed, 0 failed.
 - `node --test test/pcr-0080-refresh-over-budget.test.mjs test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0082-truthful-omitted-dump-marker.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 14 passed, 0 failed.
-- `npm test`: 248 passed, 22 skipped, 0 failed, 270 total.
+- `npm test`: 251 passed, 22 skipped, 0 failed, 273 total.
 - `npm run evaluate`: `AUTORESEARCH_SCORE=89.107165`.
 - `npm run ctxbench`: payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1`.
-- merge-base vs `a71d24f1155f37d897113d71859a33278e2ba96e`: exact match.
+- merge-base vs `9ad6c0b3db8697807179dec6ddb2b13af538b545`: exact match.
 
 ## Metric hold
 
