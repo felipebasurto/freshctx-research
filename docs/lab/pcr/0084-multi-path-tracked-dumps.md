@@ -80,13 +80,15 @@ language-agnostic.
 
 - `node --test test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 9 passed, 0 failed.
 - `node --test test/pcr-0080-refresh-over-budget.test.mjs test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0082-truthful-omitted-dump-marker.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 14 passed, 0 failed.
-- `npm test`: pending at write time.
-- `npm run evaluate`: pending at write time.
+- `npm test`: 248 passed, 22 skipped, 0 failed, 270 total.
+- `npm run evaluate`: `AUTORESEARCH_SCORE=89.107165`.
+- `npm run ctxbench`: payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1`.
+- merge-base vs `a71d24f1155f37d897113d71859a33278e2ba96e`: exact match.
 
-## Expected metric hold
+## Metric hold
 
 This PCR does not touch the projector, policy, score weights, benchmark lock, or
-ctxbench payload construction. Expected delta:
+ctxbench payload construction. Observed delta:
 
 | metric | before | after | delta |
 |---|---|---|---|
