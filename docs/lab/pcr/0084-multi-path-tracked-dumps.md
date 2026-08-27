@@ -13,8 +13,10 @@
 
 If a last-resort shell dump names several paths and **every** named path is
 already tracked, keep the assistant/tool pair but replace the stale dump body
-with a marker. If the command names **any** untracked path, leave the dump
-alone. Single-path PCR 0081/0082 behavior stays unchanged.
+with a marker. A command path counts as tracked only when it is the **same
+path**, not a suffix or basename alias on an unrelated file. If the command
+names **any** untracked path, leave the dump alone. Single-path PCR 0081/0082
+behavior stays unchanged.
 
 Door, lock, `DEFAULT_BUDGET_CHARS`, `AUTORESEARCH_SCORE`, and the ctxbench
 payload digest do not move. This is adapter-only and not a paper result or a
@@ -29,17 +31,24 @@ SOTA claim. Gold stays language-agnostic.
 
 ## Test-first evidence
 
-Before the adapter change, the new red board
+Before the adapter change, the original red board
 `test/pcr-0084-multi-path-tracked-dumps.test.mjs` failed:
 
 - command: `node --test test/pcr-0084-multi-path-tracked-dumps.test.mjs`
 - failing board: `PCR 0084: all-tracked multi-path cat keeps the pair and marker-replaces the dump`
 - failure: `Expected values to be strictly deep-equal: actual [] vs expected ['call-all-tracked']`
 
-Root cause: `staleShellDumpPathByCallId()` only rewrote shell dumps when
-`trackedPathsMentionedInCommand()` returned exactly one tracked hit, so safe
-multi-path `cat` dumps fell through even when every named path was already in
-the registry.
+That board was fixed first. On the rebased branch, the follow-up reviewer board
+failed red:
+
+- command: `node --test test/pcr-0084-multi-path-tracked-dumps.test.mjs`
+- failing board: `PCR 0084: suffix path alias does not count as tracked`
+- failure: `Expected values to be strictly equal: 1 !== 0`
+
+Root cause: `matchTrackedPath()` accepted `namedPath.endsWith('/' + trackedPath)`,
+so a tracked `README.md` could also match `docs/README.md`. That let a later
+unrelated multi-path dump be marker-replaced instead of staying untouched. The
+fix is fail-closed exact-path matching after the existing `./` normalization.
 
 ## Change
 
@@ -48,14 +57,15 @@ the registry.
     extraction without widening tracked-read capture.
 - `adapters/request-prune.mjs`
   - resolve multi-path dump arguments back to tracked registry paths;
-  - marker-replace only when every named path resolves to an already-tracked
-    path;
+  - marker-replace only when every named path resolves to the exact already-
+    tracked path;
   - preserve the existing single-path path for piped / python / one-path shell
     dumps;
   - keep mixed tracked/untracked multi-path commands untouched;
   - render one compact multi-path marker with per-path projection status.
 - `test/pcr-0084-multi-path-tracked-dumps.test.mjs`
-  - added the all-tracked marker board and the one-untracked guard board.
+  - added the all-tracked marker board, the one-untracked guard board, and the
+    fail-closed suffix-alias board.
 - `test/pcr-0081-stale-shell-dump.test.mjs`
   - updated the old five-file leftover board so the leftover case is now the
     mixed tracked/untracked command, not the all-tracked case closed here.
@@ -72,15 +82,16 @@ or PCR 0077 restore behavior.
 |---|---|---|---|
 | all-tracked multi-path dump | `cat README.md src/viajante/cli.py src/viajante/models.py src/viajante/flights.py` | keep pair; replace dump body with `freshctx:stale-dump`; no huge stale concat body | pass |
 | one-untracked-path dump | `cat README.md src/viajante/cli.py src/viajante/models.py notes/freshctx-todo.md` | leave dump body alone because not every named path is tracked | pass |
+| suffix alias is untracked | `cat docs/README.md src/viajante/cli.py` with tracked `README.md` and `src/viajante/cli.py` | leave dump body alone because `docs/README.md` is not the same path as tracked `README.md` | pass |
 
 The tests use Python fixture text only as bytes. The gold condition is
 language-agnostic.
 
 ## Verification
 
-- `node --test test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 9 passed, 0 failed.
-- `node --test test/pcr-0080-refresh-over-budget.test.mjs test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0082-truthful-omitted-dump-marker.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 14 passed, 0 failed.
-- `npm test`: 251 passed, 22 skipped, 0 failed, 273 total.
+- `node --test test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 10 passed, 0 failed.
+- `node --test test/pcr-0080-refresh-over-budget.test.mjs test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0082-truthful-omitted-dump-marker.test.mjs test/pcr-0084-multi-path-tracked-dumps.test.mjs`: 15 passed, 0 failed.
+- `npm test`: 252 passed, 22 skipped, 0 failed, 274 total.
 - `npm run evaluate`: `AUTORESEARCH_SCORE=89.107165`.
 - `npm run ctxbench`: payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1`.
 - merge-base vs `9ad6c0b3db8697807179dec6ddb2b13af538b545`: exact match.
@@ -101,6 +112,8 @@ ctxbench payload construction. Observed delta:
 
 - Multi-path marker replacement is intentionally narrow: safe `cat`/`nl` only.
   It does not expand tracked-read capture or widen shell execution semantics.
+- Multi-path marker replacement now fails closed on path identity: unrelated
+  suffix hits such as `docs/README.md` vs tracked `README.md` do not count.
 - If a multi-path command names any untracked path, the full dump stays in the
   request copy by design.
 - This closes the all-tracked concat leftover without changing single-path 0081
