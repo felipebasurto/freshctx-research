@@ -28,6 +28,49 @@ function textFromContent(content: unknown): string {
     .join("\n");
 }
 
+function replaceMapContents(target: Map<string, string>, source: Map<string, string>) {
+  target.clear();
+  for (const [key, value] of source.entries()) target.set(key, value);
+}
+
+function selectedRevisionsFromProjection(
+  projection: { selected?: Array<{ id?: string; revision?: string }> } | undefined,
+): Map<string, string> {
+  const revisions = new Map<string, string>();
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    revisions.set(unit.id, unit.revision);
+  }
+  return revisions;
+}
+
+function countSkipEligibleSelections(
+  lastInjectedRevision: Map<string, string>,
+  projection: { selected?: Array<{ id?: string; revision?: string }> } | undefined,
+): number {
+  let count = 0;
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
+  }
+  return count;
+}
+
+function projectionAppliedToMessages(messages: readonly unknown[] | undefined, projectionText: string): boolean {
+  if (!Array.isArray(messages) || projectionText.length === 0) return false;
+  return messages.some((raw) => {
+    const message = raw as { role?: string; content?: unknown };
+    if (message.role !== "user") return false;
+    if (message.content === projectionText) return true;
+    if (!Array.isArray(message.content)) return false;
+    return message.content.some(
+      (part) => Boolean(part && typeof part === "object"
+        && (part as { type?: string }).type === "text"
+        && (part as { text?: string }).text === projectionText),
+    );
+  });
+}
+
 function lastUserTask(messages: readonly unknown[]): string {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index] as { role?: string; content?: unknown };
@@ -96,9 +139,21 @@ function replaceCapturedReads(
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map<string, string>();
+  const lastInjectedRevision = new Map<string, string>();
+  const pendingInjectedRevision = new Map<string, string>();
+  let pendingProjectionText = "";
 
   pi.on("turn_start", async (event) => {
     engine.turn = event.turnIndex;
+  });
+
+  pi.on("before_provider_request", async (event) => {
+    const payload = (event as { payload?: { messages?: readonly unknown[] } }).payload;
+    if (projectionAppliedToMessages(payload?.messages, pendingProjectionText)) {
+      replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+    }
+    pendingInjectedRevision.clear();
+    pendingProjectionText = "";
   });
 
   pi.on("tool_result", async (event, ctx) => {
@@ -182,6 +237,9 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         task: lastUserTask(event.messages),
         budgetChars,
       });
+      const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
+      replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
+      pendingProjectionText = projection.text;
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
       const readDispositionByCallId = readDispositionByCallToUnit(
@@ -208,6 +266,11 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
             timestamp,
           },
         ],
+          telemetry: {
+            totalMs: 0,
+            projectionBytes: Buffer.byteLength(projection.text, "utf8"),
+            skipEligibleSelections,
+          },
       };
     } catch {
       return undefined;
