@@ -2,6 +2,7 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
+  assistantToolCalls,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
   readDispositionByCallToUnit,
@@ -44,6 +45,14 @@ function replaceMapContents(target, source) {
   for (const [key, value] of source.entries()) target.set(key, value);
 }
 
+function assistantCallId(call) {
+  return call?.id;
+}
+
+function assistantCallName(call) {
+  return call?.function?.name ?? call?.name;
+}
+
 function selectedRevisionsFromProjection(projection) {
   const revisions = new Map();
   for (const unit of projection?.selected ?? []) {
@@ -61,6 +70,56 @@ function countSkipEligibleSelections(lastInjectedRevision, projection) {
     if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
   }
   return count;
+}
+
+function officialObservationKey(observation) {
+  if (typeof observation?.path !== "string") return null;
+  if (observation.scope === "region") {
+    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
+    return `region:${observation.path}:${selector}`;
+  }
+  return `file:${observation.path}`;
+}
+
+function latestOfficialReadCallIds(messages, callMeta) {
+  const latest = new Map();
+  for (const message of messages) {
+    for (const call of assistantToolCalls(message)) {
+      const id = assistantCallId(call);
+      const name = assistantCallName(call);
+      if (name !== "read" || typeof id !== "string") continue;
+      const observation = callMeta.get(id);
+      const key = officialObservationKey(observation);
+      if (key) latest.set(key, id);
+    }
+  }
+  return new Set(latest.values());
+}
+
+function syncRegistryToActiveCalls(engine, callToUnit, activeCallIds) {
+  const activeUnits = new Set();
+  const inactiveCallIds = [];
+  for (const [callId, unitId] of callToUnit.entries()) {
+    if (activeCallIds.has(callId)) {
+      activeUnits.add(unitId);
+      continue;
+    }
+    inactiveCallIds.push(callId);
+  }
+  for (const callId of inactiveCallIds) callToUnit.delete(callId);
+  for (const unitId of [...engine.registry.units.keys()]) {
+    if (!activeUnits.has(unitId)) engine.registry.units.delete(unitId);
+  }
+}
+
+function omittedReadDispositions(readDispositionByCallId) {
+  const omitted = new Map();
+  for (const [callId, item] of readDispositionByCallId.entries()) {
+    if (item?.disposition === "budget" || item?.disposition === "unresolved") {
+      omitted.set(callId, { path: item.path, disposition: item.disposition });
+    }
+  }
+  return omitted;
 }
 
 function projectionAppliedToMessages(messages, projectionText) {
@@ -182,16 +241,22 @@ export function messageText(messages) {
 export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map();
+  const callMeta = new Map();
   const lastInjectedRevision = new Map();
   const pendingInjectedRevision = new Map();
+  const appliedReadDispositionByCallId = new Map();
+  const pendingReadDispositionByCallId = new Map();
   let turnIndex = 0;
   let pendingProjectionText = "";
 
   return {
     engine,
     callToUnit,
+    callMeta,
     lastInjectedRevision,
     pendingInjectedRevision,
+    appliedReadDispositionByCallId,
+    pendingReadDispositionByCallId,
     get turn() {
       return turnIndex;
     },
@@ -205,8 +270,12 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       const messages = event?.payload?.messages;
       if (projectionAppliedToMessages(messages, pendingProjectionText)) {
         replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+        for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
+          appliedReadDispositionByCallId.set(callId, { ...item });
+        }
       }
       pendingInjectedRevision.clear();
+      pendingReadDispositionByCallId.clear();
       pendingProjectionText = "";
     },
 
@@ -251,6 +320,13 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
             observedFileLineCount,
           });
           callToUnit.set(event.toolCallId, unit.id);
+          callMeta.set(event.toolCallId, {
+            path: file.path,
+            scope: "region",
+            startLine: scopeMeta.startLine,
+            endLine: scopeMeta.endLine,
+            selector: scopeMeta.selector,
+          });
           return;
         }
 
@@ -260,6 +336,10 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           scope: "file",
         });
         callToUnit.set(event.toolCallId, unit.id);
+        callMeta.set(event.toolCallId, {
+          path: file.path,
+          scope: "file",
+        });
       } catch {
         // Unsupported reads remain ordinary Pi results.
       }
@@ -269,6 +349,12 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       if (engine.registry.list().length === 0) return undefined;
 
       try {
+        const activeOfficialCallIds = latestOfficialReadCallIds(event.messages, callMeta);
+        const activeCallIds = new Set();
+        for (const callId of callToUnit.keys()) {
+          if (!callMeta.has(callId) || activeOfficialCallIds.has(callId)) activeCallIds.add(callId);
+        }
+        syncRegistryToActiveCalls(engine, callToUnit, activeCallIds);
         await engine.refresh(async (filePath) =>
           (await safeWorkspaceFile(ctx.cwd, filePath)).content,
         );
@@ -291,6 +377,10 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           engine.registry,
           projection,
         );
+        replaceMapContents(
+          pendingReadDispositionByCallId,
+          omittedReadDispositions(readDispositionByCallId),
+        );
         const assembled = dropUnservedReadToolPairs(rewritten, {
           readTools: PI_READ_TOOLS,
           servedCallIds,
@@ -298,6 +388,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           trackedPaths: engine.registry.list().map((unit) => unit.path),
           projection,
           readDispositionByCallId,
+          historicalReadDispositionByCallId: appliedReadDispositionByCallId,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 

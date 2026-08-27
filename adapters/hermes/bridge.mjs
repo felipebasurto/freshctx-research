@@ -138,27 +138,36 @@ function clearPendingInjectedRevision(state) {
   if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
 }
 
+function clearPendingReadDisposition(state) {
+  delete state.pendingReadDispositionByCallId;
+}
+
 function normalizeDeliveryState(state) {
   if (state?.projectionStateVersion === 1) return state;
   delete state?.lastInjectedRevision;
   delete state?.pendingInjectedRevision;
   delete state?.pendingProjectionText;
+  delete state?.pendingReadDispositionByCallId;
   delete state?.projectionStateVersion;
   return state;
 }
 
 function promotePendingInjectedRevision(state, messages) {
   if (state?.projectionStateVersion !== 1) return;
-  if (!hasOwnEntries(state.pendingInjectedRevision)) {
-    clearPendingInjectedRevision(state);
-    return;
-  }
   if (!projectionAppliedToMessages(messages, state.pendingProjectionText)) {
     clearPendingInjectedRevision(state);
+    clearPendingReadDisposition(state);
     return;
   }
-  state.lastInjectedRevision = { ...state.pendingInjectedRevision };
+  if (hasOwnEntries(state.pendingInjectedRevision)) {
+    state.lastInjectedRevision = { ...state.pendingInjectedRevision };
+  }
   clearPendingInjectedRevision(state);
+  state.appliedReadDispositionByCallId = {
+    ...(state.appliedReadDispositionByCallId ?? {}),
+    ...(state.pendingReadDispositionByCallId ?? {}),
+  };
+  clearPendingReadDisposition(state);
 }
 
 function selectedRevisionsFromProjection(projection) {
@@ -177,6 +186,47 @@ function countSkipEligibleSelections(lastInjectedRevision, projection) {
     if (lastInjectedRevision[unit.id] === unit.revision) count += 1;
   }
   return count;
+}
+
+function officialObservationKey(observation) {
+  if (typeof observation?.path !== "string") return null;
+  if (observation.scope === "region") {
+    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
+    return `region:${observation.path}:${selector}`;
+  }
+  return `file:${observation.path}`;
+}
+
+function latestOfficialReadCallIds(messages, tracked) {
+  const latest = new Map();
+  for (const message of messages) {
+    if (message?.role !== "assistant" || !Array.isArray(message.tool_calls)) continue;
+    for (const call of message.tool_calls) {
+      const name = call?.function?.name ?? call?.name;
+      if (!READ_TOOLS.has(name) || typeof call?.id !== "string") continue;
+      const observation = tracked[call.id];
+      const key = officialObservationKey(observation);
+      if (key) latest.set(key, call.id);
+    }
+  }
+  return new Set(latest.values());
+}
+
+function omittedReadDispositionObject(readDispositionByCallId) {
+  return Object.fromEntries(
+    [...readDispositionByCallId.entries()]
+      .filter(([, item]) => item?.disposition === "budget" || item?.disposition === "unresolved")
+      .map(([callId, item]) => [callId, { path: item.path, disposition: item.disposition }]),
+  );
+}
+
+function readDispositionMapFromObject(value) {
+  if (!isPlainObject(value)) return new Map();
+  return new Map(
+    Object.entries(value)
+      .filter(([, item]) => typeof item?.path === "string")
+      .map(([callId, item]) => [callId, { path: item.path, disposition: item.disposition }]),
+  );
 }
 
 export async function loadState(path) {
@@ -504,7 +554,9 @@ export async function selectContext(payload) {
   const engine = new FreshCtxEngine();
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
+  const activeOfficialCallIds = latestOfficialReadCallIds(payload.messages, tracked);
   for (const [callId, observation] of Object.entries(tracked)) {
+    if (!shellCallIds.has(callId) && !activeOfficialCallIds.has(callId)) continue;
     try {
       let trackArgs;
       if (shellCallIds.has(callId)) {
@@ -565,20 +617,33 @@ export async function selectContext(payload) {
     budgetChars,
   });
   const skipEligibleSelections = countSkipEligibleSelections(state.lastInjectedRevision, projection);
+  const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
+  const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
   const pendingInjectedRevision = selectedRevisionsFromProjection(projection);
-  if (hasOwnEntries(pendingInjectedRevision)) {
+  const pendingReadDispositionByCallId = omittedReadDispositionObject(readDispositionByCallId);
+  if (projection.text.length > 0 && (
+    hasOwnEntries(pendingInjectedRevision) || hasOwnEntries(pendingReadDispositionByCallId)
+  )) {
     state.projectionStateVersion = 1;
-    state.pendingInjectedRevision = pendingInjectedRevision;
+    if (hasOwnEntries(pendingInjectedRevision)) {
+      state.pendingInjectedRevision = pendingInjectedRevision;
+    } else {
+      delete state.pendingInjectedRevision;
+    }
     state.pendingProjectionText = projection.text;
+    if (hasOwnEntries(pendingReadDispositionByCallId)) {
+      state.pendingReadDispositionByCallId = pendingReadDispositionByCallId;
+    } else {
+      clearPendingReadDisposition(state);
+    }
   } else {
     clearPendingInjectedRevision(state);
+    clearPendingReadDisposition(state);
   }
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
 
   const projectionText = projection.text;
-  const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
-  const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
   const rewritten = payload.messages.map((message) => {
     if (message?.role !== "tool") return structuredClone(message);
     const id = message.tool_call_id ?? message.toolCallId;
@@ -593,6 +658,7 @@ export async function selectContext(payload) {
     trackedPaths: engine.registry.list().map((unit) => unit.path),
     projection,
     readDispositionByCallId,
+    historicalReadDispositionByCallId: readDispositionMapFromObject(state.appliedReadDispositionByCallId),
   });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],
