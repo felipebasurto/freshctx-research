@@ -1,4 +1,4 @@
-# PCR 0087 — skip-after-discard regression lock
+# PCR 0087 — delay `lastInjectedRevision` until apply
 
 - Date (UTC): 2026-08-27
 - Author / agent: Cloud Agent
@@ -17,8 +17,8 @@ not treat that attempted inject as delivered. It must send the selected current
 bytes again, and it must not leave the model on the old tool-result bytes.
 
 This PCR scopes only that skip-after-discard hole. It does **not** restore PCR
-0077's general skip-unchanged behavior, does **not** reopen `persist-38`, does
-**not** add `lastInjectedRevision`, and does **not** touch `src/anchors.mjs`.
+0077's general skip-unchanged behavior, does **not** reopen `persist-38`, and
+does **not** touch `src/anchors.mjs`.
 `DEFAULT_BUDGET_CHARS` stays `32768`. `AUTORESEARCH_SCORE` stays `89.107165`.
 The ctxbench payload digest stays
 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`.
@@ -35,20 +35,45 @@ paper result. Not SOTA.
 
 ## Hypothesis
 
-PCR 0079 already made provider requests stateless and byte-exact. If that rule
-is truly enforced at the adapter boundary, then a discarded turn-1 NEW
-projection cannot authorize a turn-2 skip. The smallest way to close the hole is
-to lock that board in replay for both Pi and Hermes.
+PCR 0079 made provider requests stateless and byte-exact, but it also deleted
+the runtime `lastInjectedRevision` state entirely. Review required a product
+closure for the original write-before-apply hole. The smallest adapter-only fix
+is to reintroduce that state behind an explicit apply acknowledgement:
+
+- Pi may promote only from the actual `before_provider_request` payload;
+- Hermes may promote only from the next `on_turn_complete` write after a
+  successful `select_context`.
+
+A discarded or fail-open turn-1 NEW projection must therefore leave
+`lastInjectedRevision` empty on turn 2, while the request itself still carries
+the NEW bytes.
 
 ## Change
 
-Added one regression suite:
+`adapters/pi/replay.mjs` and `adapters/pi/extension.ts` now:
 
-- `test/pcr-0087-skip-after-discard.test.mjs`
+- keep `pendingInjectedRevision` separate from `lastInjectedRevision`;
+- record pending selected revisions during `context`;
+- promote to `lastInjectedRevision` only when the actual outgoing Pi payload
+  still contains the FreshCtx projection in `before_provider_request`.
 
-No adapter or core behavior changed. The current base already satisfied the
-invariant; this PCR makes the missing two-turn discard board executable so the
-hole cannot re-enter silently.
+`adapters/hermes/bridge.mjs` now:
+
+- preserves a versioned delivery state for this PCR only;
+- writes `pendingInjectedRevision` during `selectContext`;
+- promotes `pendingInjectedRevision` to `lastInjectedRevision` only inside
+  `observeTurn`, which Hermes reaches after the prior request actually ran;
+- still drops legacy unversioned `lastInjectedRevision` state from PCR 0077.
+
+Tests:
+
+- `test/pcr-0087-skip-after-discard.test.mjs` now exercises the write-before-
+  apply state transition directly;
+- `test/pcr-0079-stateless-request-bodies.test.mjs` now expects Hermes to keep
+  bodies stateless while persisting only a pending, not applied, revision map.
+
+No projector or core rendering logic changed. There is still no general
+skip-unchanged path.
 
 ## Two-turn discard board
 
@@ -60,14 +85,21 @@ Board shape:
 3. turn 1 produces a request-only projection containing NEW;
 4. that transformed request is intentionally discarded, so turn 2 reuses the
    same stale persisted transcript;
-5. turn 2 must still inject NEW, must inject it exactly once, and must not show
-   OLD or `unchanged="true"`.
+5. before apply acknowledgement, `lastInjectedRevision` must still be empty and
+   a pending map must exist;
+6. turn 2 must still inject NEW, must inject it exactly once, and must not show
+   OLD or `unchanged="true"`;
+7. after an apply acknowledgement, `lastInjectedRevision` may move from `0` to
+   `1`.
 
 Measured result:
 
 ```json
 {
   "pi": {
+    "lastInjectedBeforeApply": 0,
+    "pendingBeforeApply": 1,
+    "lastInjectedAfterApply": 1,
     "turn1NewCopies": 1,
     "turn2NewCopies": 1,
     "turn2OldCopies": 0,
@@ -75,7 +107,10 @@ Measured result:
     "turn2UnchangedAttr": false
   },
   "hermes": {
-    "stateUnchangedAcrossSelect": true,
+    "lastInjectedBeforeApply": 0,
+    "pendingBeforeApply": 1,
+    "lastInjectedAfterApply": 1,
+    "pendingAfterApply": 0,
     "turn1NewCopies": 1,
     "turn2NewCopies": 1,
     "turn2OldCopies": 0,
@@ -85,14 +120,17 @@ Measured result:
 }
 ```
 
-That board is the regression lock: a discarded turn-1 inject does not grant a
-turn-2 skip, and the request does not fall back to the old tool-result bytes.
+That board closes the runtime hole: turn 1 may stage one pending injected
+revision, but it does not mint an applied `lastInjectedRevision` until the host
+acknowledges the transformed request. A discarded turn-1 inject therefore does
+not grant a turn-2 skip, and the request does not fall back to the old
+tool-result bytes.
 
 ## Verification
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pcr-0087-skip-after-discard.test.mjs` | yes | 0 | 1 passed, 0 failed |
+| `node --test test/pcr-0079-stateless-request-bodies.test.mjs test/pcr-0087-skip-after-discard.test.mjs` | yes | 0 | 5 passed, 0 failed |
 | `npm test` | yes | 0 | 279 total; 257 passed; 22 skipped; 0 failed |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; hard gates all true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1` |
@@ -113,10 +151,9 @@ turn-2 skip, and the request does not fall back to the old tool-result bytes.
 
 ## Scope and limits
 
-This PCR does not try to detect whether a host actually delivered a transformed
-request. It enforces the smaller invariant that FreshCtx request assembly stays
-stateless, so a discarded request cannot mutate future request content. If a
-host discards turn 1, turn 2 still carries the selected current bytes.
+This PCR does not restore 0077's body-skipping projector path. It only restores
+the delivery-state bookkeeping, and it writes that state strictly after apply.
+If a host discards turn 1, turn 2 still carries the selected current bytes.
 
 No projector, policy, benchmark fixture, gold label, score weight, threshold,
 holdout split, or lock file changed.
@@ -127,8 +164,8 @@ none observed.
 
 ## Protocol gap?
 
-**No.** Adapter-only regression lock. Door, lock, budget cap, score, and
-ctxbench payload hash stayed fixed.
+**No.** Adapter-only runtime fix. Door, lock, budget cap, score, and ctxbench
+payload hash stayed fixed.
 
 ## Next measurement
 

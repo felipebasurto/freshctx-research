@@ -83,7 +83,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-27 | (PCR 0084) marker-replace all-tracked multi-path shell dumps | 252/252 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0084](pcr/0084-multi-path-tracked-dumps.md) |
 | 2026-08-27 | (PCR 0085) Hermes tailLines real-tail first inject + insert-above decoy fail-close | 277 total (255 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0085](pcr/0085-hermes-taillines-fake-head.md) |
 | 2026-08-27 | (PCR 0086) Hermes first-inject tail identity fail-closed on wrong-sized payload | 278 total (256 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0086](pcr/0086-first-inject-tail-identity.md) |
-| 2026-08-27 | (PCR 0087) lock skip-after-discard replay board | 279 total (257 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0087](pcr/0087-skip-after-discard.md) |
+| 2026-08-27 | (PCR 0087) delay `lastInjectedRevision` until apply; discarded NEW cannot skip turn 2 | 279 total (257 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0087](pcr/0087-skip-after-discard.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
