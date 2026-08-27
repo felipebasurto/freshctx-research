@@ -102,6 +102,8 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
 
     assert.ok(piTurn1);
     assert.ok(piTurn2);
+    assert.equal(piTurn1.telemetry.skipEligibleSelections, 0);
+    assert.equal(piTurn2.telemetry.skipEligibleSelections, 0);
     assert.equal(piAdapter.lastInjectedRevision.size, 0);
     assert.equal(piAdapter.pendingInjectedRevision.size, 1);
     assert.equal(countOccurrences(piMessageText(piTurn1.messages), NEW_BODY), 1);
@@ -118,6 +120,12 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
     const piApplied = singleRevision([...piAdapter.lastInjectedRevision.entries()]);
     assert.equal(piAdapter.pendingInjectedRevision.size, 0);
     assert.match(piApplied.revision, /^sha256:/u);
+    await piAdapter.onTurnStart({ turnIndex: 3 });
+    const piTurn3 = await piAdapter.onContext({ messages: structuredClone(piPersisted) }, piCtx);
+    assert.ok(piTurn3);
+    assert.equal(piTurn3.telemetry.skipEligibleSelections, 1);
+    assert.equal(countOccurrences(piMessageText(piTurn3.messages), NEW_BODY), 1);
+    assert.doesNotMatch(piTurn3.projection.text, /unchanged="true"/u);
 
     const stateFile = await createHermesStateFile();
     const hermesAdapter = createHermesAdapter({
@@ -128,11 +136,17 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
     const hermesCtx = { cwd: workspace };
     await hermesAdapter.onTurnComplete(structuredClone(hermesPersisted), hermesCtx);
     const hermesTurn1 = await hermesAdapter.onSelectContext(structuredClone(hermesPersisted), hermesCtx);
+    assert.ok(hermesTurn1);
+    assert.equal(hermesTurn1.telemetry.skipEligibleSelections, 0);
+    await hermesAdapter.onTurnComplete(structuredClone(hermesPersisted), hermesCtx);
+    const stateAfterRejectedApply = JSON.parse(await readFile(stateFile, "utf8"));
+    assert.equal("lastInjectedRevision" in stateAfterRejectedApply, false);
+    assert.equal("pendingInjectedRevision" in stateAfterRejectedApply, false);
+
     const hermesTurn2 = await hermesAdapter.onSelectContext(structuredClone(hermesPersisted), hermesCtx);
     const stateAfterDiscardedSelect = JSON.parse(await readFile(stateFile, "utf8"));
-
-    assert.ok(hermesTurn1);
     assert.ok(hermesTurn2);
+    assert.equal(hermesTurn2.telemetry.skipEligibleSelections, 0);
     assert.equal("lastInjectedRevision" in stateAfterDiscardedSelect, false);
     const hermesPending = singleRevision(Object.entries(stateAfterDiscardedSelect.pendingInjectedRevision ?? {}));
     assert.equal(stateAfterDiscardedSelect.projectionStateVersion, 1);
@@ -142,11 +156,23 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
     assert.doesNotMatch(hermesMessageText(hermesTurn2.messages), /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(hermesTurn2.projectionText, /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(hermesTurn2.projectionText, /unchanged="true"/u);
-    await hermesAdapter.onTurnComplete(structuredClone(hermesPersisted), hermesCtx);
+    await hermesAdapter.onTurnComplete(
+      [
+        ...structuredClone(hermesPersisted),
+        { role: "assistant", content: "reply after applied projection" },
+        { role: "user", content: hermesTurn2.projectionText },
+      ],
+      hermesCtx,
+    );
     const stateAfterAppliedTurn = JSON.parse(await readFile(stateFile, "utf8"));
     const hermesApplied = singleRevision(Object.entries(stateAfterAppliedTurn.lastInjectedRevision ?? {}));
     assert.deepEqual(hermesApplied, hermesPending);
     assert.equal("pendingInjectedRevision" in stateAfterAppliedTurn, false);
+    const hermesTurn3 = await hermesAdapter.onSelectContext(structuredClone(hermesPersisted), hermesCtx);
+    assert.ok(hermesTurn3);
+    assert.equal(hermesTurn3.telemetry.skipEligibleSelections, 1);
+    assert.equal(countOccurrences(hermesMessageText(hermesTurn3.messages), NEW_BODY), 1);
+    assert.doesNotMatch(hermesTurn3.projectionText, /unchanged="true"/u);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

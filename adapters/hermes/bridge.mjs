@@ -117,23 +117,50 @@ function hasOwnEntries(value) {
   return isPlainObject(value) && Object.keys(value).length > 0;
 }
 
+function projectionAppliedToMessages(messages, projectionText) {
+  if (!Array.isArray(messages) || typeof projectionText !== "string" || projectionText.length === 0) {
+    return false;
+  }
+  return messages.some(
+    (message) =>
+      message?.role === "user"
+      && (
+        message.content === projectionText
+        || (
+          Array.isArray(message.content)
+          && message.content.some((part) => part?.type === "text" && part.text === projectionText)
+        )
+      ),
+  );
+}
+
+function clearPendingInjectedRevision(state) {
+  delete state.pendingInjectedRevision;
+  delete state.pendingProjectionText;
+  if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+}
+
 function normalizeDeliveryState(state) {
   if (state?.projectionStateVersion === 1) return state;
   delete state?.lastInjectedRevision;
   delete state?.pendingInjectedRevision;
+  delete state?.pendingProjectionText;
   delete state?.projectionStateVersion;
   return state;
 }
 
-function promotePendingInjectedRevision(state) {
+function promotePendingInjectedRevision(state, messages) {
   if (state?.projectionStateVersion !== 1) return;
   if (!hasOwnEntries(state.pendingInjectedRevision)) {
-    delete state.pendingInjectedRevision;
-    if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+    clearPendingInjectedRevision(state);
+    return;
+  }
+  if (!projectionAppliedToMessages(messages, state.pendingProjectionText)) {
+    clearPendingInjectedRevision(state);
     return;
   }
   state.lastInjectedRevision = { ...state.pendingInjectedRevision };
-  delete state.pendingInjectedRevision;
+  clearPendingInjectedRevision(state);
 }
 
 function selectedRevisionsFromProjection(projection) {
@@ -142,6 +169,16 @@ function selectedRevisionsFromProjection(projection) {
       .filter((unit) => typeof unit?.id === "string" && typeof unit?.revision === "string")
       .map((unit) => [unit.id, unit.revision]),
   );
+}
+
+function countSkipEligibleSelections(lastInjectedRevision, projection) {
+  if (!isPlainObject(lastInjectedRevision)) return 0;
+  let count = 0;
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    if (lastInjectedRevision[unit.id] === unit.revision) count += 1;
+  }
+  return count;
 }
 
 export async function loadState(path) {
@@ -424,7 +461,7 @@ function mergeTrackedCalls(stored, incoming) {
 
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
-  promotePendingInjectedRevision(state);
+  promotePendingInjectedRevision(state, payload.messages);
   const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
   const tracked = mergeTrackedCalls(
     state.tracked ?? {},
@@ -529,13 +566,14 @@ export async function selectContext(payload) {
     task: taskFrom(payload),
     budgetChars,
   });
+  const skipEligibleSelections = countSkipEligibleSelections(state.lastInjectedRevision, projection);
   const pendingInjectedRevision = selectedRevisionsFromProjection(projection);
   if (hasOwnEntries(pendingInjectedRevision)) {
     state.projectionStateVersion = 1;
     state.pendingInjectedRevision = pendingInjectedRevision;
+    state.pendingProjectionText = projection.text;
   } else {
-    delete state.pendingInjectedRevision;
-    if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+    clearPendingInjectedRevision(state);
   }
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
@@ -567,6 +605,7 @@ export async function selectContext(payload) {
     telemetry: {
       totalMs: 0,
       projectionBytes: Buffer.byteLength(projectionText, "utf8"),
+      skipEligibleSelections,
     },
   };
 }

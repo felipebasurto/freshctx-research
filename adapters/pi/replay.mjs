@@ -53,6 +53,16 @@ function selectedRevisionsFromProjection(projection) {
   return revisions;
 }
 
+function countSkipEligibleSelections(lastInjectedRevision, projection) {
+  if (!(lastInjectedRevision instanceof Map)) return 0;
+  let count = 0;
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
+  }
+  return count;
+}
+
 function projectionAppliedToMessages(messages, projectionText) {
   if (!Array.isArray(messages) || typeof projectionText !== "string" || projectionText.length === 0) {
     return false;
@@ -271,6 +281,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           task: lastUserTask(event.messages),
           budgetChars,
         });
+        const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
         replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
         pendingProjectionText = projection.text;
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
@@ -303,6 +314,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           telemetry: {
             totalMs: 0,
             projectionBytes: Buffer.byteLength(projection.text, "utf8"),
+            skipEligibleSelections,
           },
         };
       } catch {

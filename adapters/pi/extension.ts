@@ -44,6 +44,18 @@ function selectedRevisionsFromProjection(
   return revisions;
 }
 
+function countSkipEligibleSelections(
+  lastInjectedRevision: Map<string, string>,
+  projection: { selected?: Array<{ id?: string; revision?: string }> } | undefined,
+): number {
+  let count = 0;
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
+  }
+  return count;
+}
+
 function projectionAppliedToMessages(messages: readonly unknown[] | undefined, projectionText: string): boolean {
   if (!Array.isArray(messages) || projectionText.length === 0) return false;
   return messages.some((raw) => {
@@ -225,6 +237,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         task: lastUserTask(event.messages),
         budgetChars,
       });
+      const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
       replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
       pendingProjectionText = projection.text;
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
@@ -253,6 +266,11 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
             timestamp,
           },
         ],
+          telemetry: {
+            totalMs: 0,
+            projectionBytes: Buffer.byteLength(projection.text, "utf8"),
+            skipEligibleSelections,
+          },
       };
     } catch {
       return undefined;
