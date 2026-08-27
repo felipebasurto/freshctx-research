@@ -109,13 +109,46 @@ async function readStdin() {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasOwnEntries(value) {
+  return isPlainObject(value) && Object.keys(value).length > 0;
+}
+
+function normalizeDeliveryState(state) {
+  if (state?.projectionStateVersion === 1) return state;
+  delete state?.lastInjectedRevision;
+  delete state?.pendingInjectedRevision;
+  delete state?.projectionStateVersion;
+  return state;
+}
+
+function promotePendingInjectedRevision(state) {
+  if (state?.projectionStateVersion !== 1) return;
+  if (!hasOwnEntries(state.pendingInjectedRevision)) {
+    delete state.pendingInjectedRevision;
+    if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+    return;
+  }
+  state.lastInjectedRevision = { ...state.pendingInjectedRevision };
+  delete state.pendingInjectedRevision;
+}
+
+function selectedRevisionsFromProjection(projection) {
+  return Object.fromEntries(
+    (projection?.selected ?? [])
+      .filter((unit) => typeof unit?.id === "string" && typeof unit?.revision === "string")
+      .map((unit) => [unit.id, unit.revision]),
+  );
+}
+
 export async function loadState(path) {
   try {
     const value = JSON.parse(await readFile(path, "utf8"));
     if (!value || typeof value !== "object" || Array.isArray(value)) return { calls: {} };
-    const state = { ...value };
-    delete state.lastInjectedRevision;
-    return state;
+    return normalizeDeliveryState({ ...value });
   } catch {
     return { calls: {} };
   }
@@ -391,6 +424,7 @@ function mergeTrackedCalls(stored, incoming) {
 
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
+  promotePendingInjectedRevision(state);
   const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
   const tracked = mergeTrackedCalls(
     state.tracked ?? {},
@@ -495,6 +529,16 @@ export async function selectContext(payload) {
     task: taskFrom(payload),
     budgetChars,
   });
+  const pendingInjectedRevision = selectedRevisionsFromProjection(projection);
+  if (hasOwnEntries(pendingInjectedRevision)) {
+    state.projectionStateVersion = 1;
+    state.pendingInjectedRevision = pendingInjectedRevision;
+  } else {
+    delete state.pendingInjectedRevision;
+    if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+  }
+  state.updatedAt = new Date().toISOString();
+  await saveState(payload.stateFile, state);
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);

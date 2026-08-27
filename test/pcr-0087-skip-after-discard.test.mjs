@@ -24,6 +24,14 @@ function countOccurrences(text, value) {
   return text.split(value).length - 1;
 }
 
+function singleRevision(entries) {
+  assert.equal(entries.length, 1);
+  const [[unitId, revision]] = entries;
+  assert.equal(typeof unitId, "string");
+  assert.equal(typeof revision, "string");
+  return { unitId, revision };
+}
+
 function piMessages() {
   return [
     {
@@ -94,12 +102,22 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
 
     assert.ok(piTurn1);
     assert.ok(piTurn2);
+    assert.equal(piAdapter.lastInjectedRevision.size, 0);
+    assert.equal(piAdapter.pendingInjectedRevision.size, 1);
     assert.equal(countOccurrences(piMessageText(piTurn1.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(piMessageText(piTurn2.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(piTurn2.projection.text, NEW_BODY), 1);
     assert.doesNotMatch(piMessageText(piTurn2.messages), /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(piTurn2.projection.text, /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(piTurn2.projection.text, /unchanged="true"/u);
+    await piAdapter.onBeforeProviderRequest({
+      payload: {
+        messages: structuredClone(piTurn2.messages),
+      },
+    });
+    const piApplied = singleRevision([...piAdapter.lastInjectedRevision.entries()]);
+    assert.equal(piAdapter.pendingInjectedRevision.size, 0);
+    assert.match(piApplied.revision, /^sha256:/u);
 
     const stateFile = await createHermesStateFile();
     const hermesAdapter = createHermesAdapter({
@@ -109,19 +127,26 @@ test("PCR 0087: discarded NEW projection does not let turn 2 skip or fall back t
     const hermesPersisted = hermesMessages();
     const hermesCtx = { cwd: workspace };
     await hermesAdapter.onTurnComplete(structuredClone(hermesPersisted), hermesCtx);
-    const stateBeforeSelect = await readFile(stateFile, "utf8");
     const hermesTurn1 = await hermesAdapter.onSelectContext(structuredClone(hermesPersisted), hermesCtx);
     const hermesTurn2 = await hermesAdapter.onSelectContext(structuredClone(hermesPersisted), hermesCtx);
+    const stateAfterDiscardedSelect = JSON.parse(await readFile(stateFile, "utf8"));
 
-    assert.equal(await readFile(stateFile, "utf8"), stateBeforeSelect);
     assert.ok(hermesTurn1);
     assert.ok(hermesTurn2);
+    assert.equal("lastInjectedRevision" in stateAfterDiscardedSelect, false);
+    const hermesPending = singleRevision(Object.entries(stateAfterDiscardedSelect.pendingInjectedRevision ?? {}));
+    assert.equal(stateAfterDiscardedSelect.projectionStateVersion, 1);
     assert.equal(countOccurrences(hermesMessageText(hermesTurn1.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(hermesMessageText(hermesTurn2.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(hermesTurn2.projectionText, NEW_BODY), 1);
     assert.doesNotMatch(hermesMessageText(hermesTurn2.messages), /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(hermesTurn2.projectionText, /PCR_0087_OLD_TOOL_RESULT/u);
     assert.doesNotMatch(hermesTurn2.projectionText, /unchanged="true"/u);
+    await hermesAdapter.onTurnComplete(structuredClone(hermesPersisted), hermesCtx);
+    const stateAfterAppliedTurn = JSON.parse(await readFile(stateFile, "utf8"));
+    const hermesApplied = singleRevision(Object.entries(stateAfterAppliedTurn.lastInjectedRevision ?? {}));
+    assert.deepEqual(hermesApplied, hermesPending);
+    assert.equal("pendingInjectedRevision" in stateAfterAppliedTurn, false);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

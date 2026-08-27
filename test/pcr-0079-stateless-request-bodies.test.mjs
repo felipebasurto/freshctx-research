@@ -118,15 +118,17 @@ test("Hermes sends one current body in every stateless request", async () => {
     const ctx = { cwd: workspace };
 
     await adapter.onTurnComplete(structuredClone(messages), ctx);
-    const stateBeforeSelect = await readFile(stateFile, "utf8");
     const turn1 = await adapter.onSelectContext(structuredClone(messages), ctx);
     const turn2 = await adapter.onSelectContext(structuredClone(messages), ctx);
+    const stateAfterSelect = JSON.parse(await readFile(stateFile, "utf8"));
 
     assert.equal(countOccurrences(hermesMessageText(turn1.messages), PROBE_BODY), 1);
     assert.equal(countOccurrences(hermesMessageText(turn2.messages), PROBE_BODY), 1);
     assert.equal(countOccurrences(turn2.projectionText, PROBE_BODY), 1);
     assert.doesNotMatch(turn2.projectionText, /unchanged="true"/u);
-    assert.equal(await readFile(stateFile, "utf8"), stateBeforeSelect);
+    assert.equal("lastInjectedRevision" in stateAfterSelect, false);
+    assert.equal(stateAfterSelect.projectionStateVersion, 1);
+    assert.equal(Object.keys(stateAfterSelect.pendingInjectedRevision ?? {}).length, 1);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

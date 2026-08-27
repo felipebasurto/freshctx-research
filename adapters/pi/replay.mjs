@@ -39,6 +39,37 @@ function observedToolContent(content) {
   return textFromContent(content);
 }
 
+function replaceMapContents(target, source) {
+  target.clear();
+  for (const [key, value] of source.entries()) target.set(key, value);
+}
+
+function selectedRevisionsFromProjection(projection) {
+  const revisions = new Map();
+  for (const unit of projection?.selected ?? []) {
+    if (typeof unit?.id !== "string" || typeof unit?.revision !== "string") continue;
+    revisions.set(unit.id, unit.revision);
+  }
+  return revisions;
+}
+
+function projectionAppliedToMessages(messages, projectionText) {
+  if (!Array.isArray(messages) || typeof projectionText !== "string" || projectionText.length === 0) {
+    return false;
+  }
+  return messages.some(
+    (message) =>
+      message?.role === "user"
+      && (
+        message.content === projectionText
+        || (
+          Array.isArray(message.content)
+          && message.content.some((part) => part?.type === "text" && part.text === projectionText)
+        )
+      ),
+  );
+}
+
 function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
 }
@@ -141,11 +172,16 @@ export function messageText(messages) {
 export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map();
+  const lastInjectedRevision = new Map();
+  const pendingInjectedRevision = new Map();
   let turnIndex = 0;
+  let pendingProjectionText = "";
 
   return {
     engine,
     callToUnit,
+    lastInjectedRevision,
+    pendingInjectedRevision,
     get turn() {
       return turnIndex;
     },
@@ -153,6 +189,15 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
     async onTurnStart(event = {}) {
       turnIndex = event.turnIndex ?? turnIndex + 1;
       engine.turn = turnIndex;
+    },
+
+    async onBeforeProviderRequest(event = {}) {
+      const messages = event?.payload?.messages;
+      if (projectionAppliedToMessages(messages, pendingProjectionText)) {
+        replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+      }
+      pendingInjectedRevision.clear();
+      pendingProjectionText = "";
     },
 
     async onToolResult(event, ctx) {
@@ -226,6 +271,8 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           task: lastUserTask(event.messages),
           budgetChars,
         });
+        replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
+        pendingProjectionText = projection.text;
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
         const readDispositionByCallId = readDispositionByCallToUnit(
@@ -385,6 +432,7 @@ export async function captureProviderRequest({ cwd, persistedMessages, budgetCha
   );
   const requestMessages = contextResult?.messages ?? persistedMessages;
   const payload = toProviderPayload(requestMessages);
+  await adapter.onBeforeProviderRequest({ payload });
 
   return {
     persistedMessages,
