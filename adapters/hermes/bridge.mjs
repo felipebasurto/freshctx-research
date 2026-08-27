@@ -25,6 +25,9 @@ function lineCount(content) {
 export function readScopeFromHermesArgs(args, fileLineCount) {
   if (!args || typeof args !== "object") return { scope: "file" };
   if (args.scope === "region") {
+    if (Number.isInteger(args.tailLines) && args.tailLines >= 1) {
+      return { scope: "region", tailLines: args.tailLines, selector: args.selector };
+    }
     return normalizeHermesReadScope(
       {
         scope: "region",
@@ -53,6 +56,7 @@ export function readScopeFromHermesArgs(args, fileLineCount) {
 
 export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
   if (!scopeMeta || scopeMeta.scope !== "region") return scopeMeta ?? { scope: "file" };
+  if (Number.isInteger(scopeMeta.tailLines) && scopeMeta.tailLines >= 1) return scopeMeta;
   if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
   const { startLine, endLine } = scopeMeta;
   if (!Number.isInteger(startLine) || !Number.isInteger(endLine)) return scopeMeta;
@@ -62,6 +66,23 @@ export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
   // (not startLine===1 && endLine===fileLineCount; 0071 may lock the stricter form).
   if (endLine >= fileLineCount) return { scope: "file" };
   return scopeMeta;
+}
+
+function tailRegionFromObservation(scopeMeta, fileLineCount, observedContent) {
+  if (!scopeMeta || scopeMeta.scope !== "region" || !Number.isInteger(scopeMeta.tailLines)) {
+    return scopeMeta;
+  }
+  if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
+  const observedLines = lineCount(typeof observedContent === "string" ? observedContent : "");
+  const spanLines = observedLines >= 1 ? observedLines : scopeMeta.tailLines;
+  const startLine = Math.max(1, fileLineCount - spanLines + 1);
+  return {
+    scope: "region",
+    startLine,
+    endLine: fileLineCount,
+    selector: scopeMeta.selector,
+    tailLines: scopeMeta.tailLines,
+  };
 }
 
 async function readStdin() {
@@ -191,6 +212,7 @@ export function trackedCallsFromMessages(messages) {
       scope: meta.scope ?? "file",
       startLine: meta.startLine,
       endLine: meta.endLine,
+      tailLines: meta.tailLines,
       selector: meta.selector,
     };
   }
@@ -198,13 +220,61 @@ export function trackedCallsFromMessages(messages) {
 }
 
 function scopeFromObservation(observation, fileLineCount) {
-  const scopeMeta = {
+  if (
+    observation?.scope === "region"
+    && Number.isInteger(observation?.tailLines)
+    && Number.isInteger(observation?.startLine)
+    && Number.isInteger(observation?.endLine)
+  ) {
+    return {
+      scope: "region",
+      startLine: observation.startLine,
+      endLine: observation.endLine,
+      selector: observation.selector,
+      tailLines: observation.tailLines,
+    };
+  }
+  const scopeMeta = tailRegionFromObservation({
     scope: observation.scope ?? "file",
     startLine: observation.startLine,
     endLine: observation.endLine,
+    tailLines: observation.tailLines,
     selector: observation.selector,
-  };
+  }, fileLineCount, observation.content);
   return normalizeHermesReadScope(scopeMeta, fileLineCount);
+}
+
+async function failClosedTailLineShiftedUnits(cwd, tracked, unitsByCall) {
+  if (!cwd) return;
+  for (const [callId, observation] of Object.entries(tracked)) {
+    if (
+      !Number.isInteger(observation?.tailLines)
+      || !Number.isInteger(observation?.observedFileLineCount)
+      || !Number.isInteger(observation?.startLine)
+      || !Number.isInteger(observation?.endLine)
+    ) {
+      continue;
+    }
+
+    const unit = unitsByCall.get(callId);
+    if (!unit || unit.scope !== "region" || unit.state !== "resolved") continue;
+
+    let currentFileLineCount;
+    try {
+      const file = await safeWorkspaceFile(cwd, observation.path);
+      currentFileLineCount = lineCount(file.content);
+    } catch {
+      continue;
+    }
+
+    if (currentFileLineCount === observation.observedFileLineCount) continue;
+    if (unit.startLine === observation.startLine && unit.endLine === observation.endLine) continue;
+
+    unit.state = "unresolved";
+    unit.resolutionMethod = "tail-lines-line-count-shift";
+    unit.startLine = observation.startLine;
+    unit.endLine = observation.endLine;
+  }
 }
 
 async function enrichTrackedWithLineCounts(cwd, tracked) {
@@ -229,6 +299,26 @@ async function enrichTrackedWithLineCounts(cwd, tracked) {
   return enriched;
 }
 
+function enrichCallsWithTracked(calls, tracked) {
+  const enriched = {};
+  for (const [callId, observation] of Object.entries(calls)) {
+    const trackedObservation = tracked[callId];
+    if (!trackedObservation) {
+      enriched[callId] = observation;
+      continue;
+    }
+    enriched[callId] = {
+      path: trackedObservation.path,
+      scope: trackedObservation.scope ?? observation.scope ?? "file",
+      startLine: trackedObservation.startLine,
+      endLine: trackedObservation.endLine,
+      tailLines: trackedObservation.tailLines ?? observation.tailLines,
+      selector: trackedObservation.selector ?? observation.selector,
+    };
+  }
+  return enriched;
+}
+
 function mergeTrackedCalls(stored, incoming) {
   const merged = { ...stored };
   for (const [callId, observation] of Object.entries(incoming)) {
@@ -245,12 +335,13 @@ function mergeTrackedCalls(stored, incoming) {
 
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
-  state.calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
+  const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
   const tracked = mergeTrackedCalls(
     state.tracked ?? {},
     trackedCallsFromMessages(payload.messages),
   );
   state.tracked = await enrichTrackedWithLineCounts(payload.cwd, tracked);
+  state.calls = enrichCallsWithTracked(calls, state.tracked);
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
   return { observedCalls: Object.keys(state.calls).length };
@@ -258,13 +349,16 @@ export async function observeTurn(payload) {
 
 export async function selectContext(payload) {
   const state = await loadState(payload.stateFile);
-  const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
   const tracked = await enrichTrackedWithLineCounts(
     payload.cwd,
     mergeTrackedCalls(
       state.tracked ?? {},
       trackedCallsFromMessages(payload.messages),
     ),
+  );
+  const calls = enrichCallsWithTracked(
+    { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) },
+    tracked,
   );
   const paths = [...new Set(Object.values(calls).map((call) => call.path ?? call))].sort();
   if (paths.length === 0) {
@@ -338,13 +432,7 @@ export async function selectContext(payload) {
     (await safeWorkspaceFile(payload.cwd, filePath)).content,
   );
 
-  const rewritten = payload.messages.map((message) => {
-    if (message?.role !== "tool") return structuredClone(message);
-    const id = message.tool_call_id ?? message.toolCallId;
-    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
-    if (!unit) return structuredClone(message);
-    return { ...structuredClone(message), content: stableReadMarker(unit) };
-  });
+  await failClosedTailLineShiftedUnits(payload.cwd, tracked, unitsByCall);
 
   const projection = engine.project({
     task: taskFrom(payload),
@@ -354,6 +442,13 @@ export async function selectContext(payload) {
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
   const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
+  const rewritten = payload.messages.map((message) => {
+    if (message?.role !== "tool") return structuredClone(message);
+    const id = message.tool_call_id ?? message.toolCallId;
+    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
+    if (!unit) return structuredClone(message);
+    return { ...structuredClone(message), content: stableReadMarker(unit) };
+  });
   const assembled = dropUnservedReadToolPairs(rewritten, {
     readTools: HERMES_TRACKED_TOOLS,
     servedCallIds,
