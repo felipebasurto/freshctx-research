@@ -6,6 +6,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 import {
   dropUnservedReadToolPairs,
+  latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
@@ -63,44 +64,6 @@ function countSkipEligibleSelections(
     if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
   }
   return count;
-}
-
-function officialObservationKey(observation: {
-  path: string;
-  scope: "file" | "region";
-  startLine?: number;
-  endLine?: number;
-  selector?: string;
-}): string {
-  if (observation.scope === "region") {
-    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
-    return `region:${observation.path}:${selector}`;
-  }
-  return `file:${observation.path}`;
-}
-
-function latestOfficialReadCallIds(
-  messages: readonly unknown[],
-  callMeta: Map<string, {
-    path: string;
-    scope: "file" | "region";
-    startLine?: number;
-    endLine?: number;
-    selector?: string;
-  }>,
-): Set<string> {
-  const latest = new Map<string, string>();
-  for (const raw of messages) {
-    const message = raw as { role?: string; tool_calls?: Array<{ id?: string; function?: { name?: string } }> };
-    if (message.role !== "assistant" || !Array.isArray(message.tool_calls)) continue;
-    for (const call of message.tool_calls) {
-      if (call.function?.name !== "read" || typeof call.id !== "string") continue;
-      const observation = callMeta.get(call.id);
-      if (!observation) continue;
-      latest.set(officialObservationKey(observation), call.id);
-    }
-  }
-  return new Set(latest.values());
 }
 
 function syncRegistryToActiveCalls(
@@ -322,7 +285,11 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     if (engine.registry.list().length === 0) return;
 
     try {
-      const activeOfficialCallIds = latestOfficialReadCallIds(event.messages, callMeta);
+      const activeOfficialCallIds = latestReadCallIdsByObservation(
+        event.messages,
+        callMeta,
+        new Set(["read"]),
+      );
       const activeCallIds = new Set<string>();
       for (const callId of callToUnit.keys()) {
         if (!callMeta.has(callId) || activeOfficialCallIds.has(callId)) activeCallIds.add(callId);

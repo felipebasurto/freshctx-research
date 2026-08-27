@@ -13,6 +13,7 @@ import {
 } from "../adapters/hermes/replay.mjs";
 import {
   dropUnservedReadToolPairs,
+  latestReadCallIdsByObservation,
   unservedReadToolCallIds,
 } from "../adapters/request-prune.mjs";
 import {
@@ -51,6 +52,35 @@ test("dropUnservedReadToolPairs removes unserved read pairs but keeps served mar
   assert.equal(pruned.length, 2);
   assert.doesNotMatch(JSON.stringify(pruned), /unused-context-padding/u);
   assert.match(JSON.stringify(pruned), /freshctx:fc_gold/u);
+});
+
+test("latestReadCallIdsByObservation counts Pi-native toolCall content parts", () => {
+  const messages = [
+    {
+      role: "assistant",
+      content: [
+        { type: "thinking", thinking: "read it" },
+        { type: "toolCall", id: "native-1", name: "read", arguments: { path: "src/large.ts" } },
+      ],
+    },
+    { role: "toolResult", toolCallId: "native-1", content: "OLD" },
+    {
+      role: "assistant",
+      content: [
+        { type: "toolCall", id: "native-2", name: "read", arguments: { path: "src/large.ts" } },
+      ],
+    },
+    { role: "toolResult", toolCallId: "native-2", content: "NEW" },
+  ];
+  const observations = new Map([
+    ["native-1", { path: "src/large.ts", scope: "file" }],
+    ["native-2", { path: "src/large.ts", scope: "file" }],
+  ]);
+
+  assert.deepEqual(
+    [...latestReadCallIdsByObservation(messages, observations, new Set(["read"]))],
+    ["native-2"],
+  );
 });
 
 test("Hermes adapter drops unserved read at normal path under 4k and keeps gold projection", async () => {

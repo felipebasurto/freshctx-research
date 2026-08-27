@@ -41,6 +41,15 @@ function callId(call) {
   return call?.id;
 }
 
+function readObservationKey(observation) {
+  if (typeof observation?.path !== "string") return null;
+  if (observation.scope === "region") {
+    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
+    return `region:${observation.path}:${selector}`;
+  }
+  return `file:${observation.path}`;
+}
+
 /** OpenAI `tool_calls` or Pi-native `{ type: "toolCall" }` content parts. */
 export function assistantToolCalls(message) {
   if (message?.role !== "assistant") return [];
@@ -76,6 +85,24 @@ export function readToolCallIds(messages, readTools) {
     }
   }
   return ids;
+}
+
+export function latestReadCallIdsByObservation(messages, observationsByCallId, readTools) {
+  const observations = observationsByCallId instanceof Map
+    ? observationsByCallId
+    : new Map(Object.entries(observationsByCallId ?? {}));
+  const latest = new Map();
+  for (const message of messages) {
+    for (const call of assistantToolCalls(message)) {
+      const name = callName(call);
+      const id = callId(call);
+      if (!readTools.has(name) || typeof id !== "string") continue;
+      const observation = observations.get(id);
+      const key = readObservationKey(observation);
+      if (key) latest.set(key, id);
+    }
+  }
+  return new Set(latest.values());
 }
 
 export function unservedReadToolCallIds(messages, readTools, servedCallIds, observedCallIds) {

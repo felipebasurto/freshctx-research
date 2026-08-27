@@ -2,9 +2,9 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  assistantToolCalls,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
@@ -46,14 +46,6 @@ function replaceMapContents(target, source) {
   for (const [key, value] of source.entries()) target.set(key, value);
 }
 
-function assistantCallId(call) {
-  return call?.id;
-}
-
-function assistantCallName(call) {
-  return call?.function?.name ?? call?.name;
-}
-
 function selectedRevisionsFromProjection(projection) {
   const revisions = new Map();
   for (const unit of projection?.selected ?? []) {
@@ -71,30 +63,6 @@ function countSkipEligibleSelections(lastInjectedRevision, projection) {
     if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
   }
   return count;
-}
-
-function officialObservationKey(observation) {
-  if (typeof observation?.path !== "string") return null;
-  if (observation.scope === "region") {
-    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
-    return `region:${observation.path}:${selector}`;
-  }
-  return `file:${observation.path}`;
-}
-
-function latestOfficialReadCallIds(messages, callMeta) {
-  const latest = new Map();
-  for (const message of messages) {
-    for (const call of assistantToolCalls(message)) {
-      const id = assistantCallId(call);
-      const name = assistantCallName(call);
-      if (name !== "read" || typeof id !== "string") continue;
-      const observation = callMeta.get(id);
-      const key = officialObservationKey(observation);
-      if (key) latest.set(key, id);
-    }
-  }
-  return new Set(latest.values());
 }
 
 function syncRegistryToActiveCalls(engine, callToUnit, activeCallIds) {
@@ -350,7 +318,11 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       if (engine.registry.list().length === 0) return undefined;
 
       try {
-        const activeOfficialCallIds = latestOfficialReadCallIds(event.messages, callMeta);
+        const activeOfficialCallIds = latestReadCallIdsByObservation(
+          event.messages,
+          callMeta,
+          new Set(["read"]),
+        );
         const activeCallIds = new Set();
         for (const callId of callToUnit.keys()) {
           if (!callMeta.has(callId) || activeOfficialCallIds.has(callId)) activeCallIds.add(callId);
