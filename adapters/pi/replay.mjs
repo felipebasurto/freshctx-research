@@ -4,6 +4,7 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import {
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
@@ -227,12 +228,18 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         });
         const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
+        const readDispositionByCallId = readDispositionByCallToUnit(
+          callToUnit,
+          engine.registry,
+          projection,
+        );
         const assembled = dropUnservedReadToolPairs(rewritten, {
           readTools: PI_READ_TOOLS,
           servedCallIds,
           observedCallIds: new Set(callToUnit.keys()),
           trackedPaths: engine.registry.list().map((unit) => unit.path),
           projection,
+          readDispositionByCallId,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 
