@@ -81,7 +81,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | (PCR 0081) drop piped dumps of already-tracked paths | 243/243 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0081](pcr/0081-stale-shell-dump.md) |
 | 2026-08-27 | (PCR 0083) official omitted-read loop | 249/249 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0083](pcr/0083-official-omitted-read-loop.md) |
 | 2026-08-27 | (PCR 0084) marker-replace all-tracked multi-path shell dumps | 252/252 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0084](pcr/0084-multi-path-tracked-dumps.md) |
-| 2026-08-27 | (PCR 0085) Hermes tailLines real-tail first inject + insert-above decoy fail-close | 274 total (252 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0085](pcr/0085-hermes-taillines-fake-head.md) |
+| 2026-08-27 | (PCR 0085) Hermes tailLines real-tail first inject + insert-above decoy fail-close | 277 total (255 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0085](pcr/0085-hermes-taillines-fake-head.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

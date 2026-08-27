@@ -154,7 +154,7 @@ tracked tail unit.
 |---|---|---|---|
 | `node --test test/pcr-0085-hermes-taillines-fake-head.test.mjs` | yes | 0 | 3 passed, 0 failed |
 | `node --test test/hermes-adapter.test.mjs test/hermes-bridge.test.mjs test/pcr-0070-no-over-promote.test.mjs test/pcr-0082-truthful-omitted-dump-marker.test.mjs test/pcr-0083-official-omitted-read-loop.test.mjs test/pcr-0085-hermes-taillines-fake-head.test.mjs` | yes | 0 | 32 passed, 0 failed |
-| `npm test` | yes | 0 | 274 total; 252 passed, 22 skipped, 0 failed |
+| `npm test` | yes | 0 | 277 total; 255 passed, 22 skipped, 0 failed |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; hard gates all true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1` |
 
@@ -164,9 +164,9 @@ tracked tail unit.
 |---|---|---|---|
 | `AUTORESEARCH_SCORE` | 89.107165 | 89.107165 | 0 |
 | ctxbench payload sha256 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 0 |
-| `npm test` total | 252 | 274 | +22 |
-| `npm test` passed | 252 | 252 | 0 |
-| `npm test` skipped | 22 | 22 | 0 |
+| `npm test` total | 252 | 277 | +25 |
+| `npm test` passed | 252 | 255 | +3 |
+| `npm test` skipped | 0 | 22 | +22 |
 | door blob | `f8771c93894095348185ef3453a3c2498355b3c6` | `f8771c93894095348185ef3453a3c2498355b3c6` | 0 |
 | lock blob | `79e29d09a9ec12b1128617f683f50a35a3c8809e` | `79e29d09a9ec12b1128617f683f50a35a3c8809e` | 0 |
 | `DEFAULT_BUDGET_CHARS` | 32768 | 32768 | 0 |
