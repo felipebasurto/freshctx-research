@@ -144,6 +144,22 @@ export function trackedPathsMentionedInCommand(command, trackedPaths) {
   return hits;
 }
 
+export function shellDumpPathsFromCommand(command) {
+  if (typeof command !== "string" || !command.trim()) return [];
+  const inner = unwrapBashCommand(command);
+  if (rejectUnsafeShell(inner)) return [];
+
+  const tokens = tokenizeShellCommand(inner);
+  if (tokens.length < 3) return [];
+
+  const verb = tokens[0];
+  if (verb !== "cat" && verb !== "nl") return [];
+
+  const args = positionalArgs(tokens);
+  if (args.length < 2) return [];
+  return args;
+}
+
 /**
  * @returns {{ path: string, scope: "file" | "region", startLine?: number, endLine?: number } | null}
  */
