@@ -219,7 +219,8 @@ function matchTrackedPath(namedPath, trackedPaths) {
   let best = null;
   for (const trackedPath of trackedPaths) {
     if (typeof trackedPath !== "string" || trackedPath.length === 0) continue;
-    if (normalizedNamed === trackedPath || normalizedNamed.endsWith(`/${trackedPath}`)) {
+    const normalizedTracked = trackedPath.replace(/^\.\//u, "");
+    if (normalizedNamed === normalizedTracked) {
       if (best == null || trackedPath.length > best.length) best = trackedPath;
     }
   }

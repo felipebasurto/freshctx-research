@@ -76,3 +76,32 @@ test("PCR 0084: one-untracked-path multi-path cat is left alone", () => {
   assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
   assert.doesNotMatch(JSON.stringify(pruned), /freshctx:stale-dump/u);
 });
+
+test("PCR 0084: suffix path alias does not count as tracked", () => {
+  const trackedPaths = [
+    "README.md",
+    CLI_PATH,
+  ];
+  const command = `cat docs/README.md ${CLI_PATH}`;
+  const dump = "# MARKER_DOC_README=D0\nCONCAT_DUMP\n# MARKER_CLI=CL0\n";
+  const messages = [
+    buildShellToolCall({ toolCallId: "call-suffix-alias", command }),
+    buildToolResultMessage({ toolCallId: "call-suffix-alias", content: dump }),
+  ];
+
+  const drop = staleShellDumpCallIds(messages, {
+    trackedPaths,
+    servedCallIds: new Set(),
+  });
+  assert.equal(drop.size, 0);
+
+  const pruned = dropUnservedReadToolPairs(messages, {
+    readTools: new Set(["read"]),
+    servedCallIds: new Set(),
+    observedCallIds: new Set(),
+    trackedPaths,
+  });
+  assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
+  assert.match(JSON.stringify(pruned), /MARKER_DOC_README=D0/u);
+  assert.doesNotMatch(JSON.stringify(pruned), /freshctx:stale-dump/u);
+});
