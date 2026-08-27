@@ -84,4 +84,4 @@
 | [0084](pcr/0084-multi-path-tracked-dumps.md) | 2026-08-27 | Marker-replace all-tracked multi-path shell dumps with fail-closed path matching | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0085](pcr/0085-hermes-taillines-fake-head.md) | 2026-08-27 | Hermes tailLines keeps the real tail and fails closed on insert-above decoys | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0086](pcr/0086-first-inject-tail-identity.md) | 2026-08-27 | Hermes first-inject tail identity fail-closes wrong-sized tail payloads | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
-| [0087](pcr/0087-skip-after-discard.md) | 2026-08-27 | Delay `lastInjectedRevision` until apply; discarded turn-1 NEW cannot skip turn 2 | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0087](pcr/0087-skip-after-discard.md) | 2026-08-27 | Fail-close apply promotion; discarded NEW cannot mint or authorize skip | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |

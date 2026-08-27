@@ -1,4 +1,4 @@
-# PCR 0087 — delay `lastInjectedRevision` until apply
+# PCR 0087 — fail-closed apply promotion and skip check
 
 - Date (UTC): 2026-08-27
 - Author / agent: Cloud Agent
@@ -37,16 +37,20 @@ paper result. Not SOTA.
 
 PCR 0079 made provider requests stateless and byte-exact, but it also deleted
 the runtime `lastInjectedRevision` state entirely. Review required a product
-closure for the original write-before-apply hole. The smallest adapter-only fix
-is to reintroduce that state behind an explicit apply acknowledgement:
+closure for the original write-before-apply hole, plus proof that the state is
+actually consulted on the next turn without restoring 0077 body-skipping. The
+smallest adapter-only fix is to reintroduce that state behind an explicit
+apply acknowledgement:
 
 - Pi may promote only from the actual `before_provider_request` payload;
 - Hermes may promote only from the next `on_turn_complete` write after a
-  successful `select_context`.
+  successful `select_context`, and only when the projection text is still in
+  the turn-complete messages.
 
 A discarded or fail-open turn-1 NEW projection must therefore leave
-`lastInjectedRevision` empty on turn 2, while the request itself still carries
-the NEW bytes.
+`lastInjectedRevision` empty on turn 2, keep Hermes promotion fail-closed on
+OLD persisted messages, and make the turn-2 skip check read `0` rather than
+`1`, while the request itself still carries the NEW bytes.
 
 ## Change
 
@@ -56,13 +60,20 @@ the NEW bytes.
 - record pending selected revisions during `context`;
 - promote to `lastInjectedRevision` only when the actual outgoing Pi payload
   still contains the FreshCtx projection in `before_provider_request`.
+- compute a check-only `skipEligibleSelections` count from
+  `lastInjectedRevision`, but still send full bytes even when the count is nonzero.
 
 `adapters/hermes/bridge.mjs` now:
 
 - preserves a versioned delivery state for this PCR only;
 - writes `pendingInjectedRevision` during `selectContext`;
 - promotes `pendingInjectedRevision` to `lastInjectedRevision` only inside
-  `observeTurn`, which Hermes reaches after the prior request actually ran;
+  `observeTurn`, which Hermes reaches after the prior request actually ran, and
+  only when the pending projection text is still present in the messages;
+- clears pending fail-closed when `on_turn_complete` receives OLD persisted
+  messages without the projection, so OLD bytes cannot mint `lastInjectedRevision`;
+- computes the same check-only `skipEligibleSelections` count from
+  `lastInjectedRevision`.
 - still drops legacy unversioned `lastInjectedRevision` state from PCR 0077.
 
 Tests:
@@ -87,43 +98,56 @@ Board shape:
    same stale persisted transcript;
 5. before apply acknowledgement, `lastInjectedRevision` must still be empty and
    a pending map must exist;
-6. turn 2 must still inject NEW, must inject it exactly once, and must not show
+6. on Hermes, `on_turn_complete` fed only OLD persisted messages must not mint
+   `lastInjectedRevision`;
+7. turn 2 must still inject NEW, must inject it exactly once, and must not show
    OLD or `unchanged="true"`;
-7. after an apply acknowledgement, `lastInjectedRevision` may move from `0` to
-   `1`.
+8. the turn-2 skip check must read `0`, proving discarded NEW did not
+   authorize a skip;
+9. after an apply acknowledgement, `lastInjectedRevision` may move from `0` to
+   `1`, and the turn-3 skip check may read `1` while full NEW bytes are still
+   sent.
 
 Measured result:
 
 ```json
 {
   "pi": {
+    "turn1SkipEligible": 0,
+    "turn2SkipEligible": 0,
+    "turn3SkipEligible": 1,
     "lastInjectedBeforeApply": 0,
     "pendingBeforeApply": 1,
     "lastInjectedAfterApply": 1,
-    "turn1NewCopies": 1,
     "turn2NewCopies": 1,
     "turn2OldCopies": 0,
     "turn2ProjectionBytes": 1299,
-    "turn2UnchangedAttr": false
+    "turn3NewCopies": 1,
+    "turn3UnchangedAttr": false
   },
   "hermes": {
-    "lastInjectedBeforeApply": 0,
-    "pendingBeforeApply": 1,
-    "lastInjectedAfterApply": 1,
-    "pendingAfterApply": 0,
-    "turn1NewCopies": 1,
+    "turn1SkipEligible": 0,
+    "turn2SkipEligible": 0,
+    "turn3SkipEligible": 1,
+    "lastInjectedAfterOldPersistedTurnComplete": 0,
+    "pendingAfterOldPersistedTurnComplete": 0,
+    "lastInjectedAfterAppliedTurn": 1,
+    "pendingAfterAppliedTurn": 0,
     "turn2NewCopies": 1,
     "turn2OldCopies": 0,
     "turn2ProjectionBytes": 1299,
-    "turn2UnchangedAttr": false
+    "turn3NewCopies": 1,
+    "turn3UnchangedAttr": false
   }
 }
 ```
 
 That board closes the runtime hole: turn 1 may stage one pending injected
 revision, but it does not mint an applied `lastInjectedRevision` until the host
-acknowledges the transformed request. A discarded turn-1 inject therefore does
-not grant a turn-2 skip, and the request does not fall back to the old
+acknowledges the transformed request. Hermes now requires the projection text in
+the turn-complete messages before promoting. A discarded turn-1 inject
+therefore does not grant a turn-2 skip, OLD persisted messages do not mint
+`lastInjectedRevision`, and the request does not fall back to the old
 tool-result bytes.
 
 ## Verification
@@ -151,9 +175,10 @@ tool-result bytes.
 
 ## Scope and limits
 
-This PCR does not restore 0077's body-skipping projector path. It only restores
-the delivery-state bookkeeping, and it writes that state strictly after apply.
-If a host discards turn 1, turn 2 still carries the selected current bytes.
+This PCR does not restore 0077's body-skipping projector path. It restores only
+an apply-acknowledged delivery-state path plus a check-only skip predicate.
+Even when `skipEligibleSelections` becomes `1` after an acknowledged apply, the
+projection still sends full current bytes.
 
 No projector, policy, benchmark fixture, gold label, score weight, threshold,
 holdout split, or lock file changed.
