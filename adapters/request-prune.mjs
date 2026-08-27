@@ -1,6 +1,11 @@
 /** Adapter request assembly: drop unserved read tool pairs whenever a projection is applied. */
 
-import { SHELL_TOOLS, shellCommandFromInput, trackedPathsMentionedInCommand } from "./shell-read.mjs";
+import {
+  SHELL_TOOLS,
+  shellCommandFromInput,
+  shellDumpPathsFromCommand,
+  trackedPathsMentionedInCommand,
+} from "./shell-read.mjs";
 
 /**
  * Live adapter default (chars counted in policy selection, not envelope bytes).
@@ -187,10 +192,10 @@ export function staleShellDumpPathByCallId(
       if (!SHELL_TOOLS.has(name) || typeof id !== "string") continue;
       const command = shellCommandFromInput(toolCallArguments(call));
       if (!command) continue;
-      const hits = trackedPathsMentionedInCommand(command, paths);
-      if (hits.length !== 1) continue;
-      if (served.has(id) && pathDispositions?.get(hits[0]) !== "unresolved") continue;
-      replace.set(id, hits[0]);
+      const hits = trackedDumpPathsForCommand(command, paths);
+      if (hits.length === 0) continue;
+      if (hits.length === 1 && served.has(id) && pathDispositions?.get(hits[0]) !== "unresolved") continue;
+      replace.set(id, hits);
     }
   }
   return replace;
@@ -209,7 +214,38 @@ function projectionDispositionByPath(projection) {
   return dispositions;
 }
 
-function staleDumpMarker(path, disposition) {
+function matchTrackedPath(namedPath, trackedPaths) {
+  const normalizedNamed = String(namedPath ?? "").replace(/^\.\//u, "");
+  let best = null;
+  for (const trackedPath of trackedPaths) {
+    if (typeof trackedPath !== "string" || trackedPath.length === 0) continue;
+    if (normalizedNamed === trackedPath || normalizedNamed.endsWith(`/${trackedPath}`)) {
+      if (best == null || trackedPath.length > best.length) best = trackedPath;
+    }
+  }
+  return best;
+}
+
+function trackedDumpPathsForCommand(command, trackedPaths) {
+  const namedPaths = shellDumpPathsFromCommand(command);
+  if (namedPaths.length >= 2) {
+    const resolved = [];
+    const seen = new Set();
+    for (const namedPath of namedPaths) {
+      const trackedPath = matchTrackedPath(namedPath, trackedPaths);
+      if (!trackedPath) return [];
+      if (seen.has(trackedPath)) continue;
+      seen.add(trackedPath);
+      resolved.push(trackedPath);
+    }
+    return resolved;
+  }
+
+  const singleHits = trackedPathsMentionedInCommand(command, trackedPaths);
+  return singleHits.length === 1 ? singleHits : [];
+}
+
+function staleDumpMarkerForSinglePath(path, disposition) {
   if (disposition === "selected") {
     return `[freshctx:stale-dump path=${path}] Current content is supplied in the live projection.`;
   }
@@ -222,8 +258,18 @@ function staleDumpMarker(path, disposition) {
   return `[freshctx:stale-dump path=${path}] Current content is not supplied in the live projection.`;
 }
 
-function withReplacedDumpBody(message, path, disposition) {
-  const marker = staleDumpMarker(path, disposition);
+function staleDumpMarker(paths, pathDispositions) {
+  if (paths.length === 1) {
+    const [path] = paths;
+    return staleDumpMarkerForSinglePath(path, pathDispositions.get(path));
+  }
+
+  const details = paths.map((path) => `${path}=${pathDispositions.get(path) ?? "absent"}`).join("; ");
+  return `[freshctx:stale-dump paths=${paths.join(", ")}] Per-path live projection status: ${details}.`;
+}
+
+function withReplacedDumpBody(message, paths, pathDispositions) {
+  const marker = staleDumpMarker(paths, pathDispositions);
   const content = Array.isArray(message.content)
     ? [{ type: "text", text: marker }]
     : marker;
@@ -281,8 +327,8 @@ export function dropUnservedReadToolPairs(messages, {
     if (resultId) {
       if (dropIds.has(resultId)) continue;
       if (dumpPaths.has(resultId)) {
-        const path = dumpPaths.get(resultId);
-        kept.push(withReplacedDumpBody(message, path, dispositions.get(path)));
+        const paths = dumpPaths.get(resultId);
+        kept.push(withReplacedDumpBody(message, paths, dispositions));
         continue;
       }
       if (keptReadCalls.has(resultId)) {

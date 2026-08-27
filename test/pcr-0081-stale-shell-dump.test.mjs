@@ -108,22 +108,21 @@ test("PCR 0081: two tracked paths in one command are not dropped", () => {
   assert.match(JSON.stringify(pruned), /CL0 leftover/u);
 });
 
-test("PCR 0081: five-file cat dump is left in place (live 2.2 leftover)", () => {
-  const paths = [
+test("PCR 0081: five-file cat dump with one untracked path is left in place", () => {
+  const trackedPaths = [
     "README.md",
     CLI_PATH,
     "src/viajante/models.py",
     "src/viajante/flights.py",
-    "notes/freshctx-todo.md",
   ];
-  const command = `cat ${paths.join(" ")}`;
+  const command = `cat ${trackedPaths.join(" ")} notes/freshctx-todo.md`;
   const dump = `# MARKER_CLI=CL0\nCONCAT_DUMP\n`;
   const messages = [
     buildShellToolCall({ toolCallId: "call-five", command }),
     buildToolResultMessage({ toolCallId: "call-five", content: dump }),
   ];
   const drop = staleShellDumpCallIds(messages, {
-    trackedPaths: paths,
+    trackedPaths,
     servedCallIds: new Set(),
   });
   assert.equal(drop.size, 0);
@@ -131,7 +130,7 @@ test("PCR 0081: five-file cat dump is left in place (live 2.2 leftover)", () => 
     readTools: new Set(["read"]),
     servedCallIds: new Set(),
     observedCallIds: new Set(),
-    trackedPaths: paths,
+    trackedPaths,
   });
   assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
   assert.doesNotMatch(JSON.stringify(pruned), /stale-dump/u);

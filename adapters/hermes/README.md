@@ -85,7 +85,9 @@ tracked file whose disk bytes change this turn is sent even over the cap
 (PCR 0080). Override with `FRESHCTX_BUDGET_CHARS` or read the file in slices.
 
 Single-path shell dumps of already-tracked files are marker-replaced in the
-request copy (PCR 0081); multi-path dumps are left in place.
+request copy (PCR 0081). Safe multi-path `cat`/`nl` dumps are also
+marker-replaced when every named path is already tracked; a multi-path dump that
+names any untracked path is left in place (PCR 0084).
 
 ## Remaining gates
 

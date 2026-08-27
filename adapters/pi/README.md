@@ -48,12 +48,13 @@ exceeds the 32,768-character default cap (PCR 0080). First-time whole-file reads
 still compete for the cap: a ~39 kB file that was never injected stays omitted
 until it changes.
 
-If `bash` / `shell` names **exactly one** already-tracked path and that call is
-not served by the live projection, the request copy replaces the dump body with
-`[freshctx:stale-dump path=…]` and keeps the tool pair so the model does not
-retry (PCR 0081). Pi-native `toolCall` / `toolResult` messages are walked, not
-only OpenAI `tool_calls`. Commands that name two or more tracked paths stay as
-ordinary shell results.
+If `bash` / `shell` names **exactly one** already-tracked path, or a safe
+multi-path `cat`/`nl` dump whose every named path is already tracked, and that
+call is not served by the live projection, the request copy replaces the dump
+body with a `freshctx:stale-dump` marker and keeps the tool pair so the model
+does not retry (PCR 0081, PCR 0084). Pi-native `toolCall` / `toolResult`
+messages are walked, not only OpenAI `tool_calls`. Any multi-path dump that
+names an untracked path stays as an ordinary shell result.
 
 Deterministic replay (no Pi package required at bench time):
 
