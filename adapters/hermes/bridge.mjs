@@ -4,6 +4,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  readDispositionByUnitsByCall,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
 } from "../request-prune.mjs";
@@ -352,12 +353,14 @@ export async function selectContext(payload) {
 
   const projectionText = projection.text;
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
+  const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
   const assembled = dropUnservedReadToolPairs(rewritten, {
     readTools: HERMES_TRACKED_TOOLS,
     servedCallIds,
     observedCallIds: new Set(unitsByCall.keys()),
     trackedPaths: engine.registry.list().map((unit) => unit.path),
     projection,
+    readDispositionByCallId,
   });
   return {
     messages: [...assembled, { role: "user", content: projectionText }],

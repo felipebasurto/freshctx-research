@@ -79,6 +79,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-25 | (PCR 0079) stateless byte-exact requests (0077 revert) | 234/234 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0079](pcr/0079-stateless-byte-exact-requests.md) |
 | 2026-08-25 | (PCR 0080) refresh over cap | 243/243 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0080](pcr/0080-refresh-over-budget.md) |
 | 2026-08-25 | (PCR 0081) drop piped dumps of already-tracked paths | 243/243 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0081](pcr/0081-stale-shell-dump.md) |
+| 2026-08-27 | (PCR 0083) official omitted-read loop | 249/249 | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0083](pcr/0083-official-omitted-read-loop.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

@@ -9,6 +9,7 @@ import {
   buildToolResultMessage,
   captureProviderRequest,
   createHermesStateFile,
+  messageText as hermesMessageText,
 } from "../adapters/hermes/replay.mjs";
 import {
   dropUnservedReadToolPairs,
@@ -230,4 +231,45 @@ test("Pi adapter drops unserved read at normal path at 12k and keeps gold projec
 
   assert.doesNotMatch(capture.payloadText, /unused-context-padding line 0/u);
   assert.match(capture.payloadText, /KeepMe/u);
+});
+
+test("Hermes adapter keeps omitted whole-file read pair truthful when a region on the same path is selected", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-hermes-prune-same-path-"));
+  const stateFile = await createHermesStateFile();
+  const largeBody = `${"export const marker = 'CL0';\n".repeat(2_000)}export const tail = 'TAIL_ONLY';\n`;
+  const headBody = `${largeBody.split("\n").slice(0, 120).join("\n")}\n`;
+  await mkdir(join(workspace, "src"), { recursive: true });
+  await writeFile(join(workspace, "src/large.ts"), largeBody);
+
+  const persisted = [
+    buildReadToolCall({ toolCallId: "whole-1", path: "src/large.ts", toolName: "read_file" }),
+    buildToolResultMessage({ toolCallId: "whole-1", content: largeBody }),
+    buildReadToolCall({
+      toolCallId: "head-1",
+      path: "src/large.ts",
+      toolName: "read_file",
+      offset: 1,
+      limit: 120,
+    }),
+    buildToolResultMessage({ toolCallId: "head-1", content: headBody }),
+    { role: "user", content: "Keep the large head only." },
+  ];
+
+  const capture = await captureProviderRequest({
+    cwd: workspace,
+    persistedMessages: persisted,
+    stateFile,
+    budgetChars: 32_768,
+  });
+
+  const wholeResult = capture.requestMessages.find(
+    (message) => message?.role === "tool" && (message.tool_call_id ?? message.toolCallId) === "whole-1",
+  );
+  assert.ok(wholeResult);
+  const wholeText = hermesMessageText([wholeResult]);
+  assert.match(wholeText, /freshctx:omitted-read path=src\/large\.ts/u);
+  assert.match(wholeText, /omitted from the live projection for budget/u);
+  assert.doesNotMatch(wholeText, /Current content is supplied in the live projection/u);
+  assert.match(capture.projectionText, /CL0/u);
+  assert.equal(capture.payloadText.includes("TAIL_ONLY"), false);
 });

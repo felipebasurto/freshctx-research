@@ -6,6 +6,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 import {
   dropUnservedReadToolPairs,
+  readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
@@ -183,12 +184,18 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       });
       const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
+      const readDispositionByCallId = readDispositionByCallToUnit(
+        callToUnit,
+        engine.registry,
+        projection,
+      );
       const assembled = dropUnservedReadToolPairs(rewritten, {
         readTools: PI_READ_TOOLS,
         servedCallIds,
         observedCallIds: new Set(callToUnit.keys()),
         trackedPaths: engine.registry.list().map((unit) => unit.path),
         projection,
+        readDispositionByCallId,
       });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
 

@@ -80,3 +80,4 @@
 | [0080](pcr/0080-refresh-over-budget.md) | 2026-08-25 | Send a refreshed file even when it is larger than the cap | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only`; `live-host` | review |
 | [0081](pcr/0081-stale-shell-dump.md) | 2026-08-25 | Drop piped dumps of paths already tracked | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only`; `live-host` | review |
 | [0082](pcr/0082-truthful-omitted-dump-marker.md) | 2026-08-25 | Keep single-path dump pairs with truthful projection status | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0083](pcr/0083-official-omitted-read-loop.md) | 2026-08-27 | Keep omitted official read pairs with truthful budget markers | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |

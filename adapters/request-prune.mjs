@@ -116,6 +116,44 @@ export function servedReadCallIdsFromUnitsByCall(unitsByCall, projection) {
   return served;
 }
 
+function callDispositionByEntries(entries, projection) {
+  const selectedIds = new Set(projection.selected.map((unit) => unit.id));
+  const budgetIds = unitIdsFromProjectionOmission(projection, "budget");
+  const unresolvedIds = unitIdsFromProjectionOmission(projection, "unresolved");
+  const dispositions = new Map();
+  for (const [callId, mappedUnit] of entries.entries()) {
+    const unit = typeof mappedUnit === "object" ? mappedUnit : { id: mappedUnit };
+    if (!unit?.id || typeof unit?.path !== "string") continue;
+    if (selectedIds.has(unit.id)) {
+      dispositions.set(callId, { path: unit.path, disposition: "selected" });
+      continue;
+    }
+    if (budgetIds.has(unit.id)) {
+      dispositions.set(callId, { path: unit.path, disposition: "budget" });
+      continue;
+    }
+    if (unresolvedIds.has(unit.id)) {
+      dispositions.set(callId, { path: unit.path, disposition: "unresolved" });
+    }
+  }
+  return dispositions;
+}
+
+export function readDispositionByCallToUnit(callToUnit, registry, projection) {
+  const entries = new Map();
+  for (const [callId, unitId] of callToUnit.entries()) {
+    const id = typeof unitId === "object" ? unitId.id : unitId;
+    const unit = registry?.get?.(id);
+    if (typeof id !== "string" || !unit) continue;
+    entries.set(callId, { id, path: unit.path });
+  }
+  return callDispositionByEntries(entries, projection);
+}
+
+export function readDispositionByUnitsByCall(unitsByCall, projection) {
+  return callDispositionByEntries(unitsByCall, projection);
+}
+
 function toolCallArguments(call) {
   const raw = call?.function?.arguments ?? call?.arguments ?? call?.input ?? {};
   if (typeof raw === "string") {
@@ -192,15 +230,37 @@ function withReplacedDumpBody(message, path, disposition) {
   return { ...structuredClone(message), content };
 }
 
+function omittedReadMarker(path, disposition) {
+  if (disposition === "budget") {
+    return `[freshctx:omitted-read path=${path}] Current content was omitted from the live projection for budget.`;
+  }
+  return `[freshctx:omitted-read path=${path}] Current content is not supplied in the live projection.`;
+}
+
+function withReplacedReadBody(message, path, disposition) {
+  const marker = omittedReadMarker(path, disposition);
+  const content = Array.isArray(message.content)
+    ? [{ type: "text", text: marker }]
+    : marker;
+  return { ...structuredClone(message), content };
+}
+
 export function dropUnservedReadToolPairs(messages, {
   readTools,
   servedCallIds,
   trackedPaths,
   observedCallIds,
   projection,
+  readDispositionByCallId,
 } = {}) {
   const dropIds = unservedReadToolCallIds(messages, readTools, servedCallIds, observedCallIds);
   const dispositions = projectionDispositionByPath(projection);
+  const keptReadCalls = readDispositionByCallId instanceof Map ? readDispositionByCallId : new Map();
+  for (const [callId, item] of keptReadCalls.entries()) {
+    if (item?.disposition === "budget") {
+      dropIds.delete(callId);
+    }
+  }
   const dumpPaths = staleShellDumpPathByCallId(messages, {
     trackedPaths,
     servedCallIds,
@@ -208,7 +268,10 @@ export function dropUnservedReadToolPairs(messages, {
   });
   for (const id of dumpPaths.keys()) dropIds.delete(id);
 
-  if (dropIds.size === 0 && dumpPaths.size === 0) {
+  const hasReadReplacements = [...keptReadCalls.values()].some(
+    (item) => item?.disposition === "budget",
+  );
+  if (dropIds.size === 0 && dumpPaths.size === 0 && !hasReadReplacements) {
     return messages.map((message) => structuredClone(message));
   }
 
@@ -221,6 +284,13 @@ export function dropUnservedReadToolPairs(messages, {
         const path = dumpPaths.get(resultId);
         kept.push(withReplacedDumpBody(message, path, dispositions.get(path)));
         continue;
+      }
+      if (keptReadCalls.has(resultId)) {
+        const { path, disposition } = keptReadCalls.get(resultId);
+        if (disposition === "budget") {
+          kept.push(withReplacedReadBody(message, path, disposition));
+          continue;
+        }
       }
       kept.push(structuredClone(message));
       continue;
