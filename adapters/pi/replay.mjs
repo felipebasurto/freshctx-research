@@ -5,6 +5,7 @@ import {
   assistantToolCalls,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  readToolCallIds,
   readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
@@ -384,7 +385,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         const assembled = dropUnservedReadToolPairs(rewritten, {
           readTools: PI_READ_TOOLS,
           servedCallIds,
-          observedCallIds: new Set(callToUnit.keys()),
+          observedCallIds: readToolCallIds(event.messages, PI_READ_TOOLS),
           trackedPaths: engine.registry.list().map((unit) => unit.path),
           projection,
           readDispositionByCallId,

@@ -4,6 +4,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  readToolCallIds,
   readDispositionByUnitsByCall,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
@@ -654,7 +655,7 @@ export async function selectContext(payload) {
   const assembled = dropUnservedReadToolPairs(rewritten, {
     readTools: HERMES_TRACKED_TOOLS,
     servedCallIds,
-    observedCallIds: new Set(unitsByCall.keys()),
+    observedCallIds: readToolCallIds(payload.messages, HERMES_TRACKED_TOOLS),
     trackedPaths: engine.registry.list().map((unit) => unit.path),
     projection,
     readDispositionByCallId,
