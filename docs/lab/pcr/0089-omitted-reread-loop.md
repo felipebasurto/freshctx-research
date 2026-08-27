@@ -38,7 +38,9 @@ result. Not SOTA.
 ## Test-first evidence
 
 On the clean `f2dd29534e59b9b0969308ea77ffedb7b35dfac6` base, the new two-turn
-replay board failed red in both adapters.
+replay board failed red in both adapters. The follow-up review also found that
+live `adapters/pi/extension.ts` still walked only OpenAI `tool_calls`, while
+replay already counted Pi-native `content: [{ type: "toolCall", ... }]`.
 
 The hole was adapter-side:
 
@@ -57,17 +59,21 @@ That violates both truthfulness and the no-duplicate-current-copy rule.
   observation key as the active one, retire superseded official reads from the
   live registry before projection, and carry forward only already-delivered
   omitted-read dispositions.
-- `adapters/pi/extension.ts` — mirror the same active-read retirement and
-  omission-history rules in the live Pi extension so replay and live Pi use the
-  same omitted-then-reread behavior.
+- `adapters/pi/extension.ts` — share the same assistant-tool-call walker as
+  replay so Pi-native `toolCall` parts count toward “latest official read,” then
+  apply the same active-read retirement and omission-history rules in live Pi.
 - `adapters/hermes/bridge.mjs` — apply the same latest-official-read rule during
   request selection and persist/promote omitted-read dispositions only after the
   transformed request copy is actually delivered.
-- `adapters/request-prune.mjs` — keep and marker-rewrite historically delivered
-  omitted/unresolved official reads even after a later reread supersedes them.
+- `adapters/request-prune.mjs` — provide the shared
+  `latestReadCallIdsByObservation()` helper and keep/marker-rewrite historically
+  delivered omitted/unresolved official reads even after a later reread
+  supersedes them.
 - `test/pcr-0089-omitted-reread-loop.test.mjs` — add the fail-closed two-turn
-  reread board for both Pi and Hermes, plus the discarded-turn-1 omitted-reread
-  guard.
+  reread board for both Pi and Hermes, plus the discarded-turn-1
+  omitted-reread guard and the still-over-budget reread guard.
+- `test/adapter-request-prune.test.mjs` — add a Pi-native `toolCall` helper
+  test so the shared latest-read walker stays native-message aware.
 
 No `src/anchors.mjs` edit. No lock edit. No `persist-38`. No `v0.2`. No
 `--relock`. No benchmark, gold-label, threshold, or score-function change.
@@ -80,14 +86,16 @@ No `src/anchors.mjs` edit. No lock edit. No `persist-38`. No `v0.2`. No
 | Hermes omitted-then-reread fit board | same two-turn board under Hermes replay | turn-1 result stays a truthful omitted marker; turn-2 result is treated as a fresh request; `skipEligibleSelections=0`; no `CL0`; one current `PCR_0089_FITS_NOW` body; no duplicate current copies | **pass** |
 | Pi discarded omit then reread fit board | turn 1 produces a truthful omitted marker in the transformed request copy, but the host discards/fail-opens that request; then shrink the file and issue the same official read again on turn 2 | discarded turn-1 omit does not authorize skip or replay; `skipEligibleSelections=0`; no `CL0`; the turn-1 call is not allowed to claim its content was supplied; turn 2 serves one current `PCR_0089_FITS_NOW` body | **pass** |
 | Hermes discarded omit then reread fit board | same discard-then-reread board under Hermes replay | discarded turn-1 omit does not authorize skip or replay; `skipEligibleSelections=0`; no `CL0`; the turn-1 call is not allowed to claim its content was supplied; turn 2 serves one current `PCR_0089_FITS_NOW` body | **pass** |
+| Pi native toolCall reread still over budget board | use Pi-native `content` toolCall parts for both official reads; keep the file over the default cap on turn 2 | latest-read walker still counts native toolCall parts; tracking is not retired; `skipEligibleSelections=0`; both turn-1 and turn-2 results stay honest omitted markers; no `CL0` raw bytes | **pass** |
+| Hermes reread still over budget board | same still-over-budget reread under Hermes replay | tracking is not retired; `skipEligibleSelections=0`; both turn-1 and turn-2 results stay honest omitted markers; no `CL0` raw bytes | **pass** |
 
 ## Verification
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pcr-0089-omitted-reread-loop.test.mjs` | yes | 0 | 4 passed, 0 failed |
-| `node --test test/pcr-0083-official-omitted-read-loop.test.mjs test/pcr-0087-skip-after-discard.test.mjs test/adapter-request-prune.test.mjs test/pcr-0078-cat-tracked-read.test.mjs` | yes | 0 | 24 passed, 0 failed |
-| `npm test` | yes | 0 | 284 total; 262 passed; 22 skipped; 0 failed |
+| `node --test test/adapter-request-prune.test.mjs test/pcr-0089-omitted-reread-loop.test.mjs` | yes | 0 | 13 passed, 0 failed |
+| `node --test test/pcr-0083-official-omitted-read-loop.test.mjs test/pcr-0087-skip-after-discard.test.mjs test/adapter-request-prune.test.mjs test/pcr-0078-cat-tracked-read.test.mjs test/pcr-0089-omitted-reread-loop.test.mjs` | yes | 0 | 31 passed, 0 failed |
+| `npm test` | yes | 0 | 287 total; 265 passed; 22 skipped; 0 failed |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; hard gates all true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1` |
 
@@ -98,8 +106,8 @@ No `src/anchors.mjs` edit. No lock edit. No `persist-38`. No `v0.2`. No
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | `0` |
 | deterministic hash agreement | `1.0` | `1.0` | `0` |
-| `npm test` total | `280` | `284` | `+4` |
-| `npm test` passed | `258` | `262` | `+4` |
+| `npm test` total | `280` | `287` | `+7` |
+| `npm test` passed | `258` | `265` | `+7` |
 | `npm test` skipped | `22` | `22` | `0` |
 | door blob | `f8771c93894095348185ef3453a3c2498355b3c6` | `f8771c93894095348185ef3453a3c2498355b3c6` | `0` |
 | lock blob | `79e29d09a9ec12b1128617f683f50a35a3c8809e` | `79e29d09a9ec12b1128617f683f50a35a3c8809e` | `0` |
@@ -127,6 +135,6 @@ ctxbench payload hash stayed fixed.
 
 ## Next measurement
 
-Add the same-path reread board for the still-over-budget branch as an explicit
-adapter replay guard, still without touching `src/anchors.mjs` or benchmark
-data.
+Drive one live Pi capture path with Pi-native `toolCall` parts to confirm the
+shared latest-read walker behaves the same outside replay, still without
+touching `src/anchors.mjs` or benchmark data.
