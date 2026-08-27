@@ -74,6 +74,62 @@ function positionalArgs(tokens) {
   return args;
 }
 
+function splitOnUnquotedPipes(command) {
+  const segments = [];
+  let current = "";
+  let quote = null;
+  for (let index = 0; index < command.length; index += 1) {
+    const ch = command[index];
+    if (quote) {
+      current += ch;
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === "\"") {
+      quote = ch;
+      current += ch;
+      continue;
+    }
+    if (ch === "|") {
+      segments.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim()) segments.push(current.trim());
+  return segments.filter((segment) => segment.length > 0);
+}
+
+function dumpVerbPaths(tokens) {
+  if (tokens.length < 3) return [];
+  const verb = tokens[0];
+  if (verb !== "cat" && verb !== "nl") return [];
+  const args = positionalArgs(tokens);
+  return args.length >= 2 ? args : [];
+}
+
+function pythonDumpPaths(tokens) {
+  const verb = tokens[0];
+  if (verb !== "python" && verb !== "python3") return [];
+  const scriptFlagIndex = tokens.indexOf("-c");
+  if (scriptFlagIndex < 1 || scriptFlagIndex + 1 >= tokens.length) return [];
+  const script = tokens[scriptFlagIndex + 1];
+  if (!/(?:open\(|read_text\(|\.read\()/u.test(script)) return [];
+  const args = tokens.slice(scriptFlagIndex + 2).filter((token) => !token.startsWith("-"));
+  return args.length >= 2 ? args : [];
+}
+
+function printfPathsFedToXargsDump(segments) {
+  if (segments.length < 2) return [];
+  const producer = tokenizeShellCommand(segments[0]);
+  if (producer[0] !== "printf" || producer.length < 4) return [];
+  const consumer = tokenizeShellCommand(segments[1]);
+  if (consumer[0] !== "xargs" || !consumer.some((token) => token === "cat" || token === "nl")) return [];
+  const args = producer.slice(2).filter((token) => !token.startsWith("-"));
+  return args.length >= 2 ? args : [];
+}
+
 function singlePathFromTokens(tokens) {
   const args = positionalArgs(tokens);
   if (args.length !== 1) return null;
@@ -147,17 +203,19 @@ export function trackedPathsMentionedInCommand(command, trackedPaths) {
 export function shellDumpPathsFromCommand(command) {
   if (typeof command !== "string" || !command.trim()) return [];
   const inner = unwrapBashCommand(command);
-  if (rejectUnsafeShell(inner)) return [];
+  const segments = splitOnUnquotedPipes(inner);
+  if (segments.length === 0) return [];
 
-  const tokens = tokenizeShellCommand(inner);
-  if (tokens.length < 3) return [];
+  const direct = dumpVerbPaths(tokenizeShellCommand(segments[0]));
+  if (direct.length >= 2) return direct;
 
-  const verb = tokens[0];
-  if (verb !== "cat" && verb !== "nl") return [];
+  const python = pythonDumpPaths(tokenizeShellCommand(inner));
+  if (python.length >= 2) return python;
 
-  const args = positionalArgs(tokens);
-  if (args.length < 2) return [];
-  return args;
+  const xargs = printfPathsFedToXargsDump(segments);
+  if (xargs.length >= 2) return xargs;
+
+  return [];
 }
 
 /**
