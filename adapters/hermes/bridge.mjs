@@ -22,6 +22,10 @@ function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
 }
 
+function splitLines(content) {
+  return String(content).replaceAll("\r\n", "\n").split("\n");
+}
+
 export function readScopeFromHermesArgs(args, fileLineCount) {
   if (!args || typeof args !== "object") return { scope: "file" };
   if (args.scope === "region") {
@@ -68,14 +72,28 @@ export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
   return scopeMeta;
 }
 
-function tailRegionFromObservation(scopeMeta, fileLineCount, observedContent) {
+function tailSpanContent(fileContent, startLine, endLine) {
+  return splitLines(fileContent).slice(startLine - 1, endLine).join("\n");
+}
+
+function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
   if (!scopeMeta || scopeMeta.scope !== "region" || !Number.isInteger(scopeMeta.tailLines)) {
     return scopeMeta;
   }
+  const fileLineCount = lineCount(fileContent);
   if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
-  const observedLines = lineCount(typeof observedContent === "string" ? observedContent : "");
+  const observedText = typeof observedContent === "string" ? observedContent.replaceAll("\r\n", "\n") : "";
+  const observedLines = lineCount(observedText);
   const spanLines = observedLines >= 1 ? observedLines : scopeMeta.tailLines;
   const startLine = Math.max(1, fileLineCount - spanLines + 1);
+  if (tailSpanContent(fileContent, startLine, fileLineCount) !== observedText) {
+    return {
+      scope: "region",
+      selector: scopeMeta.selector,
+      tailLines: scopeMeta.tailLines,
+      invalidTailObservation: true,
+    };
+  }
   return {
     scope: "region",
     startLine,
@@ -219,7 +237,19 @@ export function trackedCallsFromMessages(messages) {
   return tracked;
 }
 
-function scopeFromObservation(observation, fileLineCount) {
+function scopeFromObservation(observation, fileContent, fileLineCount) {
+  if (
+    observation?.scope === "region"
+    && Number.isInteger(observation?.tailLines)
+    && observation?.invalidTailObservation === true
+  ) {
+    return {
+      scope: "region",
+      selector: observation.selector,
+      tailLines: observation.tailLines,
+      invalidTailObservation: true,
+    };
+  }
   if (
     observation?.scope === "region"
     && Number.isInteger(observation?.tailLines)
@@ -240,8 +270,19 @@ function scopeFromObservation(observation, fileLineCount) {
     endLine: observation.endLine,
     tailLines: observation.tailLines,
     selector: observation.selector,
-  }, fileLineCount, observation.content);
+  }, fileContent, observation.content);
+  if (scopeMeta?.invalidTailObservation) return scopeMeta;
   return normalizeHermesReadScope(scopeMeta, fileLineCount);
+}
+
+function failClosedInvalidTailObservationUnits(tracked, unitsByCall) {
+  for (const [callId, observation] of Object.entries(tracked)) {
+    if (observation?.invalidTailObservation !== true) continue;
+    const unit = unitsByCall.get(callId);
+    if (!unit || unit.scope !== "region") continue;
+    unit.state = "unresolved";
+    unit.resolutionMethod = "tail-lines-invalid-observation";
+  }
 }
 
 async function failClosedTailLineShiftedUnits(cwd, tracked, unitsByCall) {
@@ -286,7 +327,7 @@ async function enrichTrackedWithLineCounts(cwd, tracked) {
       const observedFileLineCount = Number.isInteger(observation.observedFileLineCount)
         ? observation.observedFileLineCount
         : lineCount(file.content);
-      const scopeMeta = scopeFromObservation(observation, observedFileLineCount);
+      const scopeMeta = scopeFromObservation(observation, file.content, observedFileLineCount);
       enriched[callId] = {
         ...observation,
         ...scopeMeta,
@@ -325,8 +366,23 @@ function mergeTrackedCalls(stored, incoming) {
     const previous = stored[callId];
     merged[callId] = {
       ...observation,
+      ...(Number.isInteger(previous?.startLine) && !Number.isInteger(observation?.startLine)
+        ? { startLine: previous.startLine }
+        : {}),
+      ...(Number.isInteger(previous?.endLine) && !Number.isInteger(observation?.endLine)
+        ? { endLine: previous.endLine }
+        : {}),
       ...(Number.isInteger(previous?.observedFileLineCount)
         ? { observedFileLineCount: previous.observedFileLineCount }
+        : {}),
+      ...(previous?.selector != null && observation?.selector == null
+        ? { selector: previous.selector }
+        : {}),
+      ...(Number.isInteger(previous?.tailLines) && !Number.isInteger(observation?.tailLines)
+        ? { tailLines: previous.tailLines }
+        : {}),
+      ...(previous?.invalidTailObservation === true
+        ? { invalidTailObservation: true }
         : {}),
     };
   }
@@ -385,7 +441,7 @@ export async function selectContext(payload) {
       if (shellCallIds.has(callId)) {
         const file = await safeWorkspaceFile(payload.cwd, observation.path);
         const observedFileLineCount = observation.observedFileLineCount ?? lineCount(file.content);
-        const scopeMeta = scopeFromObservation(observation, observedFileLineCount);
+        const scopeMeta = scopeFromObservation(observation, file.content, observedFileLineCount);
         if (scopeMeta.scope === "region") {
           if (!observation.content) continue;
           trackArgs = {
@@ -432,6 +488,7 @@ export async function selectContext(payload) {
     (await safeWorkspaceFile(payload.cwd, filePath)).content,
   );
 
+  failClosedInvalidTailObservationUnits(tracked, unitsByCall);
   await failClosedTailLineShiftedUnits(payload.cwd, tracked, unitsByCall);
 
   const projection = engine.project({

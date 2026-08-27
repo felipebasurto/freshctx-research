@@ -14,8 +14,9 @@ import { stableUnitId } from "../src/hash.mjs";
 const REGION_PATH = "ws/tail.txt";
 const FILE_BODY = "line1 head\nline2 middle\nline3 tailA\nline4 tailB\n";
 const TAIL_BODY = "line3 tailA\nline4 tailB\n";
+const WRONG_SIZED_TAIL_BODY = "line1 head\nline2 middle\nline3 tailA\n";
 
-function buildTailReadMessages() {
+function buildTailReadMessages(content = TAIL_BODY) {
   return [
     {
       role: "assistant",
@@ -35,16 +36,16 @@ function buildTailReadMessages() {
         },
       ],
     },
-    { role: "tool", tool_call_id: "call-tail", content: TAIL_BODY },
+    { role: "tool", tool_call_id: "call-tail", content },
     { role: "user", content: "quote the tail lines" },
   ];
 }
 
-async function setupBoard() {
+async function setupBoard(content = TAIL_BODY) {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0085-"));
   await mkdir(join(workspace, "ws"), { recursive: true });
   await writeFile(join(workspace, REGION_PATH), FILE_BODY, "utf8");
-  return { workspace, messages: buildTailReadMessages() };
+  return { workspace, messages: buildTailReadMessages(content) };
 }
 
 test("PCR 0085: Hermes observeTurn stores tailLines reads with the real tail span", async () => {
@@ -108,6 +109,38 @@ test("PCR 0085: Hermes first inject serves tailLines with a tail unit id, not fa
     assert.doesNotMatch(capture.payloadText, /line2 middle/u);
     assert.match(capture.payloadText, /line3 tailA/u);
     assert.match(capture.payloadText, /line4 tailB/u);
+  } finally {
+    await rm(board.workspace, { recursive: true, force: true });
+  }
+});
+
+test("PCR 0086: Hermes first inject fail-closes a wrong-sized tailLines payload without minting an EOF tail id", async () => {
+  const board = await setupBoard(WRONG_SIZED_TAIL_BODY);
+  const stateFile = await createHermesStateFile();
+
+  try {
+    const capture = await captureProviderRequest({
+      cwd: board.workspace,
+      persistedMessages: board.messages,
+      stateFile,
+      budgetChars: 8_000,
+    });
+
+    const expectedTailId = stableUnitId({
+      path: REGION_PATH,
+      scope: "region",
+      startLine: 3,
+      endLine: 5,
+    });
+
+    assert.match(capture.projectionText, /selected="0"/u);
+    assert.match(capture.projectionText, /unresolved="1"/u);
+    assert.doesNotMatch(capture.payloadText, new RegExp(`freshctx:${expectedTailId}\\b`, "u"));
+    assert.doesNotMatch(capture.projectionText, new RegExp(`id="${expectedTailId}"`, "u"));
+    assert.doesNotMatch(capture.projectionText, /lines="3-5"/u);
+    assert.doesNotMatch(capture.payloadText, /line1 head/u);
+    assert.doesNotMatch(capture.payloadText, /line2 middle/u);
+    assert.doesNotMatch(capture.payloadText, /line4 tailB/u);
   } finally {
     await rm(board.workspace, { recursive: true, force: true });
   }
