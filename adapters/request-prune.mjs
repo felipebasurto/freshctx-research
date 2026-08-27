@@ -234,9 +234,6 @@ function omittedReadMarker(path, disposition) {
   if (disposition === "budget") {
     return `[freshctx:omitted-read path=${path}] Current content was omitted from the live projection for budget.`;
   }
-  if (disposition === "unresolved") {
-    return `[freshctx:omitted-read path=${path}] Current content is not supplied because the tracked unit is unresolved.`;
-  }
   return `[freshctx:omitted-read path=${path}] Current content is not supplied in the live projection.`;
 }
 
@@ -260,7 +257,7 @@ export function dropUnservedReadToolPairs(messages, {
   const dispositions = projectionDispositionByPath(projection);
   const keptReadCalls = readDispositionByCallId instanceof Map ? readDispositionByCallId : new Map();
   for (const [callId, item] of keptReadCalls.entries()) {
-    if (item?.disposition === "budget" || item?.disposition === "unresolved") {
+    if (item?.disposition === "budget") {
       dropIds.delete(callId);
     }
   }
@@ -272,7 +269,7 @@ export function dropUnservedReadToolPairs(messages, {
   for (const id of dumpPaths.keys()) dropIds.delete(id);
 
   const hasReadReplacements = [...keptReadCalls.values()].some(
-    (item) => item?.disposition === "budget" || item?.disposition === "unresolved",
+    (item) => item?.disposition === "budget",
   );
   if (dropIds.size === 0 && dumpPaths.size === 0 && !hasReadReplacements) {
     return messages.map((message) => structuredClone(message));
@@ -290,7 +287,7 @@ export function dropUnservedReadToolPairs(messages, {
       }
       if (keptReadCalls.has(resultId)) {
         const { path, disposition } = keptReadCalls.get(resultId);
-        if (disposition === "budget" || disposition === "unresolved") {
+        if (disposition === "budget") {
           kept.push(withReplacedReadBody(message, path, disposition));
           continue;
         }
