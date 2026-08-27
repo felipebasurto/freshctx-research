@@ -83,3 +83,4 @@
 | [0083](pcr/0083-official-omitted-read-loop.md) | 2026-08-27 | Keep omitted official read pairs with truthful budget markers | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0084](pcr/0084-multi-path-tracked-dumps.md) | 2026-08-27 | Marker-replace all-tracked multi-path shell dumps with fail-closed path matching | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0085](pcr/0085-hermes-taillines-fake-head.md) | 2026-08-27 | Hermes tailLines keeps the real tail and fails closed on insert-above decoys | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0086](pcr/0086-first-inject-tail-identity.md) | 2026-08-27 | Hermes first-inject tail identity fail-closes wrong-sized tail payloads | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
