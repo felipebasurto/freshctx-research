@@ -4,6 +4,8 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import {
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  latestReadCallIdsByObservation,
+  readToolCallIds,
   readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
@@ -61,6 +63,32 @@ function countSkipEligibleSelections(lastInjectedRevision, projection) {
     if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
   }
   return count;
+}
+
+function syncRegistryToActiveCalls(engine, callToUnit, activeCallIds) {
+  const activeUnits = new Set();
+  const inactiveCallIds = [];
+  for (const [callId, unitId] of callToUnit.entries()) {
+    if (activeCallIds.has(callId)) {
+      activeUnits.add(unitId);
+      continue;
+    }
+    inactiveCallIds.push(callId);
+  }
+  for (const callId of inactiveCallIds) callToUnit.delete(callId);
+  for (const unitId of [...engine.registry.units.keys()]) {
+    if (!activeUnits.has(unitId)) engine.registry.units.delete(unitId);
+  }
+}
+
+function omittedReadDispositions(readDispositionByCallId) {
+  const omitted = new Map();
+  for (const [callId, item] of readDispositionByCallId.entries()) {
+    if (item?.disposition === "budget" || item?.disposition === "unresolved") {
+      omitted.set(callId, { path: item.path, disposition: item.disposition });
+    }
+  }
+  return omitted;
 }
 
 function projectionAppliedToMessages(messages, projectionText) {
@@ -182,16 +210,22 @@ export function messageText(messages) {
 export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map();
+  const callMeta = new Map();
   const lastInjectedRevision = new Map();
   const pendingInjectedRevision = new Map();
+  const appliedReadDispositionByCallId = new Map();
+  const pendingReadDispositionByCallId = new Map();
   let turnIndex = 0;
   let pendingProjectionText = "";
 
   return {
     engine,
     callToUnit,
+    callMeta,
     lastInjectedRevision,
     pendingInjectedRevision,
+    appliedReadDispositionByCallId,
+    pendingReadDispositionByCallId,
     get turn() {
       return turnIndex;
     },
@@ -205,8 +239,12 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       const messages = event?.payload?.messages;
       if (projectionAppliedToMessages(messages, pendingProjectionText)) {
         replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+        for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
+          appliedReadDispositionByCallId.set(callId, { ...item });
+        }
       }
       pendingInjectedRevision.clear();
+      pendingReadDispositionByCallId.clear();
       pendingProjectionText = "";
     },
 
@@ -251,6 +289,13 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
             observedFileLineCount,
           });
           callToUnit.set(event.toolCallId, unit.id);
+          callMeta.set(event.toolCallId, {
+            path: file.path,
+            scope: "region",
+            startLine: scopeMeta.startLine,
+            endLine: scopeMeta.endLine,
+            selector: scopeMeta.selector,
+          });
           return;
         }
 
@@ -260,6 +305,10 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           scope: "file",
         });
         callToUnit.set(event.toolCallId, unit.id);
+        callMeta.set(event.toolCallId, {
+          path: file.path,
+          scope: "file",
+        });
       } catch {
         // Unsupported reads remain ordinary Pi results.
       }
@@ -269,6 +318,16 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       if (engine.registry.list().length === 0) return undefined;
 
       try {
+        const activeOfficialCallIds = latestReadCallIdsByObservation(
+          event.messages,
+          callMeta,
+          new Set(["read"]),
+        );
+        const activeCallIds = new Set();
+        for (const callId of callToUnit.keys()) {
+          if (!callMeta.has(callId) || activeOfficialCallIds.has(callId)) activeCallIds.add(callId);
+        }
+        syncRegistryToActiveCalls(engine, callToUnit, activeCallIds);
         await engine.refresh(async (filePath) =>
           (await safeWorkspaceFile(ctx.cwd, filePath)).content,
         );
@@ -291,13 +350,18 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           engine.registry,
           projection,
         );
+        replaceMapContents(
+          pendingReadDispositionByCallId,
+          omittedReadDispositions(readDispositionByCallId),
+        );
         const assembled = dropUnservedReadToolPairs(rewritten, {
           readTools: PI_READ_TOOLS,
           servedCallIds,
-          observedCallIds: new Set(callToUnit.keys()),
+          observedCallIds: readToolCallIds(event.messages, PI_READ_TOOLS),
           trackedPaths: engine.registry.list().map((unit) => unit.path),
           projection,
           readDispositionByCallId,
+          historicalReadDispositionByCallId: appliedReadDispositionByCallId,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
 

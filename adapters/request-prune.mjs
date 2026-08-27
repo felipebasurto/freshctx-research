@@ -41,6 +41,15 @@ function callId(call) {
   return call?.id;
 }
 
+function readObservationKey(observation) {
+  if (typeof observation?.path !== "string") return null;
+  if (observation.scope === "region") {
+    const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
+    return `region:${observation.path}:${selector}`;
+  }
+  return `file:${observation.path}`;
+}
+
 /** OpenAI `tool_calls` or Pi-native `{ type: "toolCall" }` content parts. */
 export function assistantToolCalls(message) {
   if (message?.role !== "assistant") return [];
@@ -76,6 +85,24 @@ export function readToolCallIds(messages, readTools) {
     }
   }
   return ids;
+}
+
+export function latestReadCallIdsByObservation(messages, observationsByCallId, readTools) {
+  const observations = observationsByCallId instanceof Map
+    ? observationsByCallId
+    : new Map(Object.entries(observationsByCallId ?? {}));
+  const latest = new Map();
+  for (const message of messages) {
+    for (const call of assistantToolCalls(message)) {
+      const name = callName(call);
+      const id = callId(call);
+      if (!readTools.has(name) || typeof id !== "string") continue;
+      const observation = observations.get(id);
+      const key = readObservationKey(observation);
+      if (key) latest.set(key, id);
+    }
+  }
+  return new Set(latest.values());
 }
 
 export function unservedReadToolCallIds(messages, readTools, servedCallIds, observedCallIds) {
@@ -299,12 +326,21 @@ export function dropUnservedReadToolPairs(messages, {
   observedCallIds,
   projection,
   readDispositionByCallId,
+  historicalReadDispositionByCallId,
 } = {}) {
   const dropIds = unservedReadToolCallIds(messages, readTools, servedCallIds, observedCallIds);
   const dispositions = projectionDispositionByPath(projection);
   const keptReadCalls = readDispositionByCallId instanceof Map ? readDispositionByCallId : new Map();
+  const historicalReadCalls = historicalReadDispositionByCallId instanceof Map
+    ? historicalReadDispositionByCallId
+    : new Map();
   for (const [callId, item] of keptReadCalls.entries()) {
     if (item?.disposition === "budget") {
+      dropIds.delete(callId);
+    }
+  }
+  for (const [callId, item] of historicalReadCalls.entries()) {
+    if (item?.disposition === "budget" || item?.disposition === "unresolved") {
       dropIds.delete(callId);
     }
   }
@@ -316,7 +352,9 @@ export function dropUnservedReadToolPairs(messages, {
   for (const id of dumpPaths.keys()) dropIds.delete(id);
 
   const hasReadReplacements = [...keptReadCalls.values()].some(
-    (item) => item?.disposition === "budget",
+    (item) => item?.disposition === "budget" || item?.disposition === "unresolved",
+  ) || [...historicalReadCalls.values()].some(
+    (item) => item?.disposition === "budget" || item?.disposition === "unresolved",
   );
   if (dropIds.size === 0 && dumpPaths.size === 0 && !hasReadReplacements) {
     return messages.map((message) => structuredClone(message));
@@ -335,6 +373,13 @@ export function dropUnservedReadToolPairs(messages, {
       if (keptReadCalls.has(resultId)) {
         const { path, disposition } = keptReadCalls.get(resultId);
         if (disposition === "budget") {
+          kept.push(withReplacedReadBody(message, path, disposition));
+          continue;
+        }
+      }
+      if (historicalReadCalls.has(resultId)) {
+        const { path, disposition } = historicalReadCalls.get(resultId);
+        if (disposition === "budget" || disposition === "unresolved") {
           kept.push(withReplacedReadBody(message, path, disposition));
           continue;
         }

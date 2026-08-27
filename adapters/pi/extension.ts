@@ -6,6 +6,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 import {
   dropUnservedReadToolPairs,
+  latestReadCallIdsByObservation,
+  readToolCallIds,
   readDispositionByCallToUnit,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
@@ -33,6 +35,14 @@ function replaceMapContents(target: Map<string, string>, source: Map<string, str
   for (const [key, value] of source.entries()) target.set(key, value);
 }
 
+function replaceDispositionMapContents(
+  target: Map<string, { path: string; disposition: string }>,
+  source: Map<string, { path: string; disposition: string }>,
+) {
+  target.clear();
+  for (const [key, value] of source.entries()) target.set(key, { ...value });
+}
+
 function selectedRevisionsFromProjection(
   projection: { selected?: Array<{ id?: string; revision?: string }> } | undefined,
 ): Map<string, string> {
@@ -54,6 +64,32 @@ function countSkipEligibleSelections(
     if (lastInjectedRevision.get(unit.id) === unit.revision) count += 1;
   }
   return count;
+}
+
+function syncRegistryToActiveCalls(
+  engine: FreshCtxEngine,
+  callToUnit: Map<string, string>,
+  activeCallIds: Set<string>,
+) {
+  const activeUnits = new Set<string>();
+  for (const [callId, unitId] of callToUnit.entries()) {
+    if (activeCallIds.has(callId)) activeUnits.add(unitId);
+  }
+  for (const unitId of Array.from((engine.registry as { units: Map<string, unknown> }).units.keys())) {
+    if (!activeUnits.has(unitId)) (engine.registry as { units: Map<string, unknown> }).units.delete(unitId);
+  }
+}
+
+function omittedReadDispositions(
+  readDispositionByCallId: Map<string, { path: string; disposition: string }>,
+): Map<string, { path: string; disposition: string }> {
+  const omitted = new Map<string, { path: string; disposition: string }>();
+  for (const [callId, item] of readDispositionByCallId.entries()) {
+    if (item.disposition === "budget" || item.disposition === "unresolved") {
+      omitted.set(callId, { path: item.path, disposition: item.disposition });
+    }
+  }
+  return omitted;
 }
 
 function projectionAppliedToMessages(messages: readonly unknown[] | undefined, projectionText: string): boolean {
@@ -139,8 +175,17 @@ function replaceCapturedReads(
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = new FreshCtxEngine();
   const callToUnit = new Map<string, string>();
+  const callMeta = new Map<string, {
+    path: string;
+    scope: "file" | "region";
+    startLine?: number;
+    endLine?: number;
+    selector?: string;
+  }>();
   const lastInjectedRevision = new Map<string, string>();
   const pendingInjectedRevision = new Map<string, string>();
+  const appliedReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
+  const pendingReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
   let pendingProjectionText = "";
 
   pi.on("turn_start", async (event) => {
@@ -151,8 +196,12 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     const payload = (event as { payload?: { messages?: readonly unknown[] } }).payload;
     if (projectionAppliedToMessages(payload?.messages, pendingProjectionText)) {
       replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+      for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
+        appliedReadDispositionByCallId.set(callId, { ...item });
+      }
     }
     pendingInjectedRevision.clear();
+    pendingReadDispositionByCallId.clear();
     pendingProjectionText = "";
   });
 
@@ -206,6 +255,13 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
           observedFileLineCount,
         });
         callToUnit.set(event.toolCallId, unit.id);
+        callMeta.set(event.toolCallId, {
+          path: file.path,
+          scope: "region",
+          startLine: scopeMeta.startLine,
+          endLine: scopeMeta.endLine,
+          selector: scopeMeta.selector,
+        });
         return;
       }
 
@@ -215,6 +271,10 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         scope: "file",
       });
       callToUnit.set(event.toolCallId, unit.id);
+      callMeta.set(event.toolCallId, {
+        path: file.path,
+        scope: "file",
+      });
     } catch {
       // Unsupported, binary, oversized, missing, or out-of-root reads remain
       // ordinary Pi results. FreshCtx never masks a result it cannot refresh.
@@ -225,6 +285,16 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     if (engine.registry.list().length === 0) return;
 
     try {
+      const activeOfficialCallIds = latestReadCallIdsByObservation(
+        event.messages,
+        callMeta,
+        new Set(["read"]),
+      );
+      const activeCallIds = new Set<string>();
+      for (const callId of callToUnit.keys()) {
+        if (!callMeta.has(callId) || activeOfficialCallIds.has(callId)) activeCallIds.add(callId);
+      }
+      syncRegistryToActiveCalls(engine, callToUnit, activeCallIds);
       await engine.refresh(async (filePath) =>
         (await safeWorkspaceFile(ctx.cwd, filePath)).content,
       );
@@ -247,13 +317,18 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         engine.registry,
         projection,
       );
+      replaceDispositionMapContents(
+        pendingReadDispositionByCallId,
+        omittedReadDispositions(readDispositionByCallId),
+      );
       const assembled = dropUnservedReadToolPairs(rewritten, {
         readTools: PI_READ_TOOLS,
         servedCallIds,
-        observedCallIds: new Set(callToUnit.keys()),
+        observedCallIds: readToolCallIds(event.messages, PI_READ_TOOLS),
         trackedPaths: engine.registry.list().map((unit) => unit.path),
         projection,
         readDispositionByCallId,
+        historicalReadDispositionByCallId: appliedReadDispositionByCallId,
       });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
 

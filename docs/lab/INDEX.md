@@ -86,3 +86,4 @@
 | [0086](pcr/0086-first-inject-tail-identity.md) | 2026-08-27 | Hermes first-inject tail identity fail-closes wrong-sized tail payloads | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0087](pcr/0087-skip-after-discard.md) | 2026-08-27 | Fail-close apply promotion; discarded NEW cannot mint or authorize skip | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0088](pcr/0088-first-inject-tail-leftover-shapes.md) | 2026-08-27 | Hermes first-inject tail identity fail-closes undersized, middle, and extra-NL leftovers | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0089](pcr/0089-omitted-reread-loop.md) | 2026-08-27 | Omitted official reread loop fails closed without stale replay or duplicate current copies | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
