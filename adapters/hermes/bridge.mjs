@@ -1,3 +1,4 @@
+import { realpathSync } from "node:fs";
 import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
@@ -709,7 +710,17 @@ export function toProviderPayload(messages, { model = "freshctx-capture" } = {})
 
 import { fileURLToPath } from "node:url";
 
-const invoked = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+function invokedAsCli() {
+  if (!process.argv[1]) return false;
+  const modulePath = fileURLToPath(import.meta.url);
+  try {
+    return realpathSync(modulePath) === realpathSync(process.argv[1]);
+  } catch {
+    return modulePath === process.argv[1];
+  }
+}
+
+const invoked = invokedAsCli();
 if (invoked) {
   try {
     const payload = await readStdin();

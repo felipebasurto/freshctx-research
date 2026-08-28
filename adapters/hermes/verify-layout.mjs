@@ -66,6 +66,15 @@ export async function assertBridgeImports(pluginsDir, { cwd = process.cwd() } = 
     const detail = (run.stderr || run.stdout || "bridge probe failed").trim();
     throw new Error(`bridge import probe failed: ${detail}`);
   }
+  try {
+    const parsed = JSON.parse(run.stdout || "");
+    if (!Array.isArray(parsed?.messages)) {
+      throw new Error("bridge probe did not return messages");
+    }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`bridge import probe returned invalid JSON: ${detail}`);
+  }
 }
 
 export async function stageHermesOnlyExtract(sourceHermesDir) {
