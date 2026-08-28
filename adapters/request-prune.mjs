@@ -254,25 +254,6 @@ export function revisionsRecordFromProjection(projection) {
   );
 }
 
-function revisionRecordEntries(record) {
-  if (record instanceof Map) return [...record.entries()];
-  if (record && typeof record === "object" && !Array.isArray(record)) {
-    return Object.entries(record);
-  }
-  return [];
-}
-
-export function revisionsRecordsMatch(left, right) {
-  const leftEntries = revisionRecordEntries(left);
-  const rightEntries = revisionRecordEntries(right);
-  if (leftEntries.length === 0 || leftEntries.length !== rightEntries.length) return false;
-  const rightMap = new Map(rightEntries);
-  for (const [key, value] of leftEntries) {
-    if (rightMap.get(key) !== value) return false;
-  }
-  return true;
-}
-
 export function isCurrentCollapsedProjectionMarker(text) {
   return typeof text === "string"
     && text.startsWith("[freshctx:already-served units=")
@@ -283,7 +264,6 @@ export function resolveProjectionText({
   messages,
   projection,
   skipEligibleSelections,
-  lastDeliveredCollapsedRevision,
   userCountMessages = messages,
 }) {
   if (shouldCollapseCurrentProjection(
@@ -292,10 +272,7 @@ export function resolveProjectionText({
     skipEligibleSelections,
     { userCountMessages },
   )) {
-    if (revisionsRecordsMatch(lastDeliveredCollapsedRevision, revisionsRecordFromProjection(projection))) {
-      return "";
-    }
-    return currentProjectionMarker({ unitCount: projection.selected.length });
+    return "";
   }
   return projection.text;
 }

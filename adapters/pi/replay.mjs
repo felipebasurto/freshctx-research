@@ -4,7 +4,6 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import {
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
-  isCurrentCollapsedProjectionMarker,
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
@@ -209,7 +208,6 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const callToUnit = new Map();
   const callMeta = new Map();
   const lastInjectedRevision = new Map();
-  const lastDeliveredCollapsedRevision = new Map();
   const pendingInjectedRevision = new Map();
   const appliedReadDispositionByCallId = new Map();
   const pendingReadDispositionByCallId = new Map();
@@ -221,7 +219,6 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
     callToUnit,
     callMeta,
     lastInjectedRevision,
-    lastDeliveredCollapsedRevision,
     pendingInjectedRevision,
     appliedReadDispositionByCallId,
     pendingReadDispositionByCallId,
@@ -238,11 +235,6 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       const messages = event?.payload?.messages;
       if (projectionAppliedToMessages(messages, pendingProjectionText)) {
         replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
-        if (isCurrentCollapsedProjectionMarker(pendingProjectionText)) {
-          replaceMapContents(lastDeliveredCollapsedRevision, pendingInjectedRevision);
-        } else if (pendingProjectionText.includes("<freshctx ")) {
-          lastDeliveredCollapsedRevision.clear();
-        }
         for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
           appliedReadDispositionByCallId.set(callId, { ...item });
         }
@@ -350,7 +342,6 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           messages: event.messages,
           projection,
           skipEligibleSelections,
-          lastDeliveredCollapsedRevision,
         });
         pendingProjectionText = projectionText;
         const rewritten = replaceHistoricalProjectionMessages(

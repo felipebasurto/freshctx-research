@@ -103,3 +103,4 @@
 | [0103](pcr/0103-provider-neutral-transformation-contract.md) | 2026-08-28 | Provider-neutral transformation contract (Design B/D read-slot inline) | `synthetic`; `replay`; `adapter-only`; `invariant` | review |
 | [0104](pcr/0104-pi-pcr-0103-host-wiring.md) | 2026-08-28 | Pi host wiring for PCR 0103 quoteability contract | `synthetic`; `replay`; `pi-fresh`; `adapter-only`; `invariant` | review |
 | [0105](pcr/0105-hermes-pcr-0103-host-wiring.md) | 2026-08-28 | Hermes host wiring for PCR 0103 quoteability contract | `synthetic`; `replay`; `hermes-fresh`; `adapter-only`; `invariant` | review |
+| [0106](pcr/0106-retire-obsolete-collapse-state.md) | 2026-08-28 | Retire obsolete collapse delivery state after PCR 0103–0105 | `synthetic`; `replay`; `adapter-only`; `cleanup` | review |

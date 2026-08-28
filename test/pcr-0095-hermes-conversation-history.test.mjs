@@ -79,11 +79,11 @@ test("PCR 0095: Hermes later request slice still collapses unchanged projection 
     });
     assert.ok(turn2);
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
-    assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn2.projectionText, "");
     assert.equal(countOccurrences(hermesMessageText(turn2.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(turn2.projectionText, NEW_BODY), 0);
     const stateAfterTurn2Select = JSON.parse(await readFile(stateFile, "utf8"));
-    assert.equal(stateAfterTurn2Select.pendingProjectionText, turn2.projectionText);
+    assert.equal(stateAfterTurn2Select.pendingProjectionText, undefined);
 
     await adapter.onTurnComplete(
       [

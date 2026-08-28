@@ -134,7 +134,8 @@ test("PCR 0105: Hermes OpenAI grammar preserves pairing and read-slot inline on 
     await adapter.onTurnComplete(structuredClone(turn3Persisted), ctx);
     const turn3 = await adapter.onSelectContext(structuredClone(turn3Persisted), ctx);
     assert.ok(turn3);
-    assert.match(turn3.projectionText, /\[freshctx:already-served/u);
+    assert.equal(turn3.projectionText, "");
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     const trackedUnits = selectedUnitsFromTurn(turn2);
     assertHermesRequestInvariants(turn3, {
       probe: LINE2_NEW,
@@ -352,7 +353,8 @@ test("PCR 0105: retry after undelivered projection does not promote skip or repl
     const collapsed = await adapter.onSelectContext(structuredClone(collapsedPersisted), ctx);
     assert.ok(collapsed);
     assert.equal(collapsed.telemetry.skipEligibleSelections, 1);
-    assert.match(collapsed.projectionText, /\[freshctx:already-served/u);
+    assert.equal(collapsed.projectionText, "");
+    assert.equal(collapsed.telemetry.projectionBytes, 0);
     assertHermesRequestInvariants(collapsed, {
       probe: LINE2_NEW,
       observed: OLD_BODY,

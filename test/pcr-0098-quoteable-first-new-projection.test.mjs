@@ -419,9 +419,9 @@ test("PCR 0098: Pi turn-2 first-NEW keeps quoteable interior bytes at the tracke
     ];
     const turn3 = await adapter.onContext({ messages: structuredClone(turn3Persisted) }, ctx);
     assert.ok(turn3);
-    assert.match(turn3.projection.text, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn3.projection.text, "");
     assert.doesNotMatch(turn3.projection.text, /<freshctx-unit/u);
-    assert.equal(turn3.telemetry.projectionBytes, 99);
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     assert.doesNotMatch(piMessageText(turn3.messages), /line2 OLD interior/u);
   } finally {
     await rm(workspace, { recursive: true, force: true });
@@ -486,9 +486,9 @@ test("PCR 0098: Hermes turn-2 first-NEW keeps quoteable interior bytes at the tr
     await adapter.onTurnComplete(structuredClone(turn3Persisted), ctx);
     const turn3 = await adapter.onSelectContext(structuredClone(turn3Persisted), ctx);
     assert.ok(turn3);
-    assert.match(turn3.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn3.projectionText, "");
     assert.doesNotMatch(turn3.projectionText, /<freshctx-unit/u);
-    assert.equal(turn3.telemetry.projectionBytes, 99);
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     assert.doesNotMatch(hermesMessageText(turn3.messages), /line2 OLD interior/u);
   } finally {
     await rm(workspace, { recursive: true, force: true });

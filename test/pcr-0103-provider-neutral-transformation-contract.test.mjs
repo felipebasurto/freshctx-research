@@ -197,13 +197,12 @@ test("PCR 0103: acceptance — later unchanged turn quotes line never in prior a
   }
 });
 
-test("PCR 0103: resolveProjectionText collapse/omit unchanged — tail still historical", () => {
+test("PCR 0103: resolveProjectionText collapses unchanged later turns to an empty tail", () => {
   const projection = {
     selected: [{ id: "fc_test", revision: "sha256:abc", path: REGION_PATH, content: NEW_BODY }],
     omitted: [],
     text: `<freshctx turn="3">${NEW_BODY}</freshctx>`,
   };
-  const revisions = Object.fromEntries([["fc_test", "sha256:abc"]]);
   const laterMessages = [
     { role: "user", content: "task" },
     { role: "assistant", content: "ok" },
@@ -214,16 +213,6 @@ test("PCR 0103: resolveProjectionText collapse/omit unchanged — tail still his
       messages: laterMessages,
       projection,
       skipEligibleSelections: 1,
-      lastDeliveredCollapsedRevision: {},
-    }),
-    currentProjectionMarker({ unitCount: 1 }),
-  );
-  assert.equal(
-    resolveProjectionText({
-      messages: laterMessages,
-      projection,
-      skipEligibleSelections: 1,
-      lastDeliveredCollapsedRevision: revisions,
     }),
     "",
   );

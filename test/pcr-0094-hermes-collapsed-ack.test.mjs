@@ -71,12 +71,12 @@ test("PCR 0094: Hermes acknowledges the collapsed marker text and keeps later un
     await adapter.onTurnComplete(structuredClone(turn2Persisted), ctx);
     const turn2 = await adapter.onSelectContext(structuredClone(turn2Persisted), ctx);
     assert.ok(turn2);
+    assert.equal(turn2.projectionText, "");
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
-    assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
     assert.equal(countOccurrences(hermesMessageText(turn2.messages), NEW_BODY), 1);
     assert.equal(countOccurrences(turn2.projectionText, NEW_BODY), 0);
     const stateAfterTurn2Select = JSON.parse(await readFile(stateFile, "utf8"));
-    assert.equal(stateAfterTurn2Select.pendingProjectionText, turn2.projectionText);
+    assert.equal(stateAfterTurn2Select.pendingProjectionText, undefined);
 
     await adapter.onTurnComplete(
       [

@@ -142,7 +142,8 @@ test("PCR 0100: over-cap large board turn-2 unchanged collapses instead of re-du
       ctx,
     );
     assert.ok(turn2);
-    assert.match(turn2.projection.text, /\[freshctx:already-served units=21\]/u);
+    assert.equal(turn2.projection.text, "");
+    assert.equal(turn2.telemetry.projectionBytes, 0);
     assert.ok(turn2.telemetry.projectionBytes < 200, `turn2 collapsed (${turn2.telemetry.projectionBytes})`);
     assert.ok(
       turn2.telemetry.projectionBytes < turn1Bytes / 10,
@@ -313,7 +314,8 @@ test("PCR 0100: Hermes over-cap large board collapses on unchanged later turn", 
     await hermes.onTurnComplete(structuredClone(turn2Persisted), ctx);
     const turn2Hermes = await hermes.onSelectContext(structuredClone(turn2Persisted), ctx);
     assert.ok(turn2Hermes);
-    assert.match(turn2Hermes.projectionText, /\[freshctx:already-served units=21\]/u);
+    assert.equal(turn2Hermes.projectionText, "");
+    assert.equal(turn2Hermes.telemetry.projectionBytes, 0);
     assert.ok(turn2Hermes.telemetry.projectionBytes < 200);
     assert.ok(
       turn2Hermes.telemetry.projectionBytes < turn1Hermes.telemetry.projectionBytes / 10,
