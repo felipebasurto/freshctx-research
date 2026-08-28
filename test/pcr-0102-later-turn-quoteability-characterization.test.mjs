@@ -40,8 +40,9 @@ const OLD_BODY = "line1 header\nline2 OLD interior\nline3 footer\n";
 const NEW_BODY = "line1 header\nline2 NEW interior\nline3 footer\n";
 const LINE2_NEW = "line2 NEW interior";
 const LINE2_OLD = "line2 OLD interior";
-function selectedUnitsFromHermesTurn(turn) {
-  return decodeProjectionUnits(turn.projectionText ?? "");
+function selectedUnitsFromHermesTurn(turn, fallbackUnits = []) {
+  const decoded = decodeProjectionUnits(turn.projectionText ?? "");
+  return decoded.length > 0 ? decoded : fallbackUnits;
 }
 
 const PROBE = LINE2_NEW;
@@ -217,10 +218,12 @@ async function runHermesSmallBoardSeam() {
   const ctx = { cwd: workspace };
   const rows = [];
   const turn1Persisted = hermesTurn1Persisted();
+  let trackedSelectedUnits = [];
 
   await adapter.onTurnComplete(structuredClone(turn1Persisted), ctx);
   const turn1 = await adapter.onSelectContext(structuredClone(turn1Persisted), ctx);
   assert.ok(turn1);
+  trackedSelectedUnits = selectedUnitsFromHermesTurn(turn1);
   rows.push(
     formatMeasurementRow({
       turn: 1,
@@ -228,12 +231,12 @@ async function runHermesSmallBoardSeam() {
       metrics: measureRequestVisibility({
         messages: turn1.messages,
         projectionText: turn1.projectionText,
-        selectedUnits: selectedUnitsFromHermesTurn(turn1),
+        selectedUnits: trackedSelectedUnits,
         probesByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn1).map((unit) => [unit.id, LINE2_OLD]),
+          trackedSelectedUnits.map((unit) => [unit.id, LINE2_OLD]),
         ),
         observedByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn1).map((unit) => [unit.id, OLD_BODY]),
+          trackedSelectedUnits.map((unit) => [unit.id, OLD_BODY]),
         ),
         telemetry: turn1.telemetry,
         host: "hermes",
@@ -255,6 +258,7 @@ async function runHermesSmallBoardSeam() {
   await adapter.onTurnComplete(structuredClone(turn2Persisted), ctx);
   const turn2 = await adapter.onSelectContext(structuredClone(turn2Persisted), ctx);
   assert.ok(turn2);
+  trackedSelectedUnits = selectedUnitsFromHermesTurn(turn2);
   rows.push(
     formatMeasurementRow({
       turn: 2,
@@ -262,12 +266,12 @@ async function runHermesSmallBoardSeam() {
       metrics: measureRequestVisibility({
         messages: turn2.messages,
         projectionText: turn2.projectionText,
-        selectedUnits: selectedUnitsFromHermesTurn(turn2),
+        selectedUnits: trackedSelectedUnits,
         probesByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn2).map((unit) => [unit.id, PROBE]),
+          trackedSelectedUnits.map((unit) => [unit.id, PROBE]),
         ),
         observedByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn2).map((unit) => [unit.id, OLD_BODY]),
+          trackedSelectedUnits.map((unit) => [unit.id, OLD_BODY]),
         ),
         telemetry: turn2.telemetry,
         host: "hermes",
@@ -294,12 +298,12 @@ async function runHermesSmallBoardSeam() {
       metrics: measureRequestVisibility({
         messages: turn3.messages,
         projectionText: turn3.projectionText,
-        selectedUnits: selectedUnitsFromHermesTurn(turn3),
+        selectedUnits: selectedUnitsFromHermesTurn(turn3, trackedSelectedUnits),
         probesByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn3).map((unit) => [unit.id, PROBE]),
+          trackedSelectedUnits.map((unit) => [unit.id, PROBE]),
         ),
         observedByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn3).map((unit) => [unit.id, OLD_BODY]),
+          trackedSelectedUnits.map((unit) => [unit.id, OLD_BODY]),
         ),
         telemetry: turn3.telemetry,
         host: "hermes",
@@ -326,12 +330,12 @@ async function runHermesSmallBoardSeam() {
       metrics: measureRequestVisibility({
         messages: turn4.messages,
         projectionText: turn4.projectionText,
-        selectedUnits: selectedUnitsFromHermesTurn(turn4),
+        selectedUnits: selectedUnitsFromHermesTurn(turn4, trackedSelectedUnits),
         probesByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn4).map((unit) => [unit.id, PROBE]),
+          trackedSelectedUnits.map((unit) => [unit.id, PROBE]),
         ),
         observedByUnitId: Object.fromEntries(
-          selectedUnitsFromHermesTurn(turn4).map((unit) => [unit.id, OLD_BODY]),
+          trackedSelectedUnits.map((unit) => [unit.id, OLD_BODY]),
         ),
         telemetry: turn4.telemetry,
         host: "hermes",
@@ -358,12 +362,12 @@ function assertSmallBoardSeam(rows, { hostLabel }) {
   assert.equal(t2.tailOmitted, false);
 
   assert.equal(t3.projectionBytes, 99, `${hostLabel} t3: collapse stub`);
-  assert.equal(t3.quoteableAllSelected, false, `${hostLabel} t3: no quoteable current bytes (Q1 gap)`);
+  assert.equal(t3.quoteableAllSelected, true, `${hostLabel} t3: quoteable via read slot (PCR 0103)`);
   assert.equal(t3.collapsedStub, true);
   assert.equal(t3.tailOmitted, false);
 
   assert.equal(t4.projectionBytes, 0, `${hostLabel} t4: empty tail`);
-  assert.equal(t4.quoteableAllSelected, false, `${hostLabel} t4+: no quoteable current bytes (Q1 gap)`);
+  assert.equal(t4.quoteableAllSelected, true, `${hostLabel} t4+: quoteable via read slot (PCR 0103)`);
   assert.equal(t4.collapsedStub, false);
   assert.equal(t4.tailOmitted, true);
 }
@@ -413,7 +417,8 @@ test("PCR 0102: Pi small board pins 0098–0100 quoteability seam on replay", as
     assert.doesNotMatch(String(turn2Tool?.content ?? ""), /supplied in the live projection/u);
 
     const turn3Tool = turns.turn3.messages.find((message) => message.role === "tool");
-    assert.match(String(turn3Tool?.content ?? ""), /supplied in the live projection/u);
+    assert.match(String(turn3Tool?.content ?? ""), /line2 NEW interior/u);
+    assert.doesNotMatch(String(turn3Tool?.content ?? ""), /supplied in the live projection/u);
     assert.ok(decodeProjectionUnits(turns.turn3.projection.text).length === 0);
 
     assert.equal(turns.turn4.projection.text, "");
@@ -577,7 +582,7 @@ test("PCR 0102: over-cap board turn-3/4 pins zero tail with no quoteable current
       host: "pi",
     });
     assert.equal(turn3Metrics.compaction.tailOmitted, true);
-    assert.equal(turn3Metrics.quoteability.allSelectedQuoteable, false);
+    assert.equal(turn3Metrics.quoteability.allSelectedQuoteable, true);
 
     messages.push({ role: "assistant", content: "summary3" }, { role: "user", content: "turn four" });
     await adapter.onTurnStart({ turnIndex: 4 });

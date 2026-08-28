@@ -100,3 +100,4 @@
 | [0100](pcr/0100-over-cap-unchanged-collapse.md) | 2026-08-28 | Over-cap unchanged turns collapse instead of re-dumping bodies | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0101](pcr/0101-native-quoteability-zero-byte-evidence.md) | 2026-08-28 | Native harness compatibility and later-turn quoteability evidence | `synthetic`; `design-evidence`; `replay`; `native-host` | review |
 | [0102](pcr/0102-later-turn-quoteability-characterization.md) | 2026-08-28 | Later-turn quoteability characterization and replay measurement | `synthetic`; `replay`; `characterization`; `measurement` | review |
+| [0103](pcr/0103-provider-neutral-transformation-contract.md) | 2026-08-28 | Provider-neutral transformation contract (Design B/D read-slot inline) | `synthetic`; `replay`; `adapter-only`; `invariant` | review |

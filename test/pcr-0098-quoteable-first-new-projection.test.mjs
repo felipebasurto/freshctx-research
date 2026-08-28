@@ -22,6 +22,7 @@ import {
 import {
   servedReadToolResultContent,
   shouldInlineServedReadAtToolResult,
+  shouldInlineSelectedReadAtToolResult,
 } from "../adapters/request-prune.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
 import { stableReadMarker } from "../src/transcript.mjs";
@@ -328,20 +329,39 @@ test("PCR 0098: turn-2 first-NEW gate fires only on the second user turn with a 
 test("PCR 0098: stale served read tool results carry current bytes on turn 2", () => {
   const unit = { id: "fc_test", path: REGION_PATH, content: NEW_BODY };
   const selectedUnitIds = new Set(["fc_test"]);
+  const fullProjection = `<freshctx turn="2" selected="1" unresolved="0" budget-omitted="0">\n<freshctx-unit id="fc_test" path="${REGION_PATH}" lines="1-4" revision="sha256:x" resolution="whole-file" content-bytes="${Buffer.byteLength(NEW_BODY, "utf8")}">\n${NEW_BODY}\n</freshctx-unit>\n</freshctx>`;
+  assert.equal(
+    shouldInlineSelectedReadAtToolResult({
+      unit,
+      observedContent: OLD_BODY,
+      projectionText: fullProjection,
+      selectedUnitIds,
+      turn2FirstNewGate: true,
+    }),
+    true,
+  );
   assert.equal(
     servedReadToolResultContent({
       unit,
-      observedContent: OLD_BODY,
-      inlineServedReadAtToolResult: true,
+      inlineSelectedRead: true,
       selectedUnitIds,
     }),
     NEW_BODY,
   );
   assert.equal(
-    servedReadToolResultContent({
+    shouldInlineSelectedReadAtToolResult({
       unit,
       observedContent: NEW_BODY,
-      inlineServedReadAtToolResult: true,
+      projectionText: fullProjection,
+      selectedUnitIds,
+      turn2FirstNewGate: true,
+    }),
+    false,
+  );
+  assert.equal(
+    servedReadToolResultContent({
+      unit,
+      inlineSelectedRead: false,
       selectedUnitIds,
     }),
     stableReadMarker(unit),

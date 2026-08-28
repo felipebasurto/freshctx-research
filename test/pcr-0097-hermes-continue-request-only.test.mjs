@@ -255,7 +255,8 @@ test("PCR 0097: replay adapter promotes request-only apply ack from assistant fo
     assert.ok(turn2);
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
     assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
-    assert.equal(hermesMessageText(turn2.messages).split(NEW_BODY).length - 1, 0);
+    assert.equal(hermesMessageText(turn2.messages).split(NEW_BODY).length - 1, 1);
+    assert.equal(turn2.projectionText.split(NEW_BODY).length - 1, 0);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

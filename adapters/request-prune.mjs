@@ -132,18 +132,53 @@ export function shouldInlineServedReadAtToolResult({
   return true;
 }
 
-export function servedReadToolResultContent({
+/** True when the live tail carries bounded unit body bytes models can quote (not stub/empty). */
+export function projectionCarriesQuoteableUnits(projectionText) {
+  if (typeof projectionText !== "string" || projectionText.length === 0) return false;
+  if (isCurrentCollapsedProjectionMarker(projectionText)) return false;
+  if (!projectionText.includes("<freshctx-unit")) return false;
+  try {
+    const units = decodeProjectionUnits(projectionText);
+    return units.some((unit) => String(unit.content ?? "").length > 0);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Provider-neutral quoteability: inline bounded current bytes at the original
+ * read tool-result slot when the tail does not carry quoteable unit bodies
+ * (Design D), or on the turn-2 first-NEW seam while the tail keeps the full
+ * envelope (PCR 0098). Fail closed when the unit has no current content (P5).
+ */
+export function shouldInlineSelectedReadAtToolResult({
   unit,
   observedContent,
-  inlineServedReadAtToolResult,
+  projectionText,
+  selectedUnitIds,
+  turn2FirstNewGate = false,
+}) {
+  if (!selectedUnitIds.has(unit.id)) return false;
+  const current = String(unit.content ?? "");
+  if (current.length === 0) return false;
+  if (turn2FirstNewGate) {
+    const observed = textFromToolContent(observedContent);
+    if (observed.length > 0 && observed === current) return false;
+    return true;
+  }
+  return !projectionCarriesQuoteableUnits(projectionText);
+}
+
+export function servedReadToolResultContent({
+  unit,
+  inlineSelectedRead = false,
   selectedUnitIds,
 }) {
-  if (!inlineServedReadAtToolResult || !selectedUnitIds.has(unit.id)) {
+  if (!inlineSelectedRead || !selectedUnitIds.has(unit.id)) {
     return stableReadMarker(unit);
   }
-  const observed = textFromToolContent(observedContent);
   const current = String(unit.content ?? "");
-  if (observed.length > 0 && observed === current) return stableReadMarker(unit);
+  if (current.length === 0) return stableReadMarker(unit);
   return current;
 }
 
@@ -155,7 +190,7 @@ export function replaceTrackedReadToolResults(messages, {
   lastInjectedRevision,
   userCountMessages = messages,
 } = {}) {
-  const inlineServedReadAtToolResult = shouldInlineServedReadAtToolResult({
+  const turn2FirstNewGate = shouldInlineServedReadAtToolResult({
     messages,
     projection,
     skipEligibleSelections,
@@ -169,10 +204,16 @@ export function replaceTrackedReadToolResults(messages, {
     if (!callId) return structuredClone(message);
     const unit = unitForCallId(callId);
     if (!unit) return structuredClone(message);
-    const content = servedReadToolResultContent({
+    const inlineSelectedRead = shouldInlineSelectedReadAtToolResult({
       unit,
       observedContent: message.content,
-      inlineServedReadAtToolResult,
+      projectionText,
+      selectedUnitIds,
+      turn2FirstNewGate,
+    });
+    const content = servedReadToolResultContent({
+      unit,
+      inlineSelectedRead,
       selectedUnitIds,
     });
     return withToolResultContent(message, content);
