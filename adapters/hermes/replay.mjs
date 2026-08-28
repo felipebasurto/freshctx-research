@@ -33,7 +33,11 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
       });
     },
 
-    async onSelectContext(messages, ctx, { budgetTokens = 0, budgetChars: eventBudgetChars, incomingMessage } = {}) {
+    async onSelectContext(
+      messages,
+      ctx,
+      { budgetTokens = 0, budgetChars: eventBudgetChars, incomingMessage, conversationMessages } = {},
+    ) {
       const budget = resolveAdapterBudgetChars({
         budgetChars: eventBudgetChars,
         budgetTokens,
@@ -46,6 +50,7 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
         budgetTokens,
         budgetChars: budget,
         incomingMessage,
+        conversationMessages,
       });
     },
   };

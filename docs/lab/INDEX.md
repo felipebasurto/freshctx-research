@@ -92,3 +92,4 @@
 | [0092](pcr/0092-later-turn-projection-replay.md) | 2026-08-28 | Later-turn projection replay collapses to an already-served marker | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0093](pcr/0093-live-reproject-fail-close.md) | 2026-08-28 | Live re-project fail-closes to an already-served marker after an unchanged applied turn | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0094](pcr/0094-hermes-collapsed-ack-target.md) | 2026-08-28 | Hermes collapsed-turn apply-ack tracks the emitted marker text | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0095](pcr/0095-hermes-conversation-history-gate.md) | 2026-08-28 | Hermes later-turn collapse counts conversation history, not only the narrowed request slice | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
