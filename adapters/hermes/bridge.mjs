@@ -623,9 +623,16 @@ export async function selectContext(payload) {
   const skipEligibleSelections = countSkipEligibleSelections(state.lastInjectedRevision, projection);
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
   const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
+  const projectionText = shouldCollapseCurrentProjection(
+    payload.messages,
+    projection,
+    skipEligibleSelections,
+  )
+    ? currentProjectionMarker({ unitCount: projection.selected.length })
+    : projection.text;
   const pendingInjectedRevision = selectedRevisionsFromProjection(projection);
   const pendingReadDispositionByCallId = omittedReadDispositionObject(readDispositionByCallId);
-  if (projection.text.length > 0 && (
+  if (projectionText.length > 0 && (
     hasOwnEntries(pendingInjectedRevision) || hasOwnEntries(pendingReadDispositionByCallId)
   )) {
     state.projectionStateVersion = 1;
@@ -634,7 +641,7 @@ export async function selectContext(payload) {
     } else {
       delete state.pendingInjectedRevision;
     }
-    state.pendingProjectionText = projection.text;
+    state.pendingProjectionText = projectionText;
     if (hasOwnEntries(pendingReadDispositionByCallId)) {
       state.pendingReadDispositionByCallId = pendingReadDispositionByCallId;
     } else {
@@ -646,14 +653,6 @@ export async function selectContext(payload) {
   }
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
-
-  const projectionText = shouldCollapseCurrentProjection(
-    payload.messages,
-    projection,
-    skipEligibleSelections,
-  )
-    ? currentProjectionMarker({ unitCount: projection.selected.length })
-    : projection.text;
   const rewritten = payload.messages.map((message) => {
     if (message?.role !== "tool") return structuredClone(message);
     const id = message.tool_call_id ?? message.toolCallId;
