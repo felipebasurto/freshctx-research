@@ -16,6 +16,10 @@ on:
         description: "Artifact name from holdout-freeze-attest"
         required: false
         default: "holdout-freeze-attestation"
+      generator:
+        description: "TRACE_GENERATORS key (holdout-v0.2, or omit for syntheticFixtureTrace)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -70,14 +74,28 @@ jobs:
           PACK: ${{ github.event.inputs.pack_id }}
           MANIFEST: ${{ github.event.inputs.manifest_path }}
 
-      - name: Generate traces (synthetic fixture only)
-        run: npm run holdout:generate -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+      - name: Generate traces
+        run: |
+          EXTRA=""
+          if [ -n "${{ github.event.inputs.generator }}" ]; then
+            EXTRA="--generator=${{ github.event.inputs.generator }}"
+          fi
+          npm run holdout:generate -- --manifest=${{ github.event.inputs.manifest_path }} $EXTRA
 
       - name: Run benchmarks
-        run: npm run holdout:run -- --manifest=${{ github.event.inputs.manifest_path }} --fixture=synthetic
+        run: npm run holdout:run -- --manifest=${{ github.event.inputs.manifest_path }}
 
       - name: Report (GHA + production attestation → sealed)
         run: npm run holdout:report -- --manifest=${{ github.event.inputs.manifest_path }}
 
       - name: Verify pack
-        run: npm run holdout:verify -- --manifest=${{ github.event.inputs.manifest_path }}
+        run: npm run holdout:verify -- --manifest=${{ github.event.inputs.manifest_path }} --attestation=attestation-download/attestation.json
+
+      - name: Upload sealed pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: holdout-pack-${{ github.event.inputs.pack_id }}
+          path: |
+            bench/splits/${{ github.event.inputs.pack_id }}.json
+            bench/packs/${{ github.event.inputs.pack_id }}
+          retention-days: 90
