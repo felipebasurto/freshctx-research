@@ -219,10 +219,15 @@ export function staleShellDumpPathByCallId(
       if (!SHELL_TOOLS.has(name) || typeof id !== "string") continue;
       const command = shellCommandFromInput(toolCallArguments(call));
       if (!command) continue;
-      const hits = trackedDumpPathsForCommand(command, paths);
-      if (hits.length === 0) continue;
-      if (hits.length === 1 && served.has(id) && pathDispositions?.get(hits[0]) !== "unresolved") continue;
-      replace.set(id, hits);
+      const match = trackedDumpPathsForCommand(command, paths);
+      if (!match) continue;
+      if (match.trackedPaths.length === 1
+        && match.untrackedPaths.length === 0
+        && served.has(id)
+        && pathDispositions?.get(match.trackedPaths[0]) !== "unresolved") {
+        continue;
+      }
+      replace.set(id, match);
     }
   }
   return replace;
@@ -258,19 +263,32 @@ function trackedDumpPathsForCommand(command, trackedPaths) {
   const namedPaths = shellDumpPathsFromCommand(command);
   if (namedPaths.length >= 2) {
     const resolved = [];
+    const untracked = [];
     const seen = new Set();
+    const seenUntracked = new Set();
     for (const namedPath of namedPaths) {
       const trackedPath = matchTrackedPath(namedPath, trackedPaths);
-      if (!trackedPath) return [];
+      if (!trackedPath) {
+        const normalizedNamed = String(namedPath ?? "").replace(/^\.\//u, "");
+        if (!seenUntracked.has(normalizedNamed)) {
+          seenUntracked.add(normalizedNamed);
+          untracked.push(normalizedNamed);
+        }
+        continue;
+      }
       if (seen.has(trackedPath)) continue;
       seen.add(trackedPath);
       resolved.push(trackedPath);
     }
-    return resolved;
+    return resolved.length > 0
+      ? { trackedPaths: resolved, untrackedPaths: untracked }
+      : null;
   }
 
   const singleHits = trackedPathsMentionedInCommand(command, trackedPaths);
-  return singleHits.length === 1 ? singleHits : [];
+  return singleHits.length === 1
+    ? { trackedPaths: singleHits, untrackedPaths: [] }
+    : null;
 }
 
 function staleDumpMarkerForSinglePath(path, disposition) {
@@ -286,18 +304,26 @@ function staleDumpMarkerForSinglePath(path, disposition) {
   return `[freshctx:stale-dump path=${path}] Current content is not supplied in the live projection.`;
 }
 
-function staleDumpMarker(paths, pathDispositions) {
-  if (paths.length === 1) {
-    const [path] = paths;
-    return staleDumpMarkerForSinglePath(path, pathDispositions.get(path));
+function staleDumpMarker({ trackedPaths, untrackedPaths }, pathDispositions) {
+  if (trackedPaths.length === 1) {
+    const [path] = trackedPaths;
+    if (untrackedPaths.length === 0) return staleDumpMarkerForSinglePath(path, pathDispositions.get(path));
+    return `${staleDumpMarkerForSinglePath(path, pathDispositions.get(path))} `
+      + `Untracked named paths are not supplied: ${untrackedPaths.join(", ")}.`;
   }
 
-  const details = paths.map((path) => `${path}=${pathDispositions.get(path) ?? "absent"}`).join("; ");
-  return `[freshctx:stale-dump paths=${paths.join(", ")}] Per-path live projection status: ${details}.`;
+  const details = trackedPaths
+    .map((path) => `${path}=${pathDispositions.get(path) ?? "absent"}`)
+    .join("; ");
+  if (untrackedPaths.length === 0) {
+    return `[freshctx:stale-dump paths=${trackedPaths.join(", ")}] Per-path live projection status: ${details}.`;
+  }
+  return `[freshctx:stale-dump paths=${trackedPaths.join(", ")}] Per-path live projection status: ${details}. `
+    + `Untracked named paths are not supplied: ${untrackedPaths.join(", ")}.`;
 }
 
-function withReplacedDumpBody(message, paths, pathDispositions) {
-  const marker = staleDumpMarker(paths, pathDispositions);
+function withReplacedDumpBody(message, dumpMatch, pathDispositions) {
+  const marker = staleDumpMarker(dumpMatch, pathDispositions);
   const content = Array.isArray(message.content)
     ? [{ type: "text", text: marker }]
     : marker;
@@ -366,8 +392,8 @@ export function dropUnservedReadToolPairs(messages, {
     if (resultId) {
       if (dropIds.has(resultId)) continue;
       if (dumpPaths.has(resultId)) {
-        const paths = dumpPaths.get(resultId);
-        kept.push(withReplacedDumpBody(message, paths, dispositions));
+        const dumpMatch = dumpPaths.get(resultId);
+        kept.push(withReplacedDumpBody(message, dumpMatch, dispositions));
         continue;
       }
       if (keptReadCalls.has(resultId)) {

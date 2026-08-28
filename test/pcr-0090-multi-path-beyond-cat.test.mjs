@@ -98,7 +98,7 @@ test("PCR 0090: all-tracked xargs cat dump marker-replaces the dump", () => {
   }
 });
 
-test("PCR 0090: mixed tracked and untracked multi-path python dump stays untouched", () => {
+test("PCR 0091: mixed tracked and untracked multi-path python dump marker-replaces stale tracked bytes", () => {
   const command = "python3 -c \"import pathlib, sys; [sys.stdout.write(pathlib.Path(path).read_text()) for path in sys.argv[1:]]\" README.md src/viajante/cli.py notes/freshctx-todo.md";
   const messages = [
     buildShellToolCall({ toolCallId: "call-python-mixed", command }),
@@ -109,7 +109,7 @@ test("PCR 0090: mixed tracked and untracked multi-path python dump stays untouch
     trackedPaths: TRACKED_PATHS,
     servedCallIds: new Set(),
   });
-  assert.equal(drop.size, 0);
+  assert.deepEqual([...drop], ["call-python-mixed"]);
 
   const pruned = dropUnservedReadToolPairs(messages, {
     readTools: new Set(["read"]),
@@ -117,8 +117,12 @@ test("PCR 0090: mixed tracked and untracked multi-path python dump stays untouch
     observedCallIds: new Set(),
     trackedPaths: TRACKED_PATHS,
   });
-  const payload = messageText(pruned);
-  assert.match(payload, /CONCAT_DUMP/u);
-  assert.match(payload, /ML0/u);
-  assert.doesNotMatch(payload, /freshctx:stale-dump/u);
+  const marker = messageText([pruned[1]]);
+  assert.doesNotMatch(marker, /CONCAT_DUMP/u);
+  assert.doesNotMatch(marker, /ML0/u);
+  assert.match(marker, /freshctx:stale-dump/u);
+  assert.match(marker, /README\.md/u);
+  assert.match(marker, /src\/viajante\/cli\.py/u);
+  assert.match(marker, /notes\/freshctx-todo\.md/u);
+  assert.match(marker, /not supplied/u);
 });

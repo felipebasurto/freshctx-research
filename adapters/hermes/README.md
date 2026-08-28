@@ -86,8 +86,10 @@ tracked file whose disk bytes change this turn is sent even over the cap
 
 Single-path shell dumps of already-tracked files are marker-replaced in the
 request copy (PCR 0081). Safe multi-path `cat`/`nl` dumps are also
-marker-replaced when every named path is already tracked; a multi-path dump that
-names any untracked path is left in place (PCR 0084).
+marker-replaced whenever at least one named path is already tracked; if the
+dump also names unmatched paths, the marker explicitly says those named paths
+are not supplied, and exact path matching still stays fail-closed (PCR 0084,
+PCR 0091).
 
 ## Remaining gates
 

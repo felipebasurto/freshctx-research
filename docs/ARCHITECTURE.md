@@ -165,9 +165,9 @@ An adapter owns protocol-specific work:
 - call refresh before every provider payload;
 - mask only observations it can refresh;
 - marker-replace request-copy dumps of a single already-tracked path
-  (PCR 0081) and safe multi-path `cat`/`nl` dumps when every named path is
-  already tracked (PCR 0084); any multi-path dump naming an untracked path
-  stays;
+  (PCR 0081) and recognized multi-path dumps whenever at least one named path is
+  already tracked; unmatched named paths are called out as not supplied, and
+  path matching stays fail-closed exact (PCR 0084, PCR 0091);
 - append or inject the projection in a schema-valid location;
 - return the original request on adapter failure;
 - expose telemetry and version information.
