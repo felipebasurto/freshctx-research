@@ -43,15 +43,19 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
         budgetTokens,
         defaultBudget: budgetChars,
       });
-      return selectContext({
-        stateFile,
-        messages,
-        cwd: ctx.cwd,
-        budgetTokens,
-        budgetChars: budget,
-        incomingMessage,
-        conversationMessages,
-      });
+      try {
+        return await selectContext({
+          stateFile,
+          messages,
+          cwd: ctx.cwd,
+          budgetTokens,
+          budgetChars: budget,
+          incomingMessage,
+          conversationMessages,
+        });
+      } catch {
+        return undefined;
+      }
     },
   };
 }
