@@ -99,3 +99,4 @@
 | [0099](pcr/0099-repeated-already-served-omit.md) | 2026-08-28 | Omit repeated already-served stub after first collapse | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0100](pcr/0100-over-cap-unchanged-collapse.md) | 2026-08-28 | Over-cap unchanged turns collapse instead of re-dumping bodies | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0101](pcr/0101-native-quoteability-zero-byte-evidence.md) | 2026-08-28 | Native harness compatibility and later-turn quoteability evidence | `synthetic`; `design-evidence`; `replay`; `native-host` | review |
+| [0102](pcr/0102-later-turn-quoteability-characterization.md) | 2026-08-28 | Later-turn quoteability characterization and replay measurement | `synthetic`; `replay`; `characterization`; `measurement` | review |
