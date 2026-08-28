@@ -115,7 +115,7 @@ print(json.dumps({
     "engineClass": engine.__class__.__name__,
     "loaderModule": sys.modules["plugins.context_engine"].__file__,
     "cwd": os.getcwd(),
-    "requestOnlyCollapsed": "<freshctx " in request_only_text,
+    "requestOnlyCollapsed": "<freshctx " not in request_only_text,
     "requestOnlyNewCopies": request_only_text.count(payload["newBody"]),
     "hostCollapsed": "<freshctx " not in host_text,
     "hostNewCopies": host_text.count(payload["newBody"]),
