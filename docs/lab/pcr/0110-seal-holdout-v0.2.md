@@ -87,6 +87,13 @@ none observed.
   uploads a tarball because `actions/upload-artifact` rejects colons.
 - 0096/0097 still need `bench/hosts/hermes`.
 
+## Decisions
+
+See the table in `docs/lab/NEXT-PROMPT.md`. Binding choices: flask lock not a
+new `synthetic` key; two-workflow split with `freeze_run_id`; GHA-only
+production attestation; in-memory sampler fixtures; not a tuning set; pack
+upload as tarball after generate.
+
 ## Next measurement
 
 One scheduled remeasure of this sealed pack. Do not treat cells as a tuning

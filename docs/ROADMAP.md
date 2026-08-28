@@ -82,12 +82,10 @@ carries a reason.
 sampler output on a throwaway pack id. Exit gate: the canary completes and is
 deleted, and no holdout-v0.2 artifact is created by it.
 
-**First sealed holdout v0.2.** New seeds through the full protocol, including
-remote freeze attestation and sampler output. Exit gate: `classification`
-reads sealed, `state.resultSetHash` matches a committed
-`bench/packs/<packId>/reports/results.jsonl`, and the winning policy is frozen
-before the pack opens. This is the first item on this list that may not start
-before the three above are closed.
+**First sealed holdout v0.2.** Landed in PCR 0110 / PR-S. `classification` is
+`sealed` against production attest run `33201069400`. The pack is **not a
+tuning set**. Do not reopen this item as a hill-climb. One scheduled
+remeasure only.
 
 **Pinned host compatibility and request capture.** `bench/hosts.lock.json` pins
 Pi at `c49906ec` and a Hermes commit for the native bake-off, and neither
