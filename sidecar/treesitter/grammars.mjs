@@ -76,6 +76,13 @@ function enclosingClassName(node) {
   return null;
 }
 
+export function inclusiveEndLine(startPosition, endPosition) {
+  if (endPosition.column === 0 && endPosition.row > startPosition.row) {
+    return endPosition.row;
+  }
+  return endPosition.row + 1;
+}
+
 function qualifiedSelector(kind, name, className) {
   if (kind === "class") return `class ${name}`;
   if (className) return `class ${className}::method ${name}`;
@@ -89,7 +96,7 @@ function unitFromCapture({ path, language, text, unitNode, name }) {
   if (!kind) return null;
   const className = kind === "class" ? null : enclosingClassName(unitNode);
   const startLine = unitNode.startPosition.row + 1;
-  const endLine = unitNode.endPosition.row + 1;
+  const endLine = inclusiveEndLine(unitNode.startPosition, unitNode.endPosition);
   const lines = text.split("\n");
   const slice = lines.slice(startLine - 1, endLine).join("\n");
   const prefix = lines.slice(0, startLine - 1).join("\n");

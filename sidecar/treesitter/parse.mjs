@@ -115,8 +115,11 @@ export async function parseSource({ path, bytes }) {
   }
   try {
     const extracted = await extractTreeSitterUnits({ path, bytes: text, language });
+    if (extracted.hasError) {
+      return { units: [], error: "parse-broken" };
+    }
     if (extracted.units.length === 0) {
-      return { units: [], error: extracted.hasError ? "parse-broken" : "unresolved" };
+      return { units: [], error: "unresolved" };
     }
     return finishUnits(hashExtractedUnits(text, extracted.units));
   } catch (error) {

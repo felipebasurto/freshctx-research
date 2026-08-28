@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
 import { createSidecarRunner, missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { inclusiveEndLine } from "../sidecar/treesitter/grammars.mjs";
 import { parseSource } from "../sidecar/treesitter/parse.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -35,6 +36,39 @@ test("sidecar fails closed on broken syntax", async () => {
   const broken = await parseSource({ path: "a.go", bytes: "func ParseFile() {\n" });
   assert.equal(broken.error, "parse-broken");
   assert.deepEqual(broken.units, []);
+});
+
+test("tree-sitter parse-broken wins even when some units extract", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: "def alpha():\n    return 1\n\ndef broken(\n",
+  });
+  assert.equal(parsed.error, "parse-broken");
+  assert.deepEqual(parsed.units, []);
+});
+
+test("exclusive column-0 ends do not include the next line", () => {
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 2, column: 0 }), 2);
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 1, column: 12 }), 2);
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 0, column: 10 }), 1);
+});
+
+test("adjacent tree-sitter defs stay on their own lines", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: "def alpha():\n    return 1\ndef beta():\n    return 2\n",
+  });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 2);
+  const [alpha, beta] = parsed.units;
+  assert.equal(alpha.selector, "alpha");
+  assert.equal(beta.selector, "beta");
+  assert.ok(alpha.endLine < beta.startLine);
+  const lines = "def alpha():\n    return 1\ndef beta():\n    return 2\n".split("\n");
+  const alphaBody = lines.slice(alpha.startLine - 1, alpha.endLine).join("\n");
+  const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+  assert.equal(alphaBody.includes("def beta"), false);
+  assert.equal(betaBody.includes("def alpha"), false);
 });
 
 test("injected missing sidecar leaves symbol units unresolved", async () => {
