@@ -94,3 +94,4 @@
 | [0094](pcr/0094-hermes-collapsed-ack-target.md) | 2026-08-28 | Hermes collapsed-turn apply-ack tracks the emitted marker text | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0095](pcr/0095-hermes-conversation-history-gate.md) | 2026-08-28 | Hermes later-turn collapse counts conversation history, not only the narrowed request slice | `synthetic`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0096](pcr/0096-hermes-official-loader-symlink.md) | 2026-08-28 | Hermes official loader path executes the symlinked bridge and later turns collapse on host history | `synthetic`; `hermes-fresh`; `adapter-only`; `host-contract` | review |
+| [0097](pcr/0097-hermes-continue-request-only-ack.md) | 2026-08-28 | Hermes continue later turn apply-ack without persisted projection text | `synthetic`; `hermes-fresh`; `adapter-only`; `host-contract` | review |
