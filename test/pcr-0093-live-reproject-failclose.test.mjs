@@ -110,7 +110,8 @@ test("PCR 0093: Pi later request-only re-project collapses unchanged NEW to an a
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
     assert.match(turn2.projection.text, /\[freshctx:already-served units=1\]/u);
     assert.doesNotMatch(turn2.projection.text, /PCR_0093_NEW_ON_DISK/u);
-    assert.equal(countOccurrences(piMessageText(turn2.messages), NEW_BODY), 0);
+    assert.equal(countOccurrences(piMessageText(turn2.messages), NEW_BODY), 1);
+    assert.equal(countOccurrences(turn2.projection.text, NEW_BODY), 0);
     assert.doesNotMatch(piMessageText(turn2.messages), /PCR_0093_OLD_TOOL_RESULT/u);
     assert.ok(turn2.telemetry.projectionBytes < turn1.telemetry.projectionBytes);
 
@@ -174,7 +175,8 @@ test("PCR 0093: Hermes later request-only re-project collapses unchanged NEW to 
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
     assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
     assert.doesNotMatch(turn2.projectionText, /PCR_0093_NEW_ON_DISK/u);
-    assert.equal(countOccurrences(hermesMessageText(turn2.messages), NEW_BODY), 0);
+    assert.equal(countOccurrences(hermesMessageText(turn2.messages), NEW_BODY), 1);
+    assert.equal(countOccurrences(turn2.projectionText, NEW_BODY), 0);
     assert.doesNotMatch(hermesMessageText(turn2.messages), /PCR_0093_OLD_TOOL_RESULT/u);
     assert.ok(turn2.telemetry.projectionBytes < turn1.telemetry.projectionBytes);
 
