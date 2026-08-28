@@ -128,6 +128,13 @@ The initial smoke target is 10 units per mutation family in Flask and Express.
 The full target is at least 50 units per family and language, subject to
 eligibility. Sample counts and exclusions are reported.
 
+Implemented status (measured 2026-08-28): `bench/unit-sampler.mjs` /
+`bench/sample-units.mjs` enumerate whole files, rank with raw
+`sha256(commit + selector + scenario)` (no colon join), and record
+`parser-not-implemented` for non-source paths. Symbol-shaped units are out of
+scope for this enumerator; they wait on the Tree-sitter sidecar (ADR 0004).
+The sampler does not call `resolveRegion`.
+
 ### 5.2 Mutation families
 
 The full suite MUST cover:
@@ -559,14 +566,15 @@ content-only comparison in `bench/metrics.mjs`.
 
 Not yet implemented and therefore not claimable:
 
-- language parsers and deterministic public-repo trace generator;
-- the §5.1 deterministic unit sampler;
-- independent multi-language unit oracle;
+- language parsers inside `src/` (sidecars only; ADR 0004);
+- full public-repo symbol sampling (whole-file enumerator is in;
+  sidecar-backed symbols are a later cut);
 - full stage-level timing and peak-memory reporting in every adapter (§9.2 and
   §9.5 cannot be filled from this repository today);
 - pinned Pi/Hermes compatibility tests against released host packages;
-- production remote freeze attestation consumption;
-- reviewed CORVUS reproduction.
+- production GHA freeze attestation on this laptop (consumption and binding
+  check are implemented; a real `sealed` classification still requires a
+  numeric Actions run).
 
 Partially implemented (holdout v0.1 first slice; see PCR 0007, **unsealed**; freeze protocol in PCR 0009):
 

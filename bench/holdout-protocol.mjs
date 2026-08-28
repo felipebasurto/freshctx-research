@@ -723,7 +723,9 @@ export async function syntheticFixtureTrace({ root, manifest, pack }) {
 
 export async function syntheticFixtureRun({ root, pack, manifest, implementationCommitSha }) {
   const { runTrace, finalCapture } = await import("./trace-runner.mjs");
-  const names = (await readdir(join(root, pack.tracesDir))).filter((n) => n.endsWith(".json"));
+  const names = (await readdir(join(root, pack.tracesDir))).filter(
+    (n) => n.endsWith(".json") && !n.startsWith("candidates"),
+  );
   let records = 0;
   const jsonlLines = [];
   for (const name of names) {

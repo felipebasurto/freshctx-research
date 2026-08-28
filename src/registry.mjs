@@ -36,9 +36,44 @@ async function readSource(provider, filePath) {
   throw new TypeError("source provider must be a function, Map, or object");
 }
 
+async function resolveSymbolUnit(unit, normalizedFile, sidecarRunner) {
+  if (!sidecarRunner) {
+    return { state: "unresolved", method: "sidecar-missing" };
+  }
+  let parsed;
+  try {
+    parsed = await sidecarRunner({ path: unit.path, bytes: normalizedFile });
+  } catch {
+    return { state: "unresolved", method: "sidecar-error" };
+  }
+  if (!parsed || parsed.error) {
+    return { state: "unresolved", method: parsed?.error === "ambiguous" ? "sidecar-ambiguous" : "sidecar-unresolved" };
+  }
+  const matches = (parsed.units ?? []).filter(
+    (candidate) => candidate.selector === unit.selector || candidate.qualifiedSelector === unit.selector,
+  );
+  if (matches.length === 0) {
+    return { state: "unresolved", method: "sidecar-unresolved" };
+  }
+  if (matches.length > 1) {
+    return { state: "unresolved", method: "sidecar-ambiguous" };
+  }
+  const match = matches[0];
+  const lines = normalizedFile.split("\n");
+  const content = lines.slice(match.startLine - 1, match.endLine).join("\n");
+  return {
+    state: "resolved",
+    method: "sidecar",
+    content,
+    startLine: match.startLine,
+    endLine: match.endLine,
+  };
+}
+
 export class FreshRegistry {
-  constructor() {
+  constructor({ sidecarRunner = null } = {}) {
     this.units = new Map();
+    this.sidecarRunner = sidecarRunner;
   }
 
   trackRead({
@@ -148,19 +183,24 @@ export class FreshRegistry {
       }
 
       const normalizedFile = currentFileContent.replaceAll("\r\n", "\n");
-      let resolved = unit.scope === "file"
-        ? {
-            state: "resolved",
-            method: "whole-file",
-            content: normalizedFile,
-            startLine: 1,
-            endLine: lineCount(normalizedFile),
-          }
-        : resolveRegion({
-            previousContent: unit.content,
-            currentFileContent: normalizedFile,
-            anchors: unit.anchors,
-          });
+      let resolved;
+      if (unit.scope === "symbol") {
+        resolved = await resolveSymbolUnit(unit, normalizedFile, this.sidecarRunner);
+      } else if (unit.scope === "file") {
+        resolved = {
+          state: "resolved",
+          method: "whole-file",
+          content: normalizedFile,
+          startLine: 1,
+          endLine: lineCount(normalizedFile),
+        };
+      } else {
+        resolved = resolveRegion({
+          previousContent: unit.content,
+          currentFileContent: normalizedFile,
+          anchors: unit.anchors,
+        });
+      }
 
       if (resolved.state !== "resolved" && unit.scope === "region") {
         const span = resolveStoredLineSpan(

@@ -64,3 +64,18 @@ From Algorithm 1 and §4 of arXiv:2607.22711 (PDF sha256
 - A Level 4 / reviewed reproduction still requires the holdout protocol in
   `docs/EVALUATION.md` §13 and a human review of this deviation table.
 - FreshCtx file/region baselines remain on the same traces and `budgetChars`.
+
+## Review (PR-G)
+
+Status: **reviewed** as a documented lifecycle reproduction of Algorithm 1,
+not a reviewed Strands Agents or SWE-Bench clone.
+
+- Reviewer: sealed-lab program PR-G
+- Date (UTC): 2026-08-28
+- Walked Algorithm 1 against `CorvusSyncedFileSet`, `syncFile`, and `syncContext`
+- Same traces and `budgetChars` as FreshCtx; \(C_t\) is not truncated
+- `desync_file` remains absent
+- Score weights in `bench/run.mjs` are unchanged
+- PDF sha256 still `204af5d8df1a25d09dcc2ef154b2aac8d3d3fcea4c9c737a511129f40cd27eaf`
+
+This sign-off does not authorize a “we beat CORVUS” or Level 4 sentence.

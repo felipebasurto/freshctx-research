@@ -456,3 +456,102 @@ test("holdout v0.1 verify passes as unsealed-regression on repository fixture", 
   assert.equal(result.classification, "unsealed-regression");
   assert.equal(result.valid, true, result.errors?.join("; "));
 });
+
+async function writeProductionAttestation(root, manifestPath, packId) {
+  const { writeAttestation } = await import("../bench/holdout-state.mjs");
+  const { resolvePackPaths, readManifest } = await import("../bench/holdout-protocol.mjs");
+  const { withBindingHash } = await import("../bench/holdout-hashes.mjs");
+  const manifest = await readManifest(root, manifestPath);
+  const pack = resolvePackPaths(root, { ...manifest, manifestPath });
+  const attestation = withBindingHash({
+    schemaVersion: 1,
+    packId,
+    freezeCommitSha: git(root, ["rev-parse", "HEAD"]),
+    manifestSha256: manifest.manifestSha256,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    workflowRunId: "9876543299",
+    workflowRunUrl: "https://github.com/fil/freshctx/actions/runs/9876543299",
+    attestedAt: new Date().toISOString(),
+  });
+  await writeAttestation(root, pack, attestation);
+  return { pack, attestation, manifest };
+}
+
+test("flipped bindingSha256 fails with ATTESTATION_BINDING_MISMATCH", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/bind-tamper.json";
+  await freezePack(root, manifestPath, manifestDraft("bind-tamper"));
+  await commitAll(root, "freeze");
+  const { pack, attestation } = await writeProductionAttestation(root, manifestPath, "bind-tamper");
+  attestation.bindingSha256 = "a".repeat(63) + "b";
+  const full = join(root, pack.provenanceDir, "freeze-attestation.json");
+  await writeFile(full, `${JSON.stringify(attestation, null, 2)}\n`);
+  const result = await verifyPack(root, { manifestPath });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("ATTESTATION_BINDING_MISMATCH")));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("flipped attestation manifest hash fails with ATTESTATION_MANIFEST_MISMATCH", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/att-manifest.json";
+  await freezePack(root, manifestPath, manifestDraft("att-manifest"));
+  await commitAll(root, "freeze");
+  const { pack, attestation } = await writeProductionAttestation(root, manifestPath, "att-manifest");
+  const { withBindingHash } = await import("../bench/holdout-hashes.mjs");
+  const tampered = withBindingHash({
+    ...attestation,
+    manifestSha256: "f".repeat(64),
+  });
+  await writeFile(join(root, pack.provenanceDir, "freeze-attestation.json"), `${JSON.stringify(tampered, null, 2)}\n`);
+  const result = await verifyPack(root, { manifestPath });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("ATTESTATION_MANIFEST_MISMATCH")));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("stub attestation is ATTESTATION_NOT_PRODUCTION", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/stub-token.json";
+  await freezePack(root, manifestPath, manifestDraft("stub-token"));
+  await commitAll(root, "freeze");
+  const { writeAttestation } = await import("../bench/holdout-state.mjs");
+  const { resolvePackPaths, readManifest } = await import("../bench/holdout-protocol.mjs");
+  const manifest = await readManifest(root, manifestPath);
+  const pack = resolvePackPaths(root, { ...manifest, manifestPath });
+  await writeAttestation(root, pack, {
+    schemaVersion: 1,
+    packId: "stub-token",
+    freezeCommitSha: git(root, ["rev-parse", "HEAD"]),
+    manifestSha256: manifest.manifestSha256,
+    reposLockSha256: manifest.reposLockSha256,
+    repositoryLocks: manifest.repositoryLocks,
+    workflowRunId: "test-run-0001",
+    workflowRunUrl: "https://github.com/example/example/actions/runs/1",
+    attestedAt: new Date().toISOString(),
+    stub: true,
+  });
+  const result = await verifyPack(root, { manifestPath });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((e) => e.includes("ATTESTATION_NOT_PRODUCTION")));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("verify consumes an external --attestation path", async () => {
+  const { root } = await initProtocolRepo();
+  const manifestPath = "bench/splits/consume-att.json";
+  await freezePack(root, manifestPath, manifestDraft("consume-att"));
+  await commitAll(root, "freeze");
+  const { attestation } = await writeProductionAttestation(root, manifestPath, "consume-att");
+  const side = join(root, "downloaded-attestation.json");
+  await writeFile(side, `${JSON.stringify(attestation, null, 2)}\n`);
+  const { rm: rmFile } = await import("node:fs/promises");
+  await rmFile(join(root, "bench/packs/consume-att/provenance/freeze-attestation.json"));
+  const missing = await verifyPack(root, { manifestPath });
+  assert.equal(missing.remoteAttestation, null);
+  const result = await verifyPack(root, { manifestPath, attestationPath: side });
+  assert.equal(result.remoteAttestation?.workflowRunId, "9876543299");
+  assert.ok(!result.errors.some((e) => e.includes("ATTESTATION_BINDING_MISMATCH")));
+  await rm(root, { recursive: true, force: true });
+});

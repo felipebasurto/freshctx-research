@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { createBaseline } from "../bench/baselines.mjs";
-import { CorvusSyncedFileSet, syncMarker } from "../bench/corvus.mjs";
+import { CorvusSyncedFileSet, renderSyncedContext, syncMarker } from "../bench/corvus.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { finalCapture, runTrace } from "../bench/trace-runner.mjs";
 
@@ -92,4 +95,17 @@ test("CORVUS baseline omits a deleted file without last-known content", async ()
 
 test("createBaseline keeps the corvus-file id", () => {
   assert.equal(createBaseline("corvus-file").name, "corvus-file");
+});
+
+test("CORVUS reproduction has no desync and does not truncate C_t", async () => {
+  const root = dirname(dirname(fileURLToPath(import.meta.url)));
+  const source = await readFile(join(root, "bench/corvus.mjs"), "utf8");
+  assert.equal(source.includes("desync"), false);
+  const long = `${"x".repeat(8000)}\n`;
+  const synced = new CorvusSyncedFileSet();
+  synced.syncFile("src/a.ts");
+  const files = await synced.syncContext({ tryRead: async () => long });
+  const text = renderSyncedContext(files);
+  assert.equal(occurrences(text, long.trimEnd()), 1);
+  assert.ok(text.length > 32);
 });

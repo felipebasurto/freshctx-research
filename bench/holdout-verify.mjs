@@ -1,14 +1,17 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 const STATE_FILENAME = "state.json";
 import {
+  ATTESTATION_MANIFEST_MISMATCH,
+  ATTESTATION_NOT_PRODUCTION,
   attestationBindingHash,
   hashDirectoryJsonSet,
   hashFileBytes,
   hashJsonlSet,
   hashReportMarkdown,
   isProductionAttestation,
+  validateAttestationBinding,
   validateAttestationShape,
   validateProductionAttestation,
 } from "./holdout-hashes.mjs";
@@ -22,7 +25,7 @@ import {
 } from "./holdout-protocol.mjs";
 import { inferEarnedClassification, readAttestation, readPackState } from "./holdout-state.mjs";
 import { sha256 } from "../src/hash.mjs";
-import { HOLDOUT_V01 } from "./holdout-identity.mjs";
+import { HOLDOUT_V01, HOLDOUT_V02 } from "./holdout-identity.mjs";
 
 export class VerifyError extends Error {
   constructor(message) {
@@ -99,7 +102,15 @@ export async function verifyHoldoutV01(root) {
   };
 }
 
-export async function verifyProtocolPack(root, manifestPath) {
+async function loadAttestation(root, pack, attestationPath) {
+  if (attestationPath) {
+    const full = isAbsolute(attestationPath) ? attestationPath : join(root, attestationPath);
+    return JSON.parse(await readFile(full, "utf8"));
+  }
+  return readAttestation(root, pack);
+}
+
+export async function verifyProtocolPack(root, manifestPath, { attestationPath } = {}) {
   requireGit();
   const errors = [];
   const manifest = await readManifest(root, manifestPath);
@@ -119,19 +130,25 @@ export async function verifyProtocolPack(root, manifestPath) {
   }
 
   const state = await readPackState(root, pack);
-  const attestation = await readAttestation(root, pack);
+  const attestation = await loadAttestation(root, pack, attestationPath);
   const attestationError = attestation ? validateAttestationShape(attestation) : null;
   if (attestationError) errors.push(attestationError);
+
+  if (attestation) {
+    const bindingError = validateAttestationBinding(attestation);
+    if (bindingError) errors.push(bindingError);
+  }
 
   const productionAttestation = attestation && isProductionAttestation(attestation);
   if (attestation && !productionAttestation) {
     const prodErr = validateProductionAttestation(attestation);
     if (prodErr) errors.push(`non-production attestation: ${prodErr}`);
+    else errors.push(ATTESTATION_NOT_PRODUCTION);
   }
 
   if (attestation) {
     if (attestation.manifestSha256 !== manifest.manifestSha256) {
-      errors.push("attestation manifestSha256 mismatch");
+      errors.push(ATTESTATION_MANIFEST_MISMATCH);
     }
     if (freezeCommitSha && attestation.freezeCommitSha !== freezeCommitSha) {
       errors.push("attestation freezeCommitSha mismatch");
@@ -268,14 +285,17 @@ export async function verifySealedResultSet(root, pack, state, claimed, errors) 
   return computed;
 }
 
-export async function verifyPack(root, { manifestPath, packId } = {}) {
+export async function verifyPack(root, { manifestPath, packId, attestationPath } = {}) {
   if (packId === HOLDOUT_V01.packId || packId === HOLDOUT_V01.benchmarkVersion) {
     return verifyHoldoutV01(root);
+  }
+  if (packId === HOLDOUT_V02.packId || packId === HOLDOUT_V02.benchmarkVersion) {
+    return verifyProtocolPack(root, manifestPath ?? HOLDOUT_V02.splitManifest, { attestationPath });
   }
   if (!manifestPath) {
     throw new VerifyError("--manifest or --pack required");
   }
-  return verifyProtocolPack(root, manifestPath);
+  return verifyProtocolPack(root, manifestPath, { attestationPath });
 }
 
 export { attestationBindingHash, validateAttestationShape };

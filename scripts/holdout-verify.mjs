@@ -24,7 +24,11 @@ async function main() {
   const packId = flags.pack ?? (manifestPath ? undefined : HOLDOUT_V01.packId);
 
   try {
-    const result = await verifyPack(ROOT, { manifestPath, packId });
+    const result = await verifyPack(ROOT, {
+      manifestPath,
+      packId,
+      attestationPath: flags.attestation,
+    });
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     if (!result.valid) {
       process.exitCode = 1;

@@ -399,6 +399,38 @@ test("structural consensus rejects prefix insertion that shifts inferred start a
   });
 });
 
+test("ParseFile.body first-line interior edit lock-in via production resolveRegion", () => {
+  const previous = [
+    "func ParseFile(fset *token.FileSet) {",
+    "  if !IsAbsPath(ctxt, file) {",
+    "    file = JoinPath(ctxt, dir, file)",
+    "  }",
+    "  rd, err := OpenFile(ctxt, file)",
+    "  if err != nil {",
+    "    return nil, err",
+    "  }",
+  ].join("\n");
+  const currentRegion = [
+    "func ParseFile(fset *token.FileSet) {",
+    "  if !IsAbsPath(ctxt, file) { // holdout interior edit",
+    "    file = JoinPath(ctxt, dir, file)",
+    "  }",
+    "  rd, err := OpenFile(ctxt, file)",
+    "  if err != nil {",
+    "    return nil, err",
+    "  }",
+  ].join("\n");
+  const pad = Array.from({ length: 31 }, (_, index) => `// pad ${index}`).join("\n");
+  const result = resolveRegion({
+    previousContent: previous,
+    currentFileContent: `${pad}\n${currentRegion}`,
+    anchors: makeAnchors(previous, { startLine: 32 }),
+  });
+  assert.equal(result.state, "resolved");
+  assert.match(result.method, /anchors/u);
+  assert.match(result.content, /holdout interior edit/u);
+});
+
 test("structural consensus relocation stays deterministic for offset-shift rejections", () => {
   const previous = ["HEADER", "body-a", "body-b", "FOOTER"].join("\n");
   const current = ["noise", "HEADER", "body-a", "body-b", "FOOTER", "tail"].join("\n");

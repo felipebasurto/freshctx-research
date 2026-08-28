@@ -97,6 +97,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-28 | (PCR 0098) turn-2 first-NEW projection stays quoteable at the tracked read | 309 total (292 pass, 17 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0098](pcr/0098-quoteable-first-new-projection.md) |
 | 2026-08-28 | (PCR 0099) omit repeated already-served stub after first collapse | 313 total (288 pass, 23 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0099](pcr/0099-repeated-already-served-omit.md) |
 | 2026-08-28 | `800ec3a` (PCR 0100) over-cap unchanged turns collapse instead of re-dumping bodies; large-board replay 26593→100→0 B | 318 total (293 pass, 23 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0100](pcr/0100-over-cap-unchanged-collapse.md) |
+| 2026-08-28 | (PCR 0109) sealed lab program (attestation, sampler, canary, v0.2 draft, interior-edit lock, sidecar) | 390 total (364 pass, 2 fail, 24 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0109](pcr/0109-sealed-lab-program.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 

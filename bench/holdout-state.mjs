@@ -3,6 +3,7 @@ import { constants as fsConstants } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { PACK_CLASSIFICATIONS } from "./holdout-identity.mjs";
+import { withBindingHash } from "./holdout-hashes.mjs";
 
 export const STATE_FILENAME = "state.json";
 export const ATTESTATION_FILENAME = "freeze-attestation.json";
@@ -48,7 +49,7 @@ export async function writeAttestation(root, pack, attestation) {
   const rel = join(pack.provenanceDir, ATTESTATION_FILENAME).replace(/\\/g, "/");
   const full = join(root, rel);
   await mkdir(dirname(full), { recursive: true });
-  await writeFile(full, `${JSON.stringify(attestation, null, 2)}\n`);
+  await writeFile(full, `${JSON.stringify(withBindingHash(attestation), null, 2)}\n`);
   return rel;
 }
 

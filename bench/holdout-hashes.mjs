@@ -47,6 +47,32 @@ export function hashReportMarkdown(content) {
   return sha256(content);
 }
 
+export const ATTESTATION_BINDING_MISMATCH = "ATTESTATION_BINDING_MISMATCH";
+export const ATTESTATION_MANIFEST_MISMATCH = "ATTESTATION_MANIFEST_MISMATCH";
+export const ATTESTATION_NOT_PRODUCTION = "ATTESTATION_NOT_PRODUCTION";
+
+export function attestationBindingHash(attestation) {
+  const clone = { ...attestation };
+  delete clone.bindingSha256;
+  return createHash("sha256").update(`${JSON.stringify(clone, null, 2)}\n`).digest("hex");
+}
+
+export function withBindingHash(attestation) {
+  const clone = { ...attestation };
+  delete clone.bindingSha256;
+  return { ...clone, bindingSha256: attestationBindingHash(clone) };
+}
+
+export function validateAttestationBinding(attestation) {
+  if (!attestation || typeof attestation.bindingSha256 !== "string" || attestation.bindingSha256.length !== 64) {
+    return ATTESTATION_BINDING_MISMATCH;
+  }
+  if (attestation.bindingSha256 !== attestationBindingHash(attestation)) {
+    return ATTESTATION_BINDING_MISMATCH;
+  }
+  return null;
+}
+
 /** Canonical attestation object shape required for production sealed classification. */
 export function validateAttestationShape(attestation) {
   const required = [
@@ -87,25 +113,21 @@ export function isProductionAttestation(attestation) {
 
 export function validateProductionAttestation(attestation) {
   const shape = validateAttestationShape(attestation);
-  if (shape) return shape;
-  if (attestation.stub === true) return "attestation is stub; not valid for sealed/remotely-attested";
+  if (shape) return `${ATTESTATION_NOT_PRODUCTION} ${shape}`;
+  if (attestation.stub === true) {
+    return `${ATTESTATION_NOT_PRODUCTION} attestation is stub; not valid for sealed/remotely-attested`;
+  }
   const runId = String(attestation.workflowRunId);
   if (runId === "local-run" || !/^\d+$/.test(runId)) {
-    return "attestation workflowRunId is not a production GHA run id";
+    return `${ATTESTATION_NOT_PRODUCTION} attestation workflowRunId is not a production GHA run id`;
   }
   const url = String(attestation.workflowRunUrl);
   if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+/.test(url)) {
-    return "attestation workflowRunUrl is not a production GHA actions run URL";
+    return `${ATTESTATION_NOT_PRODUCTION} attestation workflowRunUrl is not a production GHA actions run URL`;
   }
   return null;
 }
 
 export function isGithubActionsPipeline() {
   return process.env.GITHUB_ACTIONS === "true";
-}
-
-export function attestationBindingHash(attestation) {
-  const clone = { ...attestation };
-  delete clone.bindingSha256;
-  return createHash("sha256").update(`${JSON.stringify(clone, null, 2)}\n`).digest("hex");
 }

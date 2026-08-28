@@ -23,6 +23,13 @@ export const PACK_CLASSIFICATIONS = Object.freeze([
 export const PROTOCOL_COMMAND_HINT =
   "Use npm run holdout:freeze → commit → holdout:generate → holdout:run → holdout:report → holdout:verify";
 
+export const HOLDOUT_V02 = Object.freeze({
+  packId: "holdout-v0.2",
+  benchmarkVersion: "holdout-v0.2",
+  splitManifest: "bench/splits/holdout-v0.2.json",
+  label: "public-repo-holdout-v0.2",
+});
+
 export function isHoldoutV01Pack(packIdOrVersion) {
   return packIdOrVersion === HOLDOUT_V01.packId || packIdOrVersion === HOLDOUT_V01.benchmarkVersion;
 }

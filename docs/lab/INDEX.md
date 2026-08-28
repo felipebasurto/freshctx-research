@@ -106,3 +106,4 @@
 | [0106](pcr/0106-retire-obsolete-collapse-state.md) | 2026-08-28 | Retire obsolete collapse delivery state after PCR 0103–0105 | `synthetic`; `replay`; `adapter-only`; `cleanup` | review |
 | [0107](pcr/0107-fix-0096-0097-probe-inversion.md) | 2026-08-28 | Fix inverted requestOnlyCollapsed probe on official Hermes boards 0096/0097 | `synthetic`; `hermes-fresh`; `host-contract`; `test-fix` | review |
 | [0108](pcr/0108-pi-overcap-budget-omit-quoteability.md) | 2026-08-28 | Pi over-cap budget-omit later-turn quoteability at read slot | `synthetic`; `replay`; `pi-fresh`; `adapter-only`; `invariant` | review |
+| [0109](pcr/0109-sealed-lab-program.md) | 2026-08-28 | Sealed lab program: attestation consume, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, sidecar + gold | `synthetic`; `protocol-fixture`; `unsealed-regression`; `measurement` | review |

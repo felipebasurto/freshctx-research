@@ -82,6 +82,14 @@ import {
   runMoveCrossFileLab,
 } from "../bench/move-cross-file-lab.mjs";
 import {
+  generateSamplerCanaryTraces,
+  samplerCanaryManifestDraft,
+} from "../bench/sampler-canary-lab.mjs";
+import {
+  generateHoldoutV02Traces,
+  holdoutV02ManifestDraft,
+} from "../bench/holdout-v02-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -112,6 +120,8 @@ const TRACE_GENERATORS = {
   "grow-shrink-exact-decoy-lab": generateGrowShrinkExactDecoyLabTraces,
   "stored-start-leftover-fail-close-lab": generateStoredStartLeftoverFailCloseLabTraces,
   "move-cross-file-lab": generateMoveCrossFileLabTraces,
+  "sampler-canary-lab": generateSamplerCanaryTraces,
+  "holdout-v0.2": generateHoldoutV02Traces,
 };
 
 const TRACE_RUNNERS = {
@@ -149,6 +159,8 @@ const MANIFEST_DRAFTS = {
   "grow-shrink-exact-decoy-lab": growShrinkExactDecoyLabManifestDraft,
   "stored-start-leftover-fail-close-lab": storedStartLeftoverFailCloseLabManifestDraft,
   "move-cross-file-lab": moveCrossFileLabManifestDraft,
+  "sampler-canary-lab": samplerCanaryManifestDraft,
+  "holdout-v0.2": holdoutV02ManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
