@@ -95,9 +95,9 @@ test("PCR 0094: Hermes acknowledges the collapsed marker text and keeps later un
     const turn3 = await adapter.onSelectContext(structuredClone(turn3Persisted), ctx);
     assert.ok(turn3);
     assert.equal(turn3.telemetry.skipEligibleSelections, 1);
-    assert.match(turn3.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn3.projectionText, "");
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     assert.equal(countOccurrences(hermesMessageText(turn3.messages), NEW_BODY), 0);
-    assert.equal(turn3.telemetry.projectionBytes, turn2.telemetry.projectionBytes);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

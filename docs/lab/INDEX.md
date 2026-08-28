@@ -96,3 +96,4 @@
 | [0096](pcr/0096-hermes-official-loader-symlink.md) | 2026-08-28 | Hermes official loader path executes the symlinked bridge and later turns collapse on host history | `synthetic`; `hermes-fresh`; `adapter-only`; `host-contract` | review |
 | [0097](pcr/0097-hermes-continue-request-only-ack.md) | 2026-08-28 | Hermes continue later turn apply-ack without persisted projection text | `synthetic`; `hermes-fresh`; `adapter-only`; `host-contract` | review |
 | [0098](pcr/0098-quoteable-first-new-projection.md) | 2026-08-28 | Turn-2 first-NEW projection stays quoteable at the tracked read | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0099](pcr/0099-repeated-already-served-omit.md) | 2026-08-28 | Omit repeated already-served stub after first collapse | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |

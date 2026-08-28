@@ -108,7 +108,8 @@ test("PCR 0095: Hermes later request slice still collapses unchanged projection 
     });
     assert.ok(turn3);
     assert.equal(turn3.telemetry.skipEligibleSelections, 1);
-    assert.match(turn3.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn3.projectionText, "");
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     assert.equal(countOccurrences(hermesMessageText(turn3.messages), NEW_BODY), 0);
   } finally {
     await rm(workspace, { recursive: true, force: true });

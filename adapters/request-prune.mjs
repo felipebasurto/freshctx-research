@@ -205,6 +205,60 @@ export function currentProjectionMarker({ unitCount }) {
   return `[freshctx:already-served units=${unitCount}] Current tracked content was already served and disk is unchanged.`;
 }
 
+export function revisionsRecordFromProjection(projection) {
+  return Object.fromEntries(
+    (projection?.selected ?? [])
+      .filter((unit) => typeof unit?.id === "string" && typeof unit?.revision === "string")
+      .map((unit) => [unit.id, unit.revision]),
+  );
+}
+
+function revisionRecordEntries(record) {
+  if (record instanceof Map) return [...record.entries()];
+  if (record && typeof record === "object" && !Array.isArray(record)) {
+    return Object.entries(record);
+  }
+  return [];
+}
+
+export function revisionsRecordsMatch(left, right) {
+  const leftEntries = revisionRecordEntries(left);
+  const rightEntries = revisionRecordEntries(right);
+  if (leftEntries.length === 0 || leftEntries.length !== rightEntries.length) return false;
+  const rightMap = new Map(rightEntries);
+  for (const [key, value] of leftEntries) {
+    if (rightMap.get(key) !== value) return false;
+  }
+  return true;
+}
+
+export function isCurrentCollapsedProjectionMarker(text) {
+  return typeof text === "string"
+    && text.startsWith("[freshctx:already-served units=")
+    && text.includes("Current tracked content was already served and disk is unchanged.");
+}
+
+export function resolveProjectionText({
+  messages,
+  projection,
+  skipEligibleSelections,
+  lastDeliveredCollapsedRevision,
+  userCountMessages = messages,
+}) {
+  if (shouldCollapseCurrentProjection(
+    messages,
+    projection,
+    skipEligibleSelections,
+    { userCountMessages },
+  )) {
+    if (revisionsRecordsMatch(lastDeliveredCollapsedRevision, revisionsRecordFromProjection(projection))) {
+      return "";
+    }
+    return currentProjectionMarker({ unitCount: projection.selected.length });
+  }
+  return projection.text;
+}
+
 function assistantHasNonToolContent(message) {
   if (typeof message.content === "string") return message.content.trim().length > 0;
   if (!Array.isArray(message.content)) return false;
