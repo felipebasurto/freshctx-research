@@ -119,6 +119,8 @@ print(json.dumps({
     "requestOnlyNewCopies": request_only_text.count(payload["newBody"]),
     "hostCollapsed": "[freshctx:already-served units=1]" in host_projection,
     "hostNewCopies": host_text.count(payload["newBody"]),
+    "hostNewCopiesInProjection": host_projection.count(payload["newBody"]),
+    "hostOldCopies": host_text.count(payload["oldBody"]),
     "hostWarningCount": len(host_logger.warning_calls),
     "turn1WarningCount": len(turn1_logger.warning_calls),
     "conversationMessageCount": len(payload["turn2ConversationMessages"]),
@@ -186,6 +188,7 @@ test("PCR 0097: Hermes continue later turn collapses after request-only apply ac
         turn2RequestMessages,
         turn2ConversationMessages,
         newBody: NEW_BODY,
+        oldBody: OLD_BODY,
       }),
     });
 
@@ -197,7 +200,9 @@ test("PCR 0097: Hermes continue later turn collapses after request-only apply ac
     assert.equal(result.requestOnlyCollapsed, false);
     assert.equal(result.requestOnlyNewCopies, 1);
     assert.equal(result.hostCollapsed, true);
-    assert.equal(result.hostNewCopies, 0);
+    assert.equal(result.hostNewCopies, 1, "collapsed tail still requires quoteable current bytes at read slot (PCR 0103)");
+    assert.equal(result.hostNewCopiesInProjection, 0, "collapsed stub must not re-dump unit bodies in tail");
+    assert.equal(result.hostOldCopies, 0, "stale observation-time tool bytes must not reappear");
     assert.equal(result.hostWarningCount, 0);
     assert.equal(result.turn1WarningCount, 0);
     assert.equal(result.requestMessageCount, 3);
