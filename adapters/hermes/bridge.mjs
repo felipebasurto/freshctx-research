@@ -528,6 +528,9 @@ export async function observeTurn(payload) {
 
 export async function selectContext(payload) {
   const state = await loadState(payload.stateFile);
+  const conversationMessages = Array.isArray(payload.conversationMessages)
+    ? payload.conversationMessages
+    : payload.messages;
   const tracked = await enrichTrackedWithLineCounts(
     payload.cwd,
     mergeTrackedCalls(
@@ -627,6 +630,7 @@ export async function selectContext(payload) {
     payload.messages,
     projection,
     skipEligibleSelections,
+    { userCountMessages: conversationMessages },
   )
     ? currentProjectionMarker({ unitCount: projection.selected.length })
     : projection.text;

@@ -111,6 +111,7 @@ class FreshCtxContextEngine(ContextCompressor):
             "select",
             request_messages,
             budgetTokens=budget_tokens,
+            conversationMessages=conversation_messages,
             incomingMessage=incoming_message,
         )
         selected = result.get("messages") if result else None

@@ -403,9 +403,14 @@ function userMessageCount(messages) {
   return count;
 }
 
-export function shouldCollapseCurrentProjection(messages, projection, skipEligibleSelections) {
+export function shouldCollapseCurrentProjection(
+  messages,
+  projection,
+  skipEligibleSelections,
+  { userCountMessages = messages } = {},
+) {
   if (hasHistoricalProjectionMessage(messages)) return false;
-  if (userMessageCount(messages) <= 1) return false;
+  if (userMessageCount(userCountMessages) <= 1) return false;
   if ((projection?.selected?.length ?? 0) === 0) return false;
   if ((projection?.omitted?.length ?? 0) !== 0) return false;
   return projection.selected.length === skipEligibleSelections;
