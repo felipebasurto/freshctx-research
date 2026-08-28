@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "protocolVersion": 1,
+  "packId": "holdout-v0.2",
+  "benchmarkVersion": "holdout-v0.2",
+  "label": "public-repo-holdout-v0.2",
+  "repositoryIds": [
+    "flask"
+  ],
+  "mutationFamilies": [
+    "interior-edit"
+  ],
+  "seeds": {
+    "traceSelection": "holdout-v0.2-sampler"
+  },
+  "samplingRules": {
+    "method": "sha256(commit + selector + scenario)",
+    "unitsPerFamily": 2
+  },
+  "metrics": [
+    "exact-current-precision",
+    "required-current-recall",
+    "stale-unit-rate"
+  ],
+  "gates": {
+    "requiredRecallMin": 0,
+    "staleBytesMax": 0,
+    "duplicateUnitsMax": 0
+  },
+  "exclusions": [],
+  "reposLockPath": "bench/repos.lock.json",
+  "notATuningSet": true,
+  "manifestPath": "bench/splits/holdout-v0.2.json",
+  "status": "frozen",
+  "frozenAt": "2026-08-28T18:47:30.220Z",
+  "implementationCommitSha": "ed74ef43b77b509aa30e713d2794c8660ca14202",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "flask": "d318b683471101618febed18996405ad26462110"
+  },
+  "tracePackDir": "bench/packs/holdout-v0.2/traces",
+  "reportsDir": "bench/packs/holdout-v0.2/reports",
+  "provenanceDir": "bench/packs/holdout-v0.2/provenance",
+  "classification": "candidate",
+  "manifestSha256": "7cb1b393ad4b87ed1121b16be7a5417a0d28475dfc74c49a079043ab6e4b07f7"
+}
