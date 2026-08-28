@@ -7,6 +7,7 @@ import {
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
+  replaceBudgetOmittedReadQuoteability,
   replaceHistoricalProjectionMessages,
   replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
@@ -371,6 +372,21 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           readDispositionByCallId,
           historicalReadDispositionByCallId: appliedReadDispositionByCallId,
         });
+        const latestReadCallIds = latestReadCallIdsByObservation(
+          event.messages,
+          callMeta,
+          PI_READ_TOOLS,
+        );
+        const quoteable = replaceBudgetOmittedReadQuoteability(assembled, {
+          unitForCallId: (callId) => {
+            const unitId = callToUnit.get(callId);
+            return unitId ? engine.registry.get(unitId) : undefined;
+          },
+          projectionText,
+          userCountMessages: event.messages,
+          historicalReadDispositionByCallId: appliedReadDispositionByCallId,
+          latestReadCallIds,
+        });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
         const tailMessage = projectionText.length > 0
           ? [{
@@ -382,7 +398,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
 
         return {
           messages: [
-            ...assembled,
+            ...quoteable,
             ...tailMessage,
           ],
           projection: { ...projection, text: projectionText },

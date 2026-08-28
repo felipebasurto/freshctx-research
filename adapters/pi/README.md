@@ -91,6 +91,13 @@ original read tool-result slot in the **request copy only** so every selected
 tracked unit stays quoteable (PCR 0103/0104). Persisted Pi tool results remain
 observation-time; only the ephemeral provider payload changes.
 
+When a first-time whole-file read is budget-omitted (PCR 0080), turn 1 keeps the
+truthful `freshctx:omitted-read` marker. On later unchanged turns, after apply-ack
+recorded the prior budget omit, the latest read slot carries bounded current bytes
+from the refreshed registry so quoteability does not depend on a region reread
+(PCR 0108). Fresh same-turn over-cap rereads and non-latest historical reads stay
+omitted markers (PCR 0089).
+
 ## Read scope
 
 The adapter synchronizes:

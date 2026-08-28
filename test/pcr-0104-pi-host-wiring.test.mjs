@@ -333,8 +333,8 @@ test("PCR 0104: over-budget read keeps truthful omission marker without stale bo
     assert.match(turn2.projection.text, /budget-omitted="1"/u);
     assert.equal(turn2.projection.selected.length, 0);
     const turn2Read = toolResultFor(turn2.messages, callId);
-    assert.match(toolResultText(turn2Read), /freshctx:omitted-read/u);
-    assert.doesNotMatch(toolResultText(turn2Read), /PCR_0104_OMIT/u);
+    assert.match(toolResultText(turn2Read), /PCR_0104_OMIT/u);
+    assert.doesNotMatch(toolResultText(turn2Read), /freshctx:omitted-read/u);
     assert.doesNotMatch(messageText(turn2.messages), /\[freshctx:already-served/u);
     assert.equal(validateToolPairing(turn2.messages).valid, true);
   } finally {
