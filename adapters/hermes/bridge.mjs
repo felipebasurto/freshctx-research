@@ -3,16 +3,16 @@ import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  currentProjectionMarker,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  isCurrentCollapsedProjectionMarker,
   readToolCallIds,
   readDispositionByUnitsByCall,
   replaceHistoricalProjectionMessages,
   replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
+  resolveProjectionText,
   servedReadCallIdsFromUnitsByCall,
-  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import {
   shellCallsFromMessages,
@@ -142,7 +142,10 @@ function clearPendingInjectedRevision(state) {
   delete state.pendingInjectedRevision;
   delete state.pendingProjectionText;
   delete state.pendingAckAfterUserIndex;
-  if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
+  if (!hasOwnEntries(state.lastInjectedRevision)) {
+    delete state.projectionStateVersion;
+    delete state.lastDeliveredCollapsedRevision;
+  }
 }
 
 function clearPendingReadDisposition(state) {
@@ -152,6 +155,7 @@ function clearPendingReadDisposition(state) {
 function normalizeDeliveryState(state) {
   if (state?.projectionStateVersion === 1) return state;
   delete state?.lastInjectedRevision;
+  delete state?.lastDeliveredCollapsedRevision;
   delete state?.pendingInjectedRevision;
   delete state?.pendingProjectionText;
   delete state?.pendingAckAfterUserIndex;
@@ -198,6 +202,11 @@ function requestOnlyProjectionDelivered(messages, pendingAckAfterUserIndex) {
 function commitPendingInjectedRevision(state) {
   if (hasOwnEntries(state.pendingInjectedRevision)) {
     state.lastInjectedRevision = { ...state.pendingInjectedRevision };
+    if (isCurrentCollapsedProjectionMarker(state.pendingProjectionText)) {
+      state.lastDeliveredCollapsedRevision = { ...state.pendingInjectedRevision };
+    } else if (typeof state.pendingProjectionText === "string" && state.pendingProjectionText.includes("<freshctx ")) {
+      delete state.lastDeliveredCollapsedRevision;
+    }
   }
   clearPendingInjectedRevision(state);
   state.appliedReadDispositionByCallId = {
@@ -679,14 +688,13 @@ export async function selectContext(payload) {
   const skipEligibleSelections = countSkipEligibleSelections(state.lastInjectedRevision, projection);
   const servedCallIds = servedReadCallIdsFromUnitsByCall(unitsByCall, projection);
   const readDispositionByCallId = readDispositionByUnitsByCall(unitsByCall, projection);
-  const projectionText = shouldCollapseCurrentProjection(
-    payload.messages,
+  const projectionText = resolveProjectionText({
+    messages: payload.messages,
     projection,
     skipEligibleSelections,
-    { userCountMessages: conversationMessages },
-  )
-    ? currentProjectionMarker({ unitCount: projection.selected.length })
-    : projection.text;
+    lastDeliveredCollapsedRevision: state.lastDeliveredCollapsedRevision,
+    userCountMessages: conversationMessages,
+  });
   const pendingInjectedRevision = selectedRevisionsFromProjection(projection);
   const pendingReadDispositionByCallId = omittedReadDispositionObject(readDispositionByCallId);
   if (projectionText.length > 0 && (
@@ -731,7 +739,9 @@ export async function selectContext(payload) {
     historicalReadDispositionByCallId: readDispositionMapFromObject(state.appliedReadDispositionByCallId),
   });
   return {
-    messages: [...assembled, { role: "user", content: projectionText }],
+    messages: projectionText.length > 0
+      ? [...assembled, { role: "user", content: projectionText }]
+      : assembled,
     selected: projection.selected.length,
     unresolved: projection.omitted.filter((item) => item.reason === "unresolved").length,
     applied: engine.registry.list().length > 0,

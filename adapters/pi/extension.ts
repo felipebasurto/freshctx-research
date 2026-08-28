@@ -5,16 +5,16 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { FreshCtxEngine } from "../../src/index.mjs";
 import {
-  currentProjectionMarker,
   dropUnservedReadToolPairs,
+  isCurrentCollapsedProjectionMarker,
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
   replaceHistoricalProjectionMessages,
   replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
+  resolveProjectionText,
   servedReadCallIdsFromProjection,
-  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import { trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
 import { DEFAULT_BUDGET_CHARS, readScopeFromInput } from "./replay.mjs";
@@ -181,6 +181,7 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     selector?: string;
   }>();
   const lastInjectedRevision = new Map<string, string>();
+  const lastDeliveredCollapsedRevision = new Map<string, string>();
   const pendingInjectedRevision = new Map<string, string>();
   const appliedReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
   const pendingReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
@@ -194,6 +195,11 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     const payload = (event as { payload?: { messages?: readonly unknown[] } }).payload;
     if (projectionAppliedToMessages(payload?.messages, pendingProjectionText)) {
       replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+      if (isCurrentCollapsedProjectionMarker(pendingProjectionText)) {
+        replaceMapContents(lastDeliveredCollapsedRevision, pendingInjectedRevision);
+      } else if (pendingProjectionText.includes("<freshctx ")) {
+        lastDeliveredCollapsedRevision.clear();
+      }
       for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
         appliedReadDispositionByCallId.set(callId, { ...item });
       }
@@ -307,13 +313,12 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       });
       const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
       replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
-      const projectionText = shouldCollapseCurrentProjection(
-        event.messages,
+      const projectionText = resolveProjectionText({
+        messages: event.messages,
         projection,
         skipEligibleSelections,
-      )
-        ? currentProjectionMarker({ unitCount: projection.selected.length })
-        : projection.text;
+        lastDeliveredCollapsedRevision,
+      });
       pendingProjectionText = projectionText;
       const rewritten = replaceHistoricalProjectionMessages(
         replaceCapturedReads(event.messages, callToUnit, engine, {
@@ -343,15 +348,18 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         historicalReadDispositionByCallId: appliedReadDispositionByCallId,
       });
       const timestamp = (event.messages.at(-1) as { timestamp?: number } | undefined)?.timestamp ?? 0;
+      const tailMessage = projectionText.length > 0
+        ? [{
+            role: "user",
+            content: [{ type: "text", text: projectionText }],
+            timestamp,
+          }]
+        : [];
 
       return {
         messages: [
           ...assembled,
-          {
-            role: "user",
-            content: [{ type: "text", text: projectionText }],
-            timestamp,
-          },
+          ...tailMessage,
         ],
           telemetry: {
             totalMs: 0,

@@ -2,17 +2,17 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  currentProjectionMarker,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
+  isCurrentCollapsedProjectionMarker,
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
   replaceHistoricalProjectionMessages,
   replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
+  resolveProjectionText,
   servedReadCallIdsFromProjection,
-  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import { SHELL_TOOLS, trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
 import { FreshCtxEngine } from "../../src/index.mjs";
@@ -209,6 +209,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
   const callToUnit = new Map();
   const callMeta = new Map();
   const lastInjectedRevision = new Map();
+  const lastDeliveredCollapsedRevision = new Map();
   const pendingInjectedRevision = new Map();
   const appliedReadDispositionByCallId = new Map();
   const pendingReadDispositionByCallId = new Map();
@@ -220,6 +221,7 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
     callToUnit,
     callMeta,
     lastInjectedRevision,
+    lastDeliveredCollapsedRevision,
     pendingInjectedRevision,
     appliedReadDispositionByCallId,
     pendingReadDispositionByCallId,
@@ -236,6 +238,11 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
       const messages = event?.payload?.messages;
       if (projectionAppliedToMessages(messages, pendingProjectionText)) {
         replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
+        if (isCurrentCollapsedProjectionMarker(pendingProjectionText)) {
+          replaceMapContents(lastDeliveredCollapsedRevision, pendingInjectedRevision);
+        } else if (pendingProjectionText.includes("<freshctx ")) {
+          lastDeliveredCollapsedRevision.clear();
+        }
         for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
           appliedReadDispositionByCallId.set(callId, { ...item });
         }
@@ -339,13 +346,12 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         });
         const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
         replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
-        const projectionText = shouldCollapseCurrentProjection(
-          event.messages,
+        const projectionText = resolveProjectionText({
+          messages: event.messages,
           projection,
           skipEligibleSelections,
-        )
-          ? currentProjectionMarker({ unitCount: projection.selected.length })
-          : projection.text;
+          lastDeliveredCollapsedRevision,
+        });
         pendingProjectionText = projectionText;
         const rewritten = replaceHistoricalProjectionMessages(
           replaceCapturedReads(event.messages, callToUnit, engine, {
@@ -375,15 +381,18 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           historicalReadDispositionByCallId: appliedReadDispositionByCallId,
         });
         const timestamp = event.messages.at(-1)?.timestamp ?? 0;
+        const tailMessage = projectionText.length > 0
+          ? [{
+              role: "user",
+              content: [{ type: "text", text: projectionText }],
+              timestamp,
+            }]
+          : [];
 
         return {
           messages: [
             ...assembled,
-            {
-              role: "user",
-              content: [{ type: "text", text: projectionText }],
-              timestamp,
-            },
+            ...tailMessage,
           ],
           projection: { ...projection, text: projectionText },
           telemetry: {
