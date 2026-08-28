@@ -107,3 +107,4 @@
 | [0107](pcr/0107-fix-0096-0097-probe-inversion.md) | 2026-08-28 | Fix inverted requestOnlyCollapsed probe on official Hermes boards 0096/0097 | `synthetic`; `hermes-fresh`; `host-contract`; `test-fix` | review |
 | [0108](pcr/0108-pi-overcap-budget-omit-quoteability.md) | 2026-08-28 | Pi over-cap budget-omit later-turn quoteability at read slot | `synthetic`; `replay`; `pi-fresh`; `adapter-only`; `invariant` | review |
 | [0109](pcr/0109-sealed-lab-program.md) | 2026-08-28 | Sealed lab program: attestation consume, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, sidecar + gold | `synthetic`; `protocol-fixture`; `unsealed-regression`; `measurement` | review |
+| [0110](pcr/0110-seal-holdout-v0.2.md) | 2026-08-28 | Seal holdout v0.2 from production GHA attestation (not a tuning set) | `protocol-fixture`; `unsealed-regression`; `measurement` | review |

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "name": "flask/interior-edit/src-alpha.py::file",
+  "source": {
+    "repository": "synthetic://sampler",
+    "commit": "d318b683471101618febed18996405ad26462110",
+    "license": "MIT"
+  },
+  "initialFiles": {
+    "src/alpha.py": "def alpha():\n    return 1\n"
+  },
+  "events": [
+    {
+      "type": "read",
+      "path": "src/alpha.py",
+      "scope": "file",
+      "startLine": 1,
+      "endLine": 3,
+      "selector": "src/alpha.py::file"
+    },
+    {
+      "type": "capture-request",
+      "task": "review src/alpha.py::file",
+      "budgetChars": 12000,
+      "requiredUnits": [
+        {
+          "path": "src/alpha.py",
+          "selector": "src/alpha.py::file",
+          "sha256": "ba505671282f62d066e2de2f5da1f1f123d814ffdc9cdd4112b2841433851ef1"
+        }
+      ]
+    },
+    {
+      "type": "replace-exact",
+      "path": "src/alpha.py",
+      "expected": "def alpha():",
+      "replacement": "def alpha(): // sampler interior edit"
+    },
+    {
+      "type": "capture-request",
+      "task": "review src/alpha.py::file",
+      "budgetChars": 12000,
+      "requiredUnits": [
+        {
+          "path": "src/alpha.py",
+          "selector": "src/alpha.py::file",
+          "sha256": "d0182fb2a7f5615b5606c43c24506cef2f1049a0f5c6e71513ff2f163ac08fae"
+        }
+      ]
+    }
+  ],
+  "goldExtract": {
+    "source": "generator-offsets",
+    "path": "src/alpha.py",
+    "startLine": 1,
+    "endLine": 3,
+    "byteRange": [
+      0,
+      26
+    ],
+    "preSha256": "ba505671282f62d066e2de2f5da1f1f123d814ffdc9cdd4112b2841433851ef1",
+    "postSha256": "d0182fb2a7f5615b5606c43c24506cef2f1049a0f5c6e71513ff2f163ac08fae",
+    "mutation": {
+      "type": "replace-exact",
+      "expected": "def alpha():",
+      "replacement": "def alpha(): // sampler interior edit"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "phase": "generate",
+  "generatedAt": "2026-08-28T18:52:26.625Z",
+  "packId": "holdout-v0.2",
+  "manifestPath": "bench/splits/holdout-v0.2.json",
+  "manifestSha256": "7cb1b393ad4b87ed1121b16be7a5417a0d28475dfc74c49a079043ab6e4b07f7",
+  "freezeCommitSha": "2bf91d83f6370b0a66a52f7d28da4d00e8df2e9c",
+  "implementationCommitSha": "ed74ef43b77b509aa30e713d2794c8660ca14202",
+  "reposLockSha256": "4a9322215bba289c56be444c5547fffb077f53424ff9573d046869e013870067",
+  "repositoryLocks": {
+    "flask": "d318b683471101618febed18996405ad26462110"
+  },
+  "generator": "unit-sampler",
+  "selected": 2,
+  "rejected": 2
+}
