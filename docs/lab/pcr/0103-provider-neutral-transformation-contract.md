@@ -56,6 +56,10 @@ Door and lock stay frozen:
   when tail is stub/empty.
 - PCR 0093–0097 replay expectations — collapsed/omitted tail still omits bodies
   from **projection**, but read slot carries current bytes (quoteability repair).
+- `test/pcr-0096-hermes-official-loader.test.mjs`,
+  `test/pcr-0097-hermes-continue-request-only.test.mjs` — official host-contract
+  probes expect `hostNewCopies === 1`, `hostNewCopiesInProjection === 0`,
+  `hostOldCopies === 0` after collapse (quoteability invariant; tail still stub-only).
 - `docs/lab/pcr/0103-provider-neutral-transformation-contract.md` — this PCR.
 - `docs/lab/INDEX.md` — append row 0103.
 
@@ -85,7 +89,7 @@ via read-slot inline.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 1 | **334** total; **308 pass**; **2 fail**; **24 skip** — PCR 0096/0097 (`bench/hosts/hermes` absent; same as main hold) |
+| `npm test` | yes | 1 | **334** total; **308 pass**; **2 fail**; **24 skip** — PCR 0096/0097 fail at host staging (`bench/hosts/hermes` absent on this VM; assertions updated for quoteability) |
 | `npm run evaluate` | yes | 1 | blocked by same 2 host-contract failures |
 | `npm run ctxbench` | yes | 0 | hard gates all true |
 | `node bench/run.mjs` (direct) | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
@@ -129,7 +133,8 @@ Not **roll back**: mechanism is adapter-only and fail-closed.
 - Over-cap 21-unit boards inline all selected read slots when tail omits — byte cost
   bounded by selection policy, not measured against live native on this VM.
 - `lastInjectedRevision` / `lastDeliveredCollapsedRevision` delivery state not retired.
-- Host-contract tests 0096/0097 require `bench/hosts/hermes` fetch.
+- Host-contract tests 0096/0097 require `bench/hosts/hermes` fetch; assertions
+  now expect one host-visible current copy at the read slot when tail collapses.
 - No model-specific core behavior; no new prototype-core dependencies.
 
 ## Next experiment
