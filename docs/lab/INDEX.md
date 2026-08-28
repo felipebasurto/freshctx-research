@@ -97,3 +97,4 @@
 | [0097](pcr/0097-hermes-continue-request-only-ack.md) | 2026-08-28 | Hermes continue later turn apply-ack without persisted projection text | `synthetic`; `hermes-fresh`; `adapter-only`; `host-contract` | review |
 | [0098](pcr/0098-quoteable-first-new-projection.md) | 2026-08-28 | Turn-2 first-NEW projection stays quoteable at the tracked read | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0099](pcr/0099-repeated-already-served-omit.md) | 2026-08-28 | Omit repeated already-served stub after first collapse | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0100](pcr/0100-over-cap-unchanged-collapse.md) | 2026-08-28 | Over-cap unchanged turns collapse instead of re-dumping bodies | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
