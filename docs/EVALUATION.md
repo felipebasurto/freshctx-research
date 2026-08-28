@@ -566,7 +566,9 @@ content-only comparison in `bench/metrics.mjs`.
 
 Not yet implemented and therefore not claimable:
 
-- language parsers inside `src/` (sidecars only; ADR 0004);
+- language parsers inside `src/` (sidecars only; ADR 0004). The sidecar now
+  uses Tree-sitter WASM for Python, JavaScript, and TypeScript. Go and Rust
+  still use the contract-compatible regex leftover;
 - full public-repo symbol sampling (whole-file enumerator is in;
   sidecar-backed symbols are a later cut);
 - full stage-level timing and peak-memory reporting in every adapter (§9.2 and

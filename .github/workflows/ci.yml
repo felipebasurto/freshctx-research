@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Sidecar grammars
+        run: npm --prefix sidecar/treesitter ci --omit=dev
       - name: Syntax
         run: npm run check
       - name: Invariants
@@ -50,4 +52,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Sidecar grammars
+        run: npm --prefix sidecar/treesitter ci --omit=dev
       - run: node --test test/*.test.mjs

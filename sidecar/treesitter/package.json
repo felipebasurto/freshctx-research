@@ -1,0 +1,16 @@
+{
+  "name": "freshctx-treesitter-sidecar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated Tree-sitter extractors for FreshCtx. Not imported by src/.",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-python": "^0.23.6",
+    "tree-sitter-typescript": "^0.23.2",
+    "web-tree-sitter": "^0.25.10"
+  }
+}

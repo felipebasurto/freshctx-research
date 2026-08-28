@@ -108,3 +108,4 @@
 | [0108](pcr/0108-pi-overcap-budget-omit-quoteability.md) | 2026-08-28 | Pi over-cap budget-omit later-turn quoteability at read slot | `synthetic`; `replay`; `pi-fresh`; `adapter-only`; `invariant` | review |
 | [0109](pcr/0109-sealed-lab-program.md) | 2026-08-28 | Sealed lab program: attestation consume, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, sidecar + gold | `synthetic`; `protocol-fixture`; `unsealed-regression`; `measurement` | review |
 | [0110](pcr/0110-seal-holdout-v0.2.md) | 2026-08-28 | Seal holdout v0.2 from production GHA attestation (not a tuning set) | `protocol-fixture`; `unsealed-regression`; `measurement` | review |
+| [0111](pcr/0111-treesitter-sidecar-wasm.md) | 2026-08-28 | Tree-sitter WASM sidecar for Python, JavaScript, and TypeScript behind the ADR 0004 contract | `synthetic`; `measurement` | review |
