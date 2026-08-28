@@ -3,7 +3,7 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
+import { FreshCtxEngine } from "../../src/index.mjs";
 import {
   currentProjectionMarker,
   dropUnservedReadToolPairs,
@@ -11,6 +11,7 @@ import {
   readToolCallIds,
   readDispositionByCallToUnit,
   replaceHistoricalProjectionMessages,
+  replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
   shouldCollapseCurrentProjection,
@@ -142,25 +143,19 @@ function replaceCapturedReads(
   messages: readonly unknown[],
   callToUnit: Map<string, string>,
   engine: FreshCtxEngine,
+  quoteability: {
+    projection?: { selected?: Array<{ id?: string }>; omitted?: unknown[] };
+    skipEligibleSelections?: number;
+    projectionText?: string;
+    lastInjectedRevision?: Map<string, string>;
+  } = {},
 ) {
-  return messages.map((raw) => {
-    const message = raw as {
-      content?: unknown;
-      toolCallId?: string;
-      tool_call_id?: string;
-    };
-    const callId = message.toolCallId ?? message.tool_call_id;
-    const unitId = callId ? callToUnit.get(callId) : undefined;
-    const unit = unitId ? engine.registry.get(unitId) : undefined;
-    if (!unit) return structuredClone(raw);
-
-    const marker = stableReadMarker(unit);
-    return {
-      ...structuredClone(message),
-      content: Array.isArray(message.content)
-        ? [{ type: "text", text: marker }]
-        : marker,
-    };
+  return replaceTrackedReadToolResults(messages, {
+    unitForCallId: (callId) => {
+      const unitId = callToUnit.get(callId);
+      return unitId ? engine.registry.get(unitId) : undefined;
+    },
+    ...quoteability,
   });
 }
 
@@ -321,7 +316,12 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         : projection.text;
       pendingProjectionText = projectionText;
       const rewritten = replaceHistoricalProjectionMessages(
-        replaceCapturedReads(event.messages, callToUnit, engine),
+        replaceCapturedReads(event.messages, callToUnit, engine, {
+          projection,
+          skipEligibleSelections,
+          projectionText,
+          lastInjectedRevision,
+        }),
       );
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
       const readDispositionByCallId = readDispositionByCallToUnit(
