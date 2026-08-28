@@ -48,7 +48,7 @@ test("PCR 0084: all-tracked multi-path cat keeps the pair and marker-replaces th
   }
 });
 
-test("PCR 0084: one-untracked-path multi-path cat is left alone", () => {
+test("PCR 0091: one-untracked-path multi-path cat marker-replaces stale tracked bytes", () => {
   const trackedPaths = [
     "README.md",
     CLI_PATH,
@@ -65,7 +65,7 @@ test("PCR 0084: one-untracked-path multi-path cat is left alone", () => {
     trackedPaths,
     servedCallIds: new Set(),
   });
-  assert.equal(drop.size, 0);
+  assert.deepEqual([...drop], ["call-one-untracked"]);
 
   const pruned = dropUnservedReadToolPairs(messages, {
     readTools: new Set(["read"]),
@@ -73,11 +73,17 @@ test("PCR 0084: one-untracked-path multi-path cat is left alone", () => {
     observedCallIds: new Set(),
     trackedPaths,
   });
-  assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
-  assert.doesNotMatch(JSON.stringify(pruned), /freshctx:stale-dump/u);
+  const marker = messageText([pruned[1]]);
+  assert.doesNotMatch(marker, /CONCAT_DUMP/u);
+  assert.match(marker, /freshctx:stale-dump/u);
+  assert.match(marker, /README\.md/u);
+  assert.match(marker, /src\/viajante\/cli\.py/u);
+  assert.match(marker, /src\/viajante\/models\.py/u);
+  assert.match(marker, /notes\/freshctx-todo\.md/u);
+  assert.match(marker, /not supplied/u);
 });
 
-test("PCR 0084: suffix path alias does not count as tracked", () => {
+test("PCR 0091: suffix path alias stays exact while tracked peer bytes are marker-replaced", () => {
   const trackedPaths = [
     "README.md",
     CLI_PATH,
@@ -93,7 +99,7 @@ test("PCR 0084: suffix path alias does not count as tracked", () => {
     trackedPaths,
     servedCallIds: new Set(),
   });
-  assert.equal(drop.size, 0);
+  assert.deepEqual([...drop], ["call-suffix-alias"]);
 
   const pruned = dropUnservedReadToolPairs(messages, {
     readTools: new Set(["read"]),
@@ -101,7 +107,12 @@ test("PCR 0084: suffix path alias does not count as tracked", () => {
     observedCallIds: new Set(),
     trackedPaths,
   });
-  assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
-  assert.match(JSON.stringify(pruned), /MARKER_DOC_README=D0/u);
-  assert.doesNotMatch(JSON.stringify(pruned), /freshctx:stale-dump/u);
+  const marker = messageText([pruned[1]]);
+  assert.doesNotMatch(marker, /CONCAT_DUMP/u);
+  assert.doesNotMatch(marker, /MARKER_DOC_README=D0/u);
+  assert.match(marker, /freshctx:stale-dump/u);
+  assert.match(marker, /src\/viajante\/cli\.py/u);
+  assert.match(marker, /docs\/README\.md/u);
+  assert.match(marker, /not supplied/u);
+  assert.doesNotMatch(marker, /\[freshctx:stale-dump paths=.*README\.md, src\/viajante\/cli\.py/u);
 });

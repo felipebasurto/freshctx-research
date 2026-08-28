@@ -108,7 +108,7 @@ test("PCR 0081: two tracked paths in one command are not dropped", () => {
   assert.match(JSON.stringify(pruned), /CL0 leftover/u);
 });
 
-test("PCR 0081: five-file cat dump with one untracked path is left in place", () => {
+test("PCR 0091: five-file cat dump with one untracked path marker-replaces stale tracked bytes", () => {
   const trackedPaths = [
     "README.md",
     CLI_PATH,
@@ -125,15 +125,22 @@ test("PCR 0081: five-file cat dump with one untracked path is left in place", ()
     trackedPaths,
     servedCallIds: new Set(),
   });
-  assert.equal(drop.size, 0);
+  assert.deepEqual([...drop], ["call-five"]);
   const pruned = dropUnservedReadToolPairs(messages, {
     readTools: new Set(["read"]),
     servedCallIds: new Set(),
     observedCallIds: new Set(),
     trackedPaths,
   });
-  assert.match(JSON.stringify(pruned), /CONCAT_DUMP/u);
-  assert.doesNotMatch(JSON.stringify(pruned), /stale-dump/u);
+  const payload = messageText(pruned);
+  assert.doesNotMatch(payload, /CONCAT_DUMP/u);
+  assert.match(payload, /freshctx:stale-dump/u);
+  assert.match(payload, /README\.md/u);
+  assert.match(payload, /src\/viajante\/cli\.py/u);
+  assert.match(payload, /src\/viajante\/models\.py/u);
+  assert.match(payload, /src\/viajante\/flights\.py/u);
+  assert.match(payload, /notes\/freshctx-todo\.md/u);
+  assert.match(payload, /not supplied/u);
 });
 
 test("PCR 0081: piped dump of a tracked path is dropped after refresh", async () => {
