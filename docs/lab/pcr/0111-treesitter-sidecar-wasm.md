@@ -39,28 +39,68 @@ holdout gold, weight, threshold, or `bench/traces/holdout/**` edit. No laptop
 
 ## Benchmarks run
 
+Canonical TAP is the re-run on product `c6de6d7ac8f875469917128c0af0094300ca7859`
+(tree after the two fail-closed pins). dest: `cloud-agent`. env:
+`bench/hosts/hermes` absent; go-tools fixture repos not fetched.
+
+```
+1..398
+# tests 398
+# suites 0
+# pass 372
+# fail 2
+# cancelled 0
+# skipped 24
+# todo 0
+```
+
+`# fail 2` is dest/env, not a product regression:
+
+| TAP | title | error |
+|---|---|---|
+| `not ok 267` | PCR 0096 official Hermes loader | `ENOENT` copyfile `bench/hosts/hermes/plugins/__init__.py` |
+| `not ok 268` | PCR 0097 Hermes continue later turn | `ENOENT` copyfile `bench/hosts/hermes/plugins/__init__.py` |
+
+`# skipped 24`, honest reasons:
+
+| count | reason |
+|---|---|
+| 16 | go-tools `parse.go` / `util.go` not fetched |
+| 7 | `bench/hosts/hermes` not fetched (incl. PCR 0098 official loader; PCR 0102 host-contract board) |
+| 1 | `FRESHCTX_HOSTS_FETCH=1` unset |
+
+Fail-closed pins on this TAP: `ok 382` hasError parse-broken; `ok 383`
+exclusive column-0; `ok 384` adjacent defs.
+
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 1 | **395** total; **369** pass; **2** fail; **24** skip. Failures are PCR 0096/0097 (`bench/hosts/hermes` absent), same as PCR 0109 |
+| `npm test` | yes | 1 | TAP above. dest/env: hermes host absent |
 | `git diff --exit-code` | yes | 0 | after the test run, on the committed tree |
 | `npm run check` | yes | 0 | includes `sidecar/treesitter/*.mjs` |
-| `npm run evaluate` | yes | 1 | hard gate on the same 0096/0097 host-absent failures |
+| `npm run evaluate` | yes | 1 | hard gate: same 0096/0097 dest/env ENOENT |
 | `node bench/run.mjs` | yes | 0 | `score` 89.10716495057945 (`AUTORESEARCH_SCORE=89.107165`) |
-| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3…`; all six hard gates true |
+| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; all six hard gates true |
 | `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
-| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=…` | yes | 1 | attestation file is not on merge-base `70df2f4` |
-| `npm run holdout:ci-guard -- --base=origin/main` | yes | 0 | `valid: true` |
+| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=…` | yes | 1 | attestation is on origin/main `8b2305c5` (PCR 0110), not this merge-base |
+| `npm run holdout:ci-guard -- --base=origin/main` | yes | 0 | `valid: true` against `8b2305c5` |
+| `npm run papers:list` | yes | 0 | manifest sha256 `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89` |
 
 ## Metric snapshot
 
-| metric | origin/main `70df2f4` | PCR 0111 | delta |
+| metric | origin/main `70df2f4` | PCR 0111 @ `c6de6d7` | delta |
 |---|---|---|---|
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | `0` |
 | ctxbench hard gates | all true | all true | `0` |
-| `npm test` total | 390 | **395** | **+5** sidecar contract cases |
-| `npm test` failed | 2 | **2** | `0` (0096/0097 host absent) |
+| `npm test` TAP `# tests` | 390 | **398** | **+8** (sidecar + fail-closed pins) |
+| `npm test` TAP `# pass` | 364 | **372** | **+8** |
+| `npm test` TAP `# fail` | 2 | **2** | `0` (dest/env: hermes host absent) |
+| `npm test` TAP `# skipped` | 24 | **24** | `0` |
 | holdout v0.1 classify | `unsealed-regression` | `unsealed-regression` | `0` |
+
+First loop on `d1a156b` (before the two fail-closed pins) was TAP
+`# tests 395` / `# pass 369`. That row is historical. It is not the
+measurement for this HEAD.
 
 ## Conflicts with constitutions
 
@@ -115,26 +155,5 @@ when `end.row > start.row`. Tests: helper cases plus adjacent Python
 `alpha` / `beta` (`alpha.endLine < beta.startLine`; neither slice contains
 the other def).
 
-### Re-measurement after `c6de6d7`
-
-| Command | Ran? | Exit | Notes |
-|---|---|---|---|
-| `npm test` | yes | 1 | **398** total; **372** pass; **2** fail; **24** skip. Failures are PCR 0096/0097 (`bench/hosts/hermes` absent) |
-| `git diff --exit-code` | yes | 0 | after the test run, on the committed tree |
-| `npm run check` | yes | 0 | includes `sidecar/treesitter/*.mjs` |
-| `npm run evaluate` | yes | 1 | hard gate on the same 0096/0097 host-absent failures |
-| `node bench/run.mjs` | yes | 0 | `score` 89.10716495057945 (`AUTORESEARCH_SCORE=89.107165`) |
-| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; all six hard gates true |
-| `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
-| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=…` | yes | 1 | attestation is on origin/main `8b2305c5` (PCR 0110), not this merge-base |
-| `npm run holdout:ci-guard -- --base=origin/main` | yes | 0 | `valid: true` against `8b2305c5` |
-| `npm run papers:list` | yes | 0 | manifest sha256 `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89` |
-
-| metric | `d1a156b` (pre-fix) | after `c6de6d7` | delta |
-|---|---|---|---|
-| `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
-| ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | `0` |
-| ctxbench hard gates | all true | all true | `0` |
-| `npm test` total | 395 | **398** | **+3** fail-closed pins |
-| `npm test` failed | 2 | **2** | `0` (0096/0097 host absent) |
-| holdout v0.1 classify | `unsealed-regression` | `unsealed-regression` | `0` |
+Canonical TAP for this HEAD is the table above (`# tests 398` / `# pass 372`).
+The pre-fix `395` / `369` row is not the measurement for `c6de6d7`.
