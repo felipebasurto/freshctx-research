@@ -24,7 +24,7 @@ test("gold comes from generator offsets, not sidecar ranges", () => {
   assert.equal(honest.source, "generator-offsets");
 });
 
-test("sabotaged sidecar cannot change sampler-trace gold", () => {
+test("sabotaged sidecar cannot change sampler-trace gold", async () => {
   const sample = sampleUnits({
     commit: "abc",
     scenario: "interior-edit",
@@ -33,7 +33,7 @@ test("sabotaged sidecar cannot change sampler-trace gold", () => {
   });
   const [trace] = tracesFromSample({ sample });
   const gold = extractGoldFromTrace(trace);
-  const sidecar = parseSource({
+  const sidecar = await parseSource({
     path: "src/alpha.py",
     bytes: "def other():\n    return 9\n",
   });

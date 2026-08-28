@@ -6,35 +6,69 @@ import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
 import { createSidecarRunner, missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { inclusiveEndLine } from "../sidecar/treesitter/grammars.mjs";
 import { parseSource } from "../sidecar/treesitter/parse.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
-test("sidecar parses Python, TypeScript, JavaScript, Rust, and Go", () => {
-  const python = parseSource({ path: "a.py", bytes: "def alpha():\n    return 1\n" });
+test("sidecar parses Python, TypeScript, JavaScript, Rust, and Go", async () => {
+  const python = await parseSource({ path: "a.py", bytes: "def alpha():\n    return 1\n" });
   assert.equal(python.error, null);
   assert.equal(python.units[0].selector, "alpha");
 
-  const ts = parseSource({ path: "a.ts", bytes: "export class Auth {\n  ok() { return true; }\n}\n" });
+  const ts = await parseSource({ path: "a.ts", bytes: "export class Auth {\n  ok() { return true; }\n}\n" });
   assert.equal(ts.units[0].selector, "Auth");
 
-  const js = parseSource({ path: "a.js", bytes: "export function main() {\n  return 1;\n}\n" });
+  const js = await parseSource({ path: "a.js", bytes: "export function main() {\n  return 1;\n}\n" });
   assert.equal(js.units[0].selector, "main");
 
-  const rust = parseSource({ path: "a.rs", bytes: "fn parse_file() {\n    let x = 1;\n}\n" });
+  const rust = await parseSource({ path: "a.rs", bytes: "fn parse_file() {\n    let x = 1;\n}\n" });
   assert.equal(rust.units[0].selector, "parse_file");
 
-  const go = parseSource({
+  const go = await parseSource({
     path: "util.go",
     bytes: "func ParseFile(fset int) {\n  if true {\n    return\n  }\n}\n",
   });
   assert.equal(go.units[0].selector, "ParseFile");
 });
 
-test("sidecar fails closed on broken syntax", () => {
-  const broken = parseSource({ path: "a.go", bytes: "func ParseFile() {\n" });
+test("sidecar fails closed on broken syntax", async () => {
+  const broken = await parseSource({ path: "a.go", bytes: "func ParseFile() {\n" });
   assert.equal(broken.error, "parse-broken");
   assert.deepEqual(broken.units, []);
+});
+
+test("tree-sitter parse-broken wins even when some units extract", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: "def alpha():\n    return 1\n\ndef broken(\n",
+  });
+  assert.equal(parsed.error, "parse-broken");
+  assert.deepEqual(parsed.units, []);
+});
+
+test("exclusive column-0 ends do not include the next line", () => {
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 2, column: 0 }), 2);
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 1, column: 12 }), 2);
+  assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 0, column: 10 }), 1);
+});
+
+test("adjacent tree-sitter defs stay on their own lines", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: "def alpha():\n    return 1\ndef beta():\n    return 2\n",
+  });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 2);
+  const [alpha, beta] = parsed.units;
+  assert.equal(alpha.selector, "alpha");
+  assert.equal(beta.selector, "beta");
+  assert.ok(alpha.endLine < beta.startLine);
+  const lines = "def alpha():\n    return 1\ndef beta():\n    return 2\n".split("\n");
+  const alphaBody = lines.slice(alpha.startLine - 1, alpha.endLine).join("\n");
+  const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+  assert.equal(alphaBody.includes("def beta"), false);
+  assert.equal(betaBody.includes("def alpha"), false);
 });
 
 test("injected missing sidecar leaves symbol units unresolved", async () => {
@@ -91,4 +125,62 @@ test("sidecar client does not retain prior request bodies", async () => {
   const source = await readFile(join(ROOT, "sidecar/treesitter/client.mjs"), "utf8");
   assert.equal(source.includes("lastBytes"), false);
   assert.equal(source.includes("cache"), false);
+});
+
+test("spawned sidecar is byte-identical for the same request", async () => {
+  const runner = createSidecarRunner();
+  const request = { path: "a.py", bytes: "def alpha():\n    return 1\n" };
+  const first = JSON.stringify(await runner(request));
+  const second = JSON.stringify(await runner(request));
+  assert.equal(first, second);
+});
+
+test("a later sidecar call does not keep earlier request bytes", async () => {
+  const runner = createSidecarRunner();
+  const first = await runner({
+    path: "a.py",
+    bytes: "def unique_first():\n    return 'PCR_SIDECAR_FIRST'\n",
+  });
+  const second = await runner({
+    path: "b.py",
+    bytes: "def unique_second():\n    return 'PCR_SIDECAR_SECOND'\n",
+  });
+  assert.equal(first.units[0].selector, "unique_first");
+  assert.equal(second.units[0].selector, "unique_second");
+  assert.equal(second.units.some((unit) => unit.selector === "unique_first"), false);
+  assert.equal(second.units.some((unit) => unit.sha256 === first.units[0].sha256), false);
+  const encoded = JSON.stringify(second);
+  assert.equal(encoded.includes("PCR_SIDECAR_FIRST"), false);
+  assert.equal(encoded.includes(first.units[0].sha256), false);
+});
+
+test("duplicate module-level names fail closed as ambiguous", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: "def foo():\n    return 1\n\ndef foo():\n    return 2\n",
+  });
+  assert.equal(parsed.error, "ambiguous");
+  assert.deepEqual(parsed.units, []);
+});
+
+test("class-qualified methods can coexist", async () => {
+  const parsed = await parseSource({
+    path: "a.ts",
+    bytes: "export class Alpha {\n  render() { return 1; }\n}\nexport class Beta {\n  render() { return 2; }\n}\n",
+  });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units[0].selector, "Alpha");
+  const renders = parsed.units.filter((unit) => unit.selector === "render");
+  assert.equal(renders.length, 2);
+  assert.equal(renders[0].qualifiedSelector, "class Alpha::method render");
+  assert.equal(renders[1].qualifiedSelector, "class Beta::method render");
+});
+
+test("C and Lua stay parser-not-implemented", async () => {
+  const c = await parseSource({ path: "a.c", bytes: "int main(void) { return 0; }\n" });
+  const lua = await parseSource({ path: "a.lua", bytes: "function main()\n  return 1\nend\n" });
+  assert.equal(c.error, "parser-not-implemented");
+  assert.deepEqual(c.units, []);
+  assert.equal(lua.error, "parser-not-implemented");
+  assert.deepEqual(lua.units, []);
 });
