@@ -93,6 +93,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-28 | (PCR 0094) Hermes collapsed-turn apply-ack tracks the emitted marker text | 296 total (274 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0094](pcr/0094-hermes-collapsed-ack-target.md) |
 | 2026-08-28 | (PCR 0095) Hermes later-turn collapse counts conversation history, not only the narrowed request slice | 297 total (275 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0095](pcr/0095-hermes-conversation-history-gate.md) |
 | 2026-08-28 | (PCR 0096) official Hermes loader path executes symlinked bridge and collapses later host-history turns | 298 total (281 pass, 17 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0096](pcr/0096-hermes-official-loader-symlink.md) |
+| 2026-08-28 | (PCR 0097) Hermes continue later turn apply-ack without persisted projection text | 300 total (283 pass, 17 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0097](pcr/0097-hermes-continue-request-only-ack.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
