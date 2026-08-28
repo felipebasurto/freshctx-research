@@ -89,3 +89,4 @@
 | [0089](pcr/0089-omitted-reread-loop.md) | 2026-08-27 | Omitted official reread loop fails closed without stale replay or duplicate current copies | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0090](pcr/0090-multi-path-dumps-beyond-cat-nl.md) | 2026-08-27 | Multi-path dumps beyond cat/nl marker-replace only when every named path is tracked | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
 | [0091](pcr/0091-mixed-tracked-untracked-multi-path-dumps.md) | 2026-08-28 | Mixed tracked+untracked multi-path dumps fail closed without stale tracked bytes | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
+| [0092](pcr/0092-later-turn-projection-replay.md) | 2026-08-28 | Later-turn projection replay collapses to an already-served marker | `synthetic`; `pi-fresh`; `hermes-fresh`; `replay`; `adapter-only` | review |
