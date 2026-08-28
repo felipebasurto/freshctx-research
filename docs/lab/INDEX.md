@@ -101,3 +101,4 @@
 | [0101](pcr/0101-native-quoteability-zero-byte-evidence.md) | 2026-08-28 | Native harness compatibility and later-turn quoteability evidence | `synthetic`; `design-evidence`; `replay`; `native-host` | review |
 | [0102](pcr/0102-later-turn-quoteability-characterization.md) | 2026-08-28 | Later-turn quoteability characterization and replay measurement | `synthetic`; `replay`; `characterization`; `measurement` | review |
 | [0103](pcr/0103-provider-neutral-transformation-contract.md) | 2026-08-28 | Provider-neutral transformation contract (Design B/D read-slot inline) | `synthetic`; `replay`; `adapter-only`; `invariant` | review |
+| [0104](pcr/0104-pi-pcr-0103-host-wiring.md) | 2026-08-28 | Pi host wiring for PCR 0103 quoteability contract | `synthetic`; `replay`; `pi-fresh`; `adapter-only`; `invariant` | review |
