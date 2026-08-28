@@ -87,6 +87,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-27 | (PCR 0088) first-inject tail identity fail-closed on leftover undersized / middle / extra-NL shapes | 280 total (258 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0088](pcr/0088-first-inject-tail-leftover-shapes.md) |
 | 2026-08-27 | (PCR 0089) omitted official reread loop fails closed | 287 total (265 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0089](pcr/0089-omitted-reread-loop.md) |
 | 2026-08-27 | (PCR 0090) multi-path dumps beyond cat/nl fail closed and marker-replace only when every named path is tracked | 291 total (269 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0090](pcr/0090-multi-path-dumps-beyond-cat-nl.md) |
+| 2026-08-28 | (PCR 0091) mixed tracked+untracked multi-path dumps fail closed without stale tracked bytes | 291 total (269 pass, 22 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0091](pcr/0091-mixed-tracked-untracked-multi-path-dumps.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
