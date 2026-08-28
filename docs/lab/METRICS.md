@@ -102,6 +102,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-28 | (PCR 0111) Tree-sitter WASM sidecar for Python, JavaScript, TypeScript | 395 total (369 pass, 2 fail, 24 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 | 2026-08-28 | `c6de6d7` (PCR 0111 review) fail-closed `hasError` + exclusive column-0 end lines | 398 total (372 pass, 2 fail, 24 skip) | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 | 2026-08-28 | product `c6de6d7` TAP re-run dest=`cloud-agent` env=`bench/hosts/hermes` absent | TAP 398 / 372 pass / 2 fail dest-env / 24 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
+| 2026-08-28 | post-rebase on `8b2305c5` dest=`cloud-agent` env=hermes-absent; v0.2 `sealed` | TAP 398 / 372 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 
 No synthetic metric delta. Label: `synthetic`.
 
