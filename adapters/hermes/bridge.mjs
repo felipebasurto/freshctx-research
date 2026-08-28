@@ -719,6 +719,7 @@ export async function selectContext(payload) {
     lastInjectedRevision: isPlainObject(state.lastInjectedRevision)
       ? new Map(Object.entries(state.lastInjectedRevision))
       : new Map(),
+    userCountMessages: conversationMessages,
   });
   const assembled = dropUnservedReadToolPairs(replaceHistoricalProjectionMessages(rewritten), {
     readTools: HERMES_TRACKED_TOOLS,

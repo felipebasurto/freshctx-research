@@ -120,9 +120,10 @@ export function shouldInlineServedReadAtToolResult({
   skipEligibleSelections,
   projectionText,
   lastInjectedRevision,
+  userCountMessages = messages,
 }) {
-  if (userMessageCount(messages) !== 2) return false;
-  if (!hasAssistantReplyBetweenFirstAndLastUser(messages)) return false;
+  if (userMessageCount(userCountMessages) !== 2) return false;
+  if (!hasAssistantReplyBetweenFirstAndLastUser(userCountMessages)) return false;
   if (!(lastInjectedRevision instanceof Map) || lastInjectedRevision.size === 0) return false;
   if (typeof projectionText !== "string" || !projectionText.includes("<freshctx-unit")) return false;
   if (skipEligibleSelections !== 0) return false;
@@ -152,6 +153,7 @@ export function replaceTrackedReadToolResults(messages, {
   skipEligibleSelections,
   projectionText,
   lastInjectedRevision,
+  userCountMessages = messages,
 } = {}) {
   const inlineServedReadAtToolResult = shouldInlineServedReadAtToolResult({
     messages,
@@ -159,6 +161,7 @@ export function replaceTrackedReadToolResults(messages, {
     skipEligibleSelections,
     projectionText,
     lastInjectedRevision,
+    userCountMessages,
   });
   const selectedUnitIds = new Set((projection?.selected ?? []).map((unit) => unit.id));
   return messages.map((message) => {

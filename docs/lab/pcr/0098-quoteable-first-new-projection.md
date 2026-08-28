@@ -53,14 +53,17 @@ The fix stays adapter-only. No second engine. No projector retune.
 
 - `adapters/request-prune.mjs`
   - adds `shouldInlineServedReadAtToolResult()` gated to:
-    - exactly two user turns;
+    - exactly two user turns counted from `userCountMessages` (defaults to
+      `messages`; Hermes passes full `conversationMessages` per PCR 0095);
     - an assistant reply between first and last user turn;
     - non-empty `lastInjectedRevision` (turn 1 apply-ack);
     - full live projection (`<freshctx-unit>` present, `skipEligible=0`);
   - adds `servedReadToolResultContent()` / `replaceTrackedReadToolResults()` to
     swap stale served-read markers for current unit bytes on that seam only.
 - `adapters/pi/replay.mjs`, `adapters/pi/extension.ts`, `adapters/hermes/bridge.mjs`
-  - wire the shared helper at the existing read-marker replacement site.
+  - wire the shared helper at the existing read-marker replacement site; Hermes
+    passes `userCountMessages: conversationMessages` into both collapse and
+    inline gates (matching Pi's full `event.messages` source).
 
 No door, lock, benchmark fixture, gold label, or score-weight change.
 
@@ -122,14 +125,63 @@ Measured: `shouldInlineServedReadAtToolResult === false`.
 Undelivered retry keeps `split(NEW_BODY).length - 1 === 1` because
 `lastInjectedRevision` is empty until apply-ack.
 
+### Board 5 — Hermes inline gate uses conversation history (PCR 0095 seam)
+
+Measured on unit gate:
+
+```json
+{
+  "requestSliceUserCount": 1,
+  "conversationUserCount": 2,
+  "gateTrueWithConversationMessages": true,
+  "gateFalseOnRequestSliceAlone": true
+}
+```
+
+### Board 6 — Hermes narrowed request slice replay (turn-2 first-NEW)
+
+Measured:
+
+```json
+{
+  "turn2ToolHasLine2New": true,
+  "turn2ToolHasSummaryMarker": false,
+  "turn2ProjectionBytes": 427,
+  "turn2SkipEligible": 0,
+  "turn2ProjectionHasFreshctxUnit": true
+}
+```
+
+### Board 7 — official Hermes loader (`_apply_context_engine_selection` + conversation history)
+
+Measured via staged `bench/hosts/hermes` checkout and symlinked bridge (PCR
+0096/0097 class):
+
+```json
+{
+  "engineClass": "FreshCtxContextEngine",
+  "requestSliceUserCount": 1,
+  "conversationUserCount": 2,
+  "requestOnlyToolHasSummaryMarker": true,
+  "hostToolHasLine2New": true,
+  "hostToolHasSummaryMarker": false,
+  "hostProjectionHasFreshctxUnit": true,
+  "hostProjectionBytes": 427,
+  "turn2RequestOnlyProjectionBytes": 427,
+  "hostWarningCount": 0
+}
+```
+
+Host hook runs before the request-only control select so state is not poisoned.
+
 ## Verification
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pcr-0098-quoteable-first-new-projection.test.mjs` | yes | 0 | 5 passed, 0 failed |
-| focused regression (0079/0087/0092/0093/0098) | yes | 0 | 14 passed, 0 failed |
-| `npm test` | yes | 1 | 306 total; 282 passed; 22 skipped; **2 failed** (PCR 0096/0097 official-loader boards: missing `bench/hosts/hermes/plugins/__init__.py` in this VM) |
-| `npm run evaluate` | yes | 1 | hard gate blocked by the two host-loader failures above |
+| `node --test test/pcr-0098-quoteable-first-new-projection.test.mjs` | yes | 0 | 8 passed, 0 failed |
+| focused regression (0079/0087/0092/0093/0098) | yes | 0 | 17 passed, 0 failed |
+| `npm test` | yes | 0 | 309 total; 292 passed; 17 skipped; 0 failed |
+| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1` |
 | `npm run papers:verify` | yes | 1 | missing local `papers/cache/corvus-2026.pdf` on this VM |
 | `git hash-object src/anchors.mjs bench/repos.lock.json` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`79e29d09a9ec12b1128617f683f50a35a3c8809e` |
@@ -139,15 +191,16 @@ Undelivered retry keeps `split(NEW_BODY).length - 1 === 1` because
 
 | metric | PCR 0097 | PCR 0098 | delta |
 |---|---|---|---|
-| `AUTORESEARCH_SCORE` | `89.107165` | not re-run (evaluate blocked) | n/a |
+| `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | `0` |
 | deterministic hash agreement | `1.0` | `1.0` | `0` |
-| `npm test` total | `301` | `306` | `+5` |
-| `npm test` passed | `284` | `282` | `-2` (host-loader env) |
+| `npm test` total | `301` | `309` | `+8` |
+| `npm test` passed | `284` | `292` | `+8` |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `79e29d09…` | `79e29d09…` | `0` |
-| turn-2 probe projection bytes | n/a | `427` | measured replay |
+| turn-2 probe projection bytes | n/a | `427` | measured replay + official loader |
 | turn-3 probe projection bytes | `99` | `99` | held |
+| official-loader host tool has line2 NEW | n/a | `true` | measured |
 
 ## Scope and limits
 
