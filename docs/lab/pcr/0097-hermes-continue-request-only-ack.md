@@ -68,22 +68,28 @@ Measured live cost board (0096 install path, unchanged disk, user-reported):
 That pattern matches “bridge runs on turn 1, skip never arms on later turns,”
 not a silent no-op.
 
+First-pass 0097 request-only ack used `assistantFollowsTrackedRead()`, which
+matched any tool result plus a later assistant anywhere in the transcript.
+That reopened PCR 0087 on `--continue`: leftover `pendingInjectedRevision`
+could commit from prior-session tool+assistant even when **this** turn's
+projection was discarded. Reviewer no-merge correctly flagged the hole; the
+scoped `pendingAckAfterUserIndex` gate closes it.
+
 ## What changed
 
 - `adapters/hermes/bridge.mjs`
-  - adds `assistantFollowsTrackedRead()` as a Hermes request-only apply-ack
-    path alongside the existing projection-text ack from PCR 0087;
-  - promotes `pendingInjectedRevision` when an assistant follow-through proves
-    the prior request-only projection was delivered, even without persisted
-    projection text;
-  - keeps omitted-read disposition promotion on projection-text ack (PCR 0089);
-  - re-runs promotion at `selectContext()` start using `conversationMessages`
-    so host history can arm skip before the narrowed request slice is evaluated.
+  - adds request-only apply-ack via `assistantCompletesUserTurn()` scoped to
+    `pendingAckAfterUserIndex` recorded at `selectContext()` time;
+  - promotes `pendingInjectedRevision` only when an assistant completes **this
+    pending user turn**, not when older history already contains tool+assistant;
+  - keeps projection-text ack (PCR 0087) and omitted-read disposition promotion
+    on projection-text ack (PCR 0089);
+  - re-runs promotion at `selectContext()` start using `conversationMessages`.
 - `test/pcr-0097-hermes-continue-request-only.test.mjs`
   - replay board: turn 1 apply-ack via assistant only (no projection in observe);
-  - official-loader board: stages via `install.mjs`, loads through locked host
-    loader, runs `_apply_context_engine_selection()` with the same live ack
-    shape PCR 0096 used.
+  - official-loader board: locked host loader + `_apply_context_engine_selection()`;
+  - continue-leftover board: prior tool+assistant plus undelivered pending must
+    not promote (`skipEligible=0`, full body on retry).
 
 No Pi path changed. No second skip engine. No door or lock retune.
 
@@ -99,6 +105,13 @@ After the fix on the same probe:
 
 ```text
 live ack path: skipEligible 1 collapsed true NEW copies 0
+```
+
+Continue-leftover board (would have been red on first-pass 0097):
+
+```text
+prior tool+assistant + undelivered pending + observe discard
+→ retry skipEligible 0, full <freshctx> body, no already-served marker
 ```
 
 ## Host-contract proof
@@ -139,7 +152,7 @@ Focused regression run:
 - `test/pcr-0097-hermes-continue-request-only.test.mjs`
 - `test/hermes-plugin-layout.test.mjs`
 
-Result: 14 passed, 0 failed.
+Result: 15 passed, 0 failed.
 
 ## Verification
 
@@ -149,7 +162,7 @@ Result: 14 passed, 0 failed.
 | focused Hermes regression (0079/0087/0089/0093–0097/layout) | yes | 0 | 14 passed, 0 failed |
 | `python3 -m py_compile adapters/hermes/__init__.py` | yes | 0 | plugin syntax ok |
 | `npm run papers:verify` | yes | 0 | manifest sha256 `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89` |
-| `npm test` | yes | 0 | 300 total; 283 passed; 17 skipped; 0 failed |
+| `npm test` | yes | 0 | 301 total; 284 passed; 17 skipped; 0 failed |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; hard gates all true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; deterministic hash agreement `1` |
 | `git hash-object src/anchors.mjs bench/repos.lock.json` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`79e29d09a9ec12b1128617f683f50a35a3c8809e` |
@@ -162,8 +175,8 @@ Result: 14 passed, 0 failed.
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | `0` |
 | deterministic hash agreement | `1.0` | `1.0` | `0` |
-| `npm test` total | `298` | `300` | `+2` |
-| `npm test` passed | `281` | `283` | `+2` |
+| `npm test` total | `298` | `301` | `+3` |
+| `npm test` passed | `281` | `284` | `+3` |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `79e29d09…` | `79e29d09…` | `0` |
 | official host seam projection bytes | `746 -> 99` | `746 -> 99` | held |

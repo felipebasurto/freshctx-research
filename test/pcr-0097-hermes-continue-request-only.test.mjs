@@ -260,3 +260,46 @@ test("PCR 0097: replay adapter promotes request-only apply ack from assistant fo
     await rm(workspace, { recursive: true, force: true });
   }
 });
+
+test("PCR 0097: continue leftover pending does not promote from prior tool+assistant when this turn projection was not delivered", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0097-continue-leftover-"));
+  try {
+    await writeFile(join(workspace, PROBE_PATH), NEW_BODY, "utf8");
+    const stateFile = await createHermesStateFile("freshctx-pcr-0097-continue-leftover-state-");
+    const adapter = createHermesAdapter({
+      stateFile,
+      budgetChars: 120_000,
+    });
+    const ctx = { cwd: workspace };
+    const priorHistory = [
+      ...hermesReadPair(),
+      { role: "user", content: "prior continue turn" },
+      { role: "assistant", content: "prior assistant answer" },
+    ];
+    const undeliveredTurn = [
+      ...structuredClone(priorHistory),
+      { role: "user", content: "this projection is discarded" },
+    ];
+
+    await adapter.onTurnComplete(structuredClone(priorHistory), ctx);
+    await adapter.onTurnComplete(structuredClone(undeliveredTurn), ctx);
+    const discardedSelect = await adapter.onSelectContext(structuredClone(undeliveredTurn), ctx, {
+      conversationMessages: structuredClone(undeliveredTurn),
+    });
+    assert.ok(discardedSelect);
+    assert.match(discardedSelect.projectionText, /<freshctx /u);
+
+    await adapter.onTurnComplete(structuredClone(undeliveredTurn), ctx);
+
+    const retrySelect = await adapter.onSelectContext(structuredClone(undeliveredTurn), ctx, {
+      conversationMessages: structuredClone(undeliveredTurn),
+    });
+    assert.ok(retrySelect);
+    assert.equal(retrySelect.telemetry.skipEligibleSelections, 0);
+    assert.match(retrySelect.projectionText, /<freshctx /u);
+    assert.doesNotMatch(retrySelect.projectionText, /\[freshctx:already-served/u);
+    assert.equal(hermesMessageText(retrySelect.messages).split(NEW_BODY).length - 1, 1);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});

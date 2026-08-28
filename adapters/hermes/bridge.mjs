@@ -140,6 +140,7 @@ function projectionAppliedToMessages(messages, projectionText) {
 function clearPendingInjectedRevision(state) {
   delete state.pendingInjectedRevision;
   delete state.pendingProjectionText;
+  delete state.pendingAckAfterUserIndex;
   if (!hasOwnEntries(state.lastInjectedRevision)) delete state.projectionStateVersion;
 }
 
@@ -152,6 +153,7 @@ function normalizeDeliveryState(state) {
   delete state?.lastInjectedRevision;
   delete state?.pendingInjectedRevision;
   delete state?.pendingProjectionText;
+  delete state?.pendingAckAfterUserIndex;
   delete state?.pendingReadDispositionByCallId;
   delete state?.projectionStateVersion;
   return state;
@@ -169,18 +171,27 @@ function assistantMessageHasDeliveryContent(message) {
   });
 }
 
-function assistantFollowsTrackedRead(messages) {
-  if (!Array.isArray(messages)) return false;
-  for (let index = 0; index < messages.length; index += 1) {
-    const message = messages[index];
-    if (message?.role !== "tool") continue;
-    const id = message.tool_call_id ?? message.toolCallId;
-    if (typeof id !== "string") continue;
-    for (let after = index + 1; after < messages.length; after += 1) {
-      if (assistantMessageHasDeliveryContent(messages[after])) return true;
-    }
+function lastUserMessageIndex(messages) {
+  if (!Array.isArray(messages)) return -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]?.role === "user") return index;
+  }
+  return -1;
+}
+
+function assistantCompletesUserTurn(messages, userIndex) {
+  if (!Array.isArray(messages) || !Number.isInteger(userIndex) || userIndex < 0) return false;
+  if (messages[userIndex]?.role !== "user") return false;
+  for (let index = userIndex + 1; index < messages.length; index += 1) {
+    if (messages[index]?.role === "user") return false;
+    if (assistantMessageHasDeliveryContent(messages[index])) return true;
   }
   return false;
+}
+
+function requestOnlyProjectionDelivered(messages, pendingAckAfterUserIndex) {
+  return Number.isInteger(pendingAckAfterUserIndex)
+    && assistantCompletesUserTurn(messages, pendingAckAfterUserIndex);
 }
 
 function commitPendingInjectedRevision(state) {
@@ -201,7 +212,8 @@ function promotePendingInjectedRevision(state, messages) {
     commitPendingInjectedRevision(state);
     return;
   }
-  if (hasOwnEntries(state.pendingInjectedRevision) && assistantFollowsTrackedRead(messages)) {
+  if (hasOwnEntries(state.pendingInjectedRevision)
+    && requestOnlyProjectionDelivered(messages, state.pendingAckAfterUserIndex)) {
     commitPendingInjectedRevision(state);
     return;
   }
@@ -686,6 +698,7 @@ export async function selectContext(payload) {
       delete state.pendingInjectedRevision;
     }
     state.pendingProjectionText = projectionText;
+    state.pendingAckAfterUserIndex = lastUserMessageIndex(conversationMessages);
     if (hasOwnEntries(pendingReadDispositionByCallId)) {
       state.pendingReadDispositionByCallId = pendingReadDispositionByCallId;
     } else {
