@@ -571,7 +571,8 @@ export function shouldCollapseCurrentProjection(
   if (hasHistoricalProjectionMessage(messages)) return false;
   if (userMessageCount(userCountMessages) <= 1) return false;
   if ((projection?.selected?.length ?? 0) === 0) return false;
-  if ((projection?.omitted?.length ?? 0) !== 0) return false;
+  // Budget-omitted units were never served in the live projection; collapse
+  // when every unit we would serve this turn is already injected (PCR 0100).
   return projection.selected.length === skipEligibleSelections;
 }
 

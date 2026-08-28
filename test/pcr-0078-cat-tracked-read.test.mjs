@@ -393,26 +393,19 @@ test("PCR 0078: budget-omitted whole-file read is pruned not left as stale cat b
   }
 });
 
-test("PCR 0078: large-workspace turn 2 unchanged includes current bodies", async () => {
+test("PCR 0078: large-workspace turn 2 unchanged collapses after apply-ack (0100)", async () => {
   const { workspace, adapter, ctx, messages, turn1 } = await buildLargeWorkspaceBoard();
   try {
+    await adapter.onBeforeProviderRequest({ payload: { messages: structuredClone(turn1.messages) } });
     await adapter.onTurnStart({ turnIndex: 2 });
     const turn2 = await adapter.onContext(
       { messages: structuredClone(messages), budgetChars: DEFAULT_BUDGET_CHARS },
       ctx,
     );
     assert.ok(turn2);
-    const turn1Bytes = Buffer.byteLength(turn1.projection.text, "utf8");
-    const turn2Bytes = Buffer.byteLength(turn2.projection.text, "utf8");
-    const units = decodeProjectionUnits(turn2.projection.text);
-    assert.equal(units.length, turn2.projection.selected.length);
-    for (const unit of units) {
-      assert.ok(unit.content.length > 0);
-      assert.equal(unit.contentBytes, Buffer.byteLength(unit.content, "utf8"));
-    }
-    assert.match(turn2.projection.text, /LARGE_OLD/u);
-    assert.doesNotMatch(turn2.projection.text, /unchanged="true"/u);
-    assert.equal(turn2Bytes, turn1Bytes);
+    assert.match(turn2.projection.text, /\[freshctx:already-served units=21\]/u);
+    assert.ok(turn2.telemetry.projectionBytes < turn1.telemetry.projectionBytes / 10);
+    assert.doesNotMatch(turn2.projection.text, /<freshctx-unit/u);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
