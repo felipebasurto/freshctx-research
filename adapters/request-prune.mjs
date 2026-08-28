@@ -1,5 +1,7 @@
 /** Adapter request assembly: drop unserved read tool pairs whenever a projection is applied. */
 
+import { decodeProjectionUnits } from "../src/index.mjs";
+
 import {
   SHELL_TOOLS,
   shellCommandFromInput,
@@ -62,6 +64,36 @@ function toolResultCallId(message) {
   if (message?.role !== "tool" && message?.role !== "toolResult") return undefined;
   const id = message.tool_call_id ?? message.toolCallId;
   return typeof id === "string" ? id : undefined;
+}
+
+function textMessageContent(message) {
+  if (typeof message?.content === "string") return message.content;
+  if (!Array.isArray(message?.content)) return null;
+  const textParts = message.content.filter((part) => part?.type === "text" && typeof part.text === "string");
+  if (textParts.length !== message.content.length) return null;
+  return textParts.map((part) => part.text).join("\n");
+}
+
+function replaceTextMessageContent(message, text) {
+  if (typeof message?.content === "string") return { ...structuredClone(message), content: text };
+  if (!Array.isArray(message?.content)) return structuredClone(message);
+  return { ...structuredClone(message), content: [{ type: "text", text }] };
+}
+
+function freshCtxProjectionInfo(text) {
+  if (typeof text !== "string") return null;
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("<freshctx ") || !trimmed.endsWith("</freshctx>")) return null;
+  try {
+    const units = decodeProjectionUnits(text);
+    return { unitCount: units.length };
+  } catch {
+    return null;
+  }
+}
+
+function historicalProjectionMarker({ unitCount }) {
+  return `[freshctx:already-served units=${unitCount}] Historical FreshCtx projection omitted; see latest live projection below.`;
 }
 
 function assistantHasNonToolContent(message) {
@@ -343,6 +375,16 @@ function withReplacedReadBody(message, path, disposition) {
     ? [{ type: "text", text: marker }]
     : marker;
   return { ...structuredClone(message), content };
+}
+
+export function replaceHistoricalProjectionMessages(messages) {
+  return messages.map((message) => {
+    if (message?.role !== "user") return structuredClone(message);
+    const text = textMessageContent(message);
+    const projection = freshCtxProjectionInfo(text);
+    if (!projection) return structuredClone(message);
+    return replaceTextMessageContent(message, historicalProjectionMarker(projection));
+  });
 }
 
 export function dropUnservedReadToolPairs(messages, {

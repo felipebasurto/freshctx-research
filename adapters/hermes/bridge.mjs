@@ -6,6 +6,7 @@ import {
   dropUnservedReadToolPairs,
   readToolCallIds,
   readDispositionByUnitsByCall,
+  replaceHistoricalProjectionMessages,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
 } from "../request-prune.mjs";
@@ -652,7 +653,7 @@ export async function selectContext(payload) {
     if (!unit) return structuredClone(message);
     return { ...structuredClone(message), content: stableReadMarker(unit) };
   });
-  const assembled = dropUnservedReadToolPairs(rewritten, {
+  const assembled = dropUnservedReadToolPairs(replaceHistoricalProjectionMessages(rewritten), {
     readTools: HERMES_TRACKED_TOOLS,
     servedCallIds,
     observedCallIds: readToolCallIds(payload.messages, HERMES_TRACKED_TOOLS),

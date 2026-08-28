@@ -9,6 +9,7 @@ import {
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
+  replaceHistoricalProjectionMessages,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
@@ -310,7 +311,9 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
       replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
       pendingProjectionText = projection.text;
-      const rewritten = replaceCapturedReads(event.messages, callToUnit, engine);
+      const rewritten = replaceHistoricalProjectionMessages(
+        replaceCapturedReads(event.messages, callToUnit, engine),
+      );
       const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
       const readDispositionByCallId = readDispositionByCallToUnit(
         callToUnit,
