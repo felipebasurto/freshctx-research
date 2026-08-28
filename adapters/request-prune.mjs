@@ -96,6 +96,10 @@ function historicalProjectionMarker({ unitCount }) {
   return `[freshctx:already-served units=${unitCount}] Historical FreshCtx projection omitted; see latest live projection below.`;
 }
 
+export function currentProjectionMarker({ unitCount }) {
+  return `[freshctx:already-served units=${unitCount}] Current tracked content was already served and disk is unchanged.`;
+}
+
 function assistantHasNonToolContent(message) {
   if (typeof message.content === "string") return message.content.trim().length > 0;
   if (!Array.isArray(message.content)) return false;
@@ -385,6 +389,26 @@ export function replaceHistoricalProjectionMessages(messages) {
     if (!projection) return structuredClone(message);
     return replaceTextMessageContent(message, historicalProjectionMarker(projection));
   });
+}
+
+export function hasHistoricalProjectionMessage(messages) {
+  return messages.some((message) => freshCtxProjectionInfo(textMessageContent(message)));
+}
+
+function userMessageCount(messages) {
+  let count = 0;
+  for (const message of messages) {
+    if (message?.role === "user") count += 1;
+  }
+  return count;
+}
+
+export function shouldCollapseCurrentProjection(messages, projection, skipEligibleSelections) {
+  if (hasHistoricalProjectionMessage(messages)) return false;
+  if (userMessageCount(messages) <= 1) return false;
+  if ((projection?.selected?.length ?? 0) === 0) return false;
+  if ((projection?.omitted?.length ?? 0) !== 0) return false;
+  return projection.selected.length === skipEligibleSelections;
 }
 
 export function dropUnservedReadToolPairs(messages, {

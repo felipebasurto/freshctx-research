@@ -2,6 +2,7 @@ import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
+  currentProjectionMarker,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
   readToolCallIds,
@@ -9,6 +10,7 @@ import {
   replaceHistoricalProjectionMessages,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
+  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import {
   shellCallsFromMessages,
@@ -645,7 +647,13 @@ export async function selectContext(payload) {
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
 
-  const projectionText = projection.text;
+  const projectionText = shouldCollapseCurrentProjection(
+    payload.messages,
+    projection,
+    skipEligibleSelections,
+  )
+    ? currentProjectionMarker({ unitCount: projection.selected.length })
+    : projection.text;
   const rewritten = payload.messages.map((message) => {
     if (message?.role !== "tool") return structuredClone(message);
     const id = message.tool_call_id ?? message.toolCallId;
