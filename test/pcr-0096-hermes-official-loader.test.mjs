@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { copyFile, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -14,6 +15,7 @@ import {
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const HOST_ROOT = join(ROOT, "bench", "hosts", "hermes");
+const hermesHostReady = existsSync(join(HOST_ROOT, "plugins", "context_engine", "__init__.py"));
 const PROBE_PATH = "probe.ts";
 const OLD_BODY = "export const marker = 'PCR_0096_OLD_TOOL_RESULT';\n".repeat(8);
 const NEW_BODY = "export const marker = 'PCR_0096_NEW_ON_DISK';\n".repeat(8);
@@ -149,7 +151,7 @@ async function stageOfficialPluginRoot(pluginRoot) {
   return pluginsDir;
 }
 
-test("PCR 0096: official Hermes loader and call site pass conversation history into FreshCtx later-turn collapse", async () => {
+test("PCR 0096: official Hermes loader and call site pass conversation history into FreshCtx later-turn collapse", { skip: hermesHostReady ? false : "bench/hosts/hermes not fetched" }, async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0096-workspace-"));
   const pluginRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0096-plugin-"));
   try {

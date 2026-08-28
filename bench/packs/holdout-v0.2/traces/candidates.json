@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "selected": [
+    {
+      "repo": "flask",
+      "path": "src/beta.py",
+      "selector": "src/beta.py::file",
+      "scope": "file",
+      "startLine": 1,
+      "endLine": 3,
+      "byteRange": [
+        0,
+        25
+      ],
+      "sha256": "fc030147eab9fbe72a057c83c0cdba9c179568ae172f0ca48f70bb6d08a14299",
+      "rankKey": "2561b883042da3180855a06c7e86c7bdc682451fc4862bd340c5fa1c0919084d"
+    },
+    {
+      "repo": "flask",
+      "path": "src/alpha.py",
+      "selector": "src/alpha.py::file",
+      "scope": "file",
+      "startLine": 1,
+      "endLine": 3,
+      "byteRange": [
+        0,
+        26
+      ],
+      "sha256": "ba505671282f62d066e2de2f5da1f1f123d814ffdc9cdd4112b2841433851ef1",
+      "rankKey": "33fd7f5212227cb07794aaef31b12d7bad895d2505b0f4ae80bd259185075602"
+    }
+  ],
+  "commit": "d318b683471101618febed18996405ad26462110",
+  "scenario": "interior-edit"
+}

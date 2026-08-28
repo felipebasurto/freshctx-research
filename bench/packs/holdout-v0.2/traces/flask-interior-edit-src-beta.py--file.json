@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "name": "flask/interior-edit/src-beta.py::file",
+  "source": {
+    "repository": "synthetic://sampler",
+    "commit": "d318b683471101618febed18996405ad26462110",
+    "license": "MIT"
+  },
+  "initialFiles": {
+    "src/beta.py": "def beta():\n    return 2\n"
+  },
+  "events": [
+    {
+      "type": "read",
+      "path": "src/beta.py",
+      "scope": "file",
+      "startLine": 1,
+      "endLine": 3,
+      "selector": "src/beta.py::file"
+    },
+    {
+      "type": "capture-request",
+      "task": "review src/beta.py::file",
+      "budgetChars": 12000,
+      "requiredUnits": [
+        {
+          "path": "src/beta.py",
+          "selector": "src/beta.py::file",
+          "sha256": "fc030147eab9fbe72a057c83c0cdba9c179568ae172f0ca48f70bb6d08a14299"
+        }
+      ]
+    },
+    {
+      "type": "replace-exact",
+      "path": "src/beta.py",
+      "expected": "def beta():",
+      "replacement": "def beta(): // sampler interior edit"
+    },
+    {
+      "type": "capture-request",
+      "task": "review src/beta.py::file",
+      "budgetChars": 12000,
+      "requiredUnits": [
+        {
+          "path": "src/beta.py",
+          "selector": "src/beta.py::file",
+          "sha256": "da2daa6c527321fb10899664b1153a644eb0c3182d3157a72de2f180b9947af0"
+        }
+      ]
+    }
+  ],
+  "goldExtract": {
+    "source": "generator-offsets",
+    "path": "src/beta.py",
+    "startLine": 1,
+    "endLine": 3,
+    "byteRange": [
+      0,
+      25
+    ],
+    "preSha256": "fc030147eab9fbe72a057c83c0cdba9c179568ae172f0ca48f70bb6d08a14299",
+    "postSha256": "da2daa6c527321fb10899664b1153a644eb0c3182d3157a72de2f180b9947af0",
+    "mutation": {
+      "type": "replace-exact",
+      "expected": "def beta():",
+      "replacement": "def beta(): // sampler interior edit"
+    }
+  }
+}

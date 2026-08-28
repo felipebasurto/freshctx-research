@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
+  "phase": "run",
+  "ranAt": "2026-08-28T18:52:26.907Z",
   "packId": "holdout-v0.2",
-  "classification": "sealed",
   "manifestPath": "bench/splits/holdout-v0.2.json",
   "manifestSha256": "7cb1b393ad4b87ed1121b16be7a5417a0d28475dfc74c49a079043ab6e4b07f7",
   "freezeCommitSha": "2bf91d83f6370b0a66a52f7d28da4d00e8df2e9c",
@@ -10,12 +11,8 @@
   "repositoryLocks": {
     "flask": "d318b683471101618febed18996405ad26462110"
   },
-  "traceSetHash": "c0cb6b254fa656ff129552a4fb4bb7388cffac92e7e8d0a09599f65ee40dd047",
-  "resultSetHash": "17ec79ff704b1ef5c68cecc93cb1e3764f2a3e72c424bac4c3f76c672dc38169",
-  "reportHash": "abb09e55a33b27d5e1c8539519351b0273d2f2c14006b361a894dcb1993ce81e",
-  "remoteAttestation": {
-    "workflowRunId": "33201069400",
-    "workflowRunUrl": "https://github.com/felipebasurto/freshctx/actions/runs/33201069400"
-  },
-  "updatedAt": "2026-08-28T18:52:27.169Z"
+  "generateProvenancePath": "bench/packs/holdout-v0.2/provenance/generate.json",
+  "records": 2,
+  "summary": "Ran 2 capture(s) on 2 trace(s).",
+  "recordsWritten": 2
 }
