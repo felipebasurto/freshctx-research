@@ -9,6 +9,7 @@ import {
   readToolCallIds,
   readDispositionByUnitsByCall,
   replaceHistoricalProjectionMessages,
+  replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromUnitsByCall,
   shouldCollapseCurrentProjection,
@@ -17,7 +18,7 @@ import {
   shellCallsFromMessages,
   trackedReadTools,
 } from "../shell-read.mjs";
-import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
+import { FreshCtxEngine } from "../../src/index.mjs";
 
 export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
 const HERMES_TRACKED_TOOLS = trackedReadTools(READ_TOOLS);
@@ -710,12 +711,15 @@ export async function selectContext(payload) {
   }
   state.updatedAt = new Date().toISOString();
   await saveState(payload.stateFile, state);
-  const rewritten = payload.messages.map((message) => {
-    if (message?.role !== "tool") return structuredClone(message);
-    const id = message.tool_call_id ?? message.toolCallId;
-    const unit = typeof id === "string" ? unitsByCall.get(id) : undefined;
-    if (!unit) return structuredClone(message);
-    return { ...structuredClone(message), content: stableReadMarker(unit) };
+  const rewritten = replaceTrackedReadToolResults(payload.messages, {
+    unitForCallId: (id) => unitsByCall.get(id),
+    projection,
+    skipEligibleSelections,
+    projectionText,
+    lastInjectedRevision: isPlainObject(state.lastInjectedRevision)
+      ? new Map(Object.entries(state.lastInjectedRevision))
+      : new Map(),
+    userCountMessages: conversationMessages,
   });
   const assembled = dropUnservedReadToolPairs(replaceHistoricalProjectionMessages(rewritten), {
     readTools: HERMES_TRACKED_TOOLS,

@@ -1,6 +1,6 @@
 /** Adapter request assembly: drop unserved read tool pairs whenever a projection is applied. */
 
-import { decodeProjectionUnits } from "../src/index.mjs";
+import { decodeProjectionUnits, stableReadMarker } from "../src/index.mjs";
 
 import {
   SHELL_TOOLS,
@@ -72,6 +72,111 @@ function textMessageContent(message) {
   const textParts = message.content.filter((part) => part?.type === "text" && typeof part.text === "string");
   if (textParts.length !== message.content.length) return null;
   return textParts.map((part) => part.text).join("\n");
+}
+
+function textFromToolContent(content) {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .filter((part) => part?.type === "text" && typeof part.text === "string")
+    .map((part) => part.text)
+    .join("\n");
+}
+
+function withToolResultContent(message, content) {
+  if (Array.isArray(message?.content)) {
+    return { ...structuredClone(message), content: [{ type: "text", text: content }] };
+  }
+  return { ...structuredClone(message), content };
+}
+
+function hasAssistantReplyBetweenFirstAndLastUser(messages) {
+  let seenFirstUser = false;
+  let seenAssistantAfterFirstUser = false;
+  for (const message of messages) {
+    if (message?.role === "user") {
+      if (!seenFirstUser) {
+        seenFirstUser = true;
+        continue;
+      }
+      return seenAssistantAfterFirstUser;
+    }
+    if (seenFirstUser && message?.role === "assistant" && assistantHasNonToolContent(message)) {
+      seenAssistantAfterFirstUser = true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Turn-2 first-NEW seam: the tracked read is stale relative to disk, but the
+ * provider still sees only the summary marker at the read tool result. Inline
+ * the current selected unit bytes there while the tail keeps the full live
+ * projection envelope (PCR 0079 single-user boards stay full-body in projection).
+ */
+export function shouldInlineServedReadAtToolResult({
+  messages,
+  projection,
+  skipEligibleSelections,
+  projectionText,
+  lastInjectedRevision,
+  userCountMessages = messages,
+}) {
+  if (userMessageCount(userCountMessages) !== 2) return false;
+  if (!hasAssistantReplyBetweenFirstAndLastUser(userCountMessages)) return false;
+  if (!(lastInjectedRevision instanceof Map) || lastInjectedRevision.size === 0) return false;
+  if (typeof projectionText !== "string" || !projectionText.includes("<freshctx-unit")) return false;
+  if (skipEligibleSelections !== 0) return false;
+  if ((projection?.selected?.length ?? 0) === 0) return false;
+  if ((projection?.omitted?.length ?? 0) !== 0) return false;
+  return true;
+}
+
+export function servedReadToolResultContent({
+  unit,
+  observedContent,
+  inlineServedReadAtToolResult,
+  selectedUnitIds,
+}) {
+  if (!inlineServedReadAtToolResult || !selectedUnitIds.has(unit.id)) {
+    return stableReadMarker(unit);
+  }
+  const observed = textFromToolContent(observedContent);
+  const current = String(unit.content ?? "");
+  if (observed.length > 0 && observed === current) return stableReadMarker(unit);
+  return current;
+}
+
+export function replaceTrackedReadToolResults(messages, {
+  unitForCallId,
+  projection,
+  skipEligibleSelections,
+  projectionText,
+  lastInjectedRevision,
+  userCountMessages = messages,
+} = {}) {
+  const inlineServedReadAtToolResult = shouldInlineServedReadAtToolResult({
+    messages,
+    projection,
+    skipEligibleSelections,
+    projectionText,
+    lastInjectedRevision,
+    userCountMessages,
+  });
+  const selectedUnitIds = new Set((projection?.selected ?? []).map((unit) => unit.id));
+  return messages.map((message) => {
+    const callId = toolResultCallId(message);
+    if (!callId) return structuredClone(message);
+    const unit = unitForCallId(callId);
+    if (!unit) return structuredClone(message);
+    const content = servedReadToolResultContent({
+      unit,
+      observedContent: message.content,
+      inlineServedReadAtToolResult,
+      selectedUnitIds,
+    });
+    return withToolResultContent(message, content);
+  });
 }
 
 function replaceTextMessageContent(message, text) {

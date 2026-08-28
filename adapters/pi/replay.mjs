@@ -9,12 +9,13 @@ import {
   readToolCallIds,
   readDispositionByCallToUnit,
   replaceHistoricalProjectionMessages,
+  replaceTrackedReadToolResults,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
   shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import { SHELL_TOOLS, trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
-import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
+import { FreshCtxEngine } from "../../src/index.mjs";
 
 const PI_READ_TOOLS = trackedReadTools(new Set(["read"]));
 
@@ -175,20 +176,13 @@ export async function safeWorkspaceFile(rootInput, requestedPath) {
   };
 }
 
-function replaceCapturedReads(messages, callToUnit, engine) {
-  return messages.map((message) => {
-    const callId = message.toolCallId ?? message.tool_call_id;
-    const unitId = callId ? callToUnit.get(callId) : undefined;
-    const unit = unitId ? engine.registry.get(unitId) : undefined;
-    if (!unit) return structuredClone(message);
-
-    const marker = stableReadMarker(unit);
-    return {
-      ...structuredClone(message),
-      content: Array.isArray(message.content)
-        ? [{ type: "text", text: marker }]
-        : marker,
-    };
+function replaceCapturedReads(messages, callToUnit, engine, quoteability = {}) {
+  return replaceTrackedReadToolResults(messages, {
+    unitForCallId: (callId) => {
+      const unitId = callToUnit.get(callId);
+      return unitId ? engine.registry.get(unitId) : undefined;
+    },
+    ...quoteability,
   });
 }
 
@@ -354,7 +348,12 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
           : projection.text;
         pendingProjectionText = projectionText;
         const rewritten = replaceHistoricalProjectionMessages(
-          replaceCapturedReads(event.messages, callToUnit, engine),
+          replaceCapturedReads(event.messages, callToUnit, engine, {
+            projection,
+            skipEligibleSelections,
+            projectionText,
+            lastInjectedRevision,
+          }),
         );
         const servedCallIds = servedReadCallIdsFromProjection(callToUnit, projection);
         const readDispositionByCallId = readDispositionByCallToUnit(
