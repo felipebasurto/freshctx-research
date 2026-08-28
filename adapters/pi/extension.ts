@@ -76,9 +76,15 @@ function syncRegistryToActiveCalls(
   activeCallIds: Set<string>,
 ) {
   const activeUnits = new Set<string>();
+  const inactiveCallIds: string[] = [];
   for (const [callId, unitId] of callToUnit.entries()) {
-    if (activeCallIds.has(callId)) activeUnits.add(unitId);
+    if (activeCallIds.has(callId)) {
+      activeUnits.add(unitId);
+      continue;
+    }
+    inactiveCallIds.push(callId);
   }
+  for (const callId of inactiveCallIds) callToUnit.delete(callId);
   for (const unitId of Array.from((engine.registry as { units: Map<string, unknown> }).units.keys())) {
     if (!activeUnits.has(unitId)) (engine.registry as { units: Map<string, unknown> }).units.delete(unitId);
   }

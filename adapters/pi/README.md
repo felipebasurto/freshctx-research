@@ -85,6 +85,12 @@ This costs bytes on repeated turns. Projection bytes for an unchanged
 selection are the same on turn 2 as on turn 1, and the adapter's projection
 bytes equal the core `freshctx-region` baseline exactly.
 
+On later turns where the live tail collapses to the already-served stub or
+omits entirely (PCR 0099/0100), bounded current unit bytes are inlined at the
+original read tool-result slot in the **request copy only** so every selected
+tracked unit stays quoteable (PCR 0103/0104). Persisted Pi tool results remain
+observation-time; only the ephemeral provider payload changes.
+
 ## Read scope
 
 The adapter synchronizes:
