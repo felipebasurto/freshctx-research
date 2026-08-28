@@ -115,9 +115,9 @@ print(json.dumps({
     "engineClass": engine.__class__.__name__,
     "loaderModule": sys.modules["plugins.context_engine"].__file__,
     "cwd": os.getcwd(),
-    "requestOnlyCollapsed": "[freshctx:already-served units=1]" in request_only_text,
+    "requestOnlyCollapsed": "<freshctx " in request_only_text,
     "requestOnlyNewCopies": request_only_text.count(payload["newBody"]),
-    "hostCollapsed": "[freshctx:already-served units=1]" in host_projection,
+    "hostCollapsed": "<freshctx " not in host_text,
     "hostNewCopies": host_text.count(payload["newBody"]),
     "hostNewCopiesInProjection": host_projection.count(payload["newBody"]),
     "hostOldCopies": host_text.count(payload["oldBody"]),
@@ -259,7 +259,8 @@ test("PCR 0097: replay adapter promotes request-only apply ack from assistant fo
     });
     assert.ok(turn2);
     assert.equal(turn2.telemetry.skipEligibleSelections, 1);
-    assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turn2.projectionText, "");
+    assert.equal(turn2.telemetry.projectionBytes, 0);
     assert.equal(hermesMessageText(turn2.messages).split(NEW_BODY).length - 1, 1);
     assert.equal(turn2.projectionText.split(NEW_BODY).length - 1, 0);
   } finally {

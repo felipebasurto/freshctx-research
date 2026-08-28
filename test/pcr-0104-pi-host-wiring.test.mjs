@@ -143,7 +143,8 @@ test("PCR 0104: Pi-native grammar preserves pairing and read-slot inline on coll
     await adapter.onTurnStart({ turnIndex: 3 });
     const turn3 = await adapter.onContext({ messages: structuredClone(turn3Persisted) }, ctx);
     assert.ok(turn3);
-    assert.match(turn3.projection.text, /\[freshctx:already-served/u);
+    assert.equal(turn3.projection.text, "");
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     assertPiRequestInvariants(turn3, { probe: LINE2_NEW, observed: OLD_BODY });
 
     const readSlot = toolResultFor(turn3.messages, callId);
@@ -392,7 +393,8 @@ test("PCR 0104: retry after undelivered projection does not promote skip or repl
     const collapsed = await adapter.onContext({ messages: structuredClone(collapsedPersisted) }, ctx);
     assert.ok(collapsed);
     assert.equal(collapsed.telemetry.skipEligibleSelections, 1);
-    assert.match(collapsed.projection.text, /\[freshctx:already-served/u);
+    assert.equal(collapsed.projection.text, "");
+    assert.equal(collapsed.telemetry.projectionBytes, 0);
     assertPiRequestInvariants(collapsed, { probe: LINE2_NEW, observed: OLD_BODY });
   } finally {
     await rm(workspace, { recursive: true, force: true });

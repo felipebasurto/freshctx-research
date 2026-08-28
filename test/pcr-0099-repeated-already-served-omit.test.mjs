@@ -16,9 +16,7 @@ import {
   messageText as piMessageText,
 } from "../adapters/pi/replay.mjs";
 import {
-  currentProjectionMarker,
   resolveProjectionText,
-  revisionsRecordFromProjection,
 } from "../adapters/request-prune.mjs";
 
 const REGION_PATH = "ws/sample.txt";
@@ -86,29 +84,17 @@ function hermesReadPair() {
   ];
 }
 
-test("PCR 0099: resolveProjectionText omits only after a collapsed marker was already delivered", () => {
+test("PCR 0099: resolveProjectionText returns empty tail on skip-eligible collapse", () => {
   const projection = {
     selected: [{ id: "fc_test", revision: "sha256:abc", path: "x.txt", content: "body" }],
     omitted: [],
     text: "<freshctx turn=\"0\">body</freshctx>",
   };
-  const revisions = revisionsRecordFromProjection(projection);
-  const marker = currentProjectionMarker({ unitCount: 1 });
   assert.equal(
     resolveProjectionText({
       messages: [{ role: "user", content: "task" }, { role: "assistant", content: "ok" }, { role: "user", content: "again" }],
       projection,
       skipEligibleSelections: 1,
-      lastDeliveredCollapsedRevision: {},
-    }),
-    marker,
-  );
-  assert.equal(
-    resolveProjectionText({
-      messages: [{ role: "user", content: "task" }, { role: "assistant", content: "ok" }, { role: "user", content: "again" }],
-      projection,
-      skipEligibleSelections: 1,
-      lastDeliveredCollapsedRevision: revisions,
     }),
     "",
   );
@@ -159,8 +145,8 @@ test("PCR 0099: Pi turn-3 first collapse then turn-4+ omit repeated already-serv
     ];
     const turn3 = await adapter.onContext({ messages: structuredClone(turn3Persisted) }, ctx);
     assert.ok(turn3);
-    assert.match(turn3.projection.text, /\[freshctx:already-served units=1\]/u);
-    assert.equal(turn3.telemetry.projectionBytes, 99);
+    assert.equal(turn3.projection.text, "");
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     await adapter.onBeforeProviderRequest({ payload: { messages: structuredClone(turn3.messages) } });
 
     await adapter.onTurnStart({ turnIndex: 4 });
@@ -221,8 +207,8 @@ test("PCR 0099: Hermes turn-3 first collapse then turn-4+ omit repeated already-
     await adapter.onTurnComplete(structuredClone(turn3Persisted), ctx);
     const turn3 = await adapter.onSelectContext(structuredClone(turn3Persisted), ctx);
     assert.ok(turn3);
-    assert.match(turn3.projectionText, /\[freshctx:already-served units=1\]/u);
-    assert.equal(turn3.telemetry.projectionBytes, 99);
+    assert.match(turn3.projectionText, /^$/u);
+    assert.equal(turn3.telemetry.projectionBytes, 0);
     await adapter.onTurnComplete(
       [...structuredClone(turn3Persisted), { role: "assistant", content: LINE2_NEW }],
       ctx,
@@ -274,16 +260,15 @@ test("PCR 0099: Hermes request-only ack omits repeated collapsed stub on later u
     await adapter.onTurnComplete(structuredClone(turn2Persisted), ctx);
     const turn2 = await adapter.onSelectContext(structuredClone(turn2Persisted), ctx);
     assert.ok(turn2);
-    assert.match(turn2.projectionText, /\[freshctx:already-served units=1\]/u);
-    assert.equal(turn2.telemetry.projectionBytes, 99);
+    assert.equal(turn2.projectionText, "");
+    assert.equal(turn2.telemetry.projectionBytes, 0);
 
     await adapter.onTurnComplete(
       [...structuredClone(turn2Persisted), { role: "assistant", content: "second answer" }],
       ctx,
     );
     const stateAfterTurn2 = JSON.parse(await readFile(stateFile, "utf8"));
-    assert.ok(stateAfterTurn2.lastDeliveredCollapsedRevision);
-    assert.equal(Object.keys(stateAfterTurn2.lastDeliveredCollapsedRevision).length, 1);
+    assert.equal(stateAfterTurn2.lastDeliveredCollapsedRevision, undefined);
 
     const turn3Persisted = [
       ...structuredClone(turn2Persisted),

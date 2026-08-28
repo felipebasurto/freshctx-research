@@ -361,10 +361,10 @@ function assertSmallBoardSeam(rows, { hostLabel }) {
   assert.equal(t2.collapsedStub, false);
   assert.equal(t2.tailOmitted, false);
 
-  assert.equal(t3.projectionBytes, 99, `${hostLabel} t3: collapse stub`);
+  assert.equal(t3.projectionBytes, 0, `${hostLabel} t3: empty tail on first collapse (PCR 0106)`);
   assert.equal(t3.quoteableAllSelected, true, `${hostLabel} t3: quoteable via read slot (PCR 0103)`);
-  assert.equal(t3.collapsedStub, true);
-  assert.equal(t3.tailOmitted, false);
+  assert.equal(t3.collapsedStub, false);
+  assert.equal(t3.tailOmitted, true);
 
   assert.equal(t4.projectionBytes, 0, `${hostLabel} t4: empty tail`);
   assert.equal(t4.quoteableAllSelected, true, `${hostLabel} t4+: quoteable via read slot (PCR 0103)`);
@@ -436,7 +436,7 @@ test("PCR 0102: Hermes small board pins 0098–0100 quoteability seam on replay"
     const turn2Tool = turns.turn2.messages.find((message) => message.role === "tool");
     assert.match(String(turn2Tool?.content ?? ""), /line2 NEW interior/u);
 
-    assert.match(turns.turn3.projectionText, /\[freshctx:already-served units=1\]/u);
+    assert.equal(turns.turn3.projectionText, "");
     assert.equal(turns.turn4.projectionText, "");
   } finally {
     await rm(workspace, { recursive: true, force: true });
@@ -561,7 +561,8 @@ test("PCR 0102: over-cap board turn-3/4 pins zero tail with no quoteable current
     await adapter.onTurnStart({ turnIndex: 2 });
     const turn2 = await adapter.onContext({ messages: structuredClone(messages), budgetChars: DEFAULT_BUDGET_CHARS }, ctx);
     assert.ok(turn2);
-    assert.match(turn2.projection.text, /\[freshctx:already-served units=21\]/u);
+    assert.equal(turn2.projection.text, "");
+    assert.equal(turn2.telemetry.projectionBytes, 0);
     await adapter.onBeforeProviderRequest({ payload: { messages: structuredClone(turn2.messages) } });
 
     messages.push({ role: "assistant", content: "summary2" }, { role: "user", content: "turn three" });

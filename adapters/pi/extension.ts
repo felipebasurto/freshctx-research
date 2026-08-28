@@ -6,7 +6,6 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FreshCtxEngine } from "../../src/index.mjs";
 import {
   dropUnservedReadToolPairs,
-  isCurrentCollapsedProjectionMarker,
   latestReadCallIdsByObservation,
   readToolCallIds,
   readDispositionByCallToUnit,
@@ -187,7 +186,6 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     selector?: string;
   }>();
   const lastInjectedRevision = new Map<string, string>();
-  const lastDeliveredCollapsedRevision = new Map<string, string>();
   const pendingInjectedRevision = new Map<string, string>();
   const appliedReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
   const pendingReadDispositionByCallId = new Map<string, { path: string; disposition: string }>();
@@ -201,11 +199,6 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
     const payload = (event as { payload?: { messages?: readonly unknown[] } }).payload;
     if (projectionAppliedToMessages(payload?.messages, pendingProjectionText)) {
       replaceMapContents(lastInjectedRevision, pendingInjectedRevision);
-      if (isCurrentCollapsedProjectionMarker(pendingProjectionText)) {
-        replaceMapContents(lastDeliveredCollapsedRevision, pendingInjectedRevision);
-      } else if (pendingProjectionText.includes("<freshctx ")) {
-        lastDeliveredCollapsedRevision.clear();
-      }
       for (const [callId, item] of pendingReadDispositionByCallId.entries()) {
         appliedReadDispositionByCallId.set(callId, { ...item });
       }
@@ -323,7 +316,6 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
         messages: event.messages,
         projection,
         skipEligibleSelections,
-        lastDeliveredCollapsedRevision,
       });
       pendingProjectionText = projectionText;
       const rewritten = replaceHistoricalProjectionMessages(

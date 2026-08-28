@@ -403,7 +403,8 @@ test("PCR 0078: large-workspace turn 2 unchanged collapses after apply-ack (0100
       ctx,
     );
     assert.ok(turn2);
-    assert.match(turn2.projection.text, /\[freshctx:already-served units=21\]/u);
+    assert.equal(turn2.projection.text, "");
+    assert.equal(turn2.telemetry.projectionBytes, 0);
     assert.ok(turn2.telemetry.projectionBytes < turn1.telemetry.projectionBytes / 10);
     assert.doesNotMatch(turn2.projection.text, /<freshctx-unit/u);
   } finally {
