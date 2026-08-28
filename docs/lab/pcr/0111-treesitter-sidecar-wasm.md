@@ -39,13 +39,28 @@ holdout gold, weight, threshold, or `bench/traces/holdout/**` edit. No laptop
 
 ## Benchmarks run
 
-Filled after the required loop.
+| Command | Ran? | Exit | Notes |
+|---|---|---|---|
+| `npm test` | yes | 1 | **395** total; **369** pass; **2** fail; **24** skip. Failures are PCR 0096/0097 (`bench/hosts/hermes` absent), same as PCR 0109 |
+| `git diff --exit-code` | yes | 0 | after the test run, on the committed tree |
+| `npm run check` | yes | 0 | includes `sidecar/treesitter/*.mjs` |
+| `npm run evaluate` | yes | 1 | hard gate on the same 0096/0097 host-absent failures |
+| `node bench/run.mjs` | yes | 0 | `score` 89.10716495057945 (`AUTORESEARCH_SCORE=89.107165`) |
+| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3…`; all six hard gates true |
+| `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
+| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=…` | yes | 1 | attestation file is not on merge-base `70df2f4` |
+| `npm run holdout:ci-guard -- --base=origin/main` | yes | 0 | `valid: true` |
 
 ## Metric snapshot
 
-Expect `AUTORESEARCH_SCORE=89.107165` and ctxbench payload
-`697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`. The default
-evaluate path does not inject the sidecar.
+| metric | origin/main `70df2f4` | PCR 0111 | delta |
+|---|---|---|---|
+| `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
+| ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | `0` |
+| ctxbench hard gates | all true | all true | `0` |
+| `npm test` total | 390 | **395** | **+5** sidecar contract cases |
+| `npm test` failed | 2 | **2** | `0` (0096/0097 host absent) |
+| holdout v0.1 classify | `unsealed-regression` | `unsealed-regression` | `0` |
 
 ## Conflicts with constitutions
 
