@@ -2,6 +2,7 @@ import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
+  currentProjectionMarker,
   DEFAULT_BUDGET_CHARS,
   dropUnservedReadToolPairs,
   latestReadCallIdsByObservation,
@@ -10,6 +11,7 @@ import {
   replaceHistoricalProjectionMessages,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
+  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import { SHELL_TOOLS, trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
@@ -343,7 +345,14 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
         });
         const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
         replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
-        pendingProjectionText = projection.text;
+        const projectionText = shouldCollapseCurrentProjection(
+          event.messages,
+          projection,
+          skipEligibleSelections,
+        )
+          ? currentProjectionMarker({ unitCount: projection.selected.length })
+          : projection.text;
+        pendingProjectionText = projectionText;
         const rewritten = replaceHistoricalProjectionMessages(
           replaceCapturedReads(event.messages, callToUnit, engine),
         );
@@ -373,14 +382,14 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
             ...assembled,
             {
               role: "user",
-              content: [{ type: "text", text: projection.text }],
+              content: [{ type: "text", text: projectionText }],
               timestamp,
             },
           ],
-          projection,
+          projection: { ...projection, text: projectionText },
           telemetry: {
             totalMs: 0,
-            projectionBytes: Buffer.byteLength(projection.text, "utf8"),
+            projectionBytes: Buffer.byteLength(projectionText, "utf8"),
             skipEligibleSelections,
           },
         };

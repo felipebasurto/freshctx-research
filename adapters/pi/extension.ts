@@ -5,6 +5,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { FreshCtxEngine, stableReadMarker } from "../../src/index.mjs";
 import {
+  currentProjectionMarker,
   dropUnservedReadToolPairs,
   latestReadCallIdsByObservation,
   readToolCallIds,
@@ -12,6 +13,7 @@ import {
   replaceHistoricalProjectionMessages,
   resolveAdapterBudgetChars,
   servedReadCallIdsFromProjection,
+  shouldCollapseCurrentProjection,
 } from "../request-prune.mjs";
 import { trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
 import { DEFAULT_BUDGET_CHARS, readScopeFromInput } from "./replay.mjs";
@@ -310,7 +312,14 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
       });
       const skipEligibleSelections = countSkipEligibleSelections(lastInjectedRevision, projection);
       replaceMapContents(pendingInjectedRevision, selectedRevisionsFromProjection(projection));
-      pendingProjectionText = projection.text;
+      const projectionText = shouldCollapseCurrentProjection(
+        event.messages,
+        projection,
+        skipEligibleSelections,
+      )
+        ? currentProjectionMarker({ unitCount: projection.selected.length })
+        : projection.text;
+      pendingProjectionText = projectionText;
       const rewritten = replaceHistoricalProjectionMessages(
         replaceCapturedReads(event.messages, callToUnit, engine),
       );
@@ -340,13 +349,13 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
           ...assembled,
           {
             role: "user",
-            content: [{ type: "text", text: projection.text }],
+            content: [{ type: "text", text: projectionText }],
             timestamp,
           },
         ],
           telemetry: {
             totalMs: 0,
-            projectionBytes: Buffer.byteLength(projection.text, "utf8"),
+            projectionBytes: Buffer.byteLength(projectionText, "utf8"),
             skipEligibleSelections,
           },
       };
