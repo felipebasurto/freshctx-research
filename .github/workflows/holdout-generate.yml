@@ -46,13 +46,10 @@ jobs:
           github-token: ${{ github.token }}
           path: attestation-download
 
-      - name: Install and validate attestation
+      - name: Validate downloaded attestation
         run: |
           PACK="${{ github.event.inputs.pack_id }}"
           MANIFEST="${{ github.event.inputs.manifest_path }}"
-          DEST="bench/packs/${PACK}/provenance/freeze-attestation.json"
-          mkdir -p "bench/packs/${PACK}/provenance"
-          cp attestation-download/attestation.json "$DEST"
           node -e "
           import { readFile } from 'node:fs/promises';
           import { validateProductionAttestation } from './bench/holdout-hashes.mjs';
@@ -70,7 +67,7 @@ jobs:
           console.log('production attestation valid for', att.packId, 'run', att.workflowRunId);
           "
         env:
-          DEST: bench/packs/${{ github.event.inputs.pack_id }}/provenance/freeze-attestation.json
+          DEST: attestation-download/attestation.json
           PACK: ${{ github.event.inputs.pack_id }}
           MANIFEST: ${{ github.event.inputs.manifest_path }}
 
@@ -84,6 +81,11 @@ jobs:
 
       - name: Run benchmarks
         run: npm run holdout:run -- --manifest=${{ github.event.inputs.manifest_path }}
+
+      - name: Install freeze attestation into pack
+        run: |
+          mkdir -p bench/packs/${{ github.event.inputs.pack_id }}/provenance
+          cp attestation-download/attestation.json bench/packs/${{ github.event.inputs.pack_id }}/provenance/freeze-attestation.json
 
       - name: Report (GHA + production attestation → sealed)
         run: npm run holdout:report -- --manifest=${{ github.event.inputs.manifest_path }}
