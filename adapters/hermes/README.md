@@ -67,6 +67,12 @@ the next ordinary write removes it.
 Projection bytes for an unchanged selection are the same on the second call as
 on the first, and they equal the core `freshctx-region` baseline exactly.
 
+On later turns where the live tail collapses to the already-served stub or
+omits entirely (PCR 0099/0100), bounded current unit bytes are inlined at the
+original read tool-result slot in the **request copy only** so every selected
+tracked unit stays quoteable (PCR 0103/0105). Persisted Hermes tool results
+remain observation-time; only the ephemeral provider payload changes.
+
 ## Read scope and refusals
 
 The bridge recognizes OpenAI-format `read`, `read_file`, and `read_text_file`
