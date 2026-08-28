@@ -93,11 +93,15 @@ jobs:
       - name: Verify pack
         run: npm run holdout:verify -- --manifest=${{ github.event.inputs.manifest_path }} --attestation=attestation-download/attestation.json
 
+      - name: Archive sealed pack
+        run: |
+          tar -czf holdout-pack-${{ github.event.inputs.pack_id }}.tar.gz \
+            bench/splits/${{ github.event.inputs.pack_id }}.json \
+            bench/packs/${{ github.event.inputs.pack_id }}
+
       - name: Upload sealed pack
         uses: actions/upload-artifact@v4
         with:
           name: holdout-pack-${{ github.event.inputs.pack_id }}
-          path: |
-            bench/splits/${{ github.event.inputs.pack_id }}.json
-            bench/packs/${{ github.event.inputs.pack_id }}
+          path: holdout-pack-${{ github.event.inputs.pack_id }}.tar.gz
           retention-days: 90

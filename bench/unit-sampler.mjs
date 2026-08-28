@@ -231,7 +231,7 @@ export async function generateSamplerTraces({ root, manifest, pack, files }) {
   await writeFile(join(root, pack.tracesDir, "candidates-rejected.json"), `${JSON.stringify(record, null, 2)}\n`);
   const traces = tracesFromSample({ sample, family: scenario });
   for (const trace of traces) {
-    const name = `${trace.name.replaceAll("/", "-")}.json`;
+    const name = `${trace.name.replaceAll("/", "-").replaceAll(":", "-")}.json`;
     await writeFile(join(root, pack.tracesDir, name), `${JSON.stringify(trace, null, 2)}\n`);
   }
   return { generator: "unit-sampler", selected: sample.selected.length, rejected: sample.rejected.length };
