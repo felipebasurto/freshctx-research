@@ -169,6 +169,55 @@ export function shouldInlineSelectedReadAtToolResult({
   return !projectionCarriesQuoteableUnits(projectionText);
 }
 
+/**
+ * PCR 0108: after a prior-turn budget omit, later unchanged turns inline bounded
+ * current bytes at the latest read slot when the tail carries no quoteable bodies.
+ * Turn-1 first delivery and fresh same-turn over-cap reads stay omitted markers.
+ */
+export function shouldInlineBudgetOmittedReadAtToolResult({
+  userCountMessages = [],
+  unit,
+  projectionText,
+}) {
+  if (userMessageCount(userCountMessages) <= 1) return false;
+  const current = String(unit?.content ?? "");
+  if (current.length === 0) return false;
+  return !projectionCarriesQuoteableUnits(projectionText);
+}
+
+export function replaceBudgetOmittedReadQuoteability(messages, {
+  unitForCallId,
+  projectionText,
+  userCountMessages = messages,
+  historicalReadDispositionByCallId = new Map(),
+  latestReadCallIds,
+} = {}) {
+  const budgetHistorical = new Set();
+  for (const [callId, item] of historicalReadDispositionByCallId.entries()) {
+    if (item?.disposition === "budget") budgetHistorical.add(callId);
+  }
+  const latest = latestReadCallIds instanceof Set
+    ? latestReadCallIds
+    : new Set(latestReadCallIds ?? []);
+
+  return messages.map((message) => {
+    const callId = toolResultCallId(message);
+    if (!callId || !budgetHistorical.has(callId) || !latest.has(callId)) {
+      return structuredClone(message);
+    }
+    const unit = unitForCallId(callId);
+    if (!unit) return structuredClone(message);
+    if (!shouldInlineBudgetOmittedReadAtToolResult({
+      userCountMessages,
+      unit,
+      projectionText,
+    })) {
+      return structuredClone(message);
+    }
+    return withToolResultContent(message, String(unit.content ?? ""));
+  });
+}
+
 export function servedReadToolResultContent({
   unit,
   inlineSelectedRead = false,
