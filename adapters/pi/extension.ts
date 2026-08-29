@@ -178,7 +178,9 @@ function replaceCapturedReads(
  * region synchronization.
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
-  const engine = createAdapterEngine();
+  const engine = createAdapterEngine(
+    process.env.FRESHCTX_SIDECAR === "off" ? { sidecarRunner: null } : {},
+  );
   const callToUnit = new Map<string, string>();
   const callMeta = new Map<string, {
     path: string;

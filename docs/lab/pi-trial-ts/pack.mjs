@@ -8,7 +8,8 @@ const packDir = dirname(fileURLToPath(import.meta.url));
 
 export const PACK_ROOT = new URL(".", import.meta.url);
 
-export const ARMS = ["without", "with"];
+/** Pi alone, FreshCtx without sidecar, FreshCtx with sidecar (same prompts). */
+export const ARMS = ["nothing", "freshctx-no-ts", "freshctx-ts"];
 
 export const TARGET_FILE = "src/settlement.ts";
 export const TARGET_SYMBOL = "settleDailyLedger";
@@ -58,8 +59,14 @@ export function freshCtxExtensionPath(repoRoot = resolveRepoRoot()) {
 }
 
 export function freshCtxExtensionForArm(arm, repoRoot = resolveRepoRoot()) {
-  if (arm === "without") return null;
+  if (arm === "nothing") return null;
   return freshCtxExtensionPath(repoRoot);
+}
+
+/** Sidecar off in harness code for `freshctx-no-ts`; host never passes scope=symbol. */
+export function freshCtxEnvForArm(arm) {
+  if (arm === "freshctx-no-ts") return { FRESHCTX_SIDECAR: "off" };
+  return {};
 }
 
 export function validateArm(arm) {

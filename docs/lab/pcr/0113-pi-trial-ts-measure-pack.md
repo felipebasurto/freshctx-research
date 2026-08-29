@@ -8,70 +8,69 @@
 - Result labels used: `live-host`; `measurement`; `harness-only`
 - Decision: **review**
 
-**Status:** draft harness. Two arms only. Waiting on clean two-arm rerun and on
-product PCR for file-scope TS/JS/Python sidecar routing before Tree-sitter
-claims.
+**Status:** draft harness. Three arms. Waiting on clean three-arm rerun and on
+PCR 0114 for file-scope TS/JS/Python sidecar routing when runner is present.
 
 ## Hypothesis or change
 
 Question for a later live run: does FreshCtx beat Pi-alone on TypeScript after a
-whole-file read and interior flip?
-
-Tree-sitter is inside FreshCtx, not a host option. This pack does not add
-`scope=symbol` prompts or a third arm. Product PCR will route file-scope
-TS/JS/Python through the sidecar; rerun then if `resolution=sidecar` matters.
+whole-file read and interior flip? Does Tree-sitter inside FreshCtx (not host
+`scope=symbol`) change the outcome vs the same adapter with sidecar off?
 
 ## What we did
 
 1. Added `docs/lab/pi-trial-ts/` with fixture `src/settlement.ts` (lookalike
    exports, interior flip `ST0`→`ST1` scoped to `settleDailyLedger`).
-2. Added two-arm harness: `without`, `with`.
-3. Added `resolveRepoRoot()` (walk to `adapters/pi/extension.ts`).
-4. Retired three-arm / `scope=symbol` design after first live run @ `46d5334`.
-5. Did not edit official TAP, holdout v0.2, `src/policy`, `src/anchors`,
+2. Three-arm harness: `nothing`, `freshctx-no-ts`, `freshctx-ts`.
+3. Sidecar off via `FRESHCTX_SIDECAR=off` in harness for arm B (minimal adapter
+   knob in `adapters/pi/extension.ts`).
+4. Same whole-file prompts on all arms; no host `scope=symbol`.
+5. `resolveRepoRoot()` walks to `adapters/pi/extension.ts`.
+6. Did not edit official TAP, holdout v0.2, `src/policy`, `src/anchors`,
    `src/projector`. No `--relock`.
 
 ## Arms
 
-| arm | FreshCtx | read |
-|---|---|---|
-| `without` | no | whole file |
-| `with` | yes | whole file |
+| arm | FreshCtx | sidecar | read |
+|---|---|---|---|
+| `nothing` | no | n/a | whole file |
+| `freshctx-no-ts` | yes | off (harness env) | whole file |
+| `freshctx-ts` | yes | on (default) | whole file |
 
-## First live run (retired third arm)
+## First live run (retired)
 
-@ `46d5334`, pre-`resolveRepoRoot` fix. Recorded in `REPORT.md`. `with-symbol`
-invalid (no `scope=symbol` in tool args; bash storm t1). Not a Tree-sitter
-measurement.
+@ `46d5334`, pre-`resolveRepoRoot`, invalid `with-symbol` arm. Recorded in
+`REPORT.md`. Not a Tree-sitter measurement.
 
 ## Benchmarks run
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 5/5 after two-arm pivot |
+| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 6/6 after three-arm correction |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93…`; lock=`79e29d09…` |
 
 ## Metric snapshot
 
-No valid two-arm table yet. Do not invent `AUTORESEARCH_SCORE`.
+No valid three-arm table yet. Do not invent `AUTORESEARCH_SCORE`.
 
 | metric | origin/main `4e4a930` | this PR | delta |
 |---|---|---|---|
 | `AUTORESEARCH_SCORE` | `89.107165` | not measured | n/a |
-| live Pi TS two-arm table | n/a | pending rerun | n/a |
+| live Pi TS three-arm table | n/a | pending rerun | n/a |
 
 ## Comparison
 
-Harness-only. Two-arm rerun after `resolveRepoRoot()` fix. Tree-sitter vs
-file-only comparison deferred to post-product-PCR sidecar routing.
+Harness-only. Three-arm rerun after arm correction. Tree-sitter on file-scope TS
+deferred until PCR 0114 lands sidecar routing for file-scope refresh.
 
 ## Known limitations
 
-- First run used wrong extension path (`join(pack,"../..")` → `docs/`).
+- First run used wrong extension path and invalid symbol-scope arm design.
 - `auto-rpc.mjs` requires `pi` on PATH.
+- Arm C may show `resolution=file` until PCR 0114.
 
 ## Recommended next experiment
 
-1. Rerun two-arm battery on Mac with official Pi + DeepSeek v4 flash.
-2. After product PCR lands file-scope sidecar for TS, rerun and compare
-   `resolution` on arm `with`.
+1. Rerun three-arm battery on Mac with official Pi + DeepSeek v4 flash.
+2. After PCR 0114 lands file-scope sidecar for TS, rerun arm `freshctx-ts` and
+   compare `resolution` vs `freshctx-no-ts`.

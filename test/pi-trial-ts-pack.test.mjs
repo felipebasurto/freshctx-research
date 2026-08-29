@@ -17,6 +17,8 @@ import {
   TARGET_FILE,
   TARGET_SYMBOL,
   freshCtxExtensionPath,
+  freshCtxExtensionForArm,
+  freshCtxEnvForArm,
   promptForCell,
   resolveRepoRoot,
 } from "../docs/lab/pi-trial-ts/pack.mjs";
@@ -29,8 +31,8 @@ import {
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturePath = join(here, "../docs/lab/pi-trial-ts/fixture/src/settlement.ts");
 
-test("pi-trial-ts pack defines two arms and two turns", () => {
-  assert.deepEqual(ARMS, ["without", "with"]);
+test("pi-trial-ts pack defines three arms and two turns", () => {
+  assert.deepEqual(ARMS, ["nothing", "freshctx-no-ts", "freshctx-ts"]);
   assert.equal(CELLS.length, 2);
   assert.equal(CELLS[0].id, "t1-read");
   assert.equal(CELLS[1].id, "t2-settle");
@@ -44,6 +46,14 @@ test("pi-trial-ts prompts are identical across arms", () => {
   assert.match(PROMPT_T2, /SETTLE=\.\.\./u);
   assert.doesNotMatch(PROMPT_T1, /scope=symbol/u);
   assert.doesNotMatch(PROMPT_T2, /scope=symbol/u);
+});
+
+test("pi-trial-ts freshCtxEnvForArm toggles sidecar in harness code only", () => {
+  assert.deepEqual(freshCtxEnvForArm("nothing"), {});
+  assert.deepEqual(freshCtxEnvForArm("freshctx-ts"), {});
+  assert.deepEqual(freshCtxEnvForArm("freshctx-no-ts"), { FRESHCTX_SIDECAR: "off" });
+  assert.equal(freshCtxExtensionForArm("nothing"), null);
+  assert.match(freshCtxExtensionForArm("freshctx-ts"), /adapters\/pi\/extension\.ts$/u);
 });
 
 test("pi-trial-ts resolveRepoRoot finds adapters/pi/extension.ts", () => {
@@ -72,8 +82,8 @@ test("pi-trial-ts fixture has lookalike exports and interior target marker", asy
 
 test("pi-trial-ts flip-settle changes only settleDailyLedger interior marker", async () => {
   const fixtureRoot = join(here, "../docs/lab/pi-trial-ts/fixture");
-  await reset("without", fixtureRoot);
-  const root = join(here, "../docs/lab/pi-trial-ts/.work/without");
+  await reset("nothing", fixtureRoot);
+  const root = join(here, "../docs/lab/pi-trial-ts/.work/nothing");
   const path = join(root, TARGET_FILE);
   const before = await readFile(path, "utf8");
   assert.equal(
@@ -90,7 +100,7 @@ test("pi-trial-ts flip-settle changes only settleDailyLedger interior marker", a
     new RegExp(`"${LOOKALIKE_MARKER}"`, "u"),
   );
 
-  await mutate("without", "flip-settle");
+  await mutate("nothing", "flip-settle");
   const after = await readFile(path, "utf8");
 
   assert.equal(

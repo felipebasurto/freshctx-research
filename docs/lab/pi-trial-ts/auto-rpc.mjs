@@ -7,6 +7,7 @@ import {
   ARMS,
   CELLS,
   MARKER_V1,
+  freshCtxEnvForArm,
   freshCtxExtensionForArm,
   promptForCell,
   resolveRepoRoot,
@@ -191,7 +192,7 @@ function stdoutMatchesCurrent(reply) {
 }
 
 function normalizeResolution(raw, arm) {
-  if (arm === "without") return "none";
+  if (arm === "nothing") return "none";
   const value = String(raw ?? "none");
   if (value.includes("sidecar")) return "sidecar";
   if (value.includes("file") || value.includes("whole")) return "file";
@@ -217,7 +218,7 @@ async function runArm(arm) {
   const extension = freshCtxExtensionForArm(arm, repoRoot);
   if (extension) args.push("-e", extension);
   args.push("-e", DUMP_EXT);
-  const env = { PI_TRIAL_DUMP_DIR: dumpDir };
+  const env = { ...freshCtxEnvForArm(arm), PI_TRIAL_DUMP_DIR: dumpDir };
   process.stdout.write(`start arm=${arm} cwd=${cwd} model=${MODEL}\n`);
   const client = new PiRpc({
     cwd,
@@ -309,7 +310,7 @@ async function main() {
     notAPaperResult: true,
     question: "Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and interior flip?",
     repoRoot,
-    freshCtxExtension: freshCtxExtensionForArm("with", repoRoot),
+    freshCtxExtension: freshCtxExtensionForArm("freshctx-ts", repoRoot),
     commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim(),
     started,
     ended: new Date().toISOString(),

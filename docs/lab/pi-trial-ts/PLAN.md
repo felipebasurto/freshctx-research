@@ -2,24 +2,29 @@
 
 Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 
-## Question (do not answer until a valid two-arm run exists)
+## Question (do not answer until a valid three-arm run exists)
 
 Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and an
-interior flip on one lookalike export?
+interior flip on one lookalike export? Does Tree-sitter (inside FreshCtx) change
+the outcome vs the same adapter with the sidecar off?
 
-Tree-sitter lives inside FreshCtx. Pi does not pass `scope=symbol`. A separate
-product PCR will route file-scope TS/JS/Python refresh through the sidecar; this
-pack does not ask the host for symbol scope and does not add a third arm for it.
+Tree-sitter lives inside FreshCtx. Pi does not pass `scope=symbol`. Product PCR
+0114 will route file-scope TS/JS/Python refresh through the sidecar when the
+runner is present; until then arm `freshctx-ts` may show `resolution=file` even
+with sidecar injected. Wait for 0114 before claiming a Tree-sitter win.
 
 ## Arms
 
 Same fixture, same whole-file read prompt, same interior flip (`ST0` → `ST1` in
-`settleDailyLedger`), same turn-2 user prompt.
+`settleDailyLedger`), same turn-2 user prompt on every arm.
 
-| Arm | Pi | FreshCtx |
-|---|---|---|
-| A `without` | yes | no |
-| B `with` | yes | yes (`adapters/pi/extension.ts`) |
+| Arm | Pi | FreshCtx | Tree-sitter sidecar |
+|---|---|---|---|
+| A `nothing` | yes | no | n/a |
+| B `freshctx-no-ts` | yes | yes | off (`FRESHCTX_SIDECAR=off` in harness) |
+| C `freshctx-ts` | yes | yes | on (default `adapters/pi/extension.ts`) |
+
+Arm B and C share the same extension path and prompts. Only harness env differs.
 
 ## Fixture
 
@@ -31,7 +36,7 @@ interior edit on `settleDailyLedger` only (`MARKER_SETTLE`).
 
 1. **t1-read.** Read whole file. Pi reports initial marker.
 2. **flip-settle.** Runner mutates disk (`ST0` → `ST1`) without Pi re-reading.
-3. **t2-settle.** Same prompt on both arms: quote current `MARKER_SETTLE` with
+3. **t2-settle.** Same prompt on all arms: quote current `MARKER_SETTLE` with
    no tools.
 
 ## Printed columns
@@ -49,7 +54,7 @@ node docs/lab/pi-trial-ts/print-columns.mjs
 | `request_bytes` | UTF-8 bytes of serialized request JSON for the turn |
 | `prompt_tokens` | provider `usage.prompt_tokens` when present, else `—` |
 | `pi_stdout_current` | Pi stdout matches `SETTLE=ST1` |
-| `resolution` | `none` (arm A) or FreshCtx mechanism on arm B (`file`, `sidecar`, …) |
+| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`file`, `sidecar`, …) |
 
 No `AUTORESEARCH_SCORE` in this pack.
 
