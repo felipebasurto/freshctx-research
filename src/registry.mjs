@@ -88,9 +88,10 @@ async function invokeSidecar(sidecarRunner, path, normalizedFile) {
   return invoked;
 }
 
-function sidecarUnitsForSpan(units, startLine, endLine) {
+function sidecarUnitsForSelector(units, selector) {
+  if (!selector) return [];
   return (units ?? []).filter(
-    (candidate) => candidate.startLine === startLine && candidate.endLine === endLine,
+    (candidate) => candidate.selector === selector || candidate.qualifiedSelector === selector,
   );
 }
 
@@ -138,14 +139,21 @@ async function resolveRegionViaSidecar(unit, normalizedFile, sidecarRunner) {
   const invoked = await runSidecar(sidecarRunner, unit.path, normalizedFile);
   if (invoked.state !== "parsed") return invoked;
   if (sidecarRefreshBlocked(invoked.parsed)) {
-    return { state: "unresolved", method: sidecarFailureMethod(invoked.parsed) };
+    return {
+      state: "unresolved",
+      method: sidecarFailureMethod(invoked.parsed),
+      parseBroken: true,
+    };
   }
-  const matches = sidecarUnitsForSpan(invoked.parsed.units, unit.startLine, unit.endLine);
+  if (!unit.selector) {
+    return { state: "pending" };
+  }
+  const matches = sidecarUnitsForSelector(invoked.parsed.units, unit.selector);
   if (matches.length === 0) {
     return { state: "pending" };
   }
   if (matches.length > 1) {
-    return { state: "pending" };
+    return { state: "unresolved", method: "sidecar-ambiguous" };
   }
   return resolveSidecarUnitSpan(normalizedFile, matches[0]);
 }
@@ -296,13 +304,17 @@ export class FreshRegistry {
       }
 
       if (resolved.state !== "resolved" && unit.scope === "region") {
-        const span = resolveStoredLineSpan(
-          normalizedFile,
-          unit.startLine,
-          unit.endLine,
-          unit.observedFileLineCount,
-        );
-        if (span) resolved = span;
+        const skipStoredLineSpan =
+          sidecarInjected && sidecarLanguage && resolved.parseBroken === true;
+        if (!skipStoredLineSpan) {
+          const span = resolveStoredLineSpan(
+            normalizedFile,
+            unit.startLine,
+            unit.endLine,
+            unit.observedFileLineCount,
+          );
+          if (span) resolved = span;
+        }
       }
 
       if (resolved.state !== "resolved") {

@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-29
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/file-region-sidecar-fd3b` (draft)
+- Branch / PR: `cursor/file-region-sidecar-fd3b` (draft PR #109)
 - Base SHA: `15c573e74f7dd84ab36f2a63bd49b53cfc61b19e` (PCR 0113 squash)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `replay`; `adapter-only`; `measurement`
@@ -17,6 +17,7 @@ PCR 0113 added the three-arm Pi TypeScript measure harness (`nothing` /
 `freshctx-no-ts` / `freshctx-ts`) with `FRESHCTX_SIDECAR=off` for arm B.
 This PCR routes file-scope and region refresh through the injected sidecar on
 Tree-sitter languages when a runner is present.
+Region grain matches by `selector` and relocates the named unit.
 Arm B stays `sidecarRunner: null` via the existing harness knob, not a new host
 flag.
 
@@ -25,35 +26,47 @@ flag.
 1. Extended `src/registry.mjs` refresh for `.py`/`.js`/`.mjs`/`.cjs`/`.ts`/`.tsx`
    when `sidecarRunner` is injected.
 2. File scope calls the sidecar and resolves with `resolutionMethod: "sidecar"`
-   when parse is not broken.
-3. Region scope calls the sidecar first.
-   Exact tree-sitter unit span matches relocate via sidecar.
-   Otherwise anchors and `stored-line-span` fall back unchanged.
+   when parse is not broken (including unit-less parses).
+3. Region scope calls the sidecar, matches units by `selector`/`qualifiedSelector`,
+   and relocates the named unit to its current span.
+   No selector match falls through to anchors.
+   `stored-line-span` still applies only when the sidecar path did not fail on
+   `parse-broken`.
 4. Fail closed on missing runner, spawn error, or `parse-broken`.
-   Ambiguous or unit-less parses fall back for file/region grain.
-5. Added `test/pcr-0114-file-region-sidecar-refresh.test.mjs` (5 tests).
+   Ambiguous or unit-less file parses still resolve whole-file via sidecar gate.
+5. Added `test/pcr-0114-file-region-sidecar-refresh.test.mjs` (7 tests).
 6. Relaxed Pi/Hermes smoke parity checks to compare recall instead of projection
    bytes when sidecar resolution labels differ from core-only refresh.
 7. Reused PCR 0113 `FRESHCTX_SIDECAR=off` in `adapters/pi/extension.ts`.
    Did not edit door, lock, holdout gold, weights, or thresholds.
 
+## Reviewer no-merge (`9386700` vs `15c573e7`)
+
+Hole — region refresh matched only stored `startLine`/`endLine`.
+A different unit occupying the old span was accepted and anchors never ran.
+Fix — region sidecar match uses `selector`/`qualifiedSelector` like symbol grain.
+Relocate follows the named unit when the span moves.
+`parse-broken` on an injected sidecar region skips `stored-line-span` rescue.
+Tests pin relocation when `beta` occupies `alpha`'s old lines and parse-broken
+fail-closed vs null-runner legacy resolve.
+
 ## Benchmarks run
 
-Canonical TAP from this run on branch HEAD (base `15c573e`).
+Canonical TAP from this post-review run on branch HEAD (base `15c573e`).
 
 ```
-1..417
-# tests 417
+1..419
+# tests 419
 # suites 0
-# pass 391
+# pass 393
 # fail 0
 # cancelled 0
 # skipped 26
 # todo 0
 ```
 
-Official accepted table on merge-base `4e4a930` remains **388 pass / 0 fail /
-17 skipped / 405 total** until Bench measures a squash.
+Official accepted TAP on merge-base `4e4a930` remains **388 pass / 0 fail /
+17 skipped / 405 total** until Bench prints `15c573e7`, then again after squash.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
@@ -68,8 +81,8 @@ Official accepted table on merge-base `4e4a930` remains **388 pass / 0 fail /
 |---|---|---|---|
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3…` (hold) | `697e74e3…` (hold) | `0` |
-| `npm test` TAP `# tests` | 412 | **417** | **+5** |
-| `npm test` TAP `# pass` | 386 | **391** | **+5** |
+| `npm test` TAP `# tests` | 412 | **419** | **+7** |
+| `npm test` TAP `# pass` | 386 | **393** | **+7** |
 | `npm test` TAP `# fail` | 0 | **0** | `0` |
 | `npm test` TAP `# skipped` | 26 | **26** | `0` |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
@@ -82,8 +95,10 @@ Synthetic adapter replay only.
 Measured: Pi file-scope `.ts` refresh with default sidecar yields
 `resolutionMethod: "sidecar"` without host `scope=symbol`.
 Measured: same read with `sidecarRunner: null` stays `whole-file`.
-Measured: Python region refresh with exact unit span match relocates via sidecar.
-Measured: missing runner and parse-broken syntax fail closed on file-scope `.ts`.
+Measured: Python region refresh by `selector` relocates when another unit
+occupies the old line span.
+Measured: parse-broken region with injected sidecar stays unresolved while
+null-runner legacy refresh still resolves.
 
 ## Conflicts with constitutions
 
@@ -91,7 +106,7 @@ none observed.
 
 ## Limitations
 
-Region reads that do not match an exact sidecar unit span still use anchors.
+Region reads without `selector` still use anchors only after the sidecar gate.
 Live Pi three-arm rerun on Mac is still pending after this lands.
 Hermes extension does not yet read `FRESHCTX_SIDECAR=off` (Pi harness only).
 
