@@ -108,8 +108,9 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-29 | (PCR 0115) Pi trial dump escaped resolution scan (Tree-sitter measure harness); base `8e436e7`; dest=`cloud-agent` | TAP 424 / 398 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0115](pcr/0115-dump-request-resolution-escape.md) |
 | 2026-08-29 | (PCR 0116) Pi/Hermes symbol-scope trial harness for settleDailyLedger; base `5bb53c3`; dest=`cloud-agent` | TAP 432 / 406 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0116](pcr/0116-pi-hermes-symbol-scope-trial.md) |
 | 2026-08-29 | (PCR 0117) Pi auto-rpc hostReadToolArgs on t1-read; base `fdc49ae`; dest=`cloud-agent` | TAP 443 / 417 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0117](pcr/0117-pi-auto-rpc-host-read.md) |
+| 2026-08-29 | (PCR 0118) Pi force-host-read live hook + official Pi 0.84.3 three-arm; base `46169f5`; dest=`mac` HEAD `1a002ffa` | TAP 457 / 431 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0118](pcr/0118-pi-force-host-read-live-hook.md) |
 
-Official accepted TAP remains **407 pass / 0 fail / 17 skipped / 424 total** on base `fdc49ae`.
+Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 
 No synthetic metric delta. Label: `synthetic`.
 
@@ -164,5 +165,6 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-25 | `9741d00` + 0080/0081 (uncommitted) | — | official Pi (`/Users/felipe/.hermes/node/bin/pi`) | deepseek-v4-pro | 5 cells × 2 arms | Trial 2.2: with-arm CLI/README/todo current after disk flip (cell 2 266,986 CL0=0; cell 5 222,450, not 20% below 171,172); five-file dump leftover; not a paper result | [0081](pcr/0081-stale-shell-dump.md) / [REPORT-2.2](pi-trial/REPORT-2.2.md) |
 | 2026-08-29 | `a9f2567` (draft harness) | — | official Pi | deepseek-v4-flash | 0 valid | Pi TS three-arm pack harness only; retired invalid first run; no live table yet; Tree-sitter on arm `freshctx-ts` deferred to PCR 0114 | [0113](pcr/0113-pi-trial-ts-measure-pack.md) |
 | 2026-08-29 | `5bb53c3` (draft harness) | — | official Pi / Hermes replay | deepseek-v4-flash | 0 valid | Symbol-scope host read of settleDailyLedger; synthetic replay only; live three-arm pending after merge | [0116](pcr/0116-pi-hermes-symbol-scope-trial.md) |
+| 2026-08-29 | `1a002ffa` | — | official Pi 0.84.3 auto-rpc | deepseek-v4-flash | 3 arms × 2 turns | live symbol-scope; hostReadArgsMatched true; t2 last bytes nothing 12044 / no-ts 15291 / ts 7794; ts ST1 sidecar, sibling omitted; not a paper result | [0118](pcr/0118-pi-force-host-read-live-hook.md) |
 | 2026-08-29 | `fdc49ae` (draft harness) | — | official Pi auto-rpc | deepseek-v4-flash | 0 valid | force-host-read extension for t1 hostReadToolArgs; live three-arm pending after merge | [0117](pcr/0117-pi-auto-rpc-host-read.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |

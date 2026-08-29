@@ -9,72 +9,82 @@ Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
 FreshCtx (host passes `scope=symbol` with selector `settleDailyLedger`) change
 the outcome vs the same adapter with the sidecar off?
 
-Wait for a clean three-arm rerun after PCR 0116 symbol-scope harness lands.
+Measured on official Pi 0.84.3 with `auto-rpc.mjs` at `1a002ffa`.
 
 ## Setup
 
 | field | value |
 |---|---|
-| Date (UTC) | _fill on rerun_ |
-| Harness commit | _fill on rerun_ |
-| Pi version | _fill on rerun_ |
+| Date (UTC) | 2026-08-29 |
+| Harness commit | `1a002ffac26625023edf6c08ccb1f946c0d13471` |
+| Pi version | `0.84.3` (`/Users/felipe/.hermes/node/bin/pi`) |
 | Model | `deepseek-v4-flash` |
 | Fixture | `docs/lab/pi-trial-ts/fixture/src/settlement.ts` |
 | Flip | interior `ST0` → `ST1` in `settleDailyLedger` |
-| Driver | `auto-rpc.mjs` or manual `BATTERY.md` |
+| Driver | `auto-rpc.mjs` with `PI_TRIAL_FORCE_HOST_READ=1` |
+
+Turn-1 host tools on every arm were `read` with `scope=symbol` selector
+`settleDailyLedger`. `hostReadArgsMatched` was true. No leftover bash or grep.
 
 ## Measure table (three-arm harness)
 
-Paste output of `node docs/lab/pi-trial-ts/print-columns.mjs` after a clean rerun.
+Output of `node docs/lab/pi-trial-ts/print-columns.mjs` after the clean rerun.
+`request_bytes` is the sum of dumped provider payloads on that turn.
+`prompt_tokens` is `—` because the dumped request JSON has no
+`usage.prompt_tokens`.
 
 ```
 arm	turn	t2_exact_new_bytes	sibling_bytes_in_request	request_bytes	prompt_tokens	pi_stdout_current	resolution
-nothing	1	n/a	n/a	—	—	n/a	n/a
-nothing	2	—	—	—	—	—	—
-freshctx-no-ts	1	n/a	n/a	—	—	n/a	n/a
-freshctx-no-ts	2	—	—	—	—	—	—
-freshctx-ts	1	n/a	n/a	—	—	n/a	n/a
-freshctx-ts	2	—	—	—	—	—	—
+nothing	1	n/a	n/a	17041	—	n/a	n/a
+nothing	2	no	yes	12044	—	no	none
+freshctx-no-ts	1	n/a	n/a	73208	—	n/a	n/a
+freshctx-no-ts	2	no	no	15291	—	no	none
+freshctx-ts	1	n/a	n/a	12806	—	n/a	n/a
+freshctx-ts	2	yes	no	7794	—	yes	sidecar
 ```
 
-## Retired first run @ `46d5334` (invalid third arm)
+Turn-2 last-request UTF-8 bytes (one provider payload, not the t1 sum):
 
-Pre-`resolveRepoRoot` three-arm harness used `with-symbol` with different prompts
-and no `scope=symbol` in tool args (122 tools t1). Do not treat as Tree-sitter
-measurement. Rows kept for archaeology only.
+| arm | t2 last request_bytes | pi_stdout | sibling `SW0` | resolution |
+|---|---:|---|---|---|
+| `nothing` | 12044 | `SETTLE=ST0` (stale) | yes | none |
+| `freshctx-no-ts` | 15291 | unresolved, no marker | no | none |
+| `freshctx-ts` | 7794 | `SETTLE=ST1` | no | sidecar |
 
-| arm (retired) | turn | t2_exact_new_bytes | request_bytes | resolution | notes |
-|---|---|---|---:|---|---|
-| without | 2 | no | 13356 | none | stale as expected |
-| with-file | 2 | yes | 18066 | none | wrong extension path |
-| with-symbol | 2 | yes | 104638 | file | invalid; not Tree-sitter |
+`freshctx-ts` t2 is 4250 bytes below `nothing` t2 (7794 vs 12044). That is a
+35.3% drop on the last turn-2 request. Tree-sitter omitted sibling `SW0` and
+served `ST1`.
 
 ## Notes per arm
 
 ### A `nothing`
 
-Pi alone. Expect stale t2 unless model re-reads.
+One forced symbol-scope read. Pi answered `SETTLE=ST0` on t1 and again on t2
+after the disk flip. Turn-2 request still contains `SW0`.
 
 ### B `freshctx-no-ts`
 
-FreshCtx with `FRESHCTX_SIDECAR=off`. Same prompts as A and C.
+Sidecar off. Seven repeated symbol-scope reads on t1. FreshCtx fail-closed
+(`sidecar-error`). The model never received current bytes and answered
+unresolved on t2. No sibling bytes. Larger than Pi-alone because the unresolved
+retry transcript stayed in the request.
 
 ### C `freshctx-ts`
 
-FreshCtx with sidecar injected. Expect `resolution=sidecar` on symbol-scope TS
-when Tree-sitter resolves `settleDailyLedger` only.
+One forced symbol-scope read. `SETTLE=ST0` on t1. After the flip, `SETTLE=ST1`
+with `resolution=sidecar`, `t2_exact_new_bytes=yes`, and no sibling bytes.
 
 ## Adapter smokes (synthetic)
 
 | Command | Exit | Notes |
 |---|---|---|
-| `node --test test/pi-trial-ts-pack.test.mjs` | _pending rerun_ | |
-| `npm run evaluate` | not claimed | no `AUTORESEARCH_SCORE` in this pack |
+| `node --test test/pcr-0116-pi-hermes-symbol-scope-trial.test.mjs test/pcr-0118-pi-force-host-read-live.test.mjs` | 0 | 20 pass |
+| `npm run evaluate` | 0 | `AUTORESEARCH_SCORE=89.107165`; not a live-pack score |
 
 Door `f8771c93894095348185ef3453a3c2498355b3c6`. Lock
 `79e29d09a9ec12b1128617f683f50a35a3c8809e`. No `--relock`.
 
 ## Could not measure
 
-Tree-sitter vs no-Tree-sitter on symbol-scope TS is pinned in synthetic replay
-(`test/pcr-0116-pi-hermes-symbol-scope-trial.test.mjs`). Live three-arm pending.
+Provider `prompt_tokens` on the dumped request JSON. Byte counts are the
+measurement.

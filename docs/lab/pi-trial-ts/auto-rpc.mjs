@@ -8,6 +8,7 @@ import {
   envWithForceHostRead,
   piArgsForArm,
   t1HostReadToolsValid,
+  toolsFromExecutionStartEvents,
 } from "./auto-rpc-host-read.mjs";
 import {
   ARMS,
@@ -182,15 +183,6 @@ class PiRpc {
   }
 }
 
-function toolsFromEvents(events) {
-  return events
-    .filter((event) => event.type === "tool_execution_start")
-    .map((event) => ({
-      toolCallId: event.toolCallId,
-      toolName: event.toolName,
-      args: event.args ?? null,
-    }));
-}
 
 function stdoutMatchesCurrent(reply) {
   const line = String(reply ?? "");
@@ -247,7 +239,7 @@ async function runArm(arm) {
         requests.push({ file: name, ...scan });
       }
       const lastRequest = requests.at(-1) ?? null;
-      const tools = toolsFromEvents(events);
+      const tools = toolsFromExecutionStartEvents(events);
       if (cell.id === "t1-read") {
         assertT1HostReadTools(tools, { arm });
       }

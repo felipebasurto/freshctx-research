@@ -10,7 +10,17 @@ export const FORCE_HOST_READ_ENV = "PI_TRIAL_FORCE_HOST_READ";
 const BLOCKED_T1_TOOL_NAMES = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
 
 export function forceHostReadExtensionPath() {
-  return join(packDir, "force-host-read.mjs");
+  return join(packDir, "force-host-read.ts");
+}
+
+export function toolsFromExecutionStartEvents(events) {
+  return events
+    .filter((event) => event.type === "tool_execution_start")
+    .map((event) => ({
+      toolCallId: event.toolCallId,
+      toolName: event.toolName,
+      args: event.args ?? null,
+    }));
 }
 
 export function envWithForceHostRead(baseEnv = {}) {

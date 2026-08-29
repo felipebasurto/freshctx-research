@@ -2,11 +2,15 @@
 
 Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 
-## Question (do not answer until a valid three-arm run exists)
+## Question
 
 Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
 `settleDailyLedger` and an interior flip on that symbol? Does Tree-sitter inside
 FreshCtx change the outcome vs the same adapter with the sidecar off?
+
+Answered in [REPORT.md](REPORT.md) at `1a002ffa`. Tree-sitter arm t2 last
+request is 7794 bytes vs Pi-alone 12044. Sidecar-off fail-closed. Not a paper
+result.
 
 Tree-sitter lives inside FreshCtx. The host passes `scope=symbol` with selector
 `settleDailyLedger`. The harness never exposes a Tree-sitter toggle.
