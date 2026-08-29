@@ -31,7 +31,7 @@ if (isMain) {
   const flags = parseArgs(process.argv);
   const workspaceRoot = flags.workspace ?? flags.root;
   if (!workspaceRoot) {
-    process.stderr.write("usage: node bench/sample-units.mjs --workspace=<dir> --commit=<sha> --scenario=<name> [--n=10] [--out=dir]\n");
+    process.stderr.write("usage: node bench/sample-units.mjs --workspace=<dir> --commit=<sha> --scenario=<name> [--n=10] [--scope=file|symbol] [--out=dir]\n");
     process.exitCode = 1;
   } else {
     const sample = await sampleWorkspace({
@@ -40,6 +40,7 @@ if (isMain) {
       scenario: String(flags.scenario ?? "interior-edit"),
       repoId: String(flags.repo ?? "workspace"),
       n: Number(flags.n ?? 10),
+      unitScope: String(flags.scope ?? flags.unitScope ?? "file"),
     });
     const outDir = flags.out ? flags.out : join(dirname(workspaceRoot), "sample-out");
     const written = await writeSample({ sample, outDir });

@@ -128,12 +128,14 @@ The initial smoke target is 10 units per mutation family in Flask and Express.
 The full target is at least 50 units per family and language, subject to
 eligibility. Sample counts and exclusions are reported.
 
-Implemented status (measured 2026-08-28): `bench/unit-sampler.mjs` /
-`bench/sample-units.mjs` enumerate whole files, rank with raw
+Implemented status (measured 2026-08-29): `bench/unit-sampler.mjs` /
+`bench/sample-units.mjs` enumerate whole files by default, rank with raw
 `sha256(commit + selector + scenario)` (no colon join), and record
-`parser-not-implemented` for non-source paths. Symbol-shaped units are out of
-scope for this enumerator; they wait on the Tree-sitter sidecar (ADR 0004).
-The sampler does not call `resolveRegion`.
+`parser-not-implemented` for non-source paths. `unitScope: "symbol"` enumerates
+functions, methods, and classes through `bench/independent-symbols.mjs`. That
+enumerator does not import the Isolated Semantic Engine or `resolveRegion`.
+Gold bytes stay generator-owned offsets in `bench/gold-extract.mjs`. Public-repo
+symbol holdout packs are still a later cut.
 
 ### 5.2 Mutation families
 
@@ -569,8 +571,8 @@ Not yet implemented and therefore not claimable:
 - language parsers inside `src/` (out-of-process Tree-sitter module only;
   ADR 0004). That module now uses Tree-sitter WASM for Python, JavaScript,
   TypeScript, Go, and Rust;
-- full public-repo symbol sampling (whole-file enumerator is in;
-  sidecar-backed symbols are a later cut);
+- full public-repo symbol sampling (the independent gold enumerator is in;
+  sealed symbol-shaped holdout packs are a later cut);
 - full stage-level timing and peak-memory reporting in every adapter (§9.2 and
   §9.5 cannot be filled from this repository today);
 - pinned Pi/Hermes compatibility tests against released host packages;
