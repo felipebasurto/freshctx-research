@@ -109,6 +109,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-29 | (PCR 0116) Pi/Hermes symbol-scope trial harness for settleDailyLedger; base `5bb53c3`; dest=`cloud-agent` | TAP 432 / 406 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0116](pcr/0116-pi-hermes-symbol-scope-trial.md) |
 | 2026-08-29 | (PCR 0117) Pi auto-rpc hostReadToolArgs on t1-read; base `fdc49ae`; dest=`cloud-agent` | TAP 443 / 417 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0117](pcr/0117-pi-auto-rpc-host-read.md) |
 | 2026-08-29 | (PCR 0118) Pi force-host-read live hook + official Pi 0.84.3 three-arm; base `46169f5`; dest=`mac` HEAD `1a002ffa` | TAP 457 / 431 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0118](pcr/0118-pi-force-host-read-live-hook.md) |
+| 2026-08-29 | (PCR 0119) Go and Rust Tree-sitter WASM; regex leftover deleted; dest=`cloud-agent` env=hermes-absent | TAP 463 / 437 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0119](pcr/0119-go-rust-treesitter-wasm.md) |
 
 Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 

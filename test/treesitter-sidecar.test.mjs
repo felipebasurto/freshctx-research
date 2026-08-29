@@ -176,6 +176,77 @@ test("class-qualified methods can coexist", async () => {
   assert.equal(renders[1].qualifiedSelector, "class Beta::method render");
 });
 
+test("Go and Rust no longer use regex leftover extractors", async () => {
+  const source = await readFile(join(ROOT, "sidecar/treesitter/parse.mjs"), "utf8");
+  assert.equal(source.includes("REGEX_LANGUAGES"), false);
+  assert.equal(source.includes("parseWithRegex"), false);
+  assert.equal(source.includes("PATTERNS"), false);
+  assert.equal(source.includes("braceBalance"), false);
+});
+
+test("Go hasError parse-broken wins even when some units extract", async () => {
+  const parsed = await parseSource({
+    path: "a.go",
+    bytes: "func Alpha() {\n  return\n}\nfunc broken(\n",
+  });
+  assert.equal(parsed.error, "parse-broken");
+  assert.deepEqual(parsed.units, []);
+});
+
+test("adjacent Go funcs stay on their own lines", async () => {
+  const bytes = "func Alpha() {\n  return\n}\nfunc Beta() {\n  return\n}\n";
+  const parsed = await parseSource({ path: "a.go", bytes });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 2);
+  const [alpha, beta] = parsed.units;
+  assert.equal(alpha.selector, "Alpha");
+  assert.equal(beta.selector, "Beta");
+  assert.ok(alpha.endLine < beta.startLine);
+  const lines = bytes.split("\n");
+  const alphaBody = lines.slice(alpha.startLine - 1, alpha.endLine).join("\n");
+  const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+  assert.equal(alphaBody.includes("func Beta"), false);
+  assert.equal(betaBody.includes("func Alpha"), false);
+});
+
+test("adjacent Rust fns stay on their own lines", async () => {
+  const bytes = "fn alpha() {\n    let x = 1;\n}\nfn beta() {\n    let y = 2;\n}\n";
+  const parsed = await parseSource({ path: "a.rs", bytes });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 2);
+  const [alpha, beta] = parsed.units;
+  assert.equal(alpha.selector, "alpha");
+  assert.equal(beta.selector, "beta");
+  assert.ok(alpha.endLine < beta.startLine);
+  const lines = bytes.split("\n");
+  const alphaBody = lines.slice(alpha.startLine - 1, alpha.endLine).join("\n");
+  const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+  assert.equal(alphaBody.includes("fn beta"), false);
+  assert.equal(betaBody.includes("fn alpha"), false);
+});
+
+test("Go method extracts receiver-qualified selector", async () => {
+  const parsed = await parseSource({
+    path: "server.go",
+    bytes: "func (s *Server) Serve() {\n  return\n}\n",
+  });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 1);
+  assert.equal(parsed.units[0].selector, "Serve");
+  assert.equal(parsed.units[0].qualifiedSelector, "class Server::method Serve");
+});
+
+test("Rust impl method extracts type-qualified selector", async () => {
+  const parsed = await parseSource({
+    path: "server.rs",
+    bytes: "impl Server {\n    fn serve(&self) {\n        let x = 1;\n    }\n}\n",
+  });
+  assert.equal(parsed.error, null);
+  assert.equal(parsed.units.length, 1);
+  assert.equal(parsed.units[0].selector, "serve");
+  assert.equal(parsed.units[0].qualifiedSelector, "class Server::method serve");
+});
+
 test("C and Lua stay parser-not-implemented", async () => {
   const c = await parseSource({ path: "a.c", bytes: "int main(void) { return 0; }\n" });
   const lua = await parseSource({ path: "a.lua", bytes: "function main()\n  return 1\nend\n" });
