@@ -95,6 +95,36 @@ function sidecarUnitsForSelector(units, selector) {
   );
 }
 
+function sidecarUnitsOverlappingRead(units, startLine, endLine) {
+  return (units ?? [])
+    .filter((candidate) => candidate.endLine >= startLine && candidate.startLine <= endLine)
+    .sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
+}
+
+function sidecarUnitsChangedInRead(units, normalizedFile, readContent, startLine, endLine) {
+  const overlapping = sidecarUnitsOverlappingRead(units, startLine, endLine);
+  const previous = String(readContent);
+  return overlapping.filter((match) => {
+    const currentSlice = sliceFileLines(normalizedFile, match.startLine, match.endLine);
+    const previousSlice = sliceFileLines(previous, match.startLine, match.endLine);
+    return currentSlice !== previousSlice;
+  });
+}
+
+function resolveSidecarUnitsProjection(normalizedFile, units) {
+  if (units.length === 0) return null;
+  const content = units
+    .map((match) => sliceFileLines(normalizedFile, match.startLine, match.endLine))
+    .join("\n");
+  return {
+    state: "resolved",
+    method: "sidecar",
+    content,
+    startLine: units[0].startLine,
+    endLine: units[units.length - 1].endLine,
+  };
+}
+
 function resolveSidecarUnitSpan(normalizedFile, match) {
   return {
     state: "resolved",
@@ -120,19 +150,45 @@ async function resolveSymbolUnit(unit, normalizedFile, sidecarRunner) {
   return resolveSidecarUnitSpan(normalizedFile, matches[0]);
 }
 
-async function resolveFileViaSidecar(path, normalizedFile, sidecarRunner) {
+async function resolveFileViaSidecar(path, normalizedFile, sidecarRunner, unit) {
   const invoked = await runSidecar(sidecarRunner, path, normalizedFile);
   if (invoked.state !== "parsed") return invoked;
   if (sidecarRefreshBlocked(invoked.parsed)) {
     return { state: "unresolved", method: sidecarFailureMethod(invoked.parsed) };
   }
-  return {
-    state: "resolved",
-    method: "sidecar",
-    content: normalizedFile,
-    startLine: 1,
-    endLine: lineCount(normalizedFile),
-  };
+  const parseError = invoked.parsed.error;
+  if (parseError === "sidecar-missing" || parseError === "sidecar-error") {
+    return { state: "unresolved", method: "sidecar-error" };
+  }
+  const parsedUnits = invoked.parsed.units ?? [];
+  if (parseError === "ambiguous" || ((parseError === null || parseError === "unresolved") && parsedUnits.length === 0)) {
+    return {
+      state: "resolved",
+      method: "sidecar",
+      content: normalizedFile,
+      startLine: 1,
+      endLine: lineCount(normalizedFile),
+    };
+  }
+  if (parseError !== null) {
+    return { state: "unresolved", method: "sidecar-unresolved" };
+  }
+  const changedUnits = sidecarUnitsChangedInRead(
+    parsedUnits,
+    normalizedFile,
+    unit.content,
+    unit.startLine,
+    unit.endLine,
+  );
+  const unitsToProject =
+    changedUnits.length > 0
+      ? changedUnits
+      : sidecarUnitsOverlappingRead(parsedUnits, unit.startLine, unit.endLine);
+  const projected = resolveSidecarUnitsProjection(normalizedFile, unitsToProject);
+  if (!projected) {
+    return { state: "unresolved", method: "sidecar-unresolved" };
+  }
+  return projected;
 }
 
 async function resolveRegionViaSidecar(unit, normalizedFile, sidecarRunner) {
@@ -277,7 +333,7 @@ export class FreshRegistry {
       if (unit.scope === "symbol") {
         resolved = await resolveSymbolUnit(unit, normalizedFile, this.sidecarRunner);
       } else if (sidecarInjected && sidecarLanguage && unit.scope === "file") {
-        resolved = await resolveFileViaSidecar(unit.path, normalizedFile, this.sidecarRunner);
+        resolved = await resolveFileViaSidecar(unit.path, normalizedFile, this.sidecarRunner, unit);
       } else if (sidecarInjected && sidecarLanguage && unit.scope === "region") {
         resolved = await resolveRegionViaSidecar(unit, normalizedFile, this.sidecarRunner);
         if (resolved.state === "pending") {

@@ -23,6 +23,34 @@ function lastRequestField(cell, field) {
   return last[field] ?? null;
 }
 
+const RESOLUTION_ATTR_RE = /resolution=\\"([^"\\]+)\\"/gu;
+
+function resolutionFromSerializedRequest(text) {
+  if (typeof text !== "string" || text.length === 0) return null;
+  const matches = [...text.matchAll(RESOLUTION_ATTR_RE)].map((match) => match[1]);
+  if (matches.length === 0) return null;
+  return matches.at(-1) ?? null;
+}
+
+async function resolutionForTurn2Cell(cell) {
+  const direct = cell.resolution ?? lastRequestField(cell, "resolution");
+  if (direct && direct !== "none") return String(direct);
+
+  const last = cell.requests?.at(-1);
+  const scanFile = typeof last?.file === "string" ? last.file : null;
+  const rawFile = scanFile?.replace(/\.scan\.json$/u, ".json") ?? null;
+  if (!rawFile || !cell.arm) return direct == null ? "—" : String(direct);
+
+  try {
+    const serialized = await readFile(join(CAPTURE, cell.arm, "requests", rawFile), "utf8");
+    const parsed = resolutionFromSerializedRequest(serialized);
+    if (parsed) return parsed;
+  } catch {
+    // fall through to stored resolution
+  }
+  return direct == null ? "—" : String(direct);
+}
+
 function sumRequestBytes(cell) {
   if (!Array.isArray(cell.requestBytes) || cell.requestBytes.length === 0) return null;
   return cell.requestBytes.reduce((total, value) => total + Number(value ?? 0), 0);
@@ -66,7 +94,7 @@ function printHeader() {
   process.stdout.write("\n");
 }
 
-function printRow({ arm, turn, cell }) {
+async function printRow({ arm, turn, cell }) {
   if (cell.missing) {
     process.stdout.write(
       [arm, turn, "—", "—", "—", "—", "—", "—"].join("\t"),
@@ -78,7 +106,10 @@ function printRow({ arm, turn, cell }) {
   const t2Exact = turn === 2 ? formatBool(cell.t2ExactNewBytes ?? lastRequestField(cell, "t2ExactNewBytes")) : "n/a";
   const siblingBytes =
     turn === 2 ? formatBool(cell.siblingBytesInRequest ?? lastRequestField(cell, "siblingBytesInRequest")) : "n/a";
-  const resolution = turn === 2 ? String(cell.resolution ?? lastRequestField(cell, "resolution") ?? "—") : "n/a";
+  const resolution =
+    turn === 2
+      ? String(await resolutionForTurn2Cell({ ...cell, arm }))
+      : "n/a";
 
   process.stdout.write(
     [
@@ -111,7 +142,7 @@ async function main() {
   for (const arm of ARMS) {
     const cells = await loadArmCells(arm);
     for (const cell of cells) {
-      printRow({ arm, turn: cell.turn ?? "?", cell });
+      await printRow({ arm, turn: cell.turn ?? "?", cell });
     }
   }
 }
