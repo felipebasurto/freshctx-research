@@ -49,6 +49,10 @@ function readObservationKey(observation) {
     const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
     return `region:${observation.path}:${selector}`;
   }
+  if (observation.scope === "symbol") {
+    if (typeof observation.selector !== "string" || observation.selector.length === 0) return null;
+    return `symbol:${observation.path}:${observation.selector}`;
+  }
   return `file:${observation.path}`;
 }
 

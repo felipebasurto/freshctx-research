@@ -259,6 +259,10 @@ function officialObservationKey(observation) {
     const selector = observation.selector ?? `${observation.startLine ?? "?"}:${observation.endLine ?? "?"}`;
     return `region:${observation.path}:${selector}`;
   }
+  if (observation.scope === "symbol") {
+    if (typeof observation.selector !== "string" || observation.selector.length === 0) return null;
+    return `symbol:${observation.path}:${observation.selector}`;
+  }
   return `file:${observation.path}`;
 }
 
@@ -629,7 +633,9 @@ export async function selectContext(payload) {
     budgetTokens: payload.budgetTokens,
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
-  const engine = createAdapterEngine();
+  const engine = createAdapterEngine(
+    payload.sidecarRunner === undefined ? {} : { sidecarRunner: payload.sidecarRunner },
+  );
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
   const activeOfficialCallIds = latestOfficialReadCallIds(payload.messages, tracked);
