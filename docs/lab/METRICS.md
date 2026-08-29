@@ -106,6 +106,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-29 | (PCR 0112 review) symbol observation keys + adapter sidecar inject; dest=`cloud-agent` env=hermes-absent | TAP 405 / 379 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0112](pcr/0112-adapter-sidecar-inject.md) |
 | 2026-08-29 | (PCR 0114) file/region sidecar refresh for py/js/ts; base `15c573e`; dest=`cloud-agent` env=hermes-absent | TAP 419 / 393 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0114](pcr/0114-file-region-sidecar-refresh.md) |
 | 2026-08-29 | (PCR 0115) Pi trial dump escaped resolution scan (Tree-sitter measure harness); base `8e436e7`; dest=`cloud-agent` | TAP 424 / 398 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0115](pcr/0115-dump-request-resolution-escape.md) |
+| 2026-08-29 | (PCR 0116) Pi/Hermes symbol-scope trial harness for settleDailyLedger; base `5bb53c3`; dest=`cloud-agent` | TAP 432 / 406 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0116](pcr/0116-pi-hermes-symbol-scope-trial.md) |
 
 Official accepted TAP remains **395 pass / 0 fail / 17 skipped / 412 total**.
 

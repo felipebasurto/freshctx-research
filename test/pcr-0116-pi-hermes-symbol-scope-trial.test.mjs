@@ -19,7 +19,7 @@ import {
   createHermesAdapter,
   createHermesStateFile,
 } from "../adapters/hermes/replay.mjs";
-import { readScopeFromHermesArgs } from "../adapters/hermes/bridge.mjs";
+import { loadState, readScopeFromHermesArgs } from "../adapters/hermes/bridge.mjs";
 import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
 import {
   exportFunctionBlock,
@@ -205,9 +205,9 @@ test("PCR 0116 Pi sidecar-off symbol read fails closed and drops vs Tree-sitter 
 });
 
 test("PCR 0116 Hermes replay tracks symbol-scope host read of settleDailyLedger", async () => {
-  const { observedSymbol, flippedFile } = await loadFixturePair();
+  const { source, observedSymbol } = await loadFixturePair();
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0116-hermes-track-"));
-  await writeFixtureWorkspace(workspace, flippedFile);
+  await writeFixtureWorkspace(workspace, source);
   const stateFile = await createHermesStateFile("freshctx-pcr-0116-hermes-track-state-");
   const adapter = createHermesAdapter({ stateFile, budgetChars: 80_000 });
   const ctx = { cwd: workspace };
@@ -220,11 +220,22 @@ test("PCR 0116 Hermes replay tracks symbol-scope host read of settleDailyLedger"
   ];
 
   await adapter.onTurnComplete(structuredClone(persisted), ctx);
+  const state = await loadState(stateFile);
+  assert.deepEqual(state.calls[callId], {
+    path: TARGET_FILE,
+    scope: "symbol",
+    selector: TARGET_SYMBOL,
+  });
+  assert.equal(state.tracked[callId]?.scope, "symbol");
+  assert.equal(state.tracked[callId]?.selector, TARGET_SYMBOL);
+
   const selectResult = await adapter.onSelectContext(structuredClone(persisted), ctx, {
     budgetChars: 80_000,
   });
   assert.ok(selectResult?.applied);
-  assert.match(selectResult.projectionText ?? "", /settleDailyLedger/u);
+  assert.match(selectResult.projectionText ?? "", /"ST0"/u);
+  assert.doesNotMatch(selectResult.projectionText ?? "", /"SW0"/u);
+  assert.match(selectResult.projectionText ?? "", /resolution="sidecar"/u);
 });
 
 test("PCR 0116 Hermes Tree-sitter symbol refresh omits settleWeeklyLedger after flip", async () => {
