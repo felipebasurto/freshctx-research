@@ -36,20 +36,78 @@ async function readSource(provider, filePath) {
   throw new TypeError("source provider must be a function, Map, or object");
 }
 
-async function resolveSymbolUnit(unit, normalizedFile, sidecarRunner) {
+const SIDECAR_TREE_SITTER_EXTENSIONS = new Set([".py", ".js", ".mjs", ".cjs", ".ts", ".tsx"]);
+
+function sidecarTreeSitterLanguage(path) {
+  const base = String(path).split("/").at(-1) ?? "";
+  const dot = base.lastIndexOf(".");
+  const extension = dot === -1 ? "" : base.slice(dot).toLowerCase();
+  return SIDECAR_TREE_SITTER_EXTENSIONS.has(extension);
+}
+
+function sliceFileLines(normalizedFile, startLine, endLine) {
+  const lines = normalizedFile.split("\n");
+  return lines.slice(startLine - 1, endLine).join("\n");
+}
+
+function sidecarFailureMethod(parsed) {
+  if (parsed?.error === "ambiguous") return "sidecar-ambiguous";
+  if (parsed?.error === "parse-broken") return "sidecar-unresolved";
+  return "sidecar-unresolved";
+}
+
+function sidecarRefreshBlocked(parsed) {
+  return parsed?.error === "parse-broken";
+}
+
+async function runSidecar(sidecarRunner, path, normalizedFile) {
   if (!sidecarRunner) {
     return { state: "unresolved", method: "sidecar-missing" };
   }
   let parsed;
   try {
-    parsed = await sidecarRunner({ path: unit.path, bytes: normalizedFile });
+    parsed = await sidecarRunner({ path, bytes: normalizedFile });
   } catch {
     return { state: "unresolved", method: "sidecar-error" };
   }
-  if (!parsed || parsed.error) {
-    return { state: "unresolved", method: parsed?.error === "ambiguous" ? "sidecar-ambiguous" : "sidecar-unresolved" };
+  if (!parsed) {
+    return { state: "unresolved", method: "sidecar-unresolved" };
   }
-  const matches = (parsed.units ?? []).filter(
+  return { state: "parsed", parsed };
+}
+
+async function invokeSidecar(sidecarRunner, path, normalizedFile) {
+  const invoked = await runSidecar(sidecarRunner, path, normalizedFile);
+  if (invoked.state !== "parsed") return invoked;
+  if (sidecarRefreshBlocked(invoked.parsed)) {
+    return { state: "unresolved", method: sidecarFailureMethod(invoked.parsed) };
+  }
+  if (invoked.parsed.error === "unresolved" || (invoked.parsed.units ?? []).length === 0) {
+    return { state: "unresolved", method: "sidecar-unresolved" };
+  }
+  return invoked;
+}
+
+function sidecarUnitsForSpan(units, startLine, endLine) {
+  return (units ?? []).filter(
+    (candidate) => candidate.startLine === startLine && candidate.endLine === endLine,
+  );
+}
+
+function resolveSidecarUnitSpan(normalizedFile, match) {
+  return {
+    state: "resolved",
+    method: "sidecar",
+    content: sliceFileLines(normalizedFile, match.startLine, match.endLine),
+    startLine: match.startLine,
+    endLine: match.endLine,
+  };
+}
+
+async function resolveSymbolUnit(unit, normalizedFile, sidecarRunner) {
+  const invoked = await invokeSidecar(sidecarRunner, unit.path, normalizedFile);
+  if (invoked.state !== "parsed") return invoked;
+  const matches = (invoked.parsed.units ?? []).filter(
     (candidate) => candidate.selector === unit.selector || candidate.qualifiedSelector === unit.selector,
   );
   if (matches.length === 0) {
@@ -58,16 +116,38 @@ async function resolveSymbolUnit(unit, normalizedFile, sidecarRunner) {
   if (matches.length > 1) {
     return { state: "unresolved", method: "sidecar-ambiguous" };
   }
-  const match = matches[0];
-  const lines = normalizedFile.split("\n");
-  const content = lines.slice(match.startLine - 1, match.endLine).join("\n");
+  return resolveSidecarUnitSpan(normalizedFile, matches[0]);
+}
+
+async function resolveFileViaSidecar(path, normalizedFile, sidecarRunner) {
+  const invoked = await runSidecar(sidecarRunner, path, normalizedFile);
+  if (invoked.state !== "parsed") return invoked;
+  if (sidecarRefreshBlocked(invoked.parsed)) {
+    return { state: "unresolved", method: sidecarFailureMethod(invoked.parsed) };
+  }
   return {
     state: "resolved",
     method: "sidecar",
-    content,
-    startLine: match.startLine,
-    endLine: match.endLine,
+    content: normalizedFile,
+    startLine: 1,
+    endLine: lineCount(normalizedFile),
   };
+}
+
+async function resolveRegionViaSidecar(unit, normalizedFile, sidecarRunner) {
+  const invoked = await runSidecar(sidecarRunner, unit.path, normalizedFile);
+  if (invoked.state !== "parsed") return invoked;
+  if (sidecarRefreshBlocked(invoked.parsed)) {
+    return { state: "unresolved", method: sidecarFailureMethod(invoked.parsed) };
+  }
+  const matches = sidecarUnitsForSpan(invoked.parsed.units, unit.startLine, unit.endLine);
+  if (matches.length === 0) {
+    return { state: "pending" };
+  }
+  if (matches.length > 1) {
+    return { state: "pending" };
+  }
+  return resolveSidecarUnitSpan(normalizedFile, matches[0]);
 }
 
 export class FreshRegistry {
@@ -183,9 +263,22 @@ export class FreshRegistry {
       }
 
       const normalizedFile = currentFileContent.replaceAll("\r\n", "\n");
+      const sidecarLanguage = sidecarTreeSitterLanguage(unit.path);
+      const sidecarInjected = Boolean(this.sidecarRunner);
       let resolved;
       if (unit.scope === "symbol") {
         resolved = await resolveSymbolUnit(unit, normalizedFile, this.sidecarRunner);
+      } else if (sidecarInjected && sidecarLanguage && unit.scope === "file") {
+        resolved = await resolveFileViaSidecar(unit.path, normalizedFile, this.sidecarRunner);
+      } else if (sidecarInjected && sidecarLanguage && unit.scope === "region") {
+        resolved = await resolveRegionViaSidecar(unit, normalizedFile, this.sidecarRunner);
+        if (resolved.state === "pending") {
+          resolved = resolveRegion({
+            previousContent: unit.content,
+            currentFileContent: normalizedFile,
+            anchors: unit.anchors,
+          });
+        }
       } else if (unit.scope === "file") {
         resolved = {
           state: "resolved",
