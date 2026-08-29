@@ -4,6 +4,7 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { FreshCtxEngine } from "../../src/index.mjs";
+import { createAdapterEngine } from "../engine-factory.mjs";
 import {
   dropUnservedReadToolPairs,
   latestReadCallIdsByObservation,
@@ -177,11 +178,11 @@ function replaceCapturedReads(
  * region synchronization.
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
-  const engine = new FreshCtxEngine();
+  const engine = createAdapterEngine();
   const callToUnit = new Map<string, string>();
   const callMeta = new Map<string, {
     path: string;
-    scope: "file" | "region";
+    scope: "file" | "region" | "symbol";
     startLine?: number;
     endLine?: number;
     selector?: string;
@@ -264,6 +265,27 @@ export default function freshCtxExtension(pi: ExtensionAPI) {
           scope: "region",
           startLine: scopeMeta.startLine,
           endLine: scopeMeta.endLine,
+          selector: scopeMeta.selector,
+        });
+        return;
+      }
+
+      if (scopeMeta.scope === "symbol") {
+        const content = textFromContent(event.content);
+        if (!content) return;
+        const symbolLineCount = content.split("\n").length;
+        const unit = engine.trackRead({
+          path: file.path,
+          content,
+          scope: "symbol",
+          selector: scopeMeta.selector,
+          startLine: 1,
+          endLine: symbolLineCount,
+        });
+        callToUnit.set(event.toolCallId, unit.id);
+        callMeta.set(event.toolCallId, {
+          path: file.path,
+          scope: "symbol",
           selector: scopeMeta.selector,
         });
         return;

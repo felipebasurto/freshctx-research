@@ -19,11 +19,12 @@ export async function createHermesStateFile(prefix = "freshctx-hermes-state-") {
  * Hermes `select_context()` is request-only: persisted conversation messages
  * stay as Hermes recorded them; only the returned copy goes to the provider.
  */
-export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
+export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CHARS, sidecarRunner } = {}) {
   if (!stateFile) throw new Error("Hermes adapter requires a stateFile path");
 
   return {
     stateFile,
+    sidecarRunner,
 
     async onTurnComplete(messages, ctx) {
       return observeTurn({
@@ -52,6 +53,7 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
           budgetChars: budget,
           incomingMessage,
           conversationMessages,
+          sidecarRunner,
         });
       } catch {
         return undefined;
@@ -72,7 +74,10 @@ export function buildReadToolCall({
   limit,
 }) {
   const args = { path };
-  if (scope === "region") {
+  if (scope === "symbol") {
+    args.scope = "symbol";
+    if (selector != null) args.selector = selector;
+  } else if (scope === "region") {
     args.scope = "region";
     if (startLine != null) args.startLine = startLine;
     if (endLine != null) args.endLine = endLine;

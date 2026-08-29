@@ -15,7 +15,7 @@ import {
   servedReadCallIdsFromProjection,
 } from "../request-prune.mjs";
 import { SHELL_TOOLS, trackedReadTools, tryTrackShellRead } from "../shell-read.mjs";
-import { FreshCtxEngine } from "../../src/index.mjs";
+import { createAdapterEngine } from "../engine-factory.mjs";
 
 const PI_READ_TOOLS = trackedReadTools(new Set(["read"]));
 
@@ -129,6 +129,12 @@ export function normalizePiReadScope(scopeMeta, fileLineCount) {
 
 export function readScopeFromInput(input, fileLineCount) {
   if (!input || typeof input !== "object") return { scope: "file" };
+  if (input.scope === "symbol") {
+    if (typeof input.selector === "string" && input.selector.length > 0) {
+      return { scope: "symbol", selector: input.selector };
+    }
+    return { scope: "file" };
+  }
   if (input.scope === "region") {
     return normalizePiReadScope(
       {
@@ -204,8 +210,10 @@ export function messageText(messages) {
  * Pi's `context` hook is request-only: persisted session messages stay as Pi
  * recorded them; only the returned copy is sent to the provider.
  */
-export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
-  const engine = new FreshCtxEngine();
+export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS, sidecarRunner } = {}) {
+  const engine = createAdapterEngine(
+    sidecarRunner === undefined ? {} : { sidecarRunner },
+  );
   const callToUnit = new Map();
   const callMeta = new Map();
   const lastInjectedRevision = new Map();
@@ -291,6 +299,27 @@ export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS } = {}) {
             scope: "region",
             startLine: scopeMeta.startLine,
             endLine: scopeMeta.endLine,
+            selector: scopeMeta.selector,
+          });
+          return;
+        }
+
+        if (scopeMeta.scope === "symbol") {
+          const content = observedToolContent(event.content);
+          if (!content) return;
+          const symbolLineCount = lineCount(content);
+          const unit = engine.trackRead({
+            path: file.path,
+            content,
+            scope: "symbol",
+            selector: scopeMeta.selector,
+            startLine: 1,
+            endLine: symbolLineCount,
+          });
+          callToUnit.set(event.toolCallId, unit.id);
+          callMeta.set(event.toolCallId, {
+            path: file.path,
+            scope: "symbol",
             selector: scopeMeta.selector,
           });
           return;
@@ -443,7 +472,10 @@ export function buildReadToolCall({
   limit,
 }) {
   const args = { path };
-  if (scope === "region") {
+  if (scope === "symbol") {
+    args.scope = "symbol";
+    if (selector != null) args.selector = selector;
+  } else if (scope === "region") {
     args.scope = "region";
     if (startLine != null) args.startLine = startLine;
     if (endLine != null) args.endLine = endLine;
