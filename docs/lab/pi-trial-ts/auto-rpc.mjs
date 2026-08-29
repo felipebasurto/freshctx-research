@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 
 import {
   assertT1HostReadTools,
-  effectiveToolsFromEvents,
   envWithForceHostRead,
   piArgsForArm,
   t1HostReadToolsValid,
+  toolsFromExecutionStartEvents,
 } from "./auto-rpc-host-read.mjs";
 import {
   ARMS,
@@ -239,7 +239,7 @@ async function runArm(arm) {
         requests.push({ file: name, ...scan });
       }
       const lastRequest = requests.at(-1) ?? null;
-      const tools = effectiveToolsFromEvents(events, { forceHostRead: true });
+      const tools = toolsFromExecutionStartEvents(events);
       if (cell.id === "t1-read") {
         assertT1HostReadTools(tools, { arm });
       }

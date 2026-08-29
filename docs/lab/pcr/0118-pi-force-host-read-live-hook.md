@@ -18,18 +18,19 @@ Pi emits `tool_execution_start` before `tool_call`, so RPC capture saw pre-mutat
 Leftover dump on dest `freshctx-measure-46169f50` before the throw: `nothing` 9335 SW0 yes resolution none; `freshctx-no-ts` 11394 SW0 yes whole-file; `freshctx-ts` 5212 SW0 omitted resolution sidecar.
 File-scope Tree-sitter still pruned sibling.
 Not a valid symbol-scope live.
-The harness must intercept live Pi tool calls on `tool_execution_start` and `tool_call`, and normalize recorded t1 args to `hostReadToolArgs()` before `assertT1HostReadTools`.
+The harness must intercept live Pi tool calls on `tool_execution_start` and `tool_call`.
+Recorded t1 args must be the live RPC capture with no post-hoc rewrite before `assertT1HostReadTools`.
 
 ## What we did
 
 1. Updated `docs/lab/pi-trial-ts/force-host-read-core.mjs` to register `tool_execution_start` and `tool_call` when `PI_TRIAL_FORCE_HOST_READ=1`.
    `handleForceHostReadExecutionStart` mutates `event.args` in place.
-   `handleForceHostReadToolCall` still mutates `event.input` and blocks bash/grep.
+   `handleForceHostReadToolCall` always mutates `event.input` on read, even after `tool_execution_start` on the same call.
 2. Added `docs/lab/pi-trial-ts/force-host-read.ts` as the live Pi `-e` entry (matches `dump-request.ts`).
    `piArgsForArm` now loads `.ts` instead of `.mjs`.
-3. Added `effectiveToolsFromEvents` in `docs/lab/pi-trial-ts/auto-rpc-host-read.mjs`.
-   `auto-rpc.mjs` applies it before `assertT1HostReadTools`.
-4. Added `test/pcr-0118-pi-force-host-read-live.test.mjs` (11 tests) for both hooks, TypeScript entry path, and effective capture normalization.
+3. `auto-rpc.mjs` records raw `tool_execution_start` args via `toolsFromExecutionStartEvents`.
+   No capture rewrite before assert.
+4. Added `test/pcr-0118-pi-force-host-read-live.test.mjs` (10 tests) for both hooks on one call, TypeScript entry path, and raw capture fail-close.
 5. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout v0.2, door, or lock.
 6. Did not `--relock` or change benchmark weights.
 7. Model remains `deepseek-v4-flash` only.
@@ -89,7 +90,8 @@ Pi docs place `tool_execution_start` before `tool_call`.
 Mock tests in PCR 0117 only wired `tool_call`.
 Live RPC capture reads `tool_execution_start` args.
 Extension now hooks both events and loads through `force-host-read.ts`.
-`effectiveToolsFromEvents` aligns recorded t1 args with `hostReadToolArgs()` before assert.
+`tool_call` always mutates live `event.input` after `tool_execution_start` on the same call.
+Assert reads raw RPC capture only.
 Strict fail-close on bash and offset reads is unchanged.
 No live Pi/Hermes rerun in this PR.
 

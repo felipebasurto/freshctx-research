@@ -6,12 +6,12 @@ import test from "node:test";
 import {
   FORCE_HOST_READ_ENV,
   assertT1HostReadTools,
-  effectiveToolsFromEvents,
   envWithForceHostRead,
   forceHostReadExtensionPath,
   piArgsForArm,
   readToolMatchesHostArgs,
   t1HostReadToolsValid,
+  toolsFromExecutionStartEvents,
 } from "../docs/lab/pi-trial-ts/auto-rpc-host-read.mjs";
 import {
   applyForceHostReadInput,
@@ -69,22 +69,26 @@ test("PCR 0118 handleForceHostReadExecutionStart mutates tool_execution_start ar
   assert.deepEqual(event.args, hostReadToolArgs());
 });
 
-test("PCR 0118 registerForceHostReadExtension hooks tool_execution_start and tool_call", () => {
+test("PCR 0118 both hooks on one call mutate args and input after execution_start", () => {
   withForceHostReadEnv(() => {
-    const startPi = mockPi();
-    registerForceHostReadExtension(startPi);
-    assert.equal(typeof startPi.handlers.get("tool_execution_start"), "function");
+    const pi = mockPi();
+    registerForceHostReadExtension(pi);
 
-    const startEvent = { toolName: "read", args: { path: TARGET_FILE, offset: 3, limit: 9 } };
-    startPi.handlers.get("tool_execution_start")(startEvent);
+    const startEvent = {
+      toolCallId: "call-1",
+      toolName: "read",
+      args: { path: TARGET_FILE, offset: 1, limit: 2000 },
+    };
+    const callEvent = {
+      toolCallId: "call-1",
+      toolName: "read",
+      input: { path: TARGET_FILE, offset: 1, limit: 2000 },
+    };
+
+    pi.handlers.get("tool_execution_start")(startEvent);
+    pi.handlers.get("tool_call")(callEvent);
+
     assert.deepEqual(startEvent.args, hostReadToolArgs());
-
-    const callPi = mockPi();
-    registerForceHostReadExtension(callPi);
-    assert.equal(typeof callPi.handlers.get("tool_call"), "function");
-
-    const callEvent = { toolName: "read", input: { path: TARGET_FILE, limit: 2 } };
-    callPi.handlers.get("tool_call")(callEvent);
     assert.deepEqual(callEvent.input, hostReadToolArgs());
   });
 });
@@ -107,42 +111,44 @@ test("PCR 0118 registerForceHostReadExtension no-ops hooks when env is unset", (
   }
 });
 
-test("PCR 0118 effectiveToolsFromEvents applies force-host-read before assert", () => {
-  withForceHostReadEnv(() => {
-    const events = [
-      {
-        type: "tool_execution_start",
-        toolCallId: "call-1",
-        toolName: "read",
-        args: { path: TARGET_FILE, offset: 1, limit: 2000 },
-      },
-    ];
-    const tools = effectiveToolsFromEvents(events, { forceHostRead: true });
-    assert.deepEqual(tools, [{ toolCallId: "call-1", toolName: "read", args: hostReadToolArgs() }]);
-    assert.doesNotThrow(() => assertT1HostReadTools(tools, { arm: "freshctx-ts" }));
-  });
+test("PCR 0118 toolsFromExecutionStartEvents records live args without rewrite", () => {
+  const events = [
+    {
+      type: "tool_execution_start",
+      toolCallId: "call-1",
+      toolName: "read",
+      args: { path: TARGET_FILE, offset: 1, limit: 2000 },
+    },
+  ];
+  const tools = toolsFromExecutionStartEvents(events);
+  assert.deepEqual(tools, [
+    {
+      toolCallId: "call-1",
+      toolName: "read",
+      args: { path: TARGET_FILE, offset: 1, limit: 2000 },
+    },
+  ]);
+  assert.throws(() => assertT1HostReadTools(tools, { arm: "freshctx-ts" }), /offset\/limit/u);
 });
 
-test("PCR 0118 effectiveToolsFromEvents leaves bash visible for fail-close assert", () => {
-  withForceHostReadEnv(() => {
-    const events = [
-      {
-        type: "tool_execution_start",
-        toolCallId: "call-bash",
-        toolName: "bash",
-        args: { command: "grep ST0 src/settlement.ts" },
-      },
-      {
-        type: "tool_execution_start",
-        toolCallId: "call-read",
-        toolName: "read",
-        args: { path: TARGET_FILE, offset: 1, limit: 2000 },
-      },
-    ];
-    const tools = effectiveToolsFromEvents(events, { forceHostRead: true });
-    assert.equal(t1HostReadToolsValid(tools), false);
-    assert.throws(() => assertT1HostReadTools(tools, { arm: "nothing" }), /leftover bash/u);
-  });
+test("PCR 0118 toolsFromExecutionStartEvents leaves bash for fail-close assert", () => {
+  const events = [
+    {
+      type: "tool_execution_start",
+      toolCallId: "call-bash",
+      toolName: "bash",
+      args: { command: "grep ST0 src/settlement.ts" },
+    },
+    {
+      type: "tool_execution_start",
+      toolCallId: "call-read",
+      toolName: "read",
+      args: { path: TARGET_FILE, offset: 1, limit: 2000 },
+    },
+  ];
+  const tools = toolsFromExecutionStartEvents(events);
+  assert.equal(t1HostReadToolsValid(tools), false);
+  assert.throws(() => assertT1HostReadTools(tools, { arm: "nothing" }), /leftover bash/u);
 });
 
 test("PCR 0118 piArgsForArm loads force-host-read.ts extension", () => {

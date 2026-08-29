@@ -15,11 +15,11 @@ export function applyForceHostReadInput(input) {
 }
 
 export function handleForceHostReadToolCall(event, state) {
-  if (state.hostReadSatisfied && event.toolName === "read") return null;
-
   if (event.toolName === "read") {
-    applyForceHostReadInput(event.input);
-    state.hostReadSatisfied = true;
+    if (event.input && typeof event.input === "object") {
+      applyForceHostReadInput(event.input);
+      state.hostReadSatisfied = true;
+    }
     return null;
   }
 
@@ -34,8 +34,22 @@ export function handleForceHostReadToolCall(event, state) {
 }
 
 export function handleForceHostReadExecutionStart(event, state) {
-  if (!event.args || typeof event.args !== "object") return null;
-  return handleForceHostReadToolCall({ toolName: event.toolName, input: event.args }, state);
+  if (event.toolName === "read") {
+    if (event.args && typeof event.args === "object") {
+      applyForceHostReadInput(event.args);
+      state.hostReadSatisfied = true;
+    }
+    return null;
+  }
+
+  if (BLOCKED_T1_TOOLS.has(event.toolName)) {
+    return {
+      block: true,
+      reason: "Pi trial t1-read requires read with scope=symbol selector settleDailyLedger",
+    };
+  }
+
+  return null;
 }
 
 export function registerForceHostReadExtension(pi) {
