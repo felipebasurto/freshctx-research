@@ -26,11 +26,12 @@ Recorded t1 args must be the live RPC capture with no post-hoc rewrite before `a
 1. Updated `docs/lab/pi-trial-ts/force-host-read-core.mjs` to register `tool_execution_start` and `tool_call` when `PI_TRIAL_FORCE_HOST_READ=1`.
    `handleForceHostReadExecutionStart` mutates `event.args` in place.
    `handleForceHostReadToolCall` always mutates `event.input` on read, even after `tool_execution_start` on the same call.
+   Registration returns `{ block: true }` from both hooks so bash/grep/edit never run on live Pi.
 2. Added `docs/lab/pi-trial-ts/force-host-read.ts` as the live Pi `-e` entry (matches `dump-request.ts`).
    `piArgsForArm` now loads `.ts` instead of `.mjs`.
 3. `auto-rpc.mjs` records raw `tool_execution_start` args via `toolsFromExecutionStartEvents`.
    No capture rewrite before assert.
-4. Added `test/pcr-0118-pi-force-host-read-live.test.mjs` (10 tests) for both hooks on one call, TypeScript entry path, and raw capture fail-close.
+4. Added `test/pcr-0118-pi-force-host-read-live.test.mjs` (13 tests) for both hooks on one call, wrapper block return, TypeScript entry path, and raw capture fail-close.
 5. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout v0.2, door, or lock.
 6. Did not `--relock` or change benchmark weights.
 7. Model remains `deepseek-v4-flash` only.

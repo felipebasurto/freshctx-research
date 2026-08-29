@@ -62,11 +62,11 @@ export function registerForceHostReadExtension(pi) {
 
   pi.on("tool_execution_start", (event) => {
     if (!forceHostReadEnabled()) return;
-    handleForceHostReadExecutionStart(event, state);
+    return handleForceHostReadExecutionStart(event, state);
   });
 
   pi.on("tool_call", (event) => {
     if (!forceHostReadEnabled()) return;
-    handleForceHostReadToolCall(event, state);
+    return handleForceHostReadToolCall(event, state);
   });
 }

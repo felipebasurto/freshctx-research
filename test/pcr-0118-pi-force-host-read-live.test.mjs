@@ -185,6 +185,42 @@ test("PCR 0118 applyForceHostReadInput unchanged from PCR 0117", () => {
   assert.deepEqual(input, hostReadToolArgs());
 });
 
+test("PCR 0118 registerForceHostReadExtension returns block from tool_execution_start", () => {
+  withForceHostReadEnv(() => {
+    const pi = mockPi();
+    registerForceHostReadExtension(pi);
+    const blocked = pi.handlers.get("tool_execution_start")({
+      toolName: "bash",
+      args: { command: "grep ST0 src/settlement.ts" },
+    });
+    assert.equal(blocked?.block, true);
+  });
+});
+
+test("PCR 0118 registerForceHostReadExtension returns block from tool_call", () => {
+  withForceHostReadEnv(() => {
+    const pi = mockPi();
+    registerForceHostReadExtension(pi);
+    const blocked = pi.handlers.get("tool_call")({
+      toolName: "grep",
+      input: { pattern: "ST0", path: TARGET_FILE },
+    });
+    assert.equal(blocked?.block, true);
+  });
+});
+
+test("PCR 0118 force-host-read.mjs wrapper returns block from registered tool_call", () => {
+  withForceHostReadEnv(() => {
+    const pi = mockPi();
+    forceHostReadExtension(pi);
+    const blocked = pi.handlers.get("tool_call")({
+      toolName: "edit",
+      input: { path: TARGET_FILE, oldText: "ST0", newText: "ST1" },
+    });
+    assert.equal(blocked?.block, true);
+  });
+});
+
 test("PCR 0118 handleForceHostReadToolCall blocks bash after symbol read", () => {
   const state = { hostReadSatisfied: true };
   const blocked = handleForceHostReadToolCall(
