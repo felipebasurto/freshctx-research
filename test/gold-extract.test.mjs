@@ -38,7 +38,9 @@ test("sabotaged sidecar cannot change sampler-trace gold", async () => {
     bytes: "def other():\n    return 9\n",
   });
   const again = extractGoldFromTrace(trace, { sidecarUnits: sidecar.units });
+  const engineAgain = extractGoldFromTrace(trace, { engineUnits: sidecar.units });
   assert.equal(gold.sha256, again.sha256);
+  assert.equal(gold.sha256, engineAgain.sha256);
   assert.equal(gold.sha256, trace.goldExtract.postSha256);
 });
 

@@ -33,7 +33,11 @@ Use a **sidecar process** at `sidecar/treesitter/`.
 - Selected units still carry current bytes. No `unchanged` or digest-only
   selected unit.
 - Gold extractors (`bench/gold-extract.mjs`) read generator offsets or
-  sandbox bytes. They must not call the sidecar resolve API.
+  sandbox bytes. They must not call the Isolated Semantic Engine resolve API.
+  Symbol candidates may be enumerated by `bench/independent-symbols.mjs`,
+  which is a second program. Python uses the stdlib `ast` module. Other
+  supported languages use a bench-only declaration scan. Gold bytes still
+  come from generator offsets after the mutation, never from engine spans.
 - Neovim C and Lua stay out of this phase.
 
 ## Consequences

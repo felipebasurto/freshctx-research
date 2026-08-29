@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
+  assertNoEngineImport,
   assertNoResolverImport,
   classifyPath,
   generateSamplerTraces,
@@ -59,11 +60,31 @@ test("classifyPath marks generated and escaped paths", () => {
   assert.equal(classifyPath("src/ok.py").reject, null);
 });
 
-test("sampler source does not call resolveRegion", async () => {
+test("sampler source does not call resolveRegion or Isolated Semantic Engine", async () => {
   const root = dirname(dirname(fileURLToPath(import.meta.url)));
   const source = await readFile(join(root, "bench/unit-sampler.mjs"), "utf8");
   assert.equal(assertNoResolverImport(source), true);
+  assert.equal(assertNoEngineImport(source), true);
   assert.equal(source.includes("from \"../src/anchors.mjs\""), false);
+  assert.equal(/^import\s+.*treesitter/m.test(source), false);
+});
+
+test("symbol scope samples functions through the independent enumerator", () => {
+  const files = {
+    "src/a.py": "def alpha():\n    return 1\n\ndef beta():\n    return 2\n",
+    "vendor/lib.py": "def lib():\n    return 0\n",
+  };
+  const sample = sampleUnits({
+    commit: COMMIT,
+    scenario: "interior-edit",
+    files,
+    n: 10,
+    unitScope: "symbol",
+  });
+  assert.ok(sample.selected.every((row) => row.scope === "symbol"));
+  assert.ok(sample.selected.some((row) => row.qualifiedSelector === "function alpha"));
+  assert.ok(sample.selected.some((row) => row.qualifiedSelector === "function beta"));
+  assert.ok(sample.rejected.some((row) => row.reason === "vendored"));
 });
 
 test("generateSamplerTraces writes candidates and traces", async () => {

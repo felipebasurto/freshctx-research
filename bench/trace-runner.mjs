@@ -35,7 +35,7 @@ export async function runTrace(trace, baselineName, { workspaceRoot } = {}) {
       if (event.type === "read") {
         const fileContent = await workspace.read(event.path);
         let content = fileContent;
-        if (event.scope === "region") {
+        if (event.scope === "region" || event.scope === "symbol") {
           const lines = fileContent.split("\n");
           content = lines.slice(event.startLine - 1, event.endLine).join("\n");
         }

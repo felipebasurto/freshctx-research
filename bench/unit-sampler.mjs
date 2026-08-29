@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, sep } from "node:path";
 
+import { enumerateIndependentSymbols } from "./independent-symbols.mjs";
+
 const EXCLUDE_DIR_NAMES = new Set([
   "node_modules",
   "vendor",
@@ -71,13 +73,38 @@ export function fileCandidate({ commit, scenario, repoId, path, content }) {
   };
 }
 
+export function symbolCandidate({ commit, scenario, repoId, unit, content }) {
+  const selector = `${unit.path}::${unit.qualifiedSelector}`;
+  return {
+    repo: repoId,
+    path: unit.path,
+    selector,
+    scope: "symbol",
+    kind: unit.kind,
+    shortSelector: unit.selector,
+    qualifiedSelector: unit.qualifiedSelector,
+    language: unit.language,
+    startLine: unit.startLine,
+    endLine: unit.endLine,
+    byteRange: unit.byteRange,
+    sha256: unit.sha256,
+    rankKey: rankKey(commit, selector, scenario),
+    content,
+  };
+}
+
 export function sampleUnits({
   commit,
   scenario,
   repoId = "fixture",
   files,
   n = 10,
+  unitScope = "file",
+  enumerateSymbols = enumerateIndependentSymbols,
 }) {
+  if (unitScope !== "file" && unitScope !== "symbol") {
+    throw new Error(`unsupported unitScope: ${unitScope}`);
+  }
   const rejected = [];
   const eligible = [];
   for (const [path, content] of Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) {
@@ -86,13 +113,40 @@ export function sampleUnits({
       rejected.push({
         repo: repoId,
         path,
-        selector: `${path}::file`,
+        selector: `${path}::${unitScope === "symbol" ? "symbol" : "file"}`,
         reason: verdict.reject,
         rankKey: rankKey(commit, `${path}::file`, scenario),
       });
       continue;
     }
-    eligible.push(fileCandidate({ commit, scenario, repoId, path, content }));
+    if (unitScope === "file") {
+      eligible.push(fileCandidate({ commit, scenario, repoId, path, content }));
+      continue;
+    }
+    const extracted = enumerateSymbols({ path, bytes: content });
+    if (extracted.error === "parser-not-implemented") {
+      rejected.push({
+        repo: repoId,
+        path,
+        selector: `${path}::symbol`,
+        reason: "parser-not-implemented",
+        rankKey: rankKey(commit, `${path}::symbol`, scenario),
+      });
+      continue;
+    }
+    if (extracted.error || extracted.units.length === 0) {
+      rejected.push({
+        repo: repoId,
+        path,
+        selector: `${path}::symbol`,
+        reason: extracted.error ?? "no-symbol-units",
+        rankKey: rankKey(commit, `${path}::symbol`, scenario),
+      });
+      continue;
+    }
+    for (const unit of extracted.units) {
+      eligible.push(symbolCandidate({ commit, scenario, repoId, unit, content }));
+    }
   }
   eligible.sort((a, b) => (a.rankKey < b.rankKey ? -1 : a.rankKey > b.rankKey ? 1 : a.selector.localeCompare(b.selector)));
   const selected = eligible.slice(0, n).map(({ content, ...rest }) => rest);
@@ -130,7 +184,7 @@ async function walkFiles(absRoot, rel = "") {
   return out;
 }
 
-export async function sampleWorkspace({ workspaceRoot, commit, scenario, repoId, n = 10 }) {
+export async function sampleWorkspace({ workspaceRoot, commit, scenario, repoId, n = 10, unitScope = "file" }) {
   const files = {};
   for (const rel of await walkFiles(workspaceRoot)) {
     const verdict = classifyPath(rel);
@@ -140,19 +194,21 @@ export async function sampleWorkspace({ workspaceRoot, commit, scenario, repoId,
     }
     files[rel] = await readFile(join(workspaceRoot, rel), "utf8");
   }
-  return sampleUnits({ commit, scenario, repoId, files, n });
+  return sampleUnits({ commit, scenario, repoId, files, n, unitScope });
 }
 
 export function tracesFromSample({ sample, family = "interior-edit", repository = "synthetic://sampler", license = "MIT" }) {
   return sample.selected.map((unit) => {
     const body = sample.bodies[unit.path];
-    const firstLine = body.split("\n")[0] ?? "";
-    const mutated = body.replace(firstLine, `${firstLine} // sampler interior edit`);
+    const unitLines = body.split("\n").slice(unit.startLine - 1, unit.endLine);
+    const firstLine = unitLines[0] ?? "";
+    const replacement = `${firstLine} // sampler interior edit`;
+    const mutated = body.replace(firstLine, replacement);
     const gold = mutated
       .split("\n")
       .slice(unit.startLine - 1, unit.endLine)
       .join("\n");
-    const replacement = `${firstLine} // sampler interior edit`;
+    const readSelector = unit.qualifiedSelector ?? unit.selector;
     return {
       schemaVersion: 1,
       name: `${sample.selected[0] ? unit.repo : "repo"}/${family}/${unit.selector.replaceAll("/", "-")}`,
@@ -162,38 +218,42 @@ export function tracesFromSample({ sample, family = "interior-edit", repository 
         {
           type: "read",
           path: unit.path,
-          scope: "file",
+          scope: unit.scope ?? "file",
           startLine: unit.startLine,
           endLine: unit.endLine,
-          selector: unit.selector,
+          selector: readSelector,
         },
         {
           type: "capture-request",
-          task: `review ${unit.selector}`,
+          task: `review ${readSelector}`,
           budgetChars: 12000,
-          requiredUnits: [{ path: unit.path, selector: unit.selector, sha256: unit.sha256 }],
+          requiredUnits: [{ path: unit.path, selector: readSelector, sha256: unit.sha256 }],
         },
         {
           type: "replace-exact",
           path: unit.path,
           expected: firstLine,
-          replacement: `${firstLine} // sampler interior edit`,
+          replacement,
         },
         {
           type: "capture-request",
-          task: `review ${unit.selector}`,
+          task: `review ${readSelector}`,
           budgetChars: 12000,
-          requiredUnits: [{ path: unit.path, selector: unit.selector, sha256: sha256Bytes(gold) }],
+          requiredUnits: [{ path: unit.path, selector: readSelector, sha256: sha256Bytes(gold) }],
         },
       ],
       goldExtract: {
         source: "generator-offsets",
         path: unit.path,
+        scope: unit.scope ?? "file",
+        selector: unit.shortSelector ?? null,
+        qualifiedSelector: unit.qualifiedSelector ?? null,
         startLine: unit.startLine,
         endLine: unit.endLine,
         byteRange: unit.byteRange,
         preSha256: unit.sha256,
         postSha256: sha256Bytes(gold),
+        enumerator: unit.scope === "symbol" ? "independent-compiler-family" : null,
         mutation: { type: "replace-exact", expected: firstLine, replacement },
       },
     };
@@ -240,4 +300,8 @@ export async function generateSamplerTraces({ root, manifest, pack, files }) {
 export function assertNoResolverImport(source) {
   const importRe = /^import\s+.*from\s+["'][^"']*(anchors|registry)\.mjs["']/m;
   return !importRe.test(source);
+}
+
+export function assertNoEngineImport(source) {
+  return !/^import\s+.*from\s+["'][^"']*treesitter/m.test(source);
 }
