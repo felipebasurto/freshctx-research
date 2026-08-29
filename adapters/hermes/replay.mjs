@@ -72,7 +72,10 @@ export function buildReadToolCall({
   limit,
 }) {
   const args = { path };
-  if (scope === "region") {
+  if (scope === "symbol") {
+    args.scope = "symbol";
+    if (selector != null) args.selector = selector;
+  } else if (scope === "region") {
     args.scope = "region";
     if (startLine != null) args.startLine = startLine;
     if (endLine != null) args.endLine = endLine;

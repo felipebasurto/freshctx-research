@@ -109,3 +109,4 @@
 | [0109](pcr/0109-sealed-lab-program.md) | 2026-08-28 | Sealed lab program: attestation consume, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, sidecar + gold | `synthetic`; `protocol-fixture`; `unsealed-regression`; `measurement` | review |
 | [0110](pcr/0110-seal-holdout-v0.2.md) | 2026-08-28 | Seal holdout v0.2 from production GHA attestation (not a tuning set) | `protocol-fixture`; `unsealed-regression`; `measurement` | review |
 | [0111](pcr/0111-treesitter-sidecar-wasm.md) | 2026-08-28 | Tree-sitter WASM sidecar; TAP `# tests 398` `# pass 372` `# fail 0` `# skipped 26` (rebased on `8b2305c5`; dest/env hermes absent) | `synthetic`; `measurement` | review |
+| [0112](pcr/0112-adapter-sidecar-inject.md) | 2026-08-29 | Inject sidecar into Pi/Hermes adapters; TAP `# tests 402` `# pass 376` `# fail 0` `# skipped 26` (merge-base `8952f4f`) | `synthetic`; `replay`; `adapter-only`; `measurement` | review |

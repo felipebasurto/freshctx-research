@@ -17,7 +17,7 @@ import {
   shellCallsFromMessages,
   trackedReadTools,
 } from "../shell-read.mjs";
-import { FreshCtxEngine } from "../../src/index.mjs";
+import { createAdapterEngine } from "../engine-factory.mjs";
 
 export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
 const HERMES_TRACKED_TOOLS = trackedReadTools(READ_TOOLS);
@@ -33,6 +33,12 @@ function splitLines(content) {
 
 export function readScopeFromHermesArgs(args, fileLineCount) {
   if (!args || typeof args !== "object") return { scope: "file" };
+  if (args.scope === "symbol") {
+    if (typeof args.selector === "string" && args.selector.length > 0) {
+      return { scope: "symbol", selector: args.selector };
+    }
+    return { scope: "file" };
+  }
   if (args.scope === "region") {
     if (Number.isInteger(args.tailLines) && args.tailLines >= 1) {
       return { scope: "region", tailLines: args.tailLines, selector: args.selector };
@@ -416,6 +422,13 @@ export function trackedCallsFromMessages(messages) {
 
 function scopeFromObservation(observation, fileContent, fileLineCount) {
   if (
+    observation?.scope === "symbol"
+    && typeof observation?.selector === "string"
+    && observation.selector.length > 0
+  ) {
+    return { scope: "symbol", selector: observation.selector };
+  }
+  if (
     observation?.scope === "region"
     && Number.isInteger(observation?.tailLines)
     && observation?.invalidTailObservation === true
@@ -616,7 +629,7 @@ export async function selectContext(payload) {
     budgetTokens: payload.budgetTokens,
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
-  const engine = new FreshCtxEngine();
+  const engine = createAdapterEngine();
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
   const activeOfficialCallIds = latestOfficialReadCallIds(payload.messages, tracked);
@@ -639,6 +652,16 @@ export async function selectContext(payload) {
             selector: scopeMeta.selector,
             observedFileLineCount,
           };
+        } else if (scopeMeta.scope === "symbol") {
+          if (!observation.content) continue;
+          trackArgs = {
+            path: file.path,
+            content: observation.content,
+            scope: "symbol",
+            selector: scopeMeta.selector,
+            startLine: 1,
+            endLine: lineCount(observation.content),
+          };
         } else {
           trackArgs = {
             path: file.path,
@@ -646,6 +669,15 @@ export async function selectContext(payload) {
             scope: "file",
           };
         }
+      } else if (observation.scope === "symbol") {
+        trackArgs = {
+          path: observation.path,
+          content: observation.content,
+          scope: "symbol",
+          selector: observation.selector,
+          startLine: 1,
+          endLine: lineCount(observation.content),
+        };
       } else {
         trackArgs = observation.scope === "region"
           ? {
