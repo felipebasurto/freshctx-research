@@ -7,8 +7,10 @@ const packDir = fileURLToPath(new URL(".", import.meta.url));
 
 export const FORCE_HOST_READ_ENV = "PI_TRIAL_FORCE_HOST_READ";
 
+const BLOCKED_T1_TOOL_NAMES = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
+
 export function forceHostReadExtensionPath() {
-  return join(packDir, "force-host-read.ts");
+  return join(packDir, "force-host-read.mjs");
 }
 
 export function envWithForceHostRead(baseEnv = {}) {
@@ -28,25 +30,36 @@ export function readToolMatchesHostArgs(tool) {
   );
 }
 
-export function t1HostReadToolsValid(tools) {
-  const reads = tools.filter((tool) => tool.toolName === "read");
-  if (reads.length === 0) return false;
-  return reads.some((tool) => readToolMatchesHostArgs(tool));
-}
-
-export function rejectNonHostT1Tools(tools) {
+export function t1HostReadToolsInvalidReason(tools) {
+  if (!Array.isArray(tools) || tools.length === 0) {
+    return "t1-read recorded no host tools";
+  }
   for (const tool of tools) {
-    if (tool.toolName === "bash" || tool.toolName === "shell" || tool.toolName === "grep") {
-      return true;
+    if (BLOCKED_T1_TOOL_NAMES.has(tool.toolName)) {
+      return `t1-read leftover ${tool.toolName} tool is invalid`;
     }
-    if (tool.toolName === "read" && !readToolMatchesHostArgs(tool)) {
-      return true;
+    if (tool.toolName !== "read") {
+      return `t1-read unexpected tool ${tool.toolName}`;
+    }
+    if (!readToolMatchesHostArgs(tool)) {
+      return "t1-read read tool must use scope=symbol selector settleDailyLedger with no offset/limit";
     }
   }
-  return false;
+  return null;
 }
 
-export function piArgsForArm({ arm, repoRoot, dumpExt, freshCtxExtension, forceHostRead = true }) {
+export function t1HostReadToolsValid(tools) {
+  return t1HostReadToolsInvalidReason(tools) === null;
+}
+
+export function assertT1HostReadTools(tools, { arm = "unknown" } = {}) {
+  const reason = t1HostReadToolsInvalidReason(tools);
+  if (reason) {
+    throw new Error(`${reason} (arm=${arm}): ${JSON.stringify(tools)}`);
+  }
+}
+
+export function piArgsForArm({ dumpExt, freshCtxExtension, forceHostRead = true }) {
   const args = [
     "--mode",
     "rpc",

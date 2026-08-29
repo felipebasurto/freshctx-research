@@ -17,11 +17,11 @@ The harness should force or inject `hostReadToolArgs()` from `pack.mjs` so Fresh
 
 ## What we did
 
-1. Added `docs/lab/pi-trial-ts/force-host-read.ts` Pi extension.
-   It sets read-only tools, blocks bash/grep on t1, and mutates read input to `hostReadToolArgs()` when `PI_TRIAL_FORCE_HOST_READ=1`.
-2. Added `docs/lab/pi-trial-ts/auto-rpc-host-read.mjs` with harness helpers and validation for captured tool rows.
-3. Updated `docs/lab/pi-trial-ts/auto-rpc.mjs` to load the extension, set the env flag, and record `hostReadArgsMatched` on t1 captures.
-4. Added `test/pcr-0117-pi-auto-rpc-host-read.test.mjs` (7 tests) pinned to `settlement.ts`, symbol-scope args, and ST0→ST1 flip.
+1. Added `docs/lab/pi-trial-ts/force-host-read-core.mjs` and `force-host-read.mjs` Pi extension.
+   Core mutates read input to `hostReadToolArgs()` and blocks bash/grep when `PI_TRIAL_FORCE_HOST_READ=1`.
+2. Added `docs/lab/pi-trial-ts/auto-rpc-host-read.mjs` with strict t1 validation and `assertT1HostReadTools` fail-close.
+3. Updated `docs/lab/pi-trial-ts/auto-rpc.mjs` to load the extension, set the env flag, and throw on invalid t1 host tools.
+4. Added `test/pcr-0117-pi-auto-rpc-host-read.test.mjs` (11 tests) executing the extension core/wrapper and pinning leftover bash/offset failure.
 5. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout v0.2, door, or lock.
 6. Did not `--relock` or change benchmark weights.
 7. Model remains `deepseek-v4-flash` only.
@@ -40,10 +40,10 @@ Canonical TAP from this run on branch HEAD after Tree-sitter WASM install
 (`npm run sidecar:install`, base `fdc49ae`).
 
 ```
-1..439
-# tests 439
+1..443
+# tests 443
 # suites 0
-# pass 413
+# pass 417
 # fail 0
 # cancelled 0
 # skipped 26
@@ -54,7 +54,7 @@ Official accepted TAP remains **407 pass / 0 fail / 17 skipped / 424 total** on 
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | TAP above (+7 vs base 432) |
+| `npm test` | yes | 0 | TAP above (+11 vs base 432) |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`79e29d09a9ec12b1128617f683f50a35a3c8809e` |
 
@@ -64,8 +64,8 @@ Official accepted TAP remains **407 pass / 0 fail / 17 skipped / 424 total** on 
 |---|---|---|---|
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | `0` |
 | ctxbench payload sha256 | `697e74e3…` (hold) | `697e74e3…` (hold) | `0` |
-| `npm test` TAP `# tests` | 432 | **439** | **+7** |
-| `npm test` TAP `# pass` | 406 | **413** | **+7** |
+| `npm test` TAP `# tests` | 432 | **443** | **+11** |
+| `npm test` TAP `# pass` | 406 | **417** | **+11** |
 | `npm test` TAP `# fail` | 0 | **0** | `0` |
 | `npm test` TAP `# skipped` | 26 | **26** | `0` |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
@@ -74,9 +74,10 @@ Official accepted TAP remains **407 pass / 0 fail / 17 skipped / 424 total** on 
 ## Comparison
 
 No Level 4 sentence.
-Harness pins t1 auto-rpc to pass `hostReadToolArgs()` through Pi read tool args.
-Synthetic tests reject bash grep and offset/limit reads as invalid t1 leftovers.
-Fixture `settlement.ts` still flips interior `ST0`→`ST1` in `settleDailyLedger` only.
+Harness executes force-host-read core and wrapper in tests.
+Every t1 tool must be a symbol-scope read of `settleDailyLedger`.
+Leftover bash grep or offset/limit reads fail closed in auto-rpc and in tests.
+Synthetic tests reject bash plus matching read as invalid.
 No live Pi/Hermes rerun in this PR.
 
 ## Conflicts with constitutions

@@ -4,9 +4,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  assertT1HostReadTools,
   envWithForceHostRead,
   piArgsForArm,
-  rejectNonHostT1Tools,
   t1HostReadToolsValid,
 } from "./auto-rpc-host-read.mjs";
 import {
@@ -212,8 +212,6 @@ async function runArm(arm) {
   const cwd = join(WORK, arm);
   const extension = freshCtxExtensionForArm(arm, repoRoot);
   const args = piArgsForArm({
-    arm,
-    repoRoot,
     dumpExt: DUMP_EXT,
     freshCtxExtension: extension,
     forceHostRead: true,
@@ -250,16 +248,16 @@ async function runArm(arm) {
       }
       const lastRequest = requests.at(-1) ?? null;
       const tools = toolsFromEvents(events);
+      if (cell.id === "t1-read") {
+        assertT1HostReadTools(tools, { arm });
+      }
       const row = {
         id: cell.id,
         turn: cell.turn,
         mutate: cell.mutate,
         disk: disk.markers,
         tools,
-        hostReadArgsMatched:
-          cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
-        hostReadInvalidExtra:
-          cell.id === "t1-read" ? rejectNonHostT1Tools(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
         reply,
         stdoutMatchesCurrent: stdoutMatchesCurrent(reply),
         requests,
