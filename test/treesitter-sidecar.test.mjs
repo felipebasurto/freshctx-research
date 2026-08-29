@@ -163,6 +163,59 @@ test("duplicate module-level names fail closed as ambiguous", async () => {
   assert.deepEqual(parsed.units, []);
 });
 
+test("duplicate names omit only the offending symbol", async () => {
+  const parsed = await parseSource({
+    path: "a.py",
+    bytes: [
+      "def alpha():",
+      "    return 1",
+      "def view():",
+      "    return 2",
+      "def view():",
+      "    return 3",
+      "",
+    ].join("\n"),
+  });
+  assert.equal(parsed.error, null);
+  assert.deepEqual(parsed.units.map((unit) => unit.selector), ["alpha"]);
+  assert.equal(parsed.units.some((unit) => unit.selector === "view"), false);
+});
+
+test("unique method still resolves when nested functions collide", async () => {
+  const bytes = [
+    "class View:",
+    "    def as_view(self):",
+    "        def view():",
+    "            return 1",
+    "        def view():",
+    "            return 2",
+    "        return view",
+    "",
+  ].join("\n");
+  const parsed = await parseSource({ path: "views.py", bytes });
+  assert.equal(parsed.error, null);
+  const asView = parsed.units.find((unit) => unit.selector === "as_view");
+  assert.ok(asView);
+  assert.equal(asView.qualifiedSelector, "class View::method as_view");
+
+  const engine = new FreshCtxEngine({ sidecarRunner: createSidecarRunner() });
+  engine.trackRead({
+    path: "views.py",
+    content: bytes,
+    scope: "symbol",
+    selector: "as_view",
+    startLine: asView.startLine,
+    endLine: asView.endLine,
+  });
+  engine.advanceTurn();
+  await engine.refresh({
+    "views.py": bytes.replace("        return view", "        return view  # now"),
+  });
+  const unit = engine.registry.list()[0];
+  assert.equal(unit.state, "resolved");
+  assert.match(unit.content, /return view  # now/u);
+});
+
 test("class-qualified methods can coexist", async () => {
   const parsed = await parseSource({
     path: "a.ts",

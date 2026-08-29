@@ -28,11 +28,16 @@ function finishUnits(units) {
   if (units.length === 0) {
     return { units: [], error: "unresolved" };
   }
-  const names = units.map((unit) => unit.qualifiedSelector);
-  if (new Set(names).size !== names.length) {
+  const counts = new Map();
+  for (const unit of units) {
+    const key = unit.qualifiedSelector;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const unique = units.filter((unit) => counts.get(unit.qualifiedSelector) === 1);
+  if (unique.length === 0) {
     return { units: [], error: "ambiguous" };
   }
-  return { units, error: null };
+  return { units: unique, error: null };
 }
 
 function hashExtractedUnits(text, units) {

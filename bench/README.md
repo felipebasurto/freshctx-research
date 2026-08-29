@@ -15,6 +15,7 @@ contract in `docs/EVALUATION.md`.
 - `traces/smoke/`: frozen Flask and Express smoke traces pinned to `repos.lock.json`.
 - `traces/holdout/`: first holdout v0.1 slice (go-tools + neovim); unsealed on commit.
 - `traces/lab/`: development-pack traces live under `bench/traces/lab`.
+- `generate-symbol-pack.mjs`: disposable symbol-scope development pack (`npm run ctxbench:symbol-pack`). Gold spans come from `independent-symbols.mjs`. Not a holdout pack.
 - `corpus-split.json`: preregistered smoke/train vs holdout split.
 - `reports/latest.md`: generated baseline comparison table (`public-repo-smoke` label).
 - `trace.schema.json`: versioned trace data contract.
