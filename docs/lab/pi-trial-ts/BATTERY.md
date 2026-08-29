@@ -1,6 +1,6 @@
 # Guion. Pi-only TypeScript measure pack
 
-Tres brazos. Tres procesos Pi separados. Modelo fijado: **`deepseek-v4-flash`**
+Dos brazos. Dos procesos Pi separados. Modelo fijado: **`deepseek-v4-flash`**
 (solo flash, nunca pro).
 
 Ventana **PI** para PROMPT. Ventana **CMD** para `live.mjs` / `print-columns.mjs`.
@@ -8,6 +8,9 @@ Nunca pegues un PROMPT en CMD.
 
 Working copies en `docs/lab/pi-trial-ts/.work/`. El fixture fuente está en
 `docs/lab/pi-trial-ts/fixture/`.
+
+FreshCtx extension path: desde la raíz del repo FreshCtx
+(`adapters/pi/extension.ts`), no desde `docs/`.
 
 Después de cada PROMPT anota tiempo y tokens si Pi los muestra.
 
@@ -44,7 +47,7 @@ node docs/lab/pi-trial-ts/live.mjs mutate without flip-settle
 
 Debe imprimir `"value": "ST1"` en `MARKER_SETTLE`.
 
-### A3. PI — t2-settle (igual en A/B/C)
+### A3. PI — t2-settle (igual en A y B)
 
 ```text
 No uses herramientas. No leas. No edites.
@@ -56,63 +59,31 @@ Anota la respuesta. Cierra Pi.
 
 ---
 
-## Brazo B. Pi + FreshCtx file-scope (`with-file`)
+## Brazo B. Pi + FreshCtx (`with`)
 
 ### B0. CMD
 
 ```bash
-node docs/lab/pi-trial-ts/live.mjs reset with-file
-cd docs/lab/pi-trial-ts/.work/with-file
+node docs/lab/pi-trial-ts/live.mjs reset with
+cd docs/lab/pi-trial-ts/.work/with
 pi -e /path/to/freshctx/adapters/pi/extension.ts --provider deepseek --model deepseek-v4-flash
 ```
 
-Sustituye `/path/to/freshctx` por tu checkout.
+Sustituye `/path/to/freshctx` por la raíz del checkout (directorio que contiene
+`adapters/pi/extension.ts`).
 
 Opcional: captura de requests
 
 ```bash
-export PI_TRIAL_DUMP_DIR=/tmp/pi-trial-ts-with-file
+export PI_TRIAL_DUMP_DIR=/tmp/pi-trial-ts-with
 pi -e /path/to/freshctx/adapters/pi/extension.ts -e /path/to/freshctx/docs/lab/pi-trial-ts/dump-request.ts ...
 ```
 
-### B1. PI — mismo PROMPT que A1 (lectura de archivo entero)
+### B1. PI — mismo PROMPT que A1
 
-### B2. CMD — `mutate with-file flip-settle`
+### B2. CMD — `mutate with flip-settle`
 
 ### B3. PI — mismo PROMPT que A3
-
-Cierra Pi.
-
----
-
-## Brazo C. Pi + FreshCtx symbol + sidecar (`with-symbol`)
-
-### C0. CMD
-
-```bash
-node docs/lab/pi-trial-ts/live.mjs reset with-symbol
-cd docs/lab/pi-trial-ts/.work/with-symbol
-pi -e /path/to/freshctx/adapters/pi/extension.ts --provider deepseek --model deepseek-v4-flash
-```
-
-### C1. PI — t1-read (symbol scope)
-
-```text
-Lee estos símbolos de src/settlement.ts con scope=symbol (no leas el archivo entero):
-- settleDailyLedger
-- settleWeeklyLedger
-
-No edites. No crees archivos. Responde solo:
-
-SETTLE=...
-SIBLING=...
-```
-
-Esperado: `SETTLE=ST0`, `SIBLING=SW0`.
-
-### C2. CMD — `mutate with-symbol flip-settle`
-
-### C3. PI — mismo PROMPT que A3
 
 Cierra Pi.
 
@@ -136,6 +107,5 @@ Rellena `REPORT.md` con números reales. No inventes `AUTORESEARCH_SCORE`.
 ## Si te pierdes
 
 - `mutate without` solo en brazo A.
-- `mutate with-file` solo en brazo B.
-- `mutate with-symbol` solo en brazo C.
+- `mutate with` solo en brazo B.
 - Nunca un `mutate` antes del primer PROMPT de ese brazo.

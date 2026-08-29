@@ -1,8 +1,14 @@
 /** Shared constants for the Pi-only TypeScript measure pack. */
 
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const packDir = dirname(fileURLToPath(import.meta.url));
+
 export const PACK_ROOT = new URL(".", import.meta.url);
 
-export const ARMS = ["without", "with-file", "with-symbol"];
+export const ARMS = ["without", "with"];
 
 export const TARGET_FILE = "src/settlement.ts";
 export const TARGET_SYMBOL = "settleDailyLedger";
@@ -20,34 +26,40 @@ export const PROMPT_T2 = `No uses herramientas. No leas. No edites.
 ¿Cuál es ahora MARKER_SETTLE dentro de ${TARGET_FN} en ${TARGET_FILE}?
 Responde una sola línea: SETTLE=...`;
 
-export const PROMPT_T1_FILE = `Lee este archivo entero, sin offset:
+export const PROMPT_T1 = `Lee este archivo entero, sin offset:
 - ${TARGET_FILE}
 
 No edites. No crees archivos. Responde solo:
 
 SETTLE=...`;
 
-export const PROMPT_T1_SYMBOL = `Lee estos símbolos de ${TARGET_FILE} con scope=symbol (no leas el archivo entero):
-- ${TARGET_SYMBOL}
-- ${SIBLING_SYMBOL}
-
-No edites. No crees archivos. Responde solo:
-
-SETTLE=...
-SIBLING=...`;
-
 export const CELLS = [
-  { id: "t1-read", turn: 1, mutate: null, promptByArm: { without: PROMPT_T1_FILE, "with-file": PROMPT_T1_FILE, "with-symbol": PROMPT_T1_SYMBOL } },
-  { id: "t2-settle", turn: 2, mutate: "flip-settle", promptByArm: { without: PROMPT_T2, "with-file": PROMPT_T2, "with-symbol": PROMPT_T2 } },
+  { id: "t1-read", turn: 1, mutate: null, prompt: PROMPT_T1 },
+  { id: "t2-settle", turn: 2, mutate: "flip-settle", prompt: PROMPT_T2 },
 ];
 
-export function promptForCell(cell, arm) {
-  return cell.promptByArm[arm] ?? cell.promptByArm.without;
+export function promptForCell(cell) {
+  return cell.prompt;
 }
 
-export function freshCtxExtensionForArm(arm, repoRoot) {
+export function resolveRepoRoot() {
+  let dir = packDir;
+  for (let depth = 0; depth < 6; depth += 1) {
+    if (existsSync(join(dir, "adapters/pi/extension.ts"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error("could not resolve FreshCtx repo root from docs/lab/pi-trial-ts");
+}
+
+export function freshCtxExtensionPath(repoRoot = resolveRepoRoot()) {
+  return join(repoRoot, "adapters/pi/extension.ts");
+}
+
+export function freshCtxExtensionForArm(arm, repoRoot = resolveRepoRoot()) {
   if (arm === "without") return null;
-  return `${repoRoot}/adapters/pi/extension.ts`;
+  return freshCtxExtensionPath(repoRoot);
 }
 
 export function validateArm(arm) {

@@ -9,10 +9,11 @@ import {
   MARKER_V1,
   freshCtxExtensionForArm,
   promptForCell,
+  resolveRepoRoot,
 } from "./pack.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, "../..");
+const repoRoot = resolveRepoRoot();
 const LIVE = join(here, "live.mjs");
 const DUMP_EXT = join(here, "dump-request.ts");
 const WORK = join(here, ".work");
@@ -192,10 +193,9 @@ function stdoutMatchesCurrent(reply) {
 function normalizeResolution(raw, arm) {
   if (arm === "without") return "none";
   const value = String(raw ?? "none");
-  if (value === "none" || value.length === 0) return arm === "with-symbol" ? "file" : "none";
   if (value.includes("sidecar")) return "sidecar";
   if (value.includes("file") || value.includes("whole")) return "file";
-  return value;
+  return value === "none" || value.length === 0 ? "none" : value;
 }
 
 async function runArm(arm) {
@@ -236,7 +236,7 @@ async function runArm(arm) {
       if (cell.mutate) await live(["mutate", arm, cell.mutate]);
       const disk = JSON.parse(await live(["status", arm]));
       const dumpsBefore = await listScans(dumpDir);
-      const prompt = promptForCell(cell, arm);
+      const prompt = promptForCell(cell);
       const events = await client.prompt(prompt, cell.id === "t1-read" ? 15 * 60 * 1000 : 6 * 60 * 1000);
       const replyMsg = await client.send({ type: "get_last_assistant_text" });
       const reply = replyMsg.data?.text ?? "";
@@ -307,8 +307,9 @@ async function main() {
   const summary = {
     label: "live-host",
     notAPaperResult: true,
-    question:
-      "Does FreshCtx beat Pi-alone on TypeScript, and does Tree-sitter beat FreshCtx-without-Tree-sitter or is it noise?",
+    question: "Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and interior flip?",
+    repoRoot,
+    freshCtxExtension: freshCtxExtensionForArm("with", repoRoot),
     commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim(),
     started,
     ended: new Date().toISOString(),
