@@ -4,6 +4,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  assertT1HostReadTools,
+  envWithForceHostRead,
+  piArgsForArm,
+  t1HostReadToolsValid,
+} from "./auto-rpc-host-read.mjs";
+import {
   ARMS,
   CELLS,
   MARKER_V1,
@@ -204,21 +210,13 @@ async function runArm(arm) {
   await mkdir(dumpDir, { recursive: true });
   await live(["reset", arm]);
   const cwd = join(WORK, arm);
-  const args = [
-    "--mode",
-    "rpc",
-    "--no-session",
-    "--no-context-files",
-    "--no-extensions",
-    "--provider",
-    "deepseek",
-    "--model",
-    MODEL,
-  ];
   const extension = freshCtxExtensionForArm(arm, repoRoot);
-  if (extension) args.push("-e", extension);
-  args.push("-e", DUMP_EXT);
-  const env = { ...freshCtxEnvForArm(arm), PI_TRIAL_DUMP_DIR: dumpDir };
+  const args = piArgsForArm({
+    dumpExt: DUMP_EXT,
+    freshCtxExtension: extension,
+    forceHostRead: true,
+  });
+  const env = envWithForceHostRead({ ...freshCtxEnvForArm(arm), PI_TRIAL_DUMP_DIR: dumpDir });
   process.stdout.write(`start arm=${arm} cwd=${cwd} model=${MODEL}\n`);
   const client = new PiRpc({
     cwd,
@@ -249,12 +247,17 @@ async function runArm(arm) {
         requests.push({ file: name, ...scan });
       }
       const lastRequest = requests.at(-1) ?? null;
+      const tools = toolsFromEvents(events);
+      if (cell.id === "t1-read") {
+        assertT1HostReadTools(tools, { arm });
+      }
       const row = {
         id: cell.id,
         turn: cell.turn,
         mutate: cell.mutate,
         disk: disk.markers,
-        tools: toolsFromEvents(events),
+        tools,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
         reply,
         stdoutMatchesCurrent: stdoutMatchesCurrent(reply),
         requests,
