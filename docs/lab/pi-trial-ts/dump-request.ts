@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import { resolutionFromStringifiedPayload } from "./resolution-from-stringified.mjs";
 import {
   MARKER_V0,
   MARKER_V1,
@@ -8,8 +9,6 @@ import {
   TARGET_FILE,
   TARGET_SYMBOL,
 } from "./pack.mjs";
-
-const RESOLUTION_ATTR_RE = /resolution="([^"]+)"/gu;
 
 export default function dumpRequest(pi) {
   const dir = process.env.PI_TRIAL_DUMP_DIR;
@@ -21,8 +20,7 @@ export default function dumpRequest(pi) {
     const payload = (event as { payload?: unknown }).payload;
     const text = JSON.stringify(payload ?? null);
     const id = String(n).padStart(3, "0");
-    const resolutions = [...text.matchAll(RESOLUTION_ATTR_RE)].map((match) => match[1]);
-    const resolution = resolutions.length > 0 ? resolutions[resolutions.length - 1] : "none";
+    const resolution = resolutionFromStringifiedPayload(text);
     const usage = (payload as { usage?: { prompt_tokens?: number } } | null)?.usage;
     const promptTokens =
       typeof usage?.prompt_tokens === "number" && Number.isFinite(usage.prompt_tokens)
