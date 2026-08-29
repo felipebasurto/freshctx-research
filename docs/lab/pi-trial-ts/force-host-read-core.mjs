@@ -2,6 +2,10 @@ import { hostReadToolArgs } from "./pack.mjs";
 
 export const BLOCKED_T1_TOOLS = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
 
+export function forceHostReadEnabled() {
+  return process.env.PI_TRIAL_FORCE_HOST_READ === "1";
+}
+
 export function applyForceHostReadInput(input) {
   const forced = hostReadToolArgs();
   Object.assign(input, forced);
@@ -29,14 +33,26 @@ export function handleForceHostReadToolCall(event, state) {
   return null;
 }
 
-export function registerForceHostReadExtension(pi) {
-  if (process.env.PI_TRIAL_FORCE_HOST_READ !== "1") return;
+export function handleForceHostReadExecutionStart(event, state) {
+  if (!event.args || typeof event.args !== "object") return null;
+  return handleForceHostReadToolCall({ toolName: event.toolName, input: event.args }, state);
+}
 
+export function registerForceHostReadExtension(pi) {
   const state = { hostReadSatisfied: false };
 
   pi.on("session_start", () => {
+    if (!forceHostReadEnabled()) return;
     pi.setActiveTools(["read"]);
   });
 
-  pi.on("tool_call", (event) => handleForceHostReadToolCall(event, state));
+  pi.on("tool_execution_start", (event) => {
+    if (!forceHostReadEnabled()) return;
+    handleForceHostReadExecutionStart(event, state);
+  });
+
+  pi.on("tool_call", (event) => {
+    if (!forceHostReadEnabled()) return;
+    handleForceHostReadToolCall(event, state);
+  });
 }

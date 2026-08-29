@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { handleForceHostReadToolCall } from "./force-host-read-core.mjs";
 import { hostReadToolArgs } from "./pack.mjs";
 
 const packDir = fileURLToPath(new URL(".", import.meta.url));
@@ -10,7 +11,38 @@ export const FORCE_HOST_READ_ENV = "PI_TRIAL_FORCE_HOST_READ";
 const BLOCKED_T1_TOOL_NAMES = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
 
 export function forceHostReadExtensionPath() {
-  return join(packDir, "force-host-read.mjs");
+  return join(packDir, "force-host-read.ts");
+}
+
+export function toolsFromExecutionStartEvents(events) {
+  return events
+    .filter((event) => event.type === "tool_execution_start")
+    .map((event) => ({
+      toolCallId: event.toolCallId,
+      toolName: event.toolName,
+      args: event.args ?? null,
+    }));
+}
+
+export function effectiveToolsFromEvents(events, { forceHostRead = false } = {}) {
+  if (!forceHostRead || process.env[FORCE_HOST_READ_ENV] !== "1") {
+    return toolsFromExecutionStartEvents(events);
+  }
+  const state = { hostReadSatisfied: false };
+  return events
+    .filter((event) => event.type === "tool_execution_start")
+    .map((event) => {
+      const args =
+        event.args && typeof event.args === "object" ? { ...event.args } : event.args ?? null;
+      if (args && typeof args === "object") {
+        handleForceHostReadToolCall({ toolName: event.toolName, input: args }, state);
+      }
+      return {
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        args,
+      };
+    });
 }
 
 export function envWithForceHostRead(baseEnv = {}) {
