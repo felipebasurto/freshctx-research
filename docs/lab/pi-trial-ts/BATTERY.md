@@ -4,7 +4,8 @@ Tres brazos. Tres procesos Pi separados. Modelo fijado: **`deepseek-v4-flash`**
 (solo flash, nunca pro).
 
 Mismos PROMPT en los tres brazos. Tree-sitter se controla en el harness
-(`FRESHCTX_SIDECAR=off` en brazo B). Pi no pasa `scope=symbol`.
+(`FRESHCTX_SIDECAR=off` en brazo B). El host pasa `scope=symbol` con selector
+`settleDailyLedger`; FreshCtx recibe esa observación vía tool args.
 
 Ventana **PI** para PROMPT. Ventana **CMD** para `live.mjs` / `print-columns.mjs`.
 Nunca pegues un PROMPT en CMD.
@@ -32,8 +33,7 @@ pi --provider deepseek --model deepseek-v4-flash
 ### A1. PI — t1-read
 
 ```text
-Lee este archivo entero, sin offset:
-- src/settlement.ts
+Lee el símbolo settleDailyLedger en src/settlement.ts con scope=symbol y selector settleDailyLedger.
 
 No edites. No crees archivos. Responde solo:
 
@@ -96,8 +96,8 @@ Cierra Pi.
 
 ## Brazo C. FreshCtx con Tree-sitter (`freshctx-ts`)
 
-Sidecar inyectado por defecto. Tras PCR 0114, file-scope TS debería usar el
-sidecar automáticamente (sin `scope=symbol` del host).
+Sidecar inyectado por defecto. Turn-1 host read usa `scope=symbol` con selector
+`settleDailyLedger`. Tree-sitter refresca solo ese símbolo tras el flip.
 
 ### C0. CMD
 

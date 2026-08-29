@@ -4,18 +4,16 @@ Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 
 ## Question (do not answer until a valid three-arm run exists)
 
-Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and an
-interior flip on one lookalike export? Does Tree-sitter (inside FreshCtx) change
-the outcome vs the same adapter with the sidecar off?
+Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
+`settleDailyLedger` and an interior flip on that symbol? Does Tree-sitter inside
+FreshCtx change the outcome vs the same adapter with the sidecar off?
 
-Tree-sitter lives inside FreshCtx. Pi does not pass `scope=symbol`. Product PCR
-0114 will route file-scope TS/JS/Python refresh through the sidecar when the
-runner is present; until then arm `freshctx-ts` may show `resolution=file` even
-with sidecar injected. Wait for 0114 before claiming a Tree-sitter win.
+Tree-sitter lives inside FreshCtx. The host passes `scope=symbol` with selector
+`settleDailyLedger`. The harness never exposes a Tree-sitter toggle.
 
 ## Arms
 
-Same fixture, same whole-file read prompt, same interior flip (`ST0` → `ST1` in
+Same fixture, same symbol-scope read prompt, same interior flip (`ST0` → `ST1` in
 `settleDailyLedger`), same turn-2 user prompt on every arm.
 
 | Arm | Pi | FreshCtx | Tree-sitter sidecar |
@@ -29,15 +27,14 @@ Arm B and C share the same extension path and prompts. Only harness env differs.
 ## Fixture
 
 `fixture/src/settlement.ts` exports several lookalike `settle*` helpers. A
-whole-file read includes sibling bodies and padding noise. The flip is an
-interior edit on `settleDailyLedger` only (`MARKER_SETTLE`).
+symbol-scope read targets `settleDailyLedger` only. The flip is an interior edit
+on that export (`MARKER_SETTLE`).
 
 ## Turns
 
-1. **t1-read.** Read whole file. Pi reports initial marker.
+1. **t1-read.** Read symbol `settleDailyLedger` (`scope=symbol`). Pi reports initial marker.
 2. **flip-settle.** Runner mutates disk (`ST0` → `ST1`) without Pi re-reading.
-3. **t2-settle.** Same prompt on all arms: quote current `MARKER_SETTLE` with
-   no tools.
+3. **t2-settle.** Same prompt on all arms: quote current `MARKER_SETTLE` with no tools.
 
 ## Printed columns
 
@@ -54,7 +51,7 @@ node docs/lab/pi-trial-ts/print-columns.mjs
 | `request_bytes` | UTF-8 bytes of serialized request JSON for the turn |
 | `prompt_tokens` | provider `usage.prompt_tokens` when present, else `—` |
 | `pi_stdout_current` | Pi stdout matches `SETTLE=ST1` |
-| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`file`, `sidecar`, …) |
+| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`sidecar`, `whole-file`, …) |
 
 No `AUTORESEARCH_SCORE` in this pack.
 
@@ -69,13 +66,11 @@ Working copies: `docs/lab/pi-trial-ts/.work/` (gitignored).
 
 ## Out of scope
 
-- Hermes
-- Host `scope=symbol` prompts or harness forcing symbol reads
 - Holdout gold, policy, anchors, projector edits
 - Official TAP / ctxbench retune
 - `--relock`
 
 ## Base
 
-Prepared from main `4e4a930d3adce05da6bc304a27fee8d6b0172539`. Official table
-388/0/17/405, score 89.107165. Door `f8771c93`, lock `79e29d09` frozen.
+Prepared from main `5bb53c3e02a3a4b3394ce7e7bb297a5316f2acd8`. Official table
+395/0/17/412, score 89.107165. Door `f8771c93`, lock `79e29d09` frozen.

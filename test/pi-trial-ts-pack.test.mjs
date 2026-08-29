@@ -16,6 +16,7 @@ import {
   SIBLING_MARKER,
   TARGET_FILE,
   TARGET_SYMBOL,
+  hostReadToolArgs,
   freshCtxExtensionPath,
   freshCtxExtensionForArm,
   freshCtxEnvForArm,
@@ -43,10 +44,19 @@ test("pi-trial-ts pack defines three arms and two turns", () => {
 test("pi-trial-ts prompts are identical across arms", () => {
   assert.equal(promptForCell(CELLS[0]), PROMPT_T1);
   assert.equal(promptForCell(CELLS[1]), PROMPT_T2);
+  assert.match(PROMPT_T1, /scope=symbol/u);
+  assert.match(PROMPT_T1, new RegExp(TARGET_SYMBOL, "u"));
   assert.match(PROMPT_T2, /MARKER_SETTLE/u);
   assert.match(PROMPT_T2, /SETTLE=\.\.\./u);
-  assert.doesNotMatch(PROMPT_T1, /scope=symbol/u);
   assert.doesNotMatch(PROMPT_T2, /scope=symbol/u);
+});
+
+test("pi-trial-ts hostReadToolArgs pass symbol scope through harness", () => {
+  assert.deepEqual(hostReadToolArgs(), {
+    path: TARGET_FILE,
+    scope: "symbol",
+    selector: TARGET_SYMBOL,
+  });
 });
 
 test("pi-trial-ts freshCtxEnvForArm toggles sidecar in harness code only", () => {

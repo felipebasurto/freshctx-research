@@ -14,6 +14,7 @@ export const ARMS = ["nothing", "freshctx-no-ts", "freshctx-ts"];
 export const TARGET_FILE = "src/settlement.ts";
 export const TARGET_SYMBOL = "settleDailyLedger";
 export const SIBLING_SYMBOL = "settleWeeklyLedger";
+export const HOST_READ_SCOPE = "symbol";
 
 export const MARKER_V0 = "ST0";
 export const MARKER_V1 = "ST1";
@@ -27,12 +28,16 @@ export const PROMPT_T2 = `No uses herramientas. No leas. No edites.
 ¿Cuál es ahora MARKER_SETTLE dentro de ${TARGET_FN} en ${TARGET_FILE}?
 Responde una sola línea: SETTLE=...`;
 
-export const PROMPT_T1 = `Lee este archivo entero, sin offset:
-- ${TARGET_FILE}
+export const PROMPT_T1 = `Lee el símbolo ${TARGET_SYMBOL} en ${TARGET_FILE} con scope=symbol y selector ${TARGET_SYMBOL}.
 
 No edites. No crees archivos. Responde solo:
 
 SETTLE=...`;
+
+/** Host read tool args the harness expects Pi/Hermes to pass through to FreshCtx. */
+export function hostReadToolArgs() {
+  return { path: TARGET_FILE, scope: "symbol", selector: TARGET_SYMBOL };
+}
 
 export const CELLS = [
   { id: "t1-read", turn: 1, mutate: null, prompt: PROMPT_T1 },
@@ -63,7 +68,7 @@ export function freshCtxExtensionForArm(arm, repoRoot = resolveRepoRoot()) {
   return freshCtxExtensionPath(repoRoot);
 }
 
-/** Sidecar off in harness code for `freshctx-no-ts`; host never passes scope=symbol. */
+/** Sidecar off in harness code for `freshctx-no-ts` only; host still passes scope=symbol. */
 export function freshCtxEnvForArm(arm) {
   if (arm === "freshctx-no-ts") return { FRESHCTX_SIDECAR: "off" };
   return {};
