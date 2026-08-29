@@ -124,6 +124,24 @@ test("generate-symbol-pack stays off the holdout-v0.2 pipeline", async () => {
   assert.equal(SYMBOL_PACK_REPS >= 21, true);
 });
 
+test("ambiguous Isolated Semantic Engine parse cannot pass on a small projection", async () => {
+  const generated = await generateSymbolPack({ root: ROOT });
+  const flask = generated.traces.find((item) => item.target.repo === "flask");
+  const row = await runSymbolCell({
+    target: flask.target,
+    observed: flask.observed,
+    gold: flask.gold,
+    mutatedText: flask.trace.mutatedFiles[flask.target.path],
+    system: "isolated-semantic-engine",
+    engineSpawn: "ok",
+  });
+  assert.equal(row.verdict, "fail");
+  assert.equal(row.reason, "gold-absent");
+  assert.equal(row.goldInPayload, false);
+  assert.equal(row.failOpen, false);
+  assert.ok(row.payloadBytes < 1000, "unresolved projection must not be scored as a byte win");
+});
+
 test("buildSymbolTrace refuses a non-symbol observation", () => {
   const target = {
     repo: "flask",
