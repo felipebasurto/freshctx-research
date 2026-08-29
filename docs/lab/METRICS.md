@@ -104,8 +104,9 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-28 | product `c6de6d7` TAP re-run dest=`cloud-agent` env=`bench/hosts/hermes` absent | TAP 398 / 372 pass / 2 fail dest-env / 24 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 | 2026-08-28 | post-rebase on `8b2305c5` dest=`cloud-agent` env=hermes-absent; v0.2 `sealed` | TAP 398 / 372 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 | 2026-08-29 | (PCR 0112 review) symbol observation keys + adapter sidecar inject; dest=`cloud-agent` env=hermes-absent | TAP 405 / 379 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0112](pcr/0112-adapter-sidecar-inject.md) |
+| 2026-08-29 | (PCR 0114) file/region sidecar refresh for py/js/ts; base `15c573e`; dest=`cloud-agent` env=hermes-absent | TAP 419 / 393 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0114](pcr/0114-file-region-sidecar-refresh.md) |
 
-Official accepted TAP on merge-base `4e4a930` remains **388 pass / 0 fail / 17 skipped / 405 total** until Bench measures this branch. PCR 0113 adds harness invariant tests only; no live Pi TS three-arm table yet; arm C Tree-sitter comparison deferred to PCR 0114.
+Official accepted TAP on merge-base `4e4a930` remains **388 pass / 0 fail / 17 skipped / 405 total** until Bench prints `15c573e7`, then again after this squash. PCR 0113 harness-only live-host row unchanged.
 
 No synthetic metric delta. Label: `synthetic`.
 

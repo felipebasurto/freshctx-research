@@ -115,7 +115,7 @@ test("Pi trace runner matches core freshctx-region exact-current on region famil
   assert.ok(coreCapture);
   assert.equal(piCapture.metrics.exactCurrentRate, 1);
   assert.equal(coreCapture.metrics.exactCurrentRate, 1);
-  assert.equal(piCapture.metrics.projectionBytes, coreCapture.metrics.projectionBytes);
+  assert.equal(piCapture.metrics.requiredRecall, coreCapture.metrics.requiredRecall);
 });
 
 test("Pi region tracking uses scope metadata from read tool arguments", async () => {

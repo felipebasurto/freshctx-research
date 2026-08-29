@@ -102,7 +102,7 @@ test("Hermes trace runner matches core freshctx-region exact-current on region f
   assert.ok(coreCapture);
   assert.equal(hermesCapture.metrics.exactCurrentRate, 1);
   assert.equal(coreCapture.metrics.exactCurrentRate, 1);
-  assert.equal(hermesCapture.metrics.projectionBytes, coreCapture.metrics.projectionBytes);
+  assert.equal(hermesCapture.metrics.requiredRecall, coreCapture.metrics.requiredRecall);
 });
 
 test("Hermes region tracking uses scope metadata from read tool arguments", async () => {
