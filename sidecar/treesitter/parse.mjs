@@ -14,13 +14,6 @@ const LANGUAGE_BY_EXT = {
   ".rs": "rust",
 };
 
-const REGEX_LANGUAGES = new Set(["go", "rust"]);
-
-const PATTERNS = {
-  go: /^\s*func\s+(?:\([^)]+\)\s+)?([A-Za-z_][A-Za-z0-9_]*)/u,
-  rust: /^\s*(?:pub(?:\s*\([^)]+\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)/u,
-};
-
 function languageFor(path) {
   const base = String(path).split("/").at(-1) ?? "";
   const dot = base.lastIndexOf(".");
@@ -29,19 +22,6 @@ function languageFor(path) {
 
 function sha256Bytes(value) {
   return createHash("sha256").update(value).digest("hex");
-}
-
-function braceBalance(text) {
-  let round = 0;
-  let curly = 0;
-  for (const char of text) {
-    if (char === "(") round += 1;
-    if (char === ")") round -= 1;
-    if (char === "{") curly += 1;
-    if (char === "}") curly -= 1;
-    if (round < 0 || curly < 0) return false;
-  }
-  return round === 0 && curly === 0;
 }
 
 function finishUnits(units) {
@@ -53,47 +33,6 @@ function finishUnits(units) {
     return { units: [], error: "ambiguous" };
   }
   return { units, error: null };
-}
-
-function parseWithRegex({ path, bytes, language }) {
-  if (!braceBalance(bytes)) {
-    return { units: [], error: "parse-broken" };
-  }
-  const pattern = PATTERNS[language];
-  const lines = bytes.split("\n");
-  const units = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].match(pattern);
-    if (!match) continue;
-    let depth = 0;
-    let seen = false;
-    let end = index;
-    for (let cursor = index; cursor < lines.length; cursor += 1) {
-      for (const char of lines[cursor]) {
-        if (char === "{") {
-          depth += 1;
-          seen = true;
-        }
-        if (char === "}") depth -= 1;
-      }
-      end = cursor;
-      if (seen && depth <= 0) break;
-    }
-    const slice = lines.slice(index, end + 1).join("\n");
-    const prefix = lines.slice(0, index).join("\n");
-    const startByte = prefix.length === 0 ? 0 : Buffer.byteLength(`${prefix}\n`);
-    units.push({
-      path,
-      selector: match[1],
-      qualifiedSelector: match[1],
-      language,
-      startLine: index + 1,
-      endLine: end + 1,
-      byteRange: [startByte, startByte + Buffer.byteLength(slice)],
-      sha256: sha256Bytes(slice),
-    });
-  }
-  return finishUnits(units);
 }
 
 function hashExtractedUnits(text, units) {
@@ -109,9 +48,6 @@ export async function parseSource({ path, bytes }) {
   const language = languageFor(path);
   if (!language) {
     return { units: [], error: "parser-not-implemented" };
-  }
-  if (REGEX_LANGUAGES.has(language)) {
-    return parseWithRegex({ path, bytes: text, language });
   }
   try {
     const extracted = await extractTreeSitterUnits({ path, bytes: text, language });

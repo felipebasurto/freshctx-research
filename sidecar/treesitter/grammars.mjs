@@ -32,6 +32,16 @@ const QUERIES = {
     (method_definition
       name: (property_identifier) @name) @unit
   `,
+  go: `
+    (function_declaration
+      name: (identifier) @name) @unit
+    (method_declaration
+      name: (field_identifier) @name) @unit
+  `,
+  rust: `
+    (function_item
+      name: (identifier) @name) @unit
+  `,
 };
 
 const WASM_FILES = {
@@ -39,14 +49,17 @@ const WASM_FILES = {
   javascript: ["tree-sitter-javascript", "tree-sitter-javascript.wasm"],
   typescript: ["tree-sitter-typescript", "tree-sitter-typescript.wasm"],
   tsx: ["tree-sitter-typescript", "tree-sitter-tsx.wasm"],
+  go: ["tree-sitter-go", "tree-sitter-go.wasm"],
+  rust: ["tree-sitter-rust", "tree-sitter-rust.wasm"],
 };
 
 const CLASS_TYPES = new Set(["class_definition", "class_declaration", "abstract_class_declaration"]);
-const METHOD_TYPES = new Set(["method_definition"]);
+const METHOD_TYPES = new Set(["method_definition", "method_declaration"]);
 const FUNCTION_TYPES = new Set([
   "function_definition",
   "function_declaration",
   "generator_function_declaration",
+  "function_item",
 ]);
 
 function packageFile(pkg, file) {
@@ -64,12 +77,33 @@ function kindFor(node) {
   return null;
 }
 
+function firstTypeIdentifier(node) {
+  if (!node) return null;
+  if (node.type === "type_identifier") return node.text;
+  for (const child of node.children ?? []) {
+    const found = firstTypeIdentifier(child);
+    if (found) return found;
+  }
+  return null;
+}
+
+function goReceiverTypeName(node) {
+  if (node.type !== "method_declaration") return null;
+  return firstTypeIdentifier(node.childForFieldName("receiver"));
+}
+
 function enclosingClassName(node) {
+  const receiverType = goReceiverTypeName(node);
+  if (receiverType) return receiverType;
   let current = node.parent;
   while (current) {
     if (CLASS_TYPES.has(current.type)) {
       const nameNode = current.childForFieldName("name");
       return nameNode?.text ?? null;
+    }
+    if (current.type === "impl_item") {
+      const typeNode = current.childForFieldName("type");
+      return typeNode?.text ?? null;
     }
     current = current.parent;
   }
