@@ -50,6 +50,21 @@ test("python stdlib ast enumerates class, function, and method", () => {
   assert.equal(result.units.every((unit) => unit.scope === "symbol"), true);
 });
 
+test("duplicate qualified names omit only the offending gold units", () => {
+  const source = [
+    "def alpha():",
+    "    return 1",
+    "def view():",
+    "    return 2",
+    "def view():",
+    "    return 3",
+    "",
+  ].join("\n");
+  const result = enumerateIndependentSymbols({ path: "src/views.py", bytes: source });
+  assert.equal(result.error, null);
+  assert.deepEqual(result.units.map((unit) => unit.selector), ["alpha"]);
+});
+
 test("python parse-broken fail-closes", () => {
   const result = enumerateIndependentSymbols({
     path: "src/broken.py",

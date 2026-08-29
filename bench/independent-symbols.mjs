@@ -71,14 +71,19 @@ function byteRangeForLines(text, startLine, endLine) {
 }
 
 function finishUnits(units) {
-  const names = units.map((unit) => unit.qualifiedSelector);
-  if (new Set(names).size !== names.length) {
-    return { units: [], error: "ambiguous" };
-  }
   if (units.length === 0) {
     return { units: [], error: "unresolved" };
   }
-  return { units, error: null };
+  const counts = new Map();
+  for (const unit of units) {
+    const key = unit.qualifiedSelector;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const unique = units.filter((unit) => counts.get(unit.qualifiedSelector) === 1);
+  if (unique.length === 0) {
+    return { units: [], error: "ambiguous" };
+  }
+  return { units: unique, error: null };
 }
 
 function hashUnits(text, units) {
