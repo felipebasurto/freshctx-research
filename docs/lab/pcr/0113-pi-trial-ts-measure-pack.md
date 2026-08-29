@@ -26,7 +26,9 @@ whole-file read and interior flip? Does Tree-sitter inside FreshCtx (not host
    knob in `adapters/pi/extension.ts`).
 4. Same whole-file prompts on all arms; no host `scope=symbol`.
 5. `resolveRepoRoot()` walks to `adapters/pi/extension.ts`.
-6. Did not edit official TAP, holdout v0.2, `src/policy`, `src/anchors`,
+6. Indexed in `docs/lab/INDEX.md`; `docs/lab/METRICS.md` notes harness-only status
+   (no live three-arm table; arm C Tree-sitter deferred to PCR 0114).
+7. Did not edit official TAP, holdout v0.2, `src/policy`, `src/anchors`,
    `src/projector`. No `--relock`.
 
 ## Arms
@@ -46,7 +48,7 @@ whole-file read and interior flip? Does Tree-sitter inside FreshCtx (not host
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 6/6 after three-arm correction |
+| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 7/7 after export-name boundary fix |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93…`; lock=`79e29d09…` |
 
 ## Metric snapshot

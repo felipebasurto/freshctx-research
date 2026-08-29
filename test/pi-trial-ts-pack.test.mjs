@@ -23,6 +23,7 @@ import {
   resolveRepoRoot,
 } from "../docs/lab/pi-trial-ts/pack.mjs";
 import {
+  exportFunctionBlock,
   markerValueInTargetBlock,
   mutate,
   reset,
@@ -61,6 +62,34 @@ test("pi-trial-ts resolveRepoRoot finds adapters/pi/extension.ts", () => {
   assert.equal(freshCtxExtensionPath(root), join(root, "adapters/pi/extension.ts"));
 });
 
+test("pi-trial-ts exportFunctionBlock binds exact export name not prefix", async () => {
+  const previewBeforeTarget = `
+export function settleDailyLedgerPreview(input) {
+  const MARKER_SETTLE = "SP0";
+  return { marker: MARKER_SETTLE };
+}
+
+export function settleDailyLedger(input) {
+  const MARKER_SETTLE = "ST0";
+  return { marker: MARKER_SETTLE };
+}
+`;
+  const previewBlock = exportFunctionBlock(previewBeforeTarget, "settleDailyLedgerPreview");
+  assert.match(previewBlock, /"SP0"/u);
+  assert.doesNotMatch(previewBlock, /"ST0"/u);
+
+  const targetBlock = exportFunctionBlock(previewBeforeTarget, TARGET_SYMBOL);
+  assert.match(targetBlock, /"ST0"/u);
+  assert.doesNotMatch(targetBlock, /"SP0"/u);
+  assert.doesNotMatch(targetBlock, /settleDailyLedgerPreview/u);
+
+  const source = await readFile(fixturePath, "utf8");
+  const fixtureBlock = exportFunctionBlock(source, TARGET_SYMBOL);
+  assert.match(fixtureBlock, /"ST0"/u);
+  assert.doesNotMatch(fixtureBlock, /"SP0"/u);
+  assert.doesNotMatch(fixtureBlock, /settleDailyLedgerPreview/u);
+});
+
 test("pi-trial-ts fixture has lookalike exports and interior target marker", async () => {
   const source = await readFile(fixturePath, "utf8");
   assert.match(source, new RegExp(`export function ${TARGET_SYMBOL}`, "u"));
@@ -96,7 +125,7 @@ test("pi-trial-ts flip-settle changes only settleDailyLedger interior marker", a
     MARKER_V0,
   );
   assert.match(
-    exportFunctionBlockFromSource(before, LOOKALIKE_SYMBOL),
+    exportFunctionBlock(before, LOOKALIKE_SYMBOL),
     new RegExp(`"${LOOKALIKE_MARKER}"`, "u"),
   );
 
@@ -110,22 +139,13 @@ test("pi-trial-ts flip-settle changes only settleDailyLedger interior marker", a
   assert.equal(after.match(new RegExp(MARKER_V0, "gu"))?.length ?? 0, 0, "no ST0 left after flip");
   assert.equal(after.match(new RegExp(MARKER_V1, "gu"))?.length ?? 0, 1, "one ST1 after flip");
   assert.match(
-    exportFunctionBlockFromSource(after, LOOKALIKE_SYMBOL),
+    exportFunctionBlock(after, LOOKALIKE_SYMBOL),
     new RegExp(`"${LOOKALIKE_MARKER}"`, "u"),
     "lookalike marker unchanged",
   );
   assert.doesNotMatch(
-    exportFunctionBlockFromSource(after, LOOKALIKE_SYMBOL),
+    exportFunctionBlock(after, LOOKALIKE_SYMBOL),
     new RegExp(MARKER_V0, "u"),
     "lookalike keeps distinct marker; ST0 not flipped",
   );
 });
-
-function exportFunctionBlockFromSource(source, symbol) {
-  const startNeedle = `export function ${symbol}`;
-  const start = source.indexOf(startNeedle);
-  assert.ok(start >= 0, `missing ${symbol}`);
-  const nextExport = source.indexOf("\nexport function ", start + startNeedle.length);
-  const end = nextExport < 0 ? source.length : nextExport;
-  return source.slice(start, end);
-}

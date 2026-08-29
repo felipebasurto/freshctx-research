@@ -77,15 +77,33 @@ async function snapshot(root) {
   return { files, hashes };
 }
 
-function exportFunctionBlock(source, symbol) {
-  const startNeedle = `export function ${symbol}`;
-  const start = source.indexOf(startNeedle);
-  if (start < 0) {
+function exportFunctionDeclPattern(symbol) {
+  const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(`export function ${escaped}(?![\\w$])`, "u");
+}
+
+export function exportFunctionBlock(source, symbol) {
+  const pattern = exportFunctionDeclPattern(symbol);
+  const match = pattern.exec(source);
+  if (!match) {
     throw new Error(`missing export function ${symbol}`);
   }
-  const nextExport = source.indexOf("\nexport function ", start + startNeedle.length);
+  const start = match.index;
+  const nextExport = source.indexOf("\nexport function ", start + match[0].length);
   const end = nextExport < 0 ? source.length : nextExport;
   return source.slice(start, end);
+}
+
+function exportFunctionSpan(source, symbol) {
+  const pattern = exportFunctionDeclPattern(symbol);
+  const match = pattern.exec(source);
+  if (!match) {
+    throw new Error(`missing export function ${symbol}`);
+  }
+  const start = match.index;
+  const nextExport = source.indexOf("\nexport function ", start + match[0].length);
+  const end = nextExport < 0 ? source.length : nextExport;
+  return { start, end, block: source.slice(start, end) };
 }
 
 export function markerValueInTargetBlock(source, { v0, v1, symbol = TARGET_SYMBOL }) {
@@ -99,7 +117,7 @@ export function flipTargetInteriorMarker(
   source,
   { v0, v1, symbol = TARGET_SYMBOL } = {},
 ) {
-  const block = exportFunctionBlock(source, symbol);
+  const { start, end, block } = exportFunctionSpan(source, symbol);
   if (!block.includes(v0)) {
     throw new Error(`${symbol} missing ${v0}`);
   }
@@ -110,10 +128,6 @@ export function flipTargetInteriorMarker(
   if (matches.length !== 1) {
     throw new Error(`expected exactly one ${v0} in ${symbol}, found ${matches.length}`);
   }
-  const startNeedle = `export function ${symbol}`;
-  const start = source.indexOf(startNeedle);
-  const nextExport = source.indexOf("\nexport function ", start + startNeedle.length);
-  const end = nextExport < 0 ? source.length : nextExport;
   const flippedBlock = block.replace(v0, v1);
   return `${source.slice(0, start)}${flippedBlock}${source.slice(end)}`;
 }

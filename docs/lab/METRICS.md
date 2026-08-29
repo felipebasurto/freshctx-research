@@ -105,6 +105,8 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-28 | post-rebase on `8b2305c5` dest=`cloud-agent` env=hermes-absent; v0.2 `sealed` | TAP 398 / 372 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` | 1.0 | [0111](pcr/0111-treesitter-sidecar-wasm.md) |
 | 2026-08-29 | (PCR 0112 review) symbol observation keys + adapter sidecar inject; dest=`cloud-agent` env=hermes-absent | TAP 405 / 379 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0112](pcr/0112-adapter-sidecar-inject.md) |
 
+Official accepted TAP on merge-base `4e4a930` remains **388 pass / 0 fail / 17 skipped / 405 total** until Bench measures this branch. PCR 0113 adds harness invariant tests only; no live Pi TS three-arm table yet; arm C Tree-sitter comparison deferred to PCR 0114.
+
 No synthetic metric delta. Label: `synthetic`.
 
 ## Public-repo smoke
@@ -156,4 +158,5 @@ Official score is token-in-request. Cell B is a confounded region test (literal 
 | 2026-08-24 | `3bcbfb5` | `999703fd` | — | deepseek-chat | 1 cell (two-turn) | product main hold; no persist-38; NEW in turn-2 projection (content-bytes=36) | [0061](pcr/0061-persist-main-t2append.md) |
 | 2026-08-25 | `363a03c8` | — | `c49906ec` (pi 0.84.2) | deepseek-v4-flash | 10 | Official Pi hook post-0073; offset/limit boards; args_matched; not 0043 hole | [0074](pcr/0074-live-pi-cli-confirm.md) |
 | 2026-08-25 | `9741d00` + 0080/0081 (uncommitted) | — | official Pi (`/Users/felipe/.hermes/node/bin/pi`) | deepseek-v4-pro | 5 cells × 2 arms | Trial 2.2: with-arm CLI/README/todo current after disk flip (cell 2 266,986 CL0=0; cell 5 222,450, not 20% below 171,172); five-file dump leftover; not a paper result | [0081](pcr/0081-stale-shell-dump.md) / [REPORT-2.2](pi-trial/REPORT-2.2.md) |
+| 2026-08-29 | `a9f2567` (draft harness) | — | official Pi | deepseek-v4-flash | 0 valid | Pi TS three-arm pack harness only; retired invalid first run; no live table yet; Tree-sitter on arm `freshctx-ts` deferred to PCR 0114 | [0113](pcr/0113-pi-trial-ts-measure-pack.md) |
 | 2026-08-22 | `fa6e2011` base | `999703fd` | — | deepseek-chat (Hermes compress) | 6 | Live compress matched stub; not merged | [0034](pcr/0034-budget-pressure-live-summarizer.md) |
