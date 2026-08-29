@@ -11,6 +11,8 @@ export const SIBLING_SYMBOL = "settleWeeklyLedger";
 export const MARKER_V0 = "ST0";
 export const MARKER_V1 = "ST1";
 export const SIBLING_MARKER = "SW0";
+export const LOOKALIKE_MARKER = "CT0";
+export const LOOKALIKE_SYMBOL = "computeDailyLedgerTotal";
 
 export const TARGET_FN = "settleDailyLedger";
 

@@ -43,7 +43,7 @@ extension, printed column schema, and `REPORT.md` template.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 4/4 |
+| `node --test test/pi-trial-ts-pack.test.mjs` | yes | 0 | 5/5 incl. flip-settle scope |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`79e29d09a9ec12b1128617f683f50a35a3c8809e` |
 | `npm test` | yes | pre-existing sidecar failures on VM | +4 pack tests pass |
 | `npm run evaluate` | blocked | pre-existing regression gate on VM | not re-run for score claim |

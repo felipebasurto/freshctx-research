@@ -9,6 +9,7 @@ import {
   MARKER_V1,
   SIBLING_MARKER,
   TARGET_FILE,
+  TARGET_SYMBOL,
   validateArm,
 } from "./pack.mjs";
 
@@ -76,6 +77,47 @@ async function snapshot(root) {
   return { files, hashes };
 }
 
+function exportFunctionBlock(source, symbol) {
+  const startNeedle = `export function ${symbol}`;
+  const start = source.indexOf(startNeedle);
+  if (start < 0) {
+    throw new Error(`missing export function ${symbol}`);
+  }
+  const nextExport = source.indexOf("\nexport function ", start + startNeedle.length);
+  const end = nextExport < 0 ? source.length : nextExport;
+  return source.slice(start, end);
+}
+
+export function markerValueInTargetBlock(source, { v0, v1, symbol = TARGET_SYMBOL }) {
+  const block = exportFunctionBlock(source, symbol);
+  if (block.includes(v1)) return v1;
+  if (block.includes(v0)) return v0;
+  return null;
+}
+
+export function flipTargetInteriorMarker(
+  source,
+  { v0, v1, symbol = TARGET_SYMBOL } = {},
+) {
+  const block = exportFunctionBlock(source, symbol);
+  if (!block.includes(v0)) {
+    throw new Error(`${symbol} missing ${v0}`);
+  }
+  if (block.includes(v1)) {
+    throw new Error(`${symbol} already contains ${v1}`);
+  }
+  const matches = block.match(new RegExp(v0.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"), "gu")) ?? [];
+  if (matches.length !== 1) {
+    throw new Error(`expected exactly one ${v0} in ${symbol}, found ${matches.length}`);
+  }
+  const startNeedle = `export function ${symbol}`;
+  const start = source.indexOf(startNeedle);
+  const nextExport = source.indexOf("\nexport function ", start + startNeedle.length);
+  const end = nextExport < 0 ? source.length : nextExport;
+  const flippedBlock = block.replace(v0, v1);
+  return `${source.slice(0, start)}${flippedBlock}${source.slice(end)}`;
+}
+
 async function markerState(root) {
   const state = {};
   for (const [name, spec] of Object.entries(MARKERS)) {
@@ -88,8 +130,13 @@ async function markerState(root) {
     }
     const text = await readFile(full, "utf8");
     let value = null;
-    if (text.includes(spec.v1)) value = spec.v1;
-    else if (text.includes(spec.v0)) value = spec.v0;
+    if (name === "MARKER_SETTLE") {
+      value = markerValueInTargetBlock(text, { v0: spec.v0, v1: spec.v1, symbol: TARGET_SYMBOL });
+    } else if (text.includes(spec.v1)) {
+      value = spec.v1;
+    } else if (text.includes(spec.v0)) {
+      value = spec.v0;
+    }
     state[name] = { path: spec.path, exists: true, value };
   }
   return state;
@@ -119,10 +166,11 @@ async function flipMarker(root, name) {
   const spec = MARKERS[name];
   const path = join(root, spec.path);
   const text = await readFile(path, "utf8");
-  if (!text.includes(spec.v0)) {
-    throw new Error(`${name} missing ${spec.v0} in ${spec.path}`);
-  }
-  await writeFile(path, text.replaceAll(spec.v0, spec.v1));
+  const flipped =
+    name === "MARKER_SETTLE"
+      ? flipTargetInteriorMarker(text, { v0: spec.v0, v1: spec.v1, symbol: TARGET_SYMBOL })
+      : text.replaceAll(spec.v0, spec.v1);
+  await writeFile(path, flipped);
 }
 
 async function mutate(arm, name) {

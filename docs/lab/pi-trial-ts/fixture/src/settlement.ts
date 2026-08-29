@@ -118,10 +118,10 @@ export function listSettlementNoise(): readonly string[] {
   return NOISE_ROWS;
 }
 
-/** Another lookalike export with a near-identical body shape. */
+/** Lookalike export with a near-identical body shape; distinct marker CT0. */
 export function computeDailyLedgerTotal(amountCents: number): number {
-  const MARKER_SETTLE = "ST0";
-  return roundScaled(amountCents + Number(MARKER_SETTLE.replace(/\D/gu, "") || 0));
+  const MARKER_TOTAL = "CT0";
+  return roundScaled(amountCents + Number(MARKER_TOTAL.replace(/\D/gu, "") || 0));
 }
 
 export function computeWeeklyLedgerTotal(amountCents: number): number {
