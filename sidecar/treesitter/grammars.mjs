@@ -62,6 +62,51 @@ const FUNCTION_TYPES = new Set([
   "function_item",
 ]);
 
+const NAMED_SCOPE_TYPES = new Map([
+  ["class_definition", "class"],
+  ["class_declaration", "class"],
+  ["abstract_class_declaration", "class"],
+  ["impl_item", "class"],
+  ["function_definition", "function"],
+  ["function_declaration", "function"],
+  ["generator_function_declaration", "function"],
+  ["function_item", "function"],
+  ["method_definition", "method"],
+  ["method_declaration", "method"],
+]);
+
+const BLOCK_SCOPE_TYPES = new Map([
+  ["if_statement", "if"],
+  ["if_expression", "if"],
+  ["elif_clause", "elif"],
+  ["else_clause", "else"],
+  ["else_if_clause", "elif"],
+  ["for_statement", "for"],
+  ["for_in_statement", "for"],
+  ["for_expression", "for"],
+  ["while_statement", "while"],
+  ["while_expression", "while"],
+  ["do_statement", "do"],
+  ["loop_expression", "loop"],
+  ["with_statement", "with"],
+  ["match_statement", "match"],
+  ["match_expression", "match"],
+  ["case_clause", "case"],
+  ["match_arm", "case"],
+  ["try_statement", "try"],
+  ["except_clause", "except"],
+  ["except_group_clause", "except"],
+  ["catch_clause", "except"],
+  ["finally_clause", "finally"],
+  ["switch_statement", "switch"],
+  ["expression_switch_statement", "switch"],
+  ["type_switch_statement", "switch"],
+  ["switch_case", "case"],
+]);
+
+const IF_LIKE_TYPES = new Set(["if_statement", "if_expression"]);
+const ALREADY_BRANCHED = new Set(["elif", "else"]);
+
 function packageFile(pkg, file) {
   return join(dirname(require.resolve(`${pkg}/package.json`)), file);
 }
@@ -70,11 +115,117 @@ function webTreeSitterWasm(scriptName) {
   return join(dirname(require.resolve("web-tree-sitter")), scriptName);
 }
 
-function kindFor(node) {
+function namedChildrenOf(node) {
+  if (node.namedChildren) return node.namedChildren;
+  return (node.children ?? []).filter((child) => child.isNamed);
+}
+
+function sameNode(left, right) {
+  if (!left || !right) return false;
+  if (left === right) return true;
+  if (typeof left.id === "number" && typeof right.id === "number") return left.id === right.id;
+  return left.startIndex === right.startIndex && left.endIndex === right.endIndex && left.type === right.type;
+}
+
+function nodeContains(parent, node) {
+  if (!parent || !node) return false;
+  return node.startIndex >= parent.startIndex && node.endIndex <= parent.endIndex;
+}
+
+function scopeName(node) {
+  if (node.type === "impl_item") {
+    return node.childForFieldName("type")?.text ?? null;
+  }
+  return node.childForFieldName("name")?.text ?? null;
+}
+
+function isMethodLike(node) {
+  if (METHOD_TYPES.has(node.type)) return true;
+  if (!FUNCTION_TYPES.has(node.type)) return false;
+  let current = node.parent;
+  while (current) {
+    const ancestorKind = NAMED_SCOPE_TYPES.get(current.type);
+    if (ancestorKind) return ancestorKind === "class";
+    current = current.parent;
+  }
+  return false;
+}
+
+function unitKind(node) {
   if (CLASS_TYPES.has(node.type)) return "class";
   if (METHOD_TYPES.has(node.type)) return "method";
-  if (FUNCTION_TYPES.has(node.type)) return "function";
+  if (FUNCTION_TYPES.has(node.type)) return isMethodLike(node) ? "method" : "function";
   return null;
+}
+
+function namedScopeKind(node) {
+  const kind = NAMED_SCOPE_TYPES.get(node.type);
+  if (!kind) return null;
+  if (kind === "function" && isMethodLike(node)) return "method";
+  return kind;
+}
+
+function anonymousSiblingIndex(node) {
+  const parent = node.parent;
+  if (!parent) return null;
+  const siblings = namedChildrenOf(parent).filter((child) => child.type === node.type);
+  if (siblings.length <= 1) return null;
+  const index = siblings.findIndex((child) => sameNode(child, node));
+  return index >= 0 ? index : null;
+}
+
+function ifBranchKind(ifNode, fromChild) {
+  const alternative = ifNode.childForFieldName("alternative");
+  if (alternative && (sameNode(fromChild, alternative) || nodeContains(alternative, fromChild))) {
+    return "else";
+  }
+  return "if";
+}
+
+function formatSegment(segment) {
+  if (Number.isInteger(segment.index)) return `${segment.kind}@${segment.index}`;
+  if (segment.name) return `${segment.kind} ${segment.name}`;
+  return segment.kind;
+}
+
+function enclosingSegments(unitNode) {
+  const segments = [];
+  let current = unitNode.parent;
+  let fromChild = unitNode;
+  while (current) {
+    const namedKind = namedScopeKind(current);
+    if (namedKind) {
+      const name = scopeName(current);
+      if (name) segments.push({ kind: namedKind, name, index: null });
+    } else if (IF_LIKE_TYPES.has(current.type)) {
+      const fromKind = BLOCK_SCOPE_TYPES.get(fromChild.type);
+      if (!ALREADY_BRANCHED.has(fromKind)) {
+        const kind = ifBranchKind(current, fromChild);
+        const index = anonymousSiblingIndex(current);
+        segments.push({ kind, name: null, index });
+      }
+    } else {
+      const blockKind = BLOCK_SCOPE_TYPES.get(current.type);
+      if (blockKind) {
+        const index = anonymousSiblingIndex(current);
+        segments.push({ kind: blockKind, name: null, index });
+      }
+    }
+    fromChild = current;
+    current = current.parent;
+  }
+  segments.reverse();
+  const receiver = goReceiverTypeName(unitNode);
+  if (receiver && !segments.some((segment) => segment.kind === "class" && segment.name === receiver)) {
+    segments.unshift({ kind: "class", name: receiver, index: null });
+  }
+  return segments;
+}
+
+function qualifiedSelector(kind, name, segments) {
+  const parts = segments.map(formatSegment);
+  parts.push(kind === "class" ? `class ${name}` : `${kind} ${name}`);
+  return parts.join("::");
 }
 
 function firstTypeIdentifier(node) {
@@ -92,24 +243,6 @@ function goReceiverTypeName(node) {
   return firstTypeIdentifier(node.childForFieldName("receiver"));
 }
 
-function enclosingClassName(node) {
-  const receiverType = goReceiverTypeName(node);
-  if (receiverType) return receiverType;
-  let current = node.parent;
-  while (current) {
-    if (CLASS_TYPES.has(current.type)) {
-      const nameNode = current.childForFieldName("name");
-      return nameNode?.text ?? null;
-    }
-    if (current.type === "impl_item") {
-      const typeNode = current.childForFieldName("type");
-      return typeNode?.text ?? null;
-    }
-    current = current.parent;
-  }
-  return null;
-}
-
 export function inclusiveEndLine(startPosition, endPosition) {
   if (endPosition.column === 0 && endPosition.row > startPosition.row) {
     return endPosition.row;
@@ -117,18 +250,11 @@ export function inclusiveEndLine(startPosition, endPosition) {
   return endPosition.row + 1;
 }
 
-function qualifiedSelector(kind, name, className) {
-  if (kind === "class") return `class ${name}`;
-  if (className) return `class ${className}::method ${name}`;
-  return `function ${name}`;
-}
-
 function unitFromCapture({ path, language, text, unitNode, name }) {
   if (!name || name === "constructor") return null;
   if (unitNode.type === "ERROR" || unitNode.isMissing) return null;
-  const kind = kindFor(unitNode);
+  const kind = unitKind(unitNode);
   if (!kind) return null;
-  const className = kind === "class" ? null : enclosingClassName(unitNode);
   const startLine = unitNode.startPosition.row + 1;
   const endLine = inclusiveEndLine(unitNode.startPosition, unitNode.endPosition);
   const lines = text.split("\n");
@@ -138,7 +264,7 @@ function unitFromCapture({ path, language, text, unitNode, name }) {
   return {
     path,
     selector: name,
-    qualifiedSelector: qualifiedSelector(kind, name, className),
+    qualifiedSelector: qualifiedSelector(kind, name, enclosingSegments(unitNode)),
     language,
     startLine,
     endLine,

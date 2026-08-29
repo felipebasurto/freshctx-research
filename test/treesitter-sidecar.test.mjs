@@ -216,6 +216,171 @@ test("unique method still resolves when nested functions collide", async () => {
   assert.match(unit.content, /return view  # now/u);
 });
 
+test("nested functions in different parents get distinct enclosing paths", async () => {
+  const cases = [
+    [
+      "a.py",
+      [
+        "def outer():",
+        "    def helper():",
+        "        return 1",
+        "def other():",
+        "    def helper():",
+        "        return 2",
+        "",
+      ].join("\n"),
+      ["function outer::function helper", "function other::function helper"],
+    ],
+    [
+      "a.js",
+      [
+        "function outer() {",
+        "  function helper() { return 1; }",
+        "}",
+        "function other() {",
+        "  function helper() { return 2; }",
+        "}",
+        "",
+      ].join("\n"),
+      ["function outer::function helper", "function other::function helper"],
+    ],
+    [
+      "a.ts",
+      [
+        "function outer() {",
+        "  function helper() { return 1; }",
+        "}",
+        "function other() {",
+        "  function helper() { return 2; }",
+        "}",
+        "",
+      ].join("\n"),
+      ["function outer::function helper", "function other::function helper"],
+    ],
+    [
+      "a.rs",
+      [
+        "fn outer() {",
+        "    fn helper() {",
+        "        let x = 1;",
+        "    }",
+        "}",
+        "fn other() {",
+        "    fn helper() {",
+        "        let y = 2;",
+        "    }",
+        "}",
+        "",
+      ].join("\n"),
+      ["function outer::function helper", "function other::function helper"],
+    ],
+  ];
+  for (const [path, bytes, expected] of cases) {
+    const parsed = await parseSource({ path, bytes });
+    assert.equal(parsed.error, null, path);
+    const helpers = parsed.units.filter((unit) => unit.selector === "helper");
+    assert.deepEqual(
+      helpers.map((unit) => unit.qualifiedSelector),
+      expected,
+      path,
+    );
+  }
+});
+
+test("same-parent nested views in different blocks resolve", async () => {
+  const bytes = [
+    "class View:",
+    "    def as_view(self):",
+    "        def view():",
+    "            return 1",
+    "        if True:",
+    "            def view():",
+    "                return 2",
+    "        return view",
+    "",
+  ].join("\n");
+  const parsed = await parseSource({ path: "views.py", bytes });
+  assert.equal(parsed.error, null);
+  const views = parsed.units.filter((unit) => unit.selector === "view");
+  assert.equal(views.length, 2);
+  assert.equal(views[0].qualifiedSelector, "class View::method as_view::function view");
+  assert.equal(views[1].qualifiedSelector, "class View::method as_view::if::function view");
+  const asView = parsed.units.find((unit) => unit.selector === "as_view");
+  assert.equal(asView.qualifiedSelector, "class View::method as_view");
+});
+
+test("JavaScript else-branch nested functions stay distinct from the if body", async () => {
+  const bytes = [
+    "function wrap() {",
+    "  if (true) {",
+    "    function view() { return 1; }",
+    "  } else {",
+    "    function view() { return 2; }",
+    "  }",
+    "}",
+    "",
+  ].join("\n");
+  const parsed = await parseSource({ path: "a.js", bytes });
+  assert.equal(parsed.error, null);
+  const views = parsed.units.filter((unit) => unit.selector === "view");
+  assert.equal(views.length, 2);
+  assert.equal(views[0].qualifiedSelector, "function wrap::if::function view");
+  assert.equal(views[1].qualifiedSelector, "function wrap::else::function view");
+});
+
+test("Go methods on different receivers keep class-qualified selectors", async () => {
+  const parsed = await parseSource({
+    path: "server.go",
+    bytes: [
+      "func (s *Server) Serve() {",
+      "  return",
+      "}",
+      "func (c *Client) Serve() {",
+      "  return",
+      "}",
+      "",
+    ].join("\n"),
+  });
+  assert.equal(parsed.error, null);
+  const serves = parsed.units.filter((unit) => unit.selector === "Serve");
+  assert.deepEqual(
+    serves.map((unit) => unit.qualifiedSelector),
+    ["class Server::method Serve", "class Client::method Serve"],
+  );
+});
+
+test("engine resolves a nested function by enclosing qualifiedSelector", async () => {
+  const bytes = [
+    "def outer():",
+    "    def helper():",
+    "        return 1",
+    "def other():",
+    "    def helper():",
+    "        return 2",
+    "",
+  ].join("\n");
+  const parsed = await parseSource({ path: "mod.py", bytes });
+  const helper = parsed.units.find((unit) => unit.qualifiedSelector === "function outer::function helper");
+  assert.ok(helper);
+  const engine = new FreshCtxEngine({ sidecarRunner: createSidecarRunner() });
+  engine.trackRead({
+    path: "mod.py",
+    content: bytes.split("\n").slice(helper.startLine - 1, helper.endLine).join("\n"),
+    scope: "symbol",
+    selector: helper.qualifiedSelector,
+    startLine: helper.startLine,
+    endLine: helper.endLine,
+  });
+  engine.advanceTurn();
+  await engine.refresh({
+    "mod.py": bytes.replace("        return 1", "        return 9"),
+  });
+  const unit = engine.registry.list()[0];
+  assert.equal(unit.state, "resolved");
+  assert.match(unit.content, /return 9/u);
+  assert.equal(unit.content.includes("return 2"), false);
+});
+
 test("class-qualified methods can coexist", async () => {
   const parsed = await parseSource({
     path: "a.ts",

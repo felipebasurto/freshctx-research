@@ -32,6 +32,15 @@ Use a **sidecar process** at `sidecar/treesitter/`.
   ambiguous. Duplicate `qualifiedSelector` values omit those units only.
   Remaining unique units still emit with `error: null`. `error: "ambiguous"`
   means every extracted unit collided. `parse-broken` still wipes the file.
+- `qualifiedSelector` is the structural path from file root to the unit.
+  Named ancestors (class, impl type, function, method) and control-flow
+  blocks (if, else, elif, for, while, match) are appended with `::`.
+  An `if` consequence is `if`. An `if` alternative is `else`. Repeated
+  anonymous siblings of the same type get `@k`. A function is a `method`
+  only when its nearest named ancestor is a class or impl. Nested
+  functions in different parents or different blocks therefore resolve
+  instead of colliding. Same-block same-name units still drop. Direct
+  class methods stay `class Alpha::method render`.
 - The sidecar must not store prior request bodies. Each call is stateless.
 - Selected units still carry current bytes. No `unchanged` or digest-only
   selected unit.

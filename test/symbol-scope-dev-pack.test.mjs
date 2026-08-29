@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
 import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { parseSource } from "../sidecar/treesitter/parse.mjs";
 import {
   SYMBOL_PACK_REPS,
   SYMBOL_PACK_WARMUPS,
@@ -122,6 +123,27 @@ test("generate-symbol-pack stays off the holdout-v0.2 pipeline", async () => {
   assert.match(source, /Buffer\.byteLength/u);
   assert.equal(SYMBOL_PACK_WARMUPS > 0, true);
   assert.equal(SYMBOL_PACK_REPS >= 21, true);
+});
+
+test("flask views.py nested view helpers uniquely resolve after enclosing-span paths", async () => {
+  const generated = await generateSymbolPack({ root: ROOT });
+  const flask = generated.traces.find((item) => item.target.repo === "flask");
+  const parsed = await parseSource({
+    path: flask.target.path,
+    bytes: flask.trace.initialFiles[flask.target.path],
+  });
+  assert.equal(parsed.error, null);
+  const asView = parsed.units.find((unit) => unit.selector === "as_view");
+  assert.ok(asView);
+  assert.equal(asView.qualifiedSelector, "class View::method as_view");
+  const views = parsed.units.filter((unit) => unit.selector === "view");
+  assert.deepEqual(
+    views.map((unit) => unit.qualifiedSelector),
+    [
+      "class View::method as_view::if@0::function view",
+      "class View::method as_view::else::function view",
+    ],
+  );
 });
 
 test("flask as_view resolves after nested view functions collide", async () => {
