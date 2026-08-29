@@ -308,7 +308,8 @@ async function main() {
   const summary = {
     label: "live-host",
     notAPaperResult: true,
-    question: "Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and interior flip?",
+    question:
+      "Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of settleDailyLedger and interior flip?",
     repoRoot,
     freshCtxExtension: freshCtxExtensionForArm("freshctx-ts", repoRoot),
     commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim(),

@@ -4,12 +4,12 @@ Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 
 ## Question
 
-Does FreshCtx beat Pi-alone on TypeScript after a whole-file read and interior
-flip on `settleDailyLedger`? Does Tree-sitter (inside FreshCtx, not host
-`scope=symbol`) change the outcome vs the same adapter with sidecar off?
+Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
+`settleDailyLedger` and interior flip on that symbol? Does Tree-sitter inside
+FreshCtx (host passes `scope=symbol` with selector `settleDailyLedger`) change
+the outcome vs the same adapter with the sidecar off?
 
-Wait for PCR 0114 if file-scope TS does not yet hit the sidecar when the runner
-is present.
+Wait for a clean three-arm rerun after PCR 0116 symbol-scope harness lands.
 
 ## Setup
 
@@ -61,8 +61,8 @@ FreshCtx with `FRESHCTX_SIDECAR=off`. Same prompts as A and C.
 
 ### C `freshctx-ts`
 
-FreshCtx with sidecar injected. Until PCR 0114, `resolution=sidecar` on
-file-scope TS may not appear even when sidecar is present.
+FreshCtx with sidecar injected. Expect `resolution=sidecar` on symbol-scope TS
+when Tree-sitter resolves `settleDailyLedger` only.
 
 ## Adapter smokes (synthetic)
 
@@ -76,5 +76,5 @@ Door `f8771c93894095348185ef3453a3c2498355b3c6`. Lock
 
 ## Could not measure
 
-Tree-sitter vs no-Tree-sitter on file-scope TS until PCR 0114 routes file-scope
-refresh through the sidecar. Host `scope=symbol` is out of scope.
+Tree-sitter vs no-Tree-sitter on symbol-scope TS is pinned in synthetic replay
+(`test/pcr-0116-pi-hermes-symbol-scope-trial.test.mjs`). Live three-arm pending.
