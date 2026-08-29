@@ -55,16 +55,38 @@ Targeted TAP (`test/independent-symbols.test.mjs`,
 # fail 0
 ```
 
-Full validation is recorded after the first push.
+Full TAP on this dest, dest `cloud-agent`, env `bench/hosts/hermes` absent:
+
+```
+1..472
+# tests 472
+# pass 446
+# fail 0
+# skipped 26
+```
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | targeted gold/sampler suite | yes | 0 | 18 pass |
-| `npm test` | pending | — | after first push |
-| `npm run check` | pending | — | after first push |
-| `npm run evaluate` | pending | — | must stay `89.107165` |
-| `npm run ctxbench` | pending | — | payload must stay `697e74e3…` |
-| `npm run holdout:verify -- --pack=holdout-v0.1` | pending | — | verify only |
+| `npm run check` | yes | 0 | includes `bench/python-ast-oracle.py` |
+| `npm test` | yes | 0 | TAP above. +9 tests vs PCR 0119 |
+| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; four hard gates true |
+| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; six hard gates true |
+| `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
+
+`holdout-v0.2` cells were not opened.
+
+## Metric snapshot
+
+| metric | origin/main `394d856` | this PCR | delta |
+|---|---|---|---|
+| `npm test` TAP `# tests` | 463 | **472** | **+9** |
+| `npm test` TAP `# pass` | 437 | **446** | **+9** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| `npm test` TAP `# skipped` | 26 | **26** | `0` |
+| `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | 0 |
+| ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | 0 |
+| `src/policy.mjs` / `src/anchors.mjs` / `src/projector.mjs` | untouched | untouched | 0 |
 
 ## Conflicts with constitutions
 
