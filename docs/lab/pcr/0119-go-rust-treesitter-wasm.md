@@ -40,34 +40,67 @@ holdout gold, weight, threshold, or `bench/traces/holdout/**` edit. No laptop
 
 ## Benchmarks run
 
-Targeted TAP before the full suite:
+Targeted TAP (`test/treesitter-sidecar.test.mjs` plus
+`test/adr-0004-treesitter.test.mjs`):
 
 ```
 1..20
 # tests 20
+# suites 0
 # pass 20
 # fail 0
+# cancelled 0
+# skipped 0
+# todo 0
 ```
 
-`test/treesitter-sidecar.test.mjs` plus `test/adr-0004-treesitter.test.mjs`.
+Full `npm test` TAP on this dirty tree, dest `cloud-agent`, env
+`bench/hosts/hermes` absent, go-tools fixture repos not fetched:
+
+```
+1..463
+# tests 463
+# suites 0
+# pass 437
+# fail 0
+# cancelled 0
+# skipped 26
+# todo 0
+```
+
+`# fail 0`. Skip count is the same 26 dest/env skips as PCR 0118 on this dest.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| targeted Tree-sitter suite | yes | 0 | 20 pass, including Go/Rust WASM pins |
-| `npm test` | pending |  | after this PCR lands on the branch |
-| `npm run check` | pending |  |  |
-| `npm run evaluate` | pending |  | score must stay `89.107165` |
-| `npm run ctxbench` | pending |  | payload hash must stay `697e74e3…` |
-| `npm run holdout:verify -- --pack=holdout-v0.1` | pending |  |  |
-| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=bench/packs/holdout-v0.2/provenance/freeze-attestation.json` | pending |  | verify only, not a tuning run |
+| `npm --prefix sidecar/treesitter ci --omit=dev` | yes | 0 | lock installs `tree-sitter-go` and `tree-sitter-rust` |
+| targeted Tree-sitter suite | yes | 0 | 20 pass |
+| `npm test` | yes | 0 | TAP above |
+| `npm run check` | yes | 0 | includes Isolated Semantic Engine `*.mjs` |
+| `git diff --exit-code` | yes | 0 | after the committed test run |
+| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; four hard gates true |
+| `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; six hard gates true |
+| `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
+| `npm run holdout:verify -- --pack=holdout-v0.2 --attestation=bench/packs/holdout-v0.2/provenance/freeze-attestation.json` | yes | 0 | `sealed`, `valid: true`. Verify only. Cells were not opened for tuning. |
+
+Live unsealed v0.1 `freshctx-region` via read-only `runTrace` (no report write).
+go-tools interior-edit requiredRecall=1, exactCurrentRate=1, staleBytes=0,
+projectionBytes=562. neovim interior-edit requiredRecall=1, exactCurrentRate=1,
+staleBytes=0, projectionBytes=872. All ten families requiredRecall=1.
+`test/interior-edit-dev.test.mjs` 2/2 pass. The door blob is unchanged.
 
 ## Metric snapshot
 
-| metric | origin/main `631819c` | this PCR (targeted) | delta |
+| metric | origin/main `631819c` | this PCR | delta |
 |---|---|---|---|
-| Tree-sitter suite pass | 14 (pre-Go/Rust WASM pins) | 20 | +6 pins |
-| door blob | `f8771c93…` | `f8771c93…` | 0 |
-| `src/anchors.mjs` | untouched | untouched | 0 |
+| `npm test` TAP `# tests` | 457 | **463** | **+6** |
+| `npm test` TAP `# pass` | 431 | **437** | **+6** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| `npm test` TAP `# skipped` | 26 | **26** | `0` |
+| targeted Tree-sitter suite | 14 | 20 | +6 pins |
+| `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | 0 |
+| ctxbench payload sha256 | `697e74e3…` | `697e74e3…` | 0 |
+| live go-tools interior-edit recall | 1 | 1 | 0 |
+| `src/policy.mjs` / `src/anchors.mjs` / `src/projector.mjs` | untouched | untouched | 0 |
 
 ## Conflicts with constitutions
 
@@ -85,6 +118,7 @@ none observed.
 
 ## Next measurement
 
-Run the full validation loop on this branch. Then measure live
-`freshctx-region` recall on the unsealed v0.1 `ParseFile.body` door without
-opening holdout v0.2 cells.
+Wire `createSidecarRunner` into a bench-only path without touching holdout
+cells, or sample symbol-shaped units once gold is an independent extractor.
+Do not retune `src/anchors.mjs` against sealed v0.2. The live interior-edit
+miss is already closed.
