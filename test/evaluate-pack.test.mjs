@@ -10,7 +10,7 @@ import { parseEvaluateArgs, runEvaluateBenchmark } from "../autoresearch/evaluat
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
-test("evaluate CLI binds --pack and defaults to the synthetic fixture", () => {
+test("evaluate CLI binds --pack and defaults to no pack flag", () => {
   assert.deepEqual(parseEvaluateArgs(["node", "evaluate.mjs", "--pack=symbol-scope-dev-v0.1"]), {
     pack: "symbol-scope-dev-v0.1",
   });
@@ -28,10 +28,12 @@ test("evaluate --pack runs that pack instead of the synthetic fixture", async ()
   assert.ok(Object.values(result.hardGates).every(Boolean));
 });
 
-test("evaluate without --pack still runs the synthetic benchmark", async () => {
+test("evaluate without --pack runs the physical empirical board", async () => {
   const result = await runEvaluateBenchmark({ root: ROOT });
-  assert.equal(result.label, "synthetic");
-  assert.equal(result.fixture, "auth-region-after-interior-edit");
+  assert.notEqual(result.label, "synthetic");
+  assert.notEqual(result.pack?.id, "auth-region-after-interior-edit");
+  assert.equal(result.verdict, "PASS");
+  assert.equal(Object.hasOwn(result, "score"), false);
 });
 
 test("evaluate refuses an unknown pack instead of falling back to synthetic", async () => {

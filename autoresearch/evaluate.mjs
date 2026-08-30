@@ -4,7 +4,11 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runPackEvaluation, stablePackRecord } from "../bench/evaluate-pack.mjs";
-import { runBenchmark } from "../bench/run.mjs";
+import {
+  formatEvaluateOutput,
+  runEmpiricalEvaluation,
+  stableEvaluateRecord,
+} from "../bench/empirical-verdict.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -25,8 +29,8 @@ export function parseEvaluateArgs(argv) {
 }
 
 export async function runEvaluateBenchmark({ pack, root = repoRoot } = {}) {
-  if (!pack) return runBenchmark();
-  return runPackEvaluation({ packId: pack, root });
+  if (pack) return runPackEvaluation({ packId: pack, root });
+  return runEmpiricalEvaluation({ root });
 }
 
 function listFreshCtxTestFiles() {
@@ -37,11 +41,28 @@ function listFreshCtxTestFiles() {
     .map((name) => join(testDir, name));
 }
 
+function gateHeld(value) {
+  return value === true || value === "pass";
+}
+
+function evaluateVerdict(result) {
+  if (result.verdict === "PASS" || result.verdict === "FAIL") return result.verdict;
+  return Object.values(result.hardGates ?? {}).every(gateHeld) ? "PASS" : "FAIL";
+}
+
 function benchmarkRecordsMatch(left, right) {
-  if (left.label === "synthetic" && right.label === "synthetic") {
-    return JSON.stringify(left) === JSON.stringify(right);
+  if (left.schemaVersion === 1 && left.verdict) {
+    return JSON.stringify(stableEvaluateRecord(left)) === JSON.stringify(stableEvaluateRecord(right));
   }
   return JSON.stringify(stablePackRecord(left)) === JSON.stringify(stablePackRecord(right));
+}
+
+function printEvaluateResult(result) {
+  if (result.schemaVersion === 1 && result.verdict) {
+    return formatEvaluateOutput(result);
+  }
+  const { score, ...rest } = result;
+  return `EVALUATE_VERDICT=${evaluateVerdict(result)}\n${JSON.stringify(rest, null, 2)}\n`;
 }
 
 export async function evaluate(options = {}) {
@@ -64,11 +85,15 @@ export async function evaluate(options = {}) {
   if (!benchmarkRecordsMatch(result, repeated)) {
     throw new Error("hard gate failed: benchmark output is not deterministic");
   }
-  const failedGates = Object.entries(result.hardGates)
-    .filter(([, passed]) => !passed)
+
+  const failedGates = Object.entries(result.hardGates ?? {})
+    .filter(([, status]) => !gateHeld(status))
     .map(([name]) => name);
   if (failedGates.length > 0) {
     throw new Error(`hard gate failed: ${failedGates.join(", ")}`);
+  }
+  if (evaluateVerdict(result) !== "PASS") {
+    throw new Error("hard gate failed: empirical verdict is FAIL");
   }
 
   return result;
@@ -77,16 +102,5 @@ export async function evaluate(options = {}) {
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
 if (import.meta.url === invokedPath) {
   const result = await evaluate(parseEvaluateArgs(process.argv));
-  console.log(`AUTORESEARCH_SCORE=${result.score.toFixed(6)}`);
-  console.log(JSON.stringify({
-    label: result.label,
-    fixture: result.fixture,
-    packId: result.packId,
-    tracesExecuted: result.tracesExecuted,
-    comparison: result.comparison,
-    hardGates: result.hardGates,
-    candidate: result.runs.find((run) =>
-      run.name === result.comparison.candidate || run.system === result.comparison.candidate
-    ),
-  }, null, 2));
+  process.stdout.write(printEvaluateResult(result));
 }

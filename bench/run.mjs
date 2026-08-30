@@ -97,13 +97,6 @@ export async function runBenchmark() {
   const candidate = runs.find((run) => run.name === "freshctx-region-sync");
   const tokenReductionVsFileSync =
     1 - candidate.estimatedTokens / Math.max(1, baseline.estimatedTokens);
-  const score =
-    100 * candidate.goldRecall -
-    100 * candidate.staleRate -
-    40 * candidate.duplicateRate -
-    20 * candidate.unresolvedRate -
-    15 * (candidate.estimatedTokens / Math.max(1, baseline.estimatedTokens)) -
-    5 * candidate.cacheChurnProxy;
 
   return {
     label: "synthetic",
@@ -120,7 +113,6 @@ export async function runBenchmark() {
       fullGoldRecall: candidate.goldRecall === 1,
       fullyResolved: candidate.unresolvedRate === 0,
     },
-    score,
   };
 }
 

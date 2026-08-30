@@ -22,8 +22,8 @@ function parseRepoId(trace) {
   return trace.name.split("/")[0] ?? "unknown";
 }
 
-export async function runTrace(trace, baselineName, { workspaceRoot } = {}) {
-  const baseline = createBaseline(baselineName);
+export async function runTrace(trace, baselineName, { workspaceRoot, baseline } = {}) {
+  const active = baseline ?? createBaseline(baselineName);
   const root = workspaceRoot ?? await mkdtemp(join(tmpdir(), "freshctx-trace-"));
   const owned = !workspaceRoot;
   const workspace = await Workspace.fromInitialFiles(root, trace.initialFiles);
@@ -63,7 +63,7 @@ export async function runTrace(trace, baselineName, { workspaceRoot } = {}) {
           initialContent: content,
         };
         trackedReads.push(meta);
-        await baseline.read(event, content, meta);
+        await active.read(event, content, meta);
         continue;
       }
 
@@ -80,10 +80,10 @@ export async function runTrace(trace, baselineName, { workspaceRoot } = {}) {
       if (event.type === "capture-request") {
         const goldBytesByKey = await buildGoldMap(workspace, event.requiredUnits, trackedReads);
         const requiredUnits = requiredUnitsFromCapture(event, goldBytesByKey, trackedReads);
-        const result = await baseline.capture(event, workspace);
+        const result = await active.capture(event, workspace);
         const priorPayloadText = captures.at(-1)?.payloadText ?? "";
         const metrics = analyzeCapture({
-          baseline: baselineName,
+          baseline: active.name ?? baselineName,
           payloadText: result.payloadText,
           payloadBytes: Buffer.byteLength(result.payloadText, "utf8"),
           projectionText: result.projectionText,

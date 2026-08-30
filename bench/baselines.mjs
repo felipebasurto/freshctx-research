@@ -120,9 +120,9 @@ export class CorvusFileBaseline {
 }
 
 export class FreshCtxFileBaseline {
-  constructor() {
+  constructor({ sidecarRunner = null } = {}) {
     this.name = "freshctx-file";
-    this.engine = new FreshCtxEngine();
+    this.engine = new FreshCtxEngine({ sidecarRunner });
     this.messages = [];
     this.trackedReads = [];
   }
@@ -168,9 +168,9 @@ export class FreshCtxFileBaseline {
 }
 
 export class FreshCtxRegionBaseline {
-  constructor() {
+  constructor({ sidecarRunner = null } = {}) {
     this.name = "freshctx-region";
-    this.engine = new FreshCtxEngine();
+    this.engine = new FreshCtxEngine({ sidecarRunner });
     this.messages = [];
     this.trackedReads = [];
   }

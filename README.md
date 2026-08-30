@@ -102,10 +102,12 @@ a generated commit lock before a benchmark freeze:
 npm run repos:fetch
 ```
 
-`npm run bench` runs a deterministic stale-context fixture and prints metrics
-for append-only, re-read, whole-file synchronization, and FreshCtx policies.
-`npm run evaluate` produces the scalar search signal consumed by the
-autoresearch loop; hard correctness gates always take precedence over it.
+`npm run bench` runs a labeled synthetic stale-context fixture. It is a
+regression probe, not the thesis metric. `npm run evaluate` replays the
+highest available physical pack, or `public-repo-smoke` when no Level 4
+pack is present, and prints `EVALUATE_VERDICT` plus Isolated Semantic
+Engine versus CORVUS payload bytes, oracle retention, peak RSS, latency,
+and forensic gates.
 
 ## What already works
 

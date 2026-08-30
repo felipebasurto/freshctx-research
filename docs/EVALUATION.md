@@ -546,7 +546,13 @@ Implemented now:
 
 - invariant tests for exact refresh, stable markers, ambiguity, recovery,
   deduplication, budget selection, and render ordering;
-- one deterministic synthetic mutation fixture;
+- one deterministic synthetic mutation fixture, used by `npm run bench`
+  and `npm run ctxbench` only, not by `npm run evaluate`;
+- `npm run evaluate` defaults to the highest available physical pack, or
+  `public-repo-smoke` when no Level 4 / apex pack is on disk, and reports
+  Isolated Semantic Engine versus CORVUS `payload_bytes`, oracle
+  retention, peak RSS, latency, and forensic gates (`fail-open`,
+  `missing-engine`, `gold-absent`);
 - append-only, re-read, whole-file-sync, and region-sync comparison;
 - a 100-repetition `npm run ctxbench` latency/determinism runner;
 - a loopback OpenAI-compatible capture provider with fixed responses and
