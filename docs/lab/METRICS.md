@@ -111,6 +111,8 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-29 | (PCR 0118) Pi force-host-read live hook + official Pi 0.84.3 three-arm; base `46169f5`; dest=`mac` HEAD `1a002ffa` | TAP 457 / 431 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0118](pcr/0118-pi-force-host-read-live-hook.md) |
 | 2026-08-29 | (PCR 0119) Go and Rust Tree-sitter WASM; regex leftover deleted; dest=`cloud-agent` env=hermes-absent | TAP 463 / 437 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0119](pcr/0119-go-rust-treesitter-wasm.md) |
 | 2026-08-29 | (PCR 0120) independent gold extractor for symbol-shaped units; dest=`cloud-agent` env=hermes-absent | TAP 472 / 446 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0120](pcr/0120-independent-gold-extractor.md) |
+| 2026-08-29 | (PCR 0121) localize Isolated Semantic Engine ambiguous units; flask `as_view` 2995 gold-present; dest=`cloud-agent` | TAP 483 / 457 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0121](pcr/0121-localize-ambiguous-units.md) |
+| 2026-08-29 | (PCR 0122) ERROR / sibling-overlap fail-close; missing `}` must not consume the next function | TAP 485 / 459 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0122](pcr/0122-ast-boundary-fail-close.md) |
 
 Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 

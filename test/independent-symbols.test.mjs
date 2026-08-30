@@ -74,6 +74,44 @@ test("python parse-broken fail-closes", () => {
   assert.deepEqual(result.units, []);
 });
 
+test("missing closing brace fail-closes the broken gold unit and does not consume the sibling", () => {
+  const cases = [
+    [
+      "src/a.js",
+      "function alpha() {\n  return 1;\n\nfunction beta() {\n  return 2;\n}\n",
+      "function beta",
+    ],
+    [
+      "src/a.ts",
+      "export function alpha() {\n  return 1;\n\nexport function beta() {\n  return 2;\n}\n",
+      "function beta",
+    ],
+    [
+      "src/a.go",
+      "func Alpha() {\n  return\n\nfunc Beta() {\n  return\n}\n",
+      "func Beta",
+    ],
+    [
+      "src/a.rs",
+      "fn alpha() {\n    let x = 1;\n\nfn beta() {\n    let y = 2;\n}\n",
+      "fn beta",
+    ],
+  ];
+  for (const [path, bytes, siblingHeader] of cases) {
+    const result = enumerateIndependentSymbols({ path, bytes });
+    const lines = bytes.split("\n");
+    for (const unit of result.units) {
+      const slice = lines.slice(unit.startLine - 1, unit.endLine).join("\n");
+      assert.equal(/alpha|Alpha/u.test(unit.selector), false, `${path} emitted broken gold unit`);
+      assert.equal(slice.includes(siblingHeader), /beta|Beta/u.test(unit.selector), path);
+    }
+    const beta = result.units.find((unit) => /beta|Beta/u.test(unit.selector));
+    assert.ok(beta, `${path} should keep the well-bounded sibling gold span`);
+    const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+    assert.equal(/function alpha|export function alpha|func Alpha|fn alpha/u.test(betaBody), false, path);
+  }
+});
+
 test("brace languages enumerate top-level functions and methods", () => {
   const cases = [
     [

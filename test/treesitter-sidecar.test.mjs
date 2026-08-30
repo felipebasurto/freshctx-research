@@ -38,13 +38,67 @@ test("sidecar fails closed on broken syntax", async () => {
   assert.deepEqual(broken.units, []);
 });
 
-test("tree-sitter parse-broken wins even when some units extract", async () => {
+test("a later parse error fail-closes only the broken unit", async () => {
   const parsed = await parseSource({
     path: "a.py",
     bytes: "def alpha():\n    return 1\n\ndef broken(\n",
   });
-  assert.equal(parsed.error, "parse-broken");
-  assert.deepEqual(parsed.units, []);
+  assert.equal(parsed.error, null);
+  assert.deepEqual(parsed.units.map((unit) => unit.selector), ["alpha"]);
+  const alpha = parsed.units[0];
+  const body = "def alpha():\n    return 1\n\ndef broken(\n"
+    .split("\n")
+    .slice(alpha.startLine - 1, alpha.endLine)
+    .join("\n");
+  assert.equal(body.includes("def broken"), false);
+});
+
+test("missing closing brace fail-closes the broken unit and does not consume the sibling", async () => {
+  const cases = [
+    [
+      "a.js",
+      "function alpha() {\n  return 1;\n\nfunction beta() {\n  return 2;\n}\n",
+      "function beta",
+    ],
+    [
+      "a.ts",
+      "export function alpha() {\n  return 1;\n\nexport function beta() {\n  return 2;\n}\n",
+      "function beta",
+    ],
+    [
+      "a.go",
+      "func Alpha() {\n  return\n\nfunc Beta() {\n  return\n}\n",
+      "func Beta",
+    ],
+    [
+      "a.rs",
+      "fn alpha() {\n    let x = 1;\n\nfn beta() {\n    let y = 2;\n}\n",
+      "fn beta",
+    ],
+  ];
+  for (const [path, bytes, siblingHeader] of cases) {
+    const parsed = await parseSource({ path, bytes });
+    const lines = bytes.split("\n");
+    for (const unit of parsed.units) {
+      const slice = lines.slice(unit.startLine - 1, unit.endLine).join("\n");
+      const isBroken = /alpha|Alpha/u.test(unit.selector);
+      assert.equal(isBroken, false, `${path} emitted broken unit ${unit.selector}`);
+      assert.equal(slice.includes(siblingHeader), unit.selector.toLowerCase().includes("beta"), path);
+    }
+    const beta = parsed.units.find((unit) => /beta|Beta/u.test(unit.selector));
+    if (beta) {
+      const betaBody = lines.slice(beta.startLine - 1, beta.endLine).join("\n");
+      assert.equal(betaBody.includes(siblingHeader), true, path);
+      assert.match(betaBody, /return 2|let y = 2/u);
+      assert.equal(/function alpha|export function alpha|func Alpha|fn alpha/u.test(betaBody), false, path);
+    } else {
+      assert.equal(
+        parsed.units.length,
+        0,
+        `${path} omitted the sibling without emitting another unit`,
+      );
+    }
+  }
 });
 
 test("exclusive column-0 ends do not include the next line", () => {
@@ -237,13 +291,18 @@ test("Go and Rust no longer use regex leftover extractors", async () => {
   assert.equal(source.includes("braceBalance"), false);
 });
 
-test("Go hasError parse-broken wins even when some units extract", async () => {
+test("a later Go parse error fail-closes only the broken unit", async () => {
   const parsed = await parseSource({
     path: "a.go",
     bytes: "func Alpha() {\n  return\n}\nfunc broken(\n",
   });
-  assert.equal(parsed.error, "parse-broken");
-  assert.deepEqual(parsed.units, []);
+  assert.equal(parsed.error, null);
+  assert.deepEqual(parsed.units.map((unit) => unit.selector), ["Alpha"]);
+  const body = "func Alpha() {\n  return\n}\nfunc broken(\n"
+    .split("\n")
+    .slice(parsed.units[0].startLine - 1, parsed.units[0].endLine)
+    .join("\n");
+  assert.equal(body.includes("func broken"), false);
 });
 
 test("adjacent Go funcs stay on their own lines", async () => {

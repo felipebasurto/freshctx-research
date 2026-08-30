@@ -123,9 +123,49 @@ function qualifiedSelector(kind, name, className) {
   return `function ${name}`;
 }
 
+export function lineIndent(lines, lineNumber) {
+  const line = lines[lineNumber - 1] ?? "";
+  const match = line.match(/^[\t ]*/u);
+  return match?.[0].length ?? 0;
+}
+
+export function rejectUnnaturalSiblingOverlaps(units, text) {
+  const lines = String(text).split("\n");
+  const sorted = [...units].sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
+  const dropped = new Set();
+  for (let index = 0; index < sorted.length; index += 1) {
+    const current = sorted[index];
+    for (let otherIndex = index + 1; otherIndex < sorted.length; otherIndex += 1) {
+      const other = sorted[otherIndex];
+      if (current.endLine < other.startLine) break;
+      if (lineIndent(lines, other.startLine) <= lineIndent(lines, current.startLine)) {
+        dropped.add(current);
+      }
+    }
+  }
+  return units.filter((unit) => !dropped.has(unit));
+}
+
+function collectErrorSpans(node, out = []) {
+  if (node.type === "ERROR") {
+    out.push({
+      startLine: node.startPosition.row + 1,
+      endLine: inclusiveEndLine(node.startPosition, node.endPosition),
+    });
+  }
+  for (const child of node.children ?? []) {
+    collectErrorSpans(child, out);
+  }
+  return out;
+}
+
+function errorOnDeclarationLine(unit, errors) {
+  return errors.some((error) => error.startLine === unit.startLine);
+}
+
 function unitFromCapture({ path, language, text, unitNode, name }) {
   if (!name || name === "constructor") return null;
-  if (unitNode.type === "ERROR" || unitNode.isMissing) return null;
+  if (unitNode.type === "ERROR" || unitNode.isMissing || unitNode.hasError) return null;
   const kind = kindFor(unitNode);
   if (!kind) return null;
   const className = kind === "class" ? null : enclosingClassName(unitNode);
@@ -221,8 +261,11 @@ export async function extractTreeSitterUnits({ path, bytes, language }) {
     units.push(unit);
   }
   units.sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
+  const errors = collectErrorSpans(tree.rootNode);
+  const withoutErrorSpans = units.filter((unit) => !errorOnDeclarationLine(unit, errors));
+  const bounded = rejectUnnaturalSiblingOverlaps(withoutErrorSpans, bytes);
   const hasError = tree.rootNode.hasError;
   tree.delete();
   parser.delete();
-  return { units, error: null, hasError };
+  return { units: bounded, error: null, hasError };
 }

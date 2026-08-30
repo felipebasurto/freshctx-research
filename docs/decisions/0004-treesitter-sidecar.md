@@ -31,7 +31,10 @@ Use a **sidecar process** at `sidecar/treesitter/`.
 - Fail closed when the Isolated Semantic Engine is missing or a unit is
   ambiguous. Duplicate `qualifiedSelector` values omit those units only.
   Remaining unique units still emit with `error: null`. `error: "ambiguous"`
-  means every extracted unit collided. `parse-broken` still wipes the file.
+  means every extracted unit collided. An `ERROR` node or a span that
+  overlaps a same-or-shallower sibling fail-closes that unit only. A
+  well-bounded sibling in the same file may still emit. `error: "parse-broken"`
+  means no well-bounded unit remained.
 - The sidecar must not store prior request bodies. Each call is stateless.
 - Selected units still carry current bytes. No `unchanged` or digest-only
   selected unit.
