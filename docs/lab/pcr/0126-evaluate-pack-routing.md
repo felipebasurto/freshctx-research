@@ -39,22 +39,36 @@ Harness only. `src/` still does not import tree-sitter. Sealed
 
 ## Benchmarks run
 
-Filled after the verification commands on this dest.
+```
+1..500
+# tests 500
+# pass 474
+# fail 0
+# skipped 26
+```
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `node --test test/evaluate-pack.test.mjs` | yes | 0 | `--pack` binds. Unknown pack throws. Default label `synthetic` |
-| `npm test` | pending | | |
-| `npm run evaluate` | pending | | must stay `AUTORESEARCH_SCORE=89.107165` |
-| `npm run evaluate -- --pack=symbol-scope-dev-v0.1` | pending | | must not print label `synthetic` |
+| `npm test` | yes | 0 | TAP above. +5 vs PCR 0124 |
+| `npm run check` | yes | 0 | includes `bench/evaluate-pack.mjs` |
+| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; label `synthetic`; four hard gates true |
+| `npm run evaluate -- --pack=symbol-scope-dev-v0.1` | yes | 0 | `AUTORESEARCH_SCORE=100.000000`; label `symbol-scope-dev`; `tracesExecuted` 2; `payloadBytesDelta` −5114 |
 | `holdout-v0.2` cells | no | n/a | disposable pack only |
 
 ## Metric snapshot
 
 | metric | origin/main `936ddf8` | this PCR | delta |
 |---|---|---|---|
-| default evaluate `AUTORESEARCH_SCORE` | `89.107165` | pending | |
-| `--pack=symbol-scope-dev-v0.1` label | `synthetic` (flag ignored) | pending | |
+| `npm test` TAP `# tests` | 495 | **500** | **+5** |
+| `npm test` TAP `# pass` | 469 | **474** | **+5** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| default evaluate `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | 0 |
+| default evaluate label | `synthetic` | `synthetic` | 0 |
+| `--pack=symbol-scope-dev-v0.1` label | `synthetic` (flag ignored) | **`symbol-scope-dev`** | flag binds |
+| `--pack=symbol-scope-dev-v0.1` `AUTORESEARCH_SCORE` | `89.107165` (wrong fixture) | **`100.000000`** (pass rate) | not the synthetic formula |
+| `--pack=symbol-scope-dev-v0.1` `tracesExecuted` | 0 | **2** | pack ran |
+| ISE vs CORVUS `payloadBytesDelta` | −5114 (ctxbench:symbol-pack) | **−5114** | 0 |
 | `src/policy.mjs` / evaluate weights / holdout gold | untouched | untouched | 0 |
 
 ## Comparison
