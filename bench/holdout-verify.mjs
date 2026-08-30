@@ -25,7 +25,7 @@ import {
 } from "./holdout-protocol.mjs";
 import { inferEarnedClassification, readAttestation, readPackState } from "./holdout-state.mjs";
 import { sha256 } from "../src/hash.mjs";
-import { HOLDOUT_V01, HOLDOUT_V02 } from "./holdout-identity.mjs";
+import { HOLDOUT_V01, HOLDOUT_V02, HOLDOUT_V03 } from "./holdout-identity.mjs";
 
 export class VerifyError extends Error {
   constructor(message) {
@@ -291,6 +291,9 @@ export async function verifyPack(root, { manifestPath, packId, attestationPath }
   }
   if (packId === HOLDOUT_V02.packId || packId === HOLDOUT_V02.benchmarkVersion) {
     return verifyProtocolPack(root, manifestPath ?? HOLDOUT_V02.splitManifest, { attestationPath });
+  }
+  if (packId === HOLDOUT_V03.packId || packId === HOLDOUT_V03.benchmarkVersion) {
+    return verifyProtocolPack(root, manifestPath ?? HOLDOUT_V03.splitManifest, { attestationPath });
   }
   if (!manifestPath) {
     throw new VerifyError("--manifest or --pack required");

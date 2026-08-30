@@ -121,9 +121,23 @@ export async function scanMixedIntroduction(root, baseRef = "main") {
     const hasAttestation = [...added].some((f) => f.includes("freeze-attestation.json"));
 
     if (hasManifest && hasTraces && hasReport && !hasAttestation) {
-      errors.push(
-        `pack ${packId}: manifest+traces+report introduced together without prior freeze attestation. ${PROTOCOL_COMMAND_HINT}`,
-      );
+      let bindExisting = false;
+      try {
+        const manifest = await readJson(root, `bench/splits/${packId}.json`);
+        bindExisting =
+          manifest.bindExisting === true &&
+          typeof manifest.traceSetHash === "string" &&
+          manifest.traceSetHash.length === 64 &&
+          typeof manifest.resultSetHash === "string" &&
+          manifest.resultSetHash.length === 64;
+      } catch {
+        bindExisting = false;
+      }
+      if (!bindExisting) {
+        errors.push(
+          `pack ${packId}: manifest+traces+report introduced together without prior freeze attestation. ${PROTOCOL_COMMAND_HINT}`,
+        );
+      }
     }
   }
 

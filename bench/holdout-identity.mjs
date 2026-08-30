@@ -30,6 +30,13 @@ export const HOLDOUT_V02 = Object.freeze({
   label: "public-repo-holdout-v0.2",
 });
 
+export const HOLDOUT_V03 = Object.freeze({
+  packId: "holdout-v0.3-apex",
+  benchmarkVersion: "holdout-v0.3-apex",
+  splitManifest: "bench/splits/holdout-v0.3-apex.json",
+  label: "public-repo-holdout-v0.3-apex",
+});
+
 export function isHoldoutV01Pack(packIdOrVersion) {
   return packIdOrVersion === HOLDOUT_V01.packId || packIdOrVersion === HOLDOUT_V01.benchmarkVersion;
 }

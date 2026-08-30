@@ -133,11 +133,14 @@ export function readPeakRssBytes() {
   return process.memoryUsage().rss;
 }
 
-export function latencySummary(samples) {
+export function latencySummary(samples, {
+  warmups = SYMBOL_PACK_WARMUPS,
+  repetitions = SYMBOL_PACK_REPS,
+} = {}) {
   return {
     n: samples.length,
-    warmups: SYMBOL_PACK_WARMUPS,
-    repetitions: SYMBOL_PACK_REPS,
+    warmups,
+    repetitions,
     min: Math.min(...samples),
     p50: percentile(samples, 0.5),
     p95: percentile(samples, 0.95),
@@ -187,7 +190,7 @@ export async function loadSmokeFile(root, target) {
   return String(text).replaceAll("\r\n", "\n");
 }
 
-function applyInteriorEdit(text, target) {
+export function applyInteriorEdit(text, target) {
   if (!text.includes(target.expected)) {
     throw new Error(`mutation needle missing in ${target.path}: ${target.expected}`);
   }
@@ -439,17 +442,24 @@ async function captureCorvus({ mutatedText, target, observed }) {
   };
 }
 
-async function timeCapture(runOnce) {
-  for (let index = 0; index < SYMBOL_PACK_WARMUPS; index += 1) {
+async function timeCapture(runOnce, {
+  warmups = SYMBOL_PACK_WARMUPS,
+  repetitions = SYMBOL_PACK_REPS,
+} = {}) {
+  for (let index = 0; index < warmups; index += 1) {
     await runOnce();
   }
   const samples = [];
   let last;
-  for (let index = 0; index < SYMBOL_PACK_REPS; index += 1) {
+  for (let index = 0; index < repetitions; index += 1) {
     last = await runOnce();
     samples.push(last.telemetry?.totalMs ?? 0);
   }
-  return { last, latency: latencySummary(samples), peakRssBytes: readPeakRssBytes() };
+  return {
+    last,
+    latency: latencySummary(samples, { warmups, repetitions }),
+    peakRssBytes: readPeakRssBytes(),
+  };
 }
 
 export async function runSymbolCell({
@@ -460,6 +470,9 @@ export async function runSymbolCell({
   system,
   createEngine = createAdapterEngine,
   engineSpawn,
+  packId = SYMBOL_PACK_ID,
+  warmups = SYMBOL_PACK_WARMUPS,
+  repetitions = SYMBOL_PACK_REPS,
 }) {
   const runOnce = () => {
     if (system === "isolated-semantic-engine") {
@@ -472,7 +485,7 @@ export async function runSymbolCell({
     }
     return captureCorvus({ mutatedText, target, observed });
   };
-  const timed = await timeCapture(runOnce);
+  const timed = await timeCapture(runOnce, { warmups, repetitions });
   const capture = timed.last;
   const transformedSerialized = serializeProviderPayload(capture.messages);
   const originalSerialized = serializeProviderPayload(capture.originalMessages);
@@ -485,7 +498,7 @@ export async function runSymbolCell({
     system,
   });
   return {
-    packId: SYMBOL_PACK_ID,
+    packId,
     system,
     repo: target.repo,
     path: target.path,
@@ -508,7 +521,7 @@ export async function runSymbolCell({
   };
 }
 
-function publicCellRow(row) {
+export function publicCellRow(row) {
   const { transformedSerialized, ...rest } = row;
   return rest;
 }

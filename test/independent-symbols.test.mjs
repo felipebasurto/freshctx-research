@@ -10,6 +10,7 @@ import {
   enumerateIndependentSymbols,
   qualifiedSelector,
 } from "../bench/independent-symbols.mjs";
+import { parseSource } from "../sidecar/treesitter/parse.mjs";
 import { sampleUnits, tracesFromSample } from "../bench/unit-sampler.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -226,8 +227,54 @@ test("symbol sampler traces keep generator-owned gold under a sabotaged enumerat
   assert.equal(trace.events[0].scope, "symbol");
 });
 
+test("python nested if/else functions get enclosing-span paths", () => {
+  const source = [
+    "class View:",
+    "    def as_view(self):",
+    "        if True:",
+    "            def view():",
+    "                return 1",
+    "        else:",
+    "            def view():",
+    "                return 2",
+    "        if False:",
+    "            return 3",
+    "",
+  ].join("\n");
+  const result = enumerateIndependentSymbols({ path: "src/views.py", bytes: source });
+  assert.equal(result.error, null);
+  const views = result.units.filter((unit) => unit.selector === "view");
+  assert.deepEqual(
+    views.map((unit) => unit.qualifiedSelector),
+    [
+      "class View::method as_view::if@0::function view",
+      "class View::method as_view::else::function view",
+    ],
+  );
+});
+
 test("qualifiedSelector helper matches the public symbol contract", () => {
   assert.equal(qualifiedSelector("class", "Auth"), "class Auth");
   assert.equal(qualifiedSelector("function", "greet"), "function greet");
   assert.equal(qualifiedSelector("method", "refresh", "Auth"), "class Auth::method refresh");
+});
+
+test("independent gold matches Isolated Semantic Engine nested flask view paths", async () => {
+  const trace = JSON.parse(await readFile(join(ROOT, "bench/traces/smoke/flask-interior-edit.json"), "utf8"));
+  const bytes = trace.initialFiles["src/flask/views.py"];
+  const gold = enumerateIndependentSymbols({ path: "src/flask/views.py", bytes });
+  const engine = await parseSource({ path: "src/flask/views.py", bytes });
+  const expected = [
+    "class View::method as_view",
+    "class View::method as_view::if@0::function view",
+    "class View::method as_view::else::function view",
+  ];
+  for (const selector of expected) {
+    const goldUnit = gold.units.find((unit) => unit.qualifiedSelector === selector);
+    const engineUnit = engine.units.find((unit) => unit.qualifiedSelector === selector);
+    assert.ok(goldUnit, `independent-symbols missing ${selector}`);
+    assert.ok(engineUnit, `Isolated Semantic Engine missing ${selector}`);
+    assert.equal(goldUnit.startLine, engineUnit.startLine, selector);
+    assert.equal(goldUnit.endLine, engineUnit.endLine, selector);
+  }
 });

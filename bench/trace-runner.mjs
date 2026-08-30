@@ -18,6 +18,7 @@ function parseRepoId(trace) {
   if (url.includes("flask")) return "flask";
   if (url.includes("express")) return "express";
   if (url.includes("googlesource.com/tools") || url.includes("go-tools")) return "go-tools";
+  if (url.includes("ripgrep") || url.includes("BurntSushi/ripgrep")) return "ripgrep";
   if (url.includes("neovim")) return "neovim";
   return trace.name.split("/")[0] ?? "unknown";
 }

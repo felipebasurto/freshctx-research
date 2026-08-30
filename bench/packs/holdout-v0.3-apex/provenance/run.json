@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "phase": "run",
+  "bindExisting": true,
+  "ranAt": "2026-08-30T21:07:06.592Z",
+  "packId": "holdout-v0.3-apex",
+  "manifestPath": "bench/splits/holdout-v0.3-apex.json",
+  "manifestSha256": "5698bb3b17366abdfa9aecd5e23ada7bc65a51f3de56b16f57b356160ceb67cb",
+  "freezeCommitSha": "5b8d214833a6b2aba5db286bb68b49710c48ca3e",
+  "implementationCommitSha": "5b8d214833a6b2aba5db286bb68b49710c48ca3e",
+  "reposLockSha256": "da5a3c1d15ec6d86e871956043dae19a471c1f496ec282e46358b2a60261a0d6",
+  "repositoryLocks": {
+    "flask": "d318b683471101618febed18996405ad26462110",
+    "express": "a3714473feb3d2908add734d340e7755fd85e0a3",
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49",
+    "ripgrep": "3fce3b5bb0236da2df6d99672afb8a719642eca7"
+  },
+  "generateProvenancePath": "bench/packs/holdout-v0.3-apex/provenance/generate.json",
+  "resultSetHash": "ecce39269b66c302f0cd4bf198df3646a3926201408ca89e59f519750fe66f74",
+  "resultsBound": true
+}

@@ -31,6 +31,9 @@ const IMPLEMENTATION_PATHS = [
   "src/projector.mjs",
 ];
 
+const LEGACY_V02_PACK_ID = "holdout-v0.2";
+const RESULTS_JSONL = "results.jsonl";
+
 const PROVENANCE_GENERATE = "generate.json";
 const PROVENANCE_RUN = "run.json";
 
@@ -191,6 +194,55 @@ async function dirHasEntries(root, target) {
   return entries.length > 0;
 }
 
+function resultsJsonlPath(pack) {
+  return join(pack.reportsDir, RESULTS_JSONL).replace(/\\/g, "/");
+}
+
+function assertNotLegacyV02Bind(packId) {
+  if (packId === LEGACY_V02_PACK_ID) {
+    throw new ProtocolError("refuse to bind or rewrite holdout-v0.2");
+  }
+}
+
+async function hashGeneratorFile(root, generatorPath) {
+  const content = await readFile(join(root, generatorPath), "utf8");
+  return sha256(content);
+}
+
+async function bindExistingHashes(root, pack, generatorPath) {
+  const traceSetHash = await hashDirectoryJsonSet(root, pack.tracesDir);
+  const resultSetHash = await hashJsonlSet(root, resultsJsonlPath(pack));
+  if (!traceSetHash) {
+    throw new ProtocolError(`bind-existing requires traces: ${pack.tracesDir}`);
+  }
+  if (!resultSetHash) {
+    throw new ProtocolError(`bind-existing requires ${RESULTS_JSONL}`);
+  }
+  const generatorSha256 = generatorPath ? await hashGeneratorFile(root, generatorPath) : null;
+  return { traceSetHash, resultSetHash, generatorSha256 };
+}
+
+async function assertBindExistingInputs(root, pack) {
+  if (!(await dirHasEntries(root, pack.tracesDir))) {
+    throw new ProtocolError(`bind-existing requires traces: ${pack.tracesDir}`);
+  }
+  if (!(await pathExists(root, resultsJsonlPath(pack)))) {
+    throw new ProtocolError(`bind-existing requires ${resultsJsonlPath(pack)}`);
+  }
+}
+
+function assertPinnedBindHashes(manifest, hashes) {
+  if (manifest.traceSetHash && manifest.traceSetHash !== hashes.traceSetHash) {
+    throw new ProtocolError("bind-existing trace-set hash mismatch (tampered traces)");
+  }
+  if (manifest.resultSetHash && manifest.resultSetHash !== hashes.resultSetHash) {
+    throw new ProtocolError("bind-existing result-set hash mismatch (tampered results)");
+  }
+  if (manifest.generatorSha256 && hashes.generatorSha256 && manifest.generatorSha256 !== hashes.generatorSha256) {
+    throw new ProtocolError("bind-existing generator hash mismatch");
+  }
+}
+
 async function assertArtifactPathsAbsent(root, pack) {
   if (await dirHasEntries(root, pack.tracesDir)) {
     throw new ProtocolError(`traces already exist: ${pack.tracesDir}`);
@@ -293,7 +345,9 @@ export async function assertFreezePhaseComplete(root, manifestPath, phase = "gen
   assertCleanProtocolPaths(root, pack, { phase });
   assertManifestTracked(root, manifestPath);
   const freezeCommitSha = findManifestFreezeCommit(root, manifestPath, manifest.manifestSha256);
-  assertNoArtifactsAtCommit(root, freezeCommitSha, pack);
+  if (!manifest.bindExisting) {
+    assertNoArtifactsAtCommit(root, freezeCommitSha, pack);
+  }
   assertImplementationMatchesFreeze(root, manifest);
   await assertReposLockMatchesFreeze(root, manifest);
 
@@ -320,10 +374,16 @@ export async function assertFreezePhaseComplete(root, manifestPath, phase = "gen
   return { manifest, pack, freezeCommitSha, classification };
 }
 
-export async function freezePack(root, manifestPath, manifestDraft) {
+export async function freezePack(root, manifestPath, manifestDraft, options = {}) {
   requireGit();
+  const bindExisting = options.bindExisting === true || manifestDraft.bindExisting === true;
   const pack = resolvePackPaths(root, { ...manifestDraft, manifestPath });
-  await assertArtifactPathsAbsent(root, pack);
+  if (bindExisting) {
+    assertNotLegacyV02Bind(pack.packId);
+    await assertBindExistingInputs(root, pack);
+  } else {
+    await assertArtifactPathsAbsent(root, pack);
+  }
 
   const frozenAt = new Date().toISOString();
   const implementationCommitSha = gitRevParse(root, "HEAD");
@@ -341,10 +401,19 @@ export async function freezePack(root, manifestPath, manifestDraft) {
     repositoryLocks[repoId] = commit;
   }
 
+  const generatorPath = manifestDraft.generatorPath ?? null;
+  const bound = bindExisting ? await bindExistingHashes(root, pack, generatorPath) : null;
+
+  const existingState = (await readPackState(root, pack)) ?? {};
   const manifest = {
     schemaVersion: 2,
     protocolVersion: 1,
     ...manifestDraft,
+    bindExisting: bindExisting || undefined,
+    generatorPath: generatorPath ?? undefined,
+    traceSetHash: bound?.traceSetHash,
+    resultSetHash: bound?.resultSetHash,
+    generatorSha256: bound?.generatorSha256 ?? undefined,
     manifestPath,
     status: "frozen",
     frozenAt,
@@ -366,6 +435,8 @@ export async function freezePack(root, manifestPath, manifestDraft) {
   await writePackState(root, pack, {
     schemaVersion: 1,
     packId: pack.packId,
+    generator: existingState.generator ?? generatorPath ?? null,
+    goldSource: existingState.goldSource ?? manifestDraft.goldSource ?? null,
     classification: "candidate",
     manifestPath,
     manifestSha256: manifest.manifestSha256,
@@ -373,8 +444,10 @@ export async function freezePack(root, manifestPath, manifestDraft) {
     implementationCommitSha: manifest.implementationCommitSha,
     reposLockSha256: manifest.reposLockSha256,
     repositoryLocks: manifest.repositoryLocks,
-    traceSetHash: null,
-    resultSetHash: null,
+    bindExisting: bindExisting || undefined,
+    generatorSha256: bound?.generatorSha256 ?? null,
+    traceSetHash: bound?.traceSetHash ?? null,
+    resultSetHash: bound?.resultSetHash ?? null,
     reportHash: null,
     remoteAttestation: null,
     updatedAt: frozenAt,
@@ -414,6 +487,45 @@ export async function generatePack(root, manifestPath, generateTraces) {
   if (await pathExists(root, generateProvenancePath)) {
     throw new ProtocolError("generate provenance already exists");
   }
+
+  if (manifest.bindExisting) {
+    assertNotLegacyV02Bind(pack.packId);
+    const bound = await bindExistingHashes(root, pack, manifest.generatorPath);
+    assertPinnedBindHashes(manifest, bound);
+    const provenance = {
+      schemaVersion: 1,
+      phase: "generate",
+      bindExisting: true,
+      generatedAt: new Date().toISOString(),
+      packId: pack.packId,
+      manifestPath,
+      manifestSha256: manifest.manifestSha256,
+      freezeCommitSha,
+      implementationCommitSha: manifest.implementationCommitSha,
+      reposLockSha256: manifest.reposLockSha256,
+      repositoryLocks: manifest.repositoryLocks,
+      generatorPath: manifest.generatorPath ?? null,
+      generatorSha256: bound.generatorSha256,
+      traceSetHash: bound.traceSetHash,
+      tracesBound: true,
+    };
+    await writeJson(root, generateProvenancePath, provenance);
+    await refreshPackState(root, pack, {
+      classification,
+      manifestPath,
+      manifestSha256: manifest.manifestSha256,
+      freezeCommitSha,
+      implementationCommitSha: manifest.implementationCommitSha,
+      reposLockSha256: manifest.reposLockSha256,
+      repositoryLocks: manifest.repositoryLocks,
+      bindExisting: true,
+      generatorSha256: bound.generatorSha256,
+      traceSetHash: bound.traceSetHash,
+      resultSetHash: bound.resultSetHash,
+    });
+    return { manifest, pack, provenance, classification };
+  }
+
   if (await dirHasEntries(root, pack.tracesDir)) {
     throw new ProtocolError("traces already exist; refuse generate");
   }
@@ -485,6 +597,36 @@ export async function runPack(root, manifestPath, runBenchmarks) {
   }
 
   const implementationCommitSha = gitRevParse(root, "HEAD");
+  if (manifest.bindExisting) {
+    assertNotLegacyV02Bind(pack.packId);
+    const bound = await bindExistingHashes(root, pack, manifest.generatorPath);
+    assertPinnedBindHashes(manifest, bound);
+    const provenance = {
+      schemaVersion: 1,
+      phase: "run",
+      bindExisting: true,
+      ranAt: new Date().toISOString(),
+      packId: pack.packId,
+      manifestPath,
+      manifestSha256: manifest.manifestSha256,
+      freezeCommitSha,
+      implementationCommitSha,
+      reposLockSha256: manifest.reposLockSha256,
+      repositoryLocks: manifest.repositoryLocks,
+      generateProvenancePath: join(pack.provenanceDir, PROVENANCE_GENERATE),
+      resultSetHash: bound.resultSetHash,
+      resultsBound: true,
+    };
+    await writeJson(root, runProvenancePath, provenance);
+    await refreshPackState(root, pack, {
+      classification,
+      resultSetHash: bound.resultSetHash,
+      implementationCommitSha,
+      bindExisting: true,
+    });
+    return { manifest, pack, provenance, generateProvenance, classification };
+  }
+
   const benchmarkSummary = await runBenchmarks({
     root,
     manifest,

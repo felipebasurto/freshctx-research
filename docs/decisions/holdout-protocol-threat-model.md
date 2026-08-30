@@ -26,6 +26,7 @@ Status: design note accompanying PCR 0010 enforcement work.
 ## Remote attestation role
 
 - **Local freeze + commit** → `locally-frozen` (development / candidate runs). Local `generate` / `run` / `report` **never** reach `sealed` or `remotely-attested`, even if a JSON attestation file exists on disk.
+- **Bind-existing packs** (`manifest.bindExisting: true`, used by `holdout-v0.3-apex`) freeze after candidate traces already exist. Freeze pins `traceSetHash`, `resultSetHash`, and `generatorSha256`. Generate and run hash those bytes and refuse to rewrite traces or `results.jsonl`. `assertNoArtifactsAtCommit` is skipped for this path only. `sealed` still requires production GHA attestation.
 - **A JSON file written on a laptop is not remote attestation.** `holdout-write-attestation.mjs` refuses outside GitHub Actions (`GITHUB_ACTIONS=true` + real `GITHUB_RUN_ID`). Stub objects (`stub: true`, `local-run`, example.com URLs) are ignored for classification.
 - **Successful `holdout-freeze-attest` workflow** on a pushed manifest commit → uploads production attestation (numeric GHA run id + `https://github.com/.../actions/runs/<id>` URL).
 - **`holdout-generate` workflow** downloads that artifact by `freeze_run_id`, validates pack ID / freeze commit / manifest hash, then may reach `sealed` only inside GHA with the downloaded production attestation.

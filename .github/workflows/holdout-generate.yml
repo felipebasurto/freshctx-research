@@ -17,7 +17,7 @@ on:
         required: false
         default: "holdout-freeze-attestation"
       generator:
-        description: "TRACE_GENERATORS key (holdout-v0.2, or omit for syntheticFixtureTrace)"
+        description: "TRACE_GENERATORS key (holdout-v0.3-apex bind-existing, holdout-v0.2, or omit for syntheticFixtureTrace)"
         required: false
         default: ""
 

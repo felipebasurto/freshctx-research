@@ -83,6 +83,10 @@ npm run holdout:run -- --manifest=bench/splits/<pack>.json
 npm run holdout:report -- --manifest=bench/splits/<pack>.json
 ```
 
+`holdout-v0.3-apex` is bind-existing. Freeze pins published trace and result hashes.
+Generate and run refuse to rewrite those files. `sealed` still requires GitHub Actions
+freeze attestation.
+
 ## Result labels
 
 - `synthetic`: embedded files and mutations;

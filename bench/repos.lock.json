@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "manifestSha256": "4b6ecc86003607504fccb3eee4baadccabe9201f1a88b1db5ba00e9addcd52f4",
-  "scope": "smoke",
-  "resolvedAt": "2026-08-20T20:38:25.174Z",
+  "scope": "merge",
+  "resolvedAt": "2026-08-30T20:38:37.894Z",
   "repositories": {
     "flask": {
       "url": "https://github.com/pallets/flask.git",
@@ -31,6 +31,13 @@
       "commit": "2dd6e9d6a2482069cfe9d12a09f761c5713f246b",
       "language": "C and Lua",
       "license": "Apache-2.0"
+    },
+    "ripgrep": {
+      "url": "https://github.com/BurntSushi/ripgrep.git",
+      "requestedRef": "master",
+      "commit": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
+      "language": "Rust",
+      "license": "MIT OR Unlicense"
     }
   }
 }
