@@ -117,6 +117,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-30 | (PCR 0124) nested helper Isolated Semantic Engine showdown; flask if@0 view 1058 vs as_view 2995 vs CORVUS 7482 | TAP 495 / 469 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0124](pcr/0124-nested-helper-showdown.md) |
 | 2026-08-30 | (PCR 0125) one-shot remasure; holdout-v0.2 seal valid; evaluate `--pack` unused | evaluate exit 0 on `936ddf8` | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0125](pcr/0125-holdout-v02-oneshot.md) |
 | 2026-08-30 | (PCR 0126) evaluate `--pack` routing; default path synthetic; symbol pack label `symbol-scope-dev` | TAP 500 / 474 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0126](pcr/0126-evaluate-pack-routing.md) |
+| 2026-08-30 | (PCR 0127) on-disk evaluate pass requires required-current recall; stale-only green closed | TAP 501 / 475 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0127](pcr/0127-evaluate-ondisk-recall-gate.md) |
 
 Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 

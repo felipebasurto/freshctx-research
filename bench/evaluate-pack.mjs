@@ -77,6 +77,17 @@ async function listPackTraceFiles(root, packId) {
     .map((name) => join(tracesDir, name));
 }
 
+export function judgeOnDiskCapture(capture) {
+  if (!capture) return { verdict: "fail", reason: "no-capture" };
+  if (capture.metrics.staleBytes > 0) return { verdict: "fail", reason: "stale-bytes" };
+  if (capture.metrics.duplicateUnits > 0) return { verdict: "fail", reason: "duplicate-units" };
+  const requiredCount = capture.event?.requiredUnits?.length ?? 0;
+  if (requiredCount > 0 && capture.metrics.requiredRecall < 1) {
+    return { verdict: "fail", reason: "required-recall" };
+  }
+  return { verdict: "pass", reason: null };
+}
+
 async function runOnDiskTracePack({ packId, root }) {
   const files = await listPackTraceFiles(root, packId);
   if (files.length === 0) {
@@ -87,14 +98,17 @@ async function runOnDiskTracePack({ packId, root }) {
     const trace = JSON.parse(await readFile(file, "utf8"));
     const executed = await runTrace(trace, "freshctx-region");
     const capture = finalCapture(executed);
+    const judged = judgeOnDiskCapture(capture);
     runs.push({
       name: trace.name,
       system: "freshctx-region",
-      verdict: capture && capture.metrics.staleBytes === 0 ? "pass" : "fail",
+      verdict: judged.verdict,
+      reason: judged.reason,
       payloadBytes: capture?.metrics.payloadBytes ?? 0,
       payloadSha256: capture?.payloadSha256 ?? null,
       staleBytes: capture?.metrics.staleBytes ?? null,
       requiredRecall: capture?.metrics.requiredRecall ?? null,
+      duplicateUnits: capture?.metrics.duplicateUnits ?? null,
     });
   }
   const passed = runs.filter((row) => row.verdict === "pass").length;
@@ -107,6 +121,8 @@ async function runOnDiskTracePack({ packId, root }) {
     hardGates: {
       allCellsPassed: passed === runs.length,
       noStaleBytes: runs.every((row) => row.staleBytes === 0),
+      noDuplicateUnits: runs.every((row) => (row.duplicateUnits ?? 0) === 0),
+      fullRequiredRecall: runs.every((row) => row.requiredRecall === 1),
     },
     comparison: {
       baseline: "corvus-file",
