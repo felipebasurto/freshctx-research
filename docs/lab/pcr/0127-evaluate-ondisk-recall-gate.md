@@ -42,18 +42,30 @@ writer. Sealed `holdout-v0.2` cells were not opened.
 
 ## Benchmarks run
 
+```
+1..501
+# tests 501
+# pass 475
+# fail 0
+# skipped 26
+```
+
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `node --test --test-name-pattern='on-disk pack pass requires required-current recall' test/evaluate-pack.test.mjs` | yes | 0 | isolated GREEN after the judge change |
-| `node --test test/evaluate-pack.test.mjs test/evaluate.test.mjs` | yes | 0 | 6 evaluate-pack tests |
-| `npm test` | pending in this PCR write | | TAP filled after the full run |
-| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; label `synthetic` |
+| `node --test test/evaluate-pack.test.mjs` | yes | 0 | 6/6 |
+| `npm test` | yes | 0 | TAP above. +1 vs PCR 0126 |
+| `npm run check` | yes | 0 | includes `bench/evaluate-pack.mjs` |
+| `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; label `synthetic`; four hard gates true |
 | `holdout-v0.2` cells | no | n/a | not a remasure |
 
 ## Metric snapshot
 
 | metric | origin/main `fbdbc56` | this PCR | delta |
 |---|---|---|---|
+| `npm test` TAP `# tests` | 500 | **501** | **+1** |
+| `npm test` TAP `# pass` | 474 | **475** | **+1** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
 | default evaluate `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | 0 |
 | default evaluate label | `synthetic` | `synthetic` | 0 |
 | on-disk recall-miss verdict | `pass` | **`fail` / `required-recall`** | judge now matches holdout |
