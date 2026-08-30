@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 
 import { runBenchmark } from "../bench/run.mjs";
 import {
+  decideEmpiricalVerdict,
   discoverEvaluateTarget,
   formatEvaluateOutput,
   runEmpiricalEvaluation,
@@ -44,13 +45,28 @@ test("empirical evaluation reports Isolated Semantic Engine vs CORVUS without a 
   assert.equal(result.hardGates["fail-open"], "pass");
   assert.equal(result.hardGates["missing-engine"], "pass");
   assert.equal(result.hardGates["gold-absent"], "pass");
-  assert.ok(result.comparison.oracleRetention.recall > 0);
+  assert.equal(result.hardGates["required-recall"], "pass");
+  assert.equal(result.comparison.oracleRetention.recall, 1);
   assert.ok(Number.isFinite(result.resources.peakRssBytes));
   assert.ok(Number.isFinite(result.resources.latencyMs.p95));
   assert.equal(Object.hasOwn(result, "score"), false);
   assert.equal(printed.includes("89.107165"), false);
   assert.equal(printed.includes("AUTORESEARCH_SCORE"), false);
   assert.match(printed, /^EVALUATE_VERDICT=PASS\n/);
+});
+
+test("empirical PASS fails when required recall is below 1 even if payload shrinks", () => {
+  const judged = decideEmpiricalVerdict({
+    failOpenDetected: false,
+    engineAvailable: true,
+    goldAbsentDetected: false,
+    payloadDelta: -27440,
+    recall: 0,
+    requiredCount: 1,
+  });
+  assert.equal(judged.hardGates["required-recall"], "fail");
+  assert.equal(judged.forensicHold, false);
+  assert.equal(judged.verdict, "FAIL");
 });
 
 test("synthetic bench no longer emits the weighted search scalar", async () => {

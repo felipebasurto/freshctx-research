@@ -552,7 +552,7 @@ Implemented now:
   `public-repo-smoke` when no Level 4 / apex pack is on disk, and reports
   Isolated Semantic Engine versus CORVUS `payload_bytes`, oracle
   retention, peak RSS, latency, and forensic gates (`fail-open`,
-  `missing-engine`, `gold-absent`);
+  `missing-engine`, `gold-absent`, `required-recall`);
 - append-only, re-read, whole-file-sync, and region-sync comparison;
 - a 100-repetition `npm run ctxbench` latency/determinism runner;
 - a loopback OpenAI-compatible capture provider with fixed responses and

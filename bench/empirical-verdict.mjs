@@ -98,6 +98,29 @@ export function formatEvaluateOutput(result) {
   return `EVALUATE_VERDICT=${result.verdict}\n${JSON.stringify(result, null, 2)}\n`;
 }
 
+export function decideEmpiricalVerdict({
+  failOpenDetected,
+  engineAvailable,
+  goldAbsentDetected,
+  payloadDelta,
+  recall,
+  requiredCount,
+}) {
+  const recallHeld = requiredCount === 0 || recall >= 1;
+  const hardGates = {
+    "fail-open": gateStatus(!failOpenDetected),
+    "missing-engine": gateStatus(engineAvailable),
+    "gold-absent": gateStatus(!goldAbsentDetected),
+    "required-recall": gateStatus(recallHeld),
+  };
+  const forensicHold = Object.values(hardGates).every((status) => status === "pass");
+  return {
+    hardGates,
+    forensicHold,
+    verdict: forensicHold && payloadDelta < 0 ? "PASS" : "FAIL",
+  };
+}
+
 export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = process.env } = {}) {
   const target = discoverEvaluateTarget(root, { env });
   const traces = await loadPhysicalTraces(target.tracesDir);
@@ -157,13 +180,15 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
 
   const payloadDelta = candidateBytes - baselineBytes;
   const recall = requiredCount === 0 ? 0 : requiredHits / requiredCount;
-  const hardGates = {
-    "fail-open": gateStatus(!failOpenDetected),
-    "missing-engine": gateStatus(engine.available),
-    "gold-absent": gateStatus(!goldAbsentDetected),
-  };
-  const forensicHold = Object.values(hardGates).every((status) => status === "pass");
-  const verdict = forensicHold && payloadDelta < 0 ? "PASS" : "FAIL";
+  const judged = decideEmpiricalVerdict({
+    failOpenDetected,
+    engineAvailable: engine.available,
+    goldAbsentDetected,
+    payloadDelta,
+    recall,
+    requiredCount,
+  });
+  const { hardGates, verdict } = judged;
 
   return {
     schemaVersion: 1,

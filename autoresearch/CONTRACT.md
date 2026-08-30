@@ -14,9 +14,10 @@ On success it prints exactly one machine-readable line beginning with
 `EVALUATE_VERDICT=` followed by the telemetry record.
 
 The verdict is `PASS` only when every forensic gate holds (`fail-open`,
-`missing-engine`, `gold-absent`) and total `payload_bytes` delta versus
-CORVUS is negative. Oracle retention (recall), peak RSS, and latency ride
-along as telemetry. They are not folded into a search score.
+`missing-engine`, `gold-absent`, `required-recall`) and total
+`payload_bytes` delta versus CORVUS is negative. Peak RSS and latency ride
+along as telemetry. They are not folded into a search score. Recall is a
+gate. A shrinking payload with `requiredRecall < 1` is `FAIL`.
 
 Public claims still require the deterministic protocol in
 `docs/EVALUATION.md`. No model response, pass@1 score, or generated patch
