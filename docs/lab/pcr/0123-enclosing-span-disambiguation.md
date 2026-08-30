@@ -50,12 +50,12 @@ stdin/stdout contract unchanged. `{ path, bytes }` in. `{ units, error }` out.
 
 ## Benchmarks run
 
-Pre-merge TAP on this dest (remeasure after merging PCR 0122):
+Post-merge TAP on this dest (includes PCR 0122):
 
 ```
-1..489
-# tests 489
-# pass 463
+1..491
+# tests 491
+# pass 465
 # fail 0
 # skipped 26
 ```
@@ -63,7 +63,7 @@ Pre-merge TAP on this dest (remeasure after merging PCR 0122):
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `npm run ctxbench:symbol-pack` | yes | 0 | flask `as_view` Isolated Semantic Engine **pass**, 2995 bytes, gold present; express still −636 |
-| `npm test` | pending rebase | | TAP above was pre-merge vs PCR 0121 |
+| `npm test` | yes | 0 | TAP above. +6 vs PCR 0122 (485/459) |
 | `npm run check` | yes | 0 | includes Isolated Semantic Engine `grammars.mjs` |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; four hard gates true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; six hard gates true |
@@ -73,10 +73,10 @@ Pre-merge TAP on this dest (remeasure after merging PCR 0122):
 
 ## Metric snapshot
 
-| metric | origin/main `2148630` | this PCR (pre-merge) | delta |
+| metric | origin/main `1dc2a94` (PCR 0122) | this PCR | delta |
 |---|---|---|---|
-| `npm test` TAP `# tests` | 483 | **489** | **+6** |
-| `npm test` TAP `# pass` | 457 | **463** | **+6** |
+| `npm test` TAP `# tests` | 485 | **491** | **+6** |
+| `npm test` TAP `# pass` | 459 | **465** | **+6** |
 | `npm test` TAP `# fail` | 0 | **0** | `0` |
 | `npm test` TAP `# skipped` | 26 | **26** | `0` |
 | `AUTORESEARCH_SCORE` | `89.107165` | `89.107165` | 0 |
