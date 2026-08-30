@@ -119,6 +119,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-30 | (PCR 0126) evaluate `--pack` routing; default path synthetic; symbol pack label `symbol-scope-dev` | TAP 500 / 474 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0126](pcr/0126-evaluate-pack-routing.md) |
 | 2026-08-30 | (PCR 0127) on-disk evaluate pass requires required-current recall; stale-only green closed | TAP 501 / 475 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0127](pcr/0127-evaluate-ondisk-recall-gate.md) |
 | 2026-08-30 | (PCR 0128) default empirical evaluate pass requires required-current recall; payload-only green closed; PR 125 draft | TAP 506 / 480 pass / 0 fail / 26 skip | n/a (`EVALUATE_VERDICT=PASS`) | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0128](pcr/0128-empirical-recall-gate.md) |
+| 2026-08-30 | (PCR 0129) freeze holdout-v0.3-apex bind-existing; local `locally-frozen`; GHA attest blocked by billing | TAP 518 / 492 pass / 0 fail / 26 skip | n/a (`EVALUATE_VERDICT=PASS` on apex pack) | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0129](pcr/0129-freeze-holdout-v03-apex.md) |
 
 Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 

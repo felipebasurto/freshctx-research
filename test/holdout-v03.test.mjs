@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
+import { HOLDOUT_V03 } from "../bench/holdout-identity.mjs";
 import {
   ProtocolError,
   defaultReportFormatter,
@@ -13,6 +15,7 @@ import {
   reportPack,
   runPack,
 } from "../bench/holdout-protocol.mjs";
+import { verifyPack } from "../bench/holdout-verify.mjs";
 import { sha256 } from "../src/hash.mjs";
 
 function git(cwd, args) {
@@ -113,6 +116,16 @@ test("bind-existing freeze hashes published traces and refuses to rewrite them",
   assert.equal(sha256(await readFile(join(root, tracesDir, "cell.json"), "utf8")), beforeTrace);
   assert.equal(sha256(await readFile(join(root, reportsDir, "results.jsonl"), "utf8")), beforeJsonl);
   await rm(root, { recursive: true, force: true });
+});
+
+test("committed holdout-v0.3-apex verifies as locally-frozen", async () => {
+  const root = dirname(dirname(fileURLToPath(import.meta.url)));
+  const result = await verifyPack(root, { packId: HOLDOUT_V03.packId });
+  assert.equal(result.valid, true);
+  assert.equal(result.classification, "locally-frozen");
+  assert.equal(result.earnedClassification, "locally-frozen");
+  assert.equal(result.errors.length, 0);
+  assert.notEqual(result.classification, "sealed");
 });
 
 test("bind-existing freeze refuses the sealed holdout-v0.2 tree", async () => {
