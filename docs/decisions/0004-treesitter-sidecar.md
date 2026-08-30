@@ -31,7 +31,10 @@ Use a **sidecar process** at `sidecar/treesitter/`.
 - Fail closed when the Isolated Semantic Engine is missing or a unit is
   ambiguous. Duplicate `qualifiedSelector` values omit those units only.
   Remaining unique units still emit with `error: null`. `error: "ambiguous"`
-  means every extracted unit collided. `parse-broken` still wipes the file.
+  means every extracted unit collided. An `ERROR` node or a span that
+  overlaps a same-or-shallower sibling fail-closes that unit only. A
+  well-bounded sibling in the same file may still emit. `error: "parse-broken"`
+  means no well-bounded unit remained.
 - `qualifiedSelector` is the structural path from file root to the unit.
   Named ancestors (class, impl type, function, method) and control-flow
   blocks (if, else, elif, for, while, match) are appended with `::`.

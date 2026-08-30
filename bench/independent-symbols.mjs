@@ -166,16 +166,6 @@ function blankSlashCommentsAndStrings(text) {
   return blankJsFamily(text);
 }
 
-function braceDepthAt(blanked, index) {
-  let depth = 0;
-  for (let cursor = 0; cursor < index; cursor += 1) {
-    const char = blanked[cursor];
-    if (char === "{") depth += 1;
-    if (char === "}") depth -= 1;
-  }
-  return depth;
-}
-
 function findBraceEnd(text, fromIndex) {
   let depth = 0;
   let seen = false;
@@ -203,7 +193,7 @@ function findBraceEnd(text, fromIndex) {
         seen = true;
       } else if (char === "}") {
         depth -= 1;
-        if (seen && depth <= 0) return index;
+        if (seen && depth <= 0) return { index, matched: true };
       }
       continue;
     }
@@ -224,7 +214,16 @@ function findBraceEnd(text, fromIndex) {
     }
     if (char === state) state = "code";
   }
-  return text.length - 1;
+  return { index: Math.max(0, text.length - 1), matched: false };
+}
+
+function indentAt(text, index) {
+  const lineStart = text.lastIndexOf("\n", index - 1) + 1;
+  let indent = 0;
+  while (lineStart + indent < text.length && (text[lineStart + indent] === " " || text[lineStart + indent] === "\t")) {
+    indent += 1;
+  }
+  return indent;
 }
 
 function goReceiverType(receiver) {
@@ -288,38 +287,49 @@ function jsMethodHeaders(blanked, classStart, classEnd) {
   return hits;
 }
 
+function overlapsSameOrShallowerSibling(span, others) {
+  return others.some((other) => {
+    if (other === span || other.header.index <= span.header.index) return false;
+    if (span.end.index < other.header.index) return false;
+    return other.indent <= span.indent;
+  });
+}
+
 function enumerateBraceLanguage({ path, text, language }) {
   const blanked = language === "go" || language === "rust" ? blankSlashCommentsAndStrings(text) : blankJsFamily(text);
   const headers = collectHeaders(blanked, language);
+  const spans = headers.map((header) => ({
+    header,
+    indent: indentAt(text, header.index),
+    end: findBraceEnd(text, header.index),
+  }));
   const units = [];
   const implSpans = [];
 
-  for (const header of headers) {
-    const depth = braceDepthAt(blanked, header.index);
+  for (const span of spans) {
+    const { header, indent, end } = span;
+    if (!end.matched) continue;
+    if (overlapsSameOrShallowerSibling(span, spans)) continue;
+    if (indent !== 0 && header.kind !== "function") continue;
     if (header.kind === "impl") {
-      if (depth !== 0) continue;
-      const end = findBraceEnd(text, header.index);
-      implSpans.push({ owner: header.owner, start: header.index, end });
+      implSpans.push({ owner: header.owner, start: header.index, end: end.index });
       continue;
     }
-    if (header.kind === "class" && depth !== 0) continue;
-    if (header.kind === "function" && language !== "rust" && depth !== 0) continue;
-    if (header.kind === "method" && language === "go" && depth !== 0) continue;
+    if (header.kind === "class" && indent !== 0) continue;
+    if (header.kind === "function" && language !== "rust" && indent !== 0) continue;
+    if (header.kind === "method" && language === "go" && indent !== 0) continue;
     if (header.kind === "function" && language === "go") {
       const prefix = blanked.slice(Math.max(0, header.index - 80), header.index);
       if (/\([^)]*\)\s*$/u.test(prefix.replace(/\s+/gu, " "))) continue;
     }
-    const endIndex = findBraceEnd(text, header.index);
-    const startLine = lineOfIndex(text, header.index);
-    const endLine = lineOfIndex(text, endIndex);
     let kind = header.kind;
     let owner = header.owner;
     if (language === "rust" && header.kind === "function") {
-      const impl = implSpans.find((span) => header.index > span.start && header.index < span.end);
+      const impl = implSpans.find((item) => header.index > item.start && header.index < item.end);
       if (impl) {
         kind = "method";
         owner = impl.owner;
-      } else if (depth !== 0) {
+      } else if (indent !== 0) {
         continue;
       }
     }
@@ -330,13 +340,15 @@ function enumerateBraceLanguage({ path, text, language }) {
       selector: header.name,
       qualifiedSelector: qualifiedSelector(kind, header.name, owner),
       language,
-      startLine,
-      endLine,
+      startLine: lineOfIndex(text, header.index),
+      endLine: lineOfIndex(text, end.index),
     });
     if (kind === "class") {
-      const methods = jsMethodHeaders(blanked, header.index, endIndex);
+      const methods = jsMethodHeaders(blanked, header.index, end.index);
       for (const method of methods) {
         const methodEnd = findBraceEnd(text, method.index);
+        if (!methodEnd.matched) continue;
+        if (methodEnd.index > end.index) continue;
         units.push({
           path,
           scope: "symbol",
@@ -345,7 +357,7 @@ function enumerateBraceLanguage({ path, text, language }) {
           qualifiedSelector: qualifiedSelector("method", method.name, header.name),
           language,
           startLine: lineOfIndex(text, method.index),
-          endLine: lineOfIndex(text, methodEnd),
+          endLine: lineOfIndex(text, methodEnd.index),
         });
       }
     }
