@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createAdapterEngine } from "../adapters/engine-factory.mjs";
+import { parseSource } from "../sidecar/treesitter/parse.mjs";
 import { annotateReadMessage } from "../src/transcript.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { CorvusSyncedFileSet, renderSyncedContext } from "./corvus.mjs";
@@ -51,6 +52,49 @@ export const SYMBOL_PACK_TARGETS = [
 ];
 
 export const SYSTEMS = ["isolated-semantic-engine", "corvus-file"];
+
+export const NESTED_HELPER_NESTED_PATH = "class View::method as_view::if@0::function view";
+export const NESTED_HELPER_PARENT_PATH = "class View::method as_view";
+export const NESTED_HELPER_PARENT_TAIL = "        return view";
+
+export const NESTED_HELPER_SHOWDOWN = Object.freeze({
+  id: "flask-as-view-if0-view",
+  repo: "flask",
+  path: "src/flask/views.py",
+  smokeTrace: "bench/traces/smoke/flask-interior-edit.json",
+  source: {
+    repository: "https://github.com/pallets/flask.git",
+    license: "BSD-3-Clause",
+  },
+  expected: "self = view.view_class(",
+  replacement: `self = view.view_class(  # ${SYMBOL_SENTINEL}`,
+  task: "refresh nested if@0 view after an interior symbol edit",
+  parentTail: NESTED_HELPER_PARENT_TAIL,
+  spanSource: "isolated-semantic-engine",
+  tiers: Object.freeze([
+    Object.freeze({
+      id: "tier-1-nested-helper",
+      tier: 1,
+      system: "isolated-semantic-engine",
+      qualifiedSelector: NESTED_HELPER_NESTED_PATH,
+      goldSelector: NESTED_HELPER_NESTED_PATH,
+    }),
+    Object.freeze({
+      id: "tier-2-parent-method",
+      tier: 2,
+      system: "isolated-semantic-engine",
+      qualifiedSelector: NESTED_HELPER_PARENT_PATH,
+      goldSelector: NESTED_HELPER_PARENT_PATH,
+    }),
+    Object.freeze({
+      id: "tier-3-corvus-file",
+      tier: 3,
+      system: "corvus-file",
+      qualifiedSelector: NESTED_HELPER_NESTED_PATH,
+      goldSelector: NESTED_HELPER_NESTED_PATH,
+    }),
+  ]),
+});
 
 function messageText(messages) {
   return messages
@@ -170,6 +214,27 @@ export function goldSpanForFile(path, text, name) {
   const unit = matches[0];
   const bytes = sliceSpan(text, unit.startLine, unit.endLine);
   return { ...unit, name: unit.selector, bytes };
+}
+
+export async function engineSpanForFile(path, text, qualifiedSelector) {
+  const parsed = await parseSource({ path, bytes: text });
+  const matches = (parsed.units ?? []).filter(
+    (unit) => unit.selector === qualifiedSelector || unit.qualifiedSelector === qualifiedSelector,
+  );
+  if (matches.length !== 1) {
+    throw new Error(
+      `Isolated Semantic Engine needs exactly one ${qualifiedSelector} in ${path} (found ${matches.length}${parsed.error ? `, ${parsed.error}` : ""})`,
+    );
+  }
+  const unit = matches[0];
+  const bytes = sliceSpan(text, unit.startLine, unit.endLine);
+  return {
+    ...unit,
+    selector: qualifiedSelector,
+    name: qualifiedSelector,
+    bytes,
+    sha256: sha256(bytes),
+  };
 }
 
 export function forceSymbolObservation({ path, selector, startLine, endLine }) {
@@ -439,7 +504,13 @@ export async function runSymbolCell({
     engineSpawn: system === "isolated-semantic-engine" ? engineSpawn : "n/a",
     payloadSha256: sha256(transformedSerialized),
     goldSha256: gold.sha256,
+    transformedSerialized,
   };
+}
+
+function publicCellRow(row) {
+  const { transformedSerialized, ...rest } = row;
+  return rest;
 }
 
 function formatTelemetryTable(rows) {
@@ -505,7 +576,7 @@ export async function runSymbolPack({
   }
   const reportsDir = join(root, "bench/packs", SYMBOL_PACK_ID, "reports");
   await mkdir(reportsDir, { recursive: true });
-  const jsonl = rows.map((row) => JSON.stringify(row)).join("\n");
+  const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
   await writeFile(join(reportsDir, "results.jsonl"), jsonl ? `${jsonl}\n` : "");
   const table = formatTelemetryTable(rows);
   const failed = rows.filter((row) => row.verdict !== "pass");
@@ -519,12 +590,100 @@ export async function runSymbolPack({
   return { rows, table, reportsDir, engineSpawn: probe.state };
 }
 
+export function formatNestedHelperTable(rows) {
+  const header = [
+    "tier",
+    "system",
+    "selector",
+    "verdict",
+    "reason",
+    "payload_bytes",
+    "delta_vs_coarser",
+    "delta_vs_corvus",
+    "gold_in_payload",
+    "fail_open",
+    "engine_spawn",
+  ];
+  const lines = [
+    `| ${header.join(" | ")} |`,
+    `| ${header.map(() => "---").join(" | ")} |`,
+  ];
+  const byTier = [...rows].sort((left, right) => left.granularity - right.granularity);
+  const corvus = byTier.find((row) => row.system === "corvus-file");
+  for (let index = 0; index < byTier.length; index += 1) {
+    const row = byTier[index];
+    const coarser = byTier[index + 1];
+    const deltaCoarser = coarser ? row.payloadBytes - coarser.payloadBytes : "";
+    const deltaCorvus = corvus ? row.payloadBytes - corvus.payloadBytes : "";
+    lines.push(
+      `| ${row.granularity} | ${row.system} | ${row.selector} | ${row.verdict} | ${row.reason ?? ""} | ${row.payloadBytes} | ${deltaCoarser} | ${deltaCorvus} | ${row.goldInPayload} | ${row.failOpen} | ${row.engineSpawn} |`,
+    );
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export async function runNestedHelperShowdown({
+  root = ROOT,
+  createEngine = createAdapterEngine,
+} = {}) {
+  const cell = NESTED_HELPER_SHOWDOWN;
+  const initialText = await loadSmokeFile(root, cell);
+  const mutatedText = applyInteriorEdit(initialText, cell);
+  const probe = await probeIsolatedSemanticEngine(createEngine);
+  const goldCache = new Map();
+  const rows = [];
+  for (const tier of cell.tiers) {
+    const observed = await engineSpanForFile(cell.path, initialText, tier.qualifiedSelector);
+    if (!goldCache.has(tier.goldSelector)) {
+      goldCache.set(tier.goldSelector, await engineSpanForFile(cell.path, mutatedText, tier.goldSelector));
+    }
+    const gold = goldCache.get(tier.goldSelector);
+    if (!gold.bytes.includes(SYMBOL_SENTINEL)) {
+      throw new Error(`Isolated Semantic Engine gold for ${tier.goldSelector} is missing ${SYMBOL_SENTINEL}`);
+    }
+    const row = await runSymbolCell({
+      target: {
+        ...cell,
+        name: tier.qualifiedSelector,
+      },
+      observed,
+      gold,
+      mutatedText,
+      system: tier.system,
+      createEngine,
+      engineSpawn: probe.state,
+    });
+    rows.push({
+      ...row,
+      tier: tier.id,
+      granularity: tier.tier,
+      parentTailInPayload: row.transformedSerialized.includes(cell.parentTail),
+    });
+  }
+  const reportsDir = join(root, "bench/packs", SYMBOL_PACK_ID, "reports");
+  await mkdir(reportsDir, { recursive: true });
+  const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
+  await writeFile(join(reportsDir, "nested-helper-showdown.jsonl"), jsonl ? `${jsonl}\n` : "");
+  const table = formatNestedHelperTable(rows);
+  await writeFile(
+    join(reportsDir, "nested-helper-showdown.md"),
+    `# nested-helper-showdown\n\nDisposable Isolated Semantic Engine granularity cell. Not official symbol-pack gold and not a holdout result.\nSpans come from Isolated Semantic Engine parse, not \`bench/independent-symbols.mjs\`.\nPayload bytes are \`Buffer.byteLength(JSON.stringify(messages), \"utf8\")\`.\nLatency uses ${SYMBOL_PACK_WARMUPS} warmups and ${SYMBOL_PACK_REPS} measured repetitions.\n\n${table}`,
+  );
+  return { rows, table, reportsDir, engineSpawn: probe.state };
+}
+
 const isMain = process.argv[1] && process.argv[1].endsWith("generate-symbol-pack.mjs");
 if (isMain) {
   const generated = await generateSymbolPack({ root: ROOT });
   const result = await runSymbolPack({ root: ROOT, generated });
+  const showdown = await runNestedHelperShowdown({ root: ROOT });
   process.stdout.write(result.table);
-  if (result.rows.some((row) => row.verdict !== "pass")) {
+  process.stdout.write("\n");
+  process.stdout.write(showdown.table);
+  if (
+    result.rows.some((row) => row.verdict !== "pass")
+    || showdown.rows.some((row) => row.verdict !== "pass")
+  ) {
     process.exitCode = 1;
   }
 }

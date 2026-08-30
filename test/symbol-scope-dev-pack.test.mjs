@@ -8,15 +8,22 @@ import { FreshCtxEngine } from "../src/engine.mjs";
 import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
 import { parseSource } from "../sidecar/treesitter/parse.mjs";
 import {
+  NESTED_HELPER_NESTED_PATH,
+  NESTED_HELPER_PARENT_PATH,
+  NESTED_HELPER_PARENT_TAIL,
+  NESTED_HELPER_SHOWDOWN,
   SYMBOL_PACK_REPS,
+  SYMBOL_PACK_TARGETS,
   SYMBOL_PACK_WARMUPS,
   SYMBOL_SENTINEL,
   buildSymbolTrace,
+  engineSpanForFile,
   forceSymbolObservation,
   generateSymbolPack,
   judgeCell,
   payloadContainsCurrentBytes,
   probeIsolatedSemanticEngine,
+  runNestedHelperShowdown,
   runSymbolCell,
   serializeProviderPayload,
   serializedRequestBytes,
@@ -161,6 +168,61 @@ test("flask as_view resolves after nested view functions collide", async () => {
   assert.equal(row.goldInPayload, true);
   assert.equal(row.failOpen, false);
   assert.ok(row.payloadBytes > 390, "as_view body must enter the serialized payload");
+});
+
+test("nested helper showdown stays off official pack gold", () => {
+  assert.equal(
+    SYMBOL_PACK_TARGETS.some((target) => target.id === NESTED_HELPER_SHOWDOWN.id),
+    false,
+  );
+  assert.equal(NESTED_HELPER_SHOWDOWN.spanSource, "isolated-semantic-engine");
+  assert.equal(NESTED_HELPER_SHOWDOWN.tiers[0].qualifiedSelector, NESTED_HELPER_NESTED_PATH);
+});
+
+test("nested helper cell requests the full enclosing-span path", () => {
+  const observation = forceSymbolObservation({
+    path: NESTED_HELPER_SHOWDOWN.path,
+    selector: NESTED_HELPER_NESTED_PATH,
+    startLine: 1,
+    endLine: 4,
+  });
+  assert.equal(observation.scope, "symbol");
+  assert.equal(observation.selector, NESTED_HELPER_NESTED_PATH);
+  assert.notEqual(observation.selector, "view");
+});
+
+test("Isolated Semantic Engine locates the nested if@0 view helper", async () => {
+  const generated = await generateSymbolPack({ root: ROOT });
+  const flask = generated.traces.find((item) => item.target.repo === "flask");
+  const span = await engineSpanForFile(
+    flask.target.path,
+    flask.trace.initialFiles[flask.target.path],
+    NESTED_HELPER_NESTED_PATH,
+  );
+  assert.equal(span.selector, NESTED_HELPER_NESTED_PATH);
+  assert.equal(span.qualifiedSelector, NESTED_HELPER_NESTED_PATH);
+  assert.equal(span.bytes.includes(NESTED_HELPER_PARENT_TAIL), false);
+  assert.equal(span.bytes.includes("self = view.view_class("), true);
+});
+
+test("nested helper Isolated Semantic Engine payload omits the parent method tail", async () => {
+  const showdown = await runNestedHelperShowdown({ root: ROOT });
+  assert.equal(showdown.rows.length, 3);
+  const nested = showdown.rows.find((row) => row.granularity === 1);
+  const parent = showdown.rows.find((row) => row.granularity === 2);
+  const corvus = showdown.rows.find((row) => row.granularity === 3);
+  assert.equal(nested.system, "isolated-semantic-engine");
+  assert.equal(nested.selector, NESTED_HELPER_NESTED_PATH);
+  assert.equal(nested.verdict, "pass");
+  assert.equal(nested.goldInPayload, true);
+  assert.equal(nested.failOpen, false);
+  assert.equal(parent.selector, NESTED_HELPER_PARENT_PATH);
+  assert.equal(parent.verdict, "pass");
+  assert.equal(corvus.system, "corvus-file");
+  assert.equal(corvus.verdict, "pass");
+  assert.equal(nested.parentTailInPayload, false);
+  assert.equal(parent.parentTailInPayload, true);
+  assert.equal(corvus.parentTailInPayload, true);
 });
 
 test("buildSymbolTrace refuses a non-symbol observation", () => {
