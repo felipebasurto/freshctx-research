@@ -90,6 +90,10 @@ import {
   holdoutV02ManifestDraft,
 } from "../bench/holdout-v02-lab.mjs";
 import {
+  bindHoldoutV03Traces,
+  holdoutV03ManifestDraft,
+} from "../bench/holdout-v03-lab.mjs";
+import {
   ProtocolError,
   defaultReportFormatter,
   freezePack,
@@ -122,6 +126,7 @@ const TRACE_GENERATORS = {
   "move-cross-file-lab": generateMoveCrossFileLabTraces,
   "sampler-canary-lab": generateSamplerCanaryTraces,
   "holdout-v0.2": generateHoldoutV02Traces,
+  "holdout-v0.3-apex": bindHoldoutV03Traces,
 };
 
 const TRACE_RUNNERS = {
@@ -161,6 +166,7 @@ const MANIFEST_DRAFTS = {
   "move-cross-file-lab": moveCrossFileLabManifestDraft,
   "sampler-canary-lab": samplerCanaryManifestDraft,
   "holdout-v0.2": holdoutV02ManifestDraft,
+  "holdout-v0.3-apex": holdoutV03ManifestDraft,
 };
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -181,12 +187,13 @@ function parseArgs(argv) {
 
 function usage() {
   process.stderr.write(`Usage:
-  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab|move-cross-file-lab]
-  holdout-protocol.mjs generate --manifest=<path> [--generator=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab|move-cross-file-lab]
-  holdout-protocol.mjs run --manifest=<path> [--runner=insert-before-lab|insert-before-interior-lab|insert-before-tie-lab|insert-before-unique-last-lab|grow-inside-lab|delete-unit-lab|delete-unit-fail-close-lab|rename-boundary-lab|move-in-file-lab|duplicate-boundary-lab|duplicate-boundary-markers-lab|parse-broken-lab|move-lookalike-lab|grow-shrink-exact-decoy-lab|stored-start-leftover-fail-close-lab|move-cross-file-lab]
+  holdout-protocol.mjs freeze --manifest=<path> [--pack=<id>] [--generator=holdout-v0.3-apex|holdout-v0.2|insert-before-interior-lab|...] [--bind-existing]
+  holdout-protocol.mjs generate --manifest=<path> [--generator=holdout-v0.3-apex|holdout-v0.2|...]
+  holdout-protocol.mjs run --manifest=<path> [--runner=...]
   holdout-protocol.mjs report --manifest=<path>
 
 Phases are ordered: freeze → commit manifest → generate → run → report.
+holdout-v0.3-apex uses bind-existing: generate/run hash published traces and results.jsonl and refuse to rewrite them.
 `);
 }
 
@@ -222,7 +229,7 @@ async function loadManifestDraft(manifestPath, flags) {
 async function main() {
   const { positional, flags } = parseArgs(process.argv);
   const phase = positional[0];
-  const manifestPath = flags.manifest;
+  const manifestPath = flags.manifest ?? (flags.pack ? `bench/splits/${flags.pack}.json` : undefined);
   if (!phase || !manifestPath) {
     usage();
     process.exitCode = 1;
@@ -231,9 +238,10 @@ async function main() {
 
   try {
     if (phase === "freeze") {
-      const draftFactory = MANIFEST_DRAFTS[flags.generator];
+      const draftFactory = MANIFEST_DRAFTS[flags.generator ?? flags.pack];
       const draft = draftFactory ? draftFactory() : await loadManifestDraft(manifestPath, flags);
-      const result = await freezePack(ROOT, manifestPath, draft);
+      const bindExisting = flags["bind-existing"] === true || draft.bindExisting === true;
+      const result = await freezePack(ROOT, manifestPath, draft, { bindExisting });
       process.stdout.write(
         `${JSON.stringify(
           {

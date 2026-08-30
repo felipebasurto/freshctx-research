@@ -1,8 +1,25 @@
 {
   "schemaVersion": 1,
   "packId": "holdout-v0.3-apex",
-  "classification": "candidate",
   "generator": "generate-apex-pack.mjs",
   "goldSource": "independent-symbols",
-  "updatedAt": "2026-08-30T20:50:35.597Z"
+  "classification": "candidate",
+  "manifestPath": "bench/splits/holdout-v0.3-apex.json",
+  "manifestSha256": "5698bb3b17366abdfa9aecd5e23ada7bc65a51f3de56b16f57b356160ceb67cb",
+  "freezeCommitSha": null,
+  "implementationCommitSha": "241845ed867db4ae4eeb2f4726630c26251d6c26",
+  "reposLockSha256": "da5a3c1d15ec6d86e871956043dae19a471c1f496ec282e46358b2a60261a0d6",
+  "repositoryLocks": {
+    "flask": "d318b683471101618febed18996405ad26462110",
+    "express": "a3714473feb3d2908add734d340e7755fd85e0a3",
+    "go-tools": "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49",
+    "ripgrep": "3fce3b5bb0236da2df6d99672afb8a719642eca7"
+  },
+  "bindExisting": true,
+  "generatorSha256": "937d6a3fd104fdf9987950a17bf8b160a8d874ae6bdd53fa2d791d10d19a4988",
+  "traceSetHash": "3a934627f82bea5533dc871ba8f7dbaee220ca8f03f0edcd2c16a4afa774be87",
+  "resultSetHash": "ecce39269b66c302f0cd4bf198df3646a3926201408ca89e59f519750fe66f74",
+  "reportHash": null,
+  "remoteAttestation": null,
+  "updatedAt": "2026-08-30T21:04:57.980Z"
 }
