@@ -34,7 +34,7 @@
             "properties": {
               "type": { "const": "read" },
               "path": { "type": "string" },
-              "scope": { "enum": ["file", "region"] },
+              "scope": { "enum": ["file", "region", "symbol"] },
               "startLine": { "type": "integer", "minimum": 1 },
               "endLine": { "type": "integer", "minimum": 1 },
               "selector": { "type": "string" }

@@ -16,7 +16,7 @@ test("evaluate default target is a physical board, not the synthetic or alpha/be
   const target = discoverEvaluateTarget();
   assert.notEqual(target.id, "auth-region-after-interior-edit");
   assert.notEqual(target.id, "holdout-v0.2");
-  assert.equal(target.id, "public-repo-smoke");
+  assert.equal(target.id, "holdout-v0.3-apex");
 });
 
 test("an apex pack on disk wins over the smoke default", async () => {

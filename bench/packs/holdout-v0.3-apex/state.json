@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "packId": "holdout-v0.3-apex",
+  "classification": "candidate",
+  "generator": "generate-apex-pack.mjs",
+  "goldSource": "independent-symbols",
+  "updatedAt": "2026-08-30T20:50:35.597Z"
+}
