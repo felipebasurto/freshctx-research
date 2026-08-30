@@ -28,7 +28,7 @@ jobs:
         run: npm run bench
       - name: Repeated deterministic context benchmark
         run: npm run ctxbench
-      - name: Protected autoresearch evaluator
+      - name: Empirical evaluator
         run: npm run evaluate
       - name: Paper manifest is readable
         run: npm run papers:list

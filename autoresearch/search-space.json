@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "objective": "maximize AUTORESEARCH_SCORE",
+  "objective": "empirical PASS: Isolated Semantic Engine payload_bytes below CORVUS with forensic gates and required-recall held",
   "allowedFiles": [
     "src/policy.mjs",
     "src/anchors.mjs",

@@ -29,7 +29,7 @@ npm run holdout:verify -- --pack=holdout-v0.2 --attestation=bench/packs/holdout-
 7. **Do not push a draft split.** Attest refuses `status !== "frozen"`. Push only the freeze commit (or a tip whose HEAD split is frozen).
 8. **Generate.yml install order.** Copy attestation into `bench/packs/<id>/provenance/` only **after** generate/run. Generate refuses untracked provenance.
 9. **Pack upload is a tarball.** `actions/upload-artifact` rejects `:` in paths. Trace **filenames** use `--` instead of `::`; selectors inside JSON keep `::file`.
-10. **v0.1 stays `unsealed-regression`.** Score `89.107165` and ctxbench payload `697e74e3…` stay frozen. No Level 4 sentence.
+10. **v0.1 stays `unsealed-regression`.** ctxbench payload `697e74e3…` stays frozen. `npm run evaluate` no longer prints `AUTORESEARCH_SCORE`. No Level 4 sentence.
 
 Rejected: edit the lock to add `synthetic`; seal on a laptop; `workflow_run` chaining.
 
@@ -73,8 +73,9 @@ attribute. The sidecar must not cache prior request bodies.
 - No Level 4 / SOTA sentence.
 - Do not change smoke gold, weights, thresholds, or `bench/traces/holdout/**`.
 - Do not rewrite `bench/reports/holdout.md`.
-- Synthetic score `89.107165` and ctxbench payload
-  `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` stay frozen.
+- ctxbench payload
+  `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` stays frozen.
+  Do not restore `AUTORESEARCH_SCORE` or the weighted synthetic scalar.
 - Neovim C/Lua remain out of the first sidecar.
 - Holdout v0.2 is **not a tuning set**.
 
