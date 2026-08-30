@@ -114,6 +114,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-08-29 | (PCR 0121) localize Isolated Semantic Engine ambiguous units; flask `as_view` 2995 gold-present; dest=`cloud-agent` | TAP 483 / 457 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0121](pcr/0121-localize-ambiguous-units.md) |
 | 2026-08-29 | (PCR 0122) ERROR / sibling-overlap fail-close; missing `}` must not consume the next function | TAP 485 / 459 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0122](pcr/0122-ast-boundary-fail-close.md) |
 | 2026-08-30 | (PCR 0123) enclosing-span disambiguation; dest=`cloud-agent` env=hermes-absent | TAP 491 / 465 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0123](pcr/0123-enclosing-span-disambiguation.md) |
+| 2026-08-30 | (PCR 0124) nested helper Isolated Semantic Engine showdown; flask if@0 view 1058 vs as_view 2995 vs CORVUS 7482 | TAP 495 / 469 pass / 0 fail / 26 skip | 89.107165 | 0 | 1 | 1 | `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` (hold) | 1.0 | [0124](pcr/0124-nested-helper-showdown.md) |
 
 Official accepted TAP remains **418 pass / 0 fail / 17 skipped / 435 total** on base `46169f5`.
 
