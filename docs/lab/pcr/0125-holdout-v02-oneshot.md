@@ -154,7 +154,6 @@ none observed. The one-shot rule held. No hill-climb.
 
 ## Next measurement
 
-Do not treat these cells as a tuning signal. If a later pack is meant to be
-the Level 4 holdout, it needs sealed public-repo traces, independent gold,
-CORVUS on the same traces, and an evaluate path that actually binds `--pack`.
-Keep v0.2 sealed.
+Do not treat these cells as a tuning signal. PCR 0126 later bound `--pack` on
+evaluate. A later one-shot may call `npm run evaluate -- --pack=holdout-v0.2`
+without rewriting this remasure. Keep v0.2 sealed.

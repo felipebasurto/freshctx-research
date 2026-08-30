@@ -555,6 +555,7 @@ export async function runSymbolPack({
   root = ROOT,
   generated,
   createEngine = createAdapterEngine,
+  skipReportWrite = false,
 } = {}) {
   const pack = generated ?? await generateSymbolPack({ root });
   const probe = await probeIsolatedSemanticEngine(createEngine);
@@ -575,18 +576,20 @@ export async function runSymbolPack({
     }
   }
   const reportsDir = join(root, "bench/packs", SYMBOL_PACK_ID, "reports");
-  await mkdir(reportsDir, { recursive: true });
-  const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
-  await writeFile(join(reportsDir, "results.jsonl"), jsonl ? `${jsonl}\n` : "");
   const table = formatTelemetryTable(rows);
-  const failed = rows.filter((row) => row.verdict !== "pass");
-  const footnotes = failed.length === 0
-    ? ""
-    : `\nFailed cells are not small-payload wins. A missing Isolated Semantic Engine spawn is \`missing-engine\`. A transformed request that equals the original host request is \`fail-open\`. Current-revision gold bytes absent from the serialized payload is \`gold-absent\`.\n`;
-  await writeFile(
-    join(reportsDir, "telemetry.md"),
-    `# ${SYMBOL_PACK_ID}\n\nLabel: \`${SYMBOL_PACK_LABEL}\`. Disposable public-repo smoke pack. Not a holdout or Level 4 result.\n\nGold spans come from \`bench/independent-symbols.mjs\` (Python \`ast\` / JavaScript declaration scan).\nPayload bytes are \`Buffer.byteLength(JSON.stringify(messages), \"utf8\")\`.\nLatency uses ${SYMBOL_PACK_WARMUPS} warmups and ${SYMBOL_PACK_REPS} measured repetitions.\n\n${table}${footnotes}`,
-  );
+  if (!skipReportWrite) {
+    await mkdir(reportsDir, { recursive: true });
+    const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
+    await writeFile(join(reportsDir, "results.jsonl"), jsonl ? `${jsonl}\n` : "");
+    const failed = rows.filter((row) => row.verdict !== "pass");
+    const footnotes = failed.length === 0
+      ? ""
+      : `\nFailed cells are not small-payload wins. A missing Isolated Semantic Engine spawn is \`missing-engine\`. A transformed request that equals the original host request is \`fail-open\`. Current-revision gold bytes absent from the serialized payload is \`gold-absent\`.\n`;
+    await writeFile(
+      join(reportsDir, "telemetry.md"),
+      `# ${SYMBOL_PACK_ID}\n\nLabel: \`${SYMBOL_PACK_LABEL}\`. Disposable public-repo smoke pack. Not a holdout or Level 4 result.\n\nGold spans come from \`bench/independent-symbols.mjs\` (Python \`ast\` / JavaScript declaration scan).\nPayload bytes are \`Buffer.byteLength(JSON.stringify(messages), \"utf8\")\`.\nLatency uses ${SYMBOL_PACK_WARMUPS} warmups and ${SYMBOL_PACK_REPS} measured repetitions.\n\n${table}${footnotes}`,
+    );
+  }
   return { rows, table, reportsDir, engineSpawn: probe.state };
 }
 

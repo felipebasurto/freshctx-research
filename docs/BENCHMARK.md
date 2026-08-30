@@ -29,10 +29,15 @@ runs. It reports exact-current correctness, payload hashes, projection bytes,
 delta amplification proxy, prefix reuse, and p50/p95/p99 for refresh, rewrite,
 projection, serialization, and total transformation. It makes no model call.
 
-`autoresearch/evaluate.mjs` runs tests, executes the synthetic comparison twice,
-requires byte-identical metrics, enforces hard correctness gates, and emits one
-`AUTORESEARCH_SCORE=` value. That scalar exists only to sort cheap local
-experiments; public reports use the Pareto metrics in `EVALUATION.md`.
+`autoresearch/evaluate.mjs` runs tests, then a benchmark twice. With no
+`--pack`, that benchmark is the synthetic comparison. `--pack=<id>` loads that
+pack. `symbol-scope-dev-v0.1` uses the Isolated Semantic Engine runner. Other
+ids load `bench/packs/<id>/traces/` read-only. The printer still emits
+`AUTORESEARCH_SCORE=`. The synthetic scalar exists only to sort cheap local
+experiments. A pack score is the cell pass rate and is not the synthetic
+fixture. Public reports use the Pareto metrics in `EVALUATION.md`. Evaluate
+does not call the holdout freeze/run writer, so a remasure cannot rewrite
+sealed provenance.
 
 ## Corpus bootstrap
 
