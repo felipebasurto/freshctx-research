@@ -2,7 +2,19 @@ name: ci
 
 on:
   push:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -18,7 +30,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Sidecar grammars
+          cache: "npm"
+          cache-dependency-path: sidecar/treesitter/package-lock.json
+      - name: Isolated Semantic Engine grammars
         run: npm --prefix sidecar/treesitter ci --omit=dev
       - name: Syntax
         run: npm run check
@@ -52,6 +66,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Sidecar grammars
+          cache: "npm"
+          cache-dependency-path: sidecar/treesitter/package-lock.json
+      - name: Isolated Semantic Engine grammars
         run: npm --prefix sidecar/treesitter ci --omit=dev
       - run: node --test test/*.test.mjs
