@@ -121,6 +121,8 @@ papers/                   Research manifest and reproducibility lock
 ```
 
 There are 126 Public Change Records in `docs/lab/pcr/`.
+See [docs/LAYOUT.md](docs/LAYOUT.md) for the installed Hermes shape and cleanup
+boundary.
 
 ## Contributing
 

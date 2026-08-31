@@ -1,0 +1,42 @@
+# Repository layout
+
+This is a map of the current checkout, not a proposed reorganization.
+
+| Path | Contract |
+|---|---|
+| `src/` | Provider-independent core; Node.js standard library only |
+| `adapters/` | Host codecs, request translation, replay harnesses, and installers |
+| `ise/treesitter/` | Out-of-process Tree-sitter implementation and its dependencies |
+| `test/` | Deterministic invariant tests run by the root test command |
+| `bench/` | Replay runners, oracles, packs, and the whole-file baseline |
+| `capture/` | No-model request recorder |
+| `autoresearch/` | Evaluation entrypoint, search contract, and result ledger |
+| `docs/` | Architecture, evaluation protocol, decisions, and evidence records |
+| `papers/` | Research manifest and reproducibility lock; fetched PDFs are ignored |
+
+The root test command is exactly:
+
+```text
+node --test test/*.test.mjs
+```
+
+## Hermes installed shape
+
+`npm run hermes:install -- <plugins-dir>` creates three symlinks:
+
+```text
+<plugins-dir>/context_engine/freshctx  -> adapters/hermes/
+<plugins-dir>/context_engine/request-prune.mjs -> adapters/request-prune.mjs
+<plugins-dir>/src -> src/
+```
+
+Installing only `adapters/hermes/` is incomplete because `bridge.mjs` imports
+both the shared request-pruning module and the core.
+
+## Cleanup boundary
+
+Tracked benchmark packs, fixtures, locks, reports, Public Change Records, and
+experiment ledgers are contracts or evidence records, not disposable output.
+The layout audit found no tracked generated or duplicated file whose deletion
+could be proven safe. Dependency directories and fetched paper PDFs remain
+ignored local artifacts.
