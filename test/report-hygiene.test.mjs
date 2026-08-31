@@ -9,6 +9,7 @@ import {
   repoRoot,
   shouldWriteTrackedReports,
 } from "../bench/report-artifacts.mjs";
+import { runNestedHelperShowdown } from "../bench/generate-symbol-pack.mjs";
 
 async function snapshotTrackedReports() {
   const root = repoRoot();
@@ -52,6 +53,23 @@ test("adapter and holdout pack runners do not rewrite tracked reports", async ()
 
   const after = await snapshotTrackedReports();
   assertSnapshotsUnchanged(before, after);
+});
+
+test("programmatic nested-helper runs do not rewrite tracked telemetry", async () => {
+  const paths = [
+    "bench/packs/symbol-scope-dev-v0.1/reports/nested-helper-showdown.jsonl",
+    "bench/packs/symbol-scope-dev-v0.1/reports/nested-helper-showdown.md",
+  ];
+  const before = await Promise.all(
+    paths.map((relativePath) => readFile(join(repoRoot(), relativePath))),
+  );
+
+  await runNestedHelperShowdown({ root: repoRoot() });
+
+  const after = await Promise.all(
+    paths.map((relativePath) => readFile(join(repoRoot(), relativePath))),
+  );
+  assert.deepEqual(after, before);
 });
 
 test("git working tree stays clean on all tracked report paths after hygiene runners", () => {

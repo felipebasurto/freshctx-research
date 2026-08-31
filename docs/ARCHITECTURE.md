@@ -279,6 +279,25 @@ current.
 | Workspace changes mid-refresh | Retry or unresolved | Continue only with coherent units |
 | Projection exceeds budget | Deterministic omissions | Continue with omission metadata |
 
+## Sharp-edge audit
+
+`KEEP` marks intentional behavior protected by invariants. `DOCUMENT` marks
+valid but surprising behavior that callers must account for. `FIX` requires a
+bounded defect and a red-green invariant test.
+
+| Sharp edge | Classification | Contract or action |
+|---|---|---|
+| PCR 0079 stateless request bodies | KEEP | Every selected unit carries its current bytes in every request, including unchanged later turns. |
+| PCR 0080 refreshed-unit cap exception | KEEP | A same-turn refresh of an already observed unit may exceed the cap; first-time reads still compete for it. |
+| Fail-closed freshness | KEEP | Ambiguous, missing, or unsafe current bytes are omitted; last-known bytes are never injected. |
+| Adapter fail-open | KEEP | A failed host transformation returns the original native request unchanged. |
+| Selection order versus render order | KEEP | Selection maximizes utility under budget; rendering independently stabilizes the request prefix. |
+| Revision-free historical markers | KEEP | Marker identity stays stable across content revisions; current revision metadata belongs in the live projection. |
+| Process-local adapter state | DOCUMENT | Pi and the current archive lose FreshCtx mappings on restart; host-persisted history remains untouched. |
+| Out-of-process parser availability | DOCUMENT | A missing or failed Isolated Semantic Engine makes structural units unresolved rather than falling back to stale bytes. |
+| Local apex classification | DOCUMENT | `holdout-v0.3-apex` is locally frozen; production GitHub Actions attestation is still absent. |
+| Programmatic benchmark report writes | FIX | `runNestedHelperShowdown()` rewrote tracked timing/RSS reports during `npm test`. Programmatic calls now default to no writes; CLI entrypoints opt in. `test/report-hygiene.test.mjs` is the red-green invariant. |
+
 ## Security boundary
 
 - Canonicalize paths and verify real paths remain under the active root.
