@@ -265,7 +265,12 @@ test("Pi codec failures return the exact original request object unchanged", asy
 
       assert.equal(result.applied, false, phase);
       assert.equal(result.request, original, phase);
-      const errorPhase = phase === "validate" ? "validation" : phase;
+      const errorPhase = {
+        capture: "capture",
+        transform: "transform",
+        validate: "validation",
+        serialize: "serialization",
+      }[phase];
       assert.match(result.error, new RegExp(errorPhase, "u"), phase);
       assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes, phase);
     }
