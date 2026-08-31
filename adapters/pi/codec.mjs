@@ -56,6 +56,7 @@ function pairingRecord(request) {
   const seenResults = new Set();
   let pendingCalls = [];
   let pendingResultIndex = 0;
+  let boundaryIndex = 0;
 
   for (const [messageIndex, message] of request.messages.entries()) {
     const calls = nativeToolCalls(message);
@@ -79,7 +80,12 @@ function pairingRecord(request) {
         return null;
       }
       seenResults.add(result.toolCallId);
-      events.push({ kind: "result", id: result.toolCallId, name: result.toolName });
+      events.push({
+        kind: "result",
+        id: result.toolCallId,
+        name: result.toolName,
+        boundaryIndex,
+      });
       pendingResultIndex += 1;
       if (pendingResultIndex === pendingCalls.length) {
         pendingCalls = [];
@@ -104,7 +110,13 @@ function pairingRecord(request) {
       }
       seenCalls.add(call.id);
       pendingCalls.push({ id: call.id, name: call.name, messageIndex });
-      events.push({ kind: "call", id: call.id, name: call.name });
+      events.push({ kind: "call", id: call.id, name: call.name, boundaryIndex });
+    }
+    if (
+      calls.length === 0
+      || message.content.some((part) => part?.type !== "toolCall")
+    ) {
+      boundaryIndex += 1;
     }
   }
 
@@ -112,32 +124,58 @@ function pairingRecord(request) {
   return events;
 }
 
-function isPairingSubsequence(candidate, captured) {
-  let capturedIndex = 0;
-  for (const event of candidate) {
-    while (
-      capturedIndex < captured.length
-      && (
-        captured[capturedIndex].kind !== event.kind
-        || captured[capturedIndex].id !== event.id
-        || captured[capturedIndex].name !== event.name
-      )
-    ) {
-      capturedIndex += 1;
-    }
-    if (capturedIndex === captured.length) return false;
-    capturedIndex += 1;
-  }
-  return true;
-}
-
-export function validatePiNativeRequest(request, capturedRequest = null) {
+export function validatePiNativeRequest(
+  request,
+  capturedRequest = null,
+  { retiredToolCallIds = [] } = {},
+) {
   const pairing = pairingRecord(request);
   if (!pairing) return false;
   if (capturedRequest == null) return true;
   const capturedPairing = pairingRecord(capturedRequest);
-  return capturedPairing != null
-    && isPairingSubsequence(pairing, capturedPairing);
+  if (!capturedPairing) return false;
+
+  const retired = retiredToolCallIds instanceof Set
+    ? retiredToolCallIds
+    : new Set(retiredToolCallIds);
+  const expected = capturedPairing.filter((event) => !retired.has(event.id));
+  return JSON.stringify(pairing) === JSON.stringify(expected);
+}
+
+const PI_MORE_LINES_RE = /\n\n\[\d+ more lines in file\. Use offset=\d+ to continue\.\]$/u;
+
+function readReconstruction(input, result, content) {
+  if (result.details?.truncation?.truncated === true) {
+    return {
+      scope: readScopeFromInput(input),
+      issue: "truncated whole-file observation",
+    };
+  }
+  if (input.scope === "region" || input.scope === "symbol") {
+    return { scope: readScopeFromInput(input) };
+  }
+
+  const offset = Number(input.offset);
+  const limit = Number(input.limit);
+  const hasOffset = Number.isFinite(offset) && offset >= 1;
+  const hasLimit = Number.isFinite(limit) && limit >= 1;
+  const hasMoreLines = PI_MORE_LINES_RE.test(content);
+
+  if (hasOffset && hasLimit) {
+    if (hasMoreLines) return { scope: readScopeFromInput(input) };
+    if (offset === 1) return { scope: { scope: "file" } };
+    return {
+      scope: { scope: "file" },
+      issue: "EOF pagination omits the observation-time file prefix",
+    };
+  }
+  if ((hasOffset && offset > 1) || (hasLimit && hasMoreLines)) {
+    return {
+      scope: { scope: "file" },
+      issue: "partial file observation lacks reconstructable file bytes",
+    };
+  }
+  return { scope: readScopeFromInput(input) };
 }
 
 export function decodePiReadObservations(request, { turn } = {}) {
@@ -148,10 +186,10 @@ export function decodePiReadObservations(request, { turn } = {}) {
   const calls = new Map();
   let inferredTurn = 0;
   for (const message of request.messages) {
-    if (message?.role === "user") inferredTurn += 1;
     for (const call of nativeToolCalls(message)) {
       calls.set(call.id, { call, turn: Number.isInteger(turn) ? turn : inferredTurn });
     }
+    if (message?.role === "assistant") inferredTurn += 1;
   }
 
   const observations = [];
@@ -166,7 +204,8 @@ export function decodePiReadObservations(request, { turn } = {}) {
     if (typeof input.path !== "string" || input.path.length === 0) continue;
     const content = textContent(result.content);
     if (content == null) continue;
-    const scope = readScopeFromInput(input);
+    const reconstruction = readReconstruction(input, result, content);
+    const scope = reconstruction.scope;
     const observation = {
       observationId: call.id,
       toolCallId: call.id,
@@ -176,6 +215,7 @@ export function decodePiReadObservations(request, { turn } = {}) {
       turn: callRecord.turn,
       input: structuredClone(input),
     };
+    if (reconstruction.issue) observation.reconstructionIssue = reconstruction.issue;
     if (scope.scope === "region") {
       if (Number.isInteger(scope.startLine)) observation.startLine = scope.startLine;
       if (Number.isInteger(scope.endLine)) observation.endLine = scope.endLine;
@@ -292,11 +332,10 @@ export function createPiHostCodec({
       const turnIndex = Number.isInteger(context.turnIndex) ? context.turnIndex : 1;
       await adapter.onTurnStart({ turnIndex });
       for (const observation of captured.observations) {
-        try {
-          await seedReadObservation(adapter, observation, context.cwd);
-        } catch {
-          // Unsupported observations remain ordinary Pi results.
+        if (observation.reconstructionIssue) {
+          throw new Error(`Pi read cannot be reconstructed: ${observation.reconstructionIssue}`);
         }
+        await seedReadObservation(adapter, observation, context.cwd);
       }
       if (adapter.engine.registry.list().length === 0) return structuredClone(request);
 
@@ -308,12 +347,23 @@ export function createPiHostCodec({
         { cwd: context.cwd },
       );
       if (!transformed) throw new Error("Pi adapter context transformation failed");
+      const transformedPairing = pairingRecord({ messages: transformed.messages });
+      const transformedCallIds = new Set(
+        (transformedPairing ?? [])
+          .filter((event) => event.kind === "call")
+          .map((event) => event.id),
+      );
+      captured.retiredToolCallIds = captured.observations
+        .map((observation) => observation.toolCallId)
+        .filter((toolCallId) => !transformedCallIds.has(toolCallId));
       return {
         ...structuredClone(request),
         messages: transformed.messages,
       };
     },
     validate: (request, { captured }) =>
-      validatePiNativeRequest(request, captured.request),
+      validatePiNativeRequest(request, captured.request, {
+        retiredToolCallIds: captured.retiredToolCallIds,
+      }),
   });
 }
