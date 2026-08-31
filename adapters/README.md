@@ -32,3 +32,13 @@ provider.
 MCP may expose status, recovery, or explicit inspection tools. It is not the
 data plane for this contract because it cannot rewrite an arbitrary host's
 provider request.
+
+## Implemented codec
+
+`pi/codec.mjs` is the first host-specific consumer. It targets Pi 0.84.2 at the
+commit pinned in `bench/hosts.lock.json`, decodes Pi-native read pairs, composes
+the existing Pi request-only transformation, and validates that retained native
+IDs, order, and pairing survive unchanged when complete superseded read pairs
+are retired. The existing Pi extension remains the live integration path; the
+codec is its deterministic, no-model request-capture path. It is not an Oh My
+Pi adapter.

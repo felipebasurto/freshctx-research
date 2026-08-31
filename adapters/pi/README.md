@@ -67,6 +67,49 @@ The replay harness in `adapters/pi/replay.mjs` mirrors the extension's
 `tool_result`, `turn_start`, and `context` handlers. See
 `docs/lab/pcr/0003-pi-smoke-capture.md`.
 
+## Generic host codec
+
+`codec.mjs` is the first production-shaped consumer of
+`adapters/host-codec.mjs`. It accepts Pi-native `toolCall` content parts paired
+with `toolResult` messages, decodes successful text `read` results, and composes
+the existing replay transformer on an ephemeral request copy. It does not
+replace the extension, invoke a model, use MCP as a data plane, or implement an
+Oh My Pi adapter.
+
+Its capability record is:
+
+| Field | Value |
+|---|---|
+| `host` | `pi` |
+| `hostVersion` | `c49906ec77788625aacbdc53ebca6fbe65bd20f5` (Pi 0.84.2) |
+| `adapter` | `freshctx-pi-host-codec` |
+| `adapterVersion` | `0.1.0` |
+| `canRewriteRequest` | `true` |
+
+The host commit is the immutable Pi revision in `bench/hosts.lock.json`. Every
+codec application reconstructs tracked units and call mappings from
+observation-time bytes in the untouched Pi history, refreshes against the
+supplied `cwd`, validates retained native pairing, and serializes
+deterministically. Complete superseded read pairs may be retired exactly as in
+the existing adapter; retained pairs keep their IDs and order. The prior
+transformed request is never an input to the next application. Any capture,
+transformation, validation, or serialization failure returns the exact original
+request object through `applyHostCodec()`.
+
+The codec reconstructs only histories whose observation-time bytes determine
+the same unit as the live adapter. Non-truncated whole-file reads, explicit
+regions/symbols, bounded pagination with a continuation marker, and
+offset-one pagination that reaches EOF are supported. Any Pi result carrying
+truncation metadata, and pagination that reaches EOF after omitting a file
+prefix, lacks enough historical bytes to recreate the live adapter's unit.
+Those cases—and a request mixing a supported read with an unsafe, binary,
+oversized, or escaping-symlink observation—fail open to the exact original
+request rather than guessing or retiring the refused pair.
+
+Native `bash` and `shell` pairs are preserved as passthrough protocol events by
+the codec. Cat-class shell-read capture remains implemented by the live
+extension/replay adapter, not by this first codec slice.
+
 ## Stateless requests
 
 Every unit the adapter selects carries its full current bytes in every request.
