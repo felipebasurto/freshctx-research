@@ -8,7 +8,7 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
 test("ADR 0004 exists and forbids tree-sitter inside src/", async () => {
   const adr = await readFile(join(ROOT, "docs/decisions/0004-isolated-semantic-engine.md"), "utf8");
-  assert.match(adr, /semanticEngine/i);
+  assert.match(adr, /Isolated Semantic Engine/i);
   assert.match(adr, /stdlib/i);
   assert.match(adr, /second program/i);
   assert.match(adr, /LSP/i);
