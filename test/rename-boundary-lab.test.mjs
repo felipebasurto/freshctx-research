@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -10,7 +9,7 @@ import { buildRenameBoundaryLabTraces } from "../bench/rename-boundary-lab.mjs";
 import { finalCapture, runTrace } from "../bench/trace-runner.mjs";
 
 const PARSE_FILE = fileURLToPath(
-  new URL("../bench/repos/go-tools/benchmark/parse/parse.go", import.meta.url),
+  new URL("../test/fixtures/go-tools/benchmark/parse/parse.go", import.meta.url),
 );
 const GO_TOOLS_LOCKED_COMMIT = "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49";
 const ORIGINAL_REGION_SHA = "d53008c0b6d3d3cc9fe50138c332cbcc03ce3f4ec112db5598b4063e42d07679";
@@ -52,7 +51,6 @@ function liveMethod(result) {
 
 test(
   "rename-boundary lab traces pin renamed gold and run without throw",
-  { skip: existsSync(PARSE_FILE) ? false : "go-tools parse.go not fetched" },
   async () => {
     const goParse = await readFile(PARSE_FILE, "utf8");
     const { traces } = await buildRenameBoundaryLabTraces({

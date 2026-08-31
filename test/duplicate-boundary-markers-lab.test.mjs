@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -14,7 +13,7 @@ import {
 import { finalCapture } from "../bench/trace-runner.mjs";
 
 const PARSE_FILE = fileURLToPath(
-  new URL("../bench/repos/go-tools/benchmark/parse/parse.go", import.meta.url),
+  new URL("../test/fixtures/go-tools/benchmark/parse/parse.go", import.meta.url),
 );
 const GO_TOOLS_LOCKED_COMMIT = "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49";
 const EMPTY_CAPTURE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
@@ -62,7 +61,6 @@ function acceptedCopyStartLine(mutatedContent, result) {
 
 test(
   "duplicate-boundary-markers lab traces pin gold and measure marker tie-break",
-  { skip: existsSync(PARSE_FILE) ? false : "go-tools parse.go not fetched" },
   async () => {
     const goParse = await readFile(PARSE_FILE, "utf8");
     const { traces } = await buildDuplicateBoundaryMarkersLabTraces({

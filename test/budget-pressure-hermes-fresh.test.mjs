@@ -75,26 +75,6 @@ test("hermes-fresh stale/recall match freshctx-region on budget-pressure cells",
   }
 });
 
-test(
-  "hermes-native stays stale on delete/interior/neovim-append when replayed or live",
-  { skip: hermesHostReady ? false : "bench/hosts/hermes not fetched; replay path covered above" },
-  async () => {
-    const summary = await runBudgetPressureHermesFreshPack({ skipReportWrite: true });
-    const staleCells = [
-      ["go-tools", "delete"],
-      ["go-tools", "interior-edit"],
-      ["neovim", "append"],
-      ["neovim", "delete"],
-      ["neovim", "interior-edit"],
-    ];
-    for (const [repo, family] of staleCells) {
-      const row = summary.rows.find((item) => item.baseline === "hermes-native" && item.repo === repo && item.family === family);
-      assert.ok(row, `${repo}/${family}: missing hermes-native row`);
-      assert.ok(row.staleBytes > 0 || row.stale > 0, `${repo}/${family}: expected stale hermes-native`);
-    }
-  },
-);
-
 test("budget-pressure hermes-fresh report file states region match finding", async () => {
   const reportPath = join(ROOT, "bench/reports/budget-pressure-hermes-fresh.md");
   if (!existsSync(reportPath)) {

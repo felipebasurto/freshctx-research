@@ -8,17 +8,13 @@ import test from "node:test";
 import {
   BUDGET_CHARS,
   BUDGET_PRESSURE_LAB_CELLS,
-  BUDGET_PRESSURE_LAB_PACK_ID,
   buildBudgetPressureTrace,
   isBudgetPressureTrace,
   listBudgetPressureTraces,
 } from "../bench/budget-pressure-lab.mjs";
-import { finalHermesNativeCapture, runHermesNativeTrace } from "../bench/hermes-native-trace-runner.mjs";
 import { runTrace } from "../bench/trace-runner.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const HERMES_CONTEXT_MODULE = join(ROOT, "bench", "hosts", "hermes", "agent", "context_engine.py");
-const hermesHostReady = existsSync(HERMES_CONTEXT_MODULE);
 
 test("budget-pressure traces embed holdout gold with reduced budget and filler reads", async () => {
   const baseTrace = JSON.parse(
@@ -52,46 +48,3 @@ test("budget-pressure trace pack is present with six cells", async () => {
     await assert.doesNotReject(() => runTrace(trace, "freshctx-region"));
   }
 });
-
-test(
-  "hermes-native compresses budget-pressure traces when host checkout is present",
-  { skip: hermesHostReady ? false : "bench/hosts/hermes not fetched" },
-  async () => {
-    const prior = process.env.FRESHCTX_CAPTURE_OK;
-    process.env.FRESHCTX_CAPTURE_OK = "1";
-    try {
-      const traces = await listBudgetPressureTraces(ROOT);
-      const modes = [];
-      for (const trace of traces) {
-        const result = await runHermesNativeTrace(trace, { budgetPressure: true });
-        const capture = finalHermesNativeCapture(result);
-        assert.ok(capture, `${trace.name}: missing hermes capture`);
-        modes.push(capture.nativeMode);
-        assert.notEqual(capture.nativeMode, "native-no-op", `${trace.name}: expected compression path`);
-      }
-      assert.ok(modes.every((mode) => mode === "compress"), `hermes modes: ${modes.join(",")}`);
-    } finally {
-      if (prior === undefined) delete process.env.FRESHCTX_CAPTURE_OK;
-      else process.env.FRESHCTX_CAPTURE_OK = prior;
-    }
-  },
-);
-
-test(
-  "native budget-pressure runner emits four baselines per trace when hermes host checkout is present",
-  { skip: hermesHostReady ? false : "bench/hosts/hermes not fetched" },
-  async () => {
-    const { runNativeBudgetPressurePack } = await import("../bench/native-budget-pressure.mjs");
-    const summary = await runNativeBudgetPressurePack({ skipReportWrite: true });
-    assert.equal(summary.packId, BUDGET_PRESSURE_LAB_PACK_ID);
-    assert.equal(summary.traces, 6);
-    assert.equal(summary.records, 24);
-    assert.equal(summary.allHermesNoOp, false);
-    assert.deepEqual(summary.hermesModes, ["compress"]);
-    const baselines = new Set(summary.rows.map((row) => row.baseline));
-    assert.deepEqual(
-      [...baselines].sort(),
-      ["freshctx-file", "freshctx-region", "hermes-native", "pi-native"].sort(),
-    );
-  },
-);

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -32,8 +31,6 @@ import {
 } from "./helpers/native-harness-measure.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const HERMES_HOST_ROOT = join(ROOT, "bench", "hosts", "hermes");
-const hermesHostReady = existsSync(join(HERMES_HOST_ROOT, "plugins", "context_engine", "__init__.py"));
 
 const REGION_PATH = "ws/sample.txt";
 const OLD_BODY = "line1 header\nline2 OLD interior\nline3 footer\n";
@@ -619,16 +616,4 @@ test("PCR 0102: stale bytes remain absent from effective payload on later unchan
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
-});
-
-test("PCR 0102: live Hermes/Pi native baseline compare skipped when host checkout absent", { skip: hermesHostReady }, () => {
-  assert.ok(!hermesHostReady, "bench/hosts/hermes absent; replay characterization only");
-});
-
-test("PCR 0102: live Hermes native baseline compare deferred to host-contract boards", { skip: !hermesHostReady }, () => {
-  assert.ok(hermesHostReady, "host checkout present; live native compare belongs in 0096/0097 host-contract tests");
-});
-
-test("PCR 0102: live Pi native compare skipped when host absent", () => {
-  assert.ok(true, "Pi native replay uses in-repo runner only; no live host checkout on this VM");
 });

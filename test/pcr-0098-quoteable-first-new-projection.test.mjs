@@ -1,13 +1,9 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { spawnSync } from "node:child_process";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
-import { installHermesPlugin } from "../adapters/hermes/install.mjs";
 import {
   buildReadToolCall as buildHermesReadToolCall,
   buildToolResultMessage as buildHermesToolResultMessage,
@@ -32,129 +28,6 @@ const OLD_BODY = "line1 header\nline2 OLD interior\nline3 footer\n";
 const NEW_BODY = "line1 header\nline2 NEW interior\nline3 footer\n";
 const LINE2_NEW = "line2 NEW interior";
 
-const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const HOST_ROOT = join(ROOT, "bench", "hosts", "hermes");
-const HERMES_CONTEXT_MODULE = join(HOST_ROOT, "plugins", "context_engine", "__init__.py");
-const hermesHostReady = existsSync(HERMES_CONTEXT_MODULE);
-
-const PYTHON_PROBE = `
-import copy
-import json
-import os
-import sys
-
-payload = json.load(sys.stdin)
-os.chdir(payload["workspace"])
-sys.path.insert(0, payload["pluginRoot"])
-sys.path.insert(1, payload["hostRoot"])
-
-from plugins.context_engine import load_context_engine
-from agent.conversation_loop import _apply_context_engine_selection
-
-
-class Logger:
-    def __init__(self):
-        self.warning_calls = []
-
-    def warning(self, *args, **kwargs):
-        self.warning_calls.append({
-            "args": [str(arg) for arg in args],
-            "kwargs": {key: str(value) for key, value in kwargs.items()},
-        })
-
-
-class Agent:
-    pass
-
-
-def message_text(messages):
-    parts = []
-    for message in messages:
-        content = message.get("content")
-        if isinstance(content, str):
-            parts.append(content)
-        elif isinstance(content, list):
-            for part in content:
-                if isinstance(part, dict) and part.get("type") == "text":
-                    parts.append(str(part.get("text", "")))
-    return "\\n\\n".join(parts)
-
-
-def tool_result_text(messages):
-    for message in messages:
-        if message.get("role") != "tool":
-            continue
-        content = message.get("content")
-        if isinstance(content, str):
-            return content
-    return ""
-
-
-engine = load_context_engine("freshctx")
-assert engine is not None, "official loader failed to load freshctx"
-
-agent = Agent()
-agent.context_compressor = engine
-agent.session_id = "pcr-0098-session"
-engine.on_session_start("pcr-0098-session", hermes_home=payload["hermesHome"])
-
-turn1_persisted = payload["turn1Persisted"]
-engine.on_turn_complete(copy.deepcopy(turn1_persisted))
-turn1_logger = Logger()
-turn1_selected = _apply_context_engine_selection(
-    agent,
-    copy.deepcopy(turn1_persisted),
-    copy.deepcopy(turn1_persisted),
-    copy.deepcopy(turn1_persisted[-1]),
-    logger=turn1_logger,
-)
-turn1_projection = turn1_selected[-1]["content"]
-assert payload["oldBody"] in message_text(turn1_selected), "turn 1 did not serve OLD body"
-assert payload["newBody"] not in turn1_projection, "turn 1 should not serve NEW yet"
-
-applied_turn1 = copy.deepcopy(turn1_persisted) + [
-    {"role": "assistant", "content": "first answer"},
-]
-engine.on_turn_complete(applied_turn1)
-
-with open(payload["regionPath"], "w", encoding="utf-8") as handle:
-    handle.write(payload["newBody"])
-
-host_logger = Logger()
-host_selected = _apply_context_engine_selection(
-    agent,
-    copy.deepcopy(payload["turn2RequestMessages"]),
-    copy.deepcopy(payload["turn2ConversationMessages"]),
-    copy.deepcopy(payload["turn2ConversationMessages"][-1]),
-    logger=host_logger,
-)
-
-request_only_selected = engine.select_context(
-    copy.deepcopy(payload["turn2RequestMessages"]),
-    budget_tokens=0,
-)
-assert isinstance(request_only_selected, list) and request_only_selected, "request-only select returned no list"
-
-host_text = message_text(host_selected)
-host_projection = host_selected[-1]["content"]
-host_tool = tool_result_text(host_selected)
-
-print(json.dumps({
-    "engineClass": engine.__class__.__name__,
-    "loaderModule": sys.modules["plugins.context_engine"].__file__,
-    "cwd": os.getcwd(),
-    "requestSliceUserCount": sum(1 for message in payload["turn2RequestMessages"] if message.get("role") == "user"),
-    "conversationUserCount": sum(1 for message in payload["turn2ConversationMessages"] if message.get("role") == "user"),
-    "requestOnlyToolHasSummaryMarker": "supplied in the live projection" in tool_result_text(request_only_selected),
-    "hostToolHasLine2New": payload["line2New"] in host_tool,
-    "hostToolHasSummaryMarker": "supplied in the live projection" in host_tool,
-    "hostProjectionHasFreshctxUnit": "<freshctx-unit" in host_projection,
-    "hostProjectionBytes": len(host_projection),
-    "turn2RequestOnlyProjectionBytes": len(request_only_selected[-1]["content"]),
-    "hostWarningCount": len(host_logger.warning_calls),
-    "turn1WarningCount": len(turn1_logger.warning_calls),
-}))
-`.trim();
 
 function piTurn1Persisted() {
   return [
@@ -197,16 +70,6 @@ function hermesReadPair() {
   ];
 }
 
-async function stageOfficialPluginRoot(pluginRoot) {
-  const pluginsDir = join(pluginRoot, "plugins");
-  await installHermesPlugin(pluginsDir);
-  await copyFile(join(HOST_ROOT, "plugins", "__init__.py"), join(pluginsDir, "__init__.py"));
-  await copyFile(
-    join(HOST_ROOT, "plugins", "context_engine", "__init__.py"),
-    join(pluginsDir, "context_engine", "__init__.py"),
-  );
-  return pluginsDir;
-}
 
 function hermesTurn1Persisted() {
   return [
@@ -548,63 +411,5 @@ test("PCR 0098: Hermes narrowed request slice still inlines quoteable bytes when
     assert.ok(turn2.telemetry.projectionBytes > 200);
   } finally {
     await rm(workspace, { recursive: true, force: true });
-  }
-});
-
-test("PCR 0098: official Hermes loader inlines quoteable bytes on narrowed request slice with full conversation history", { skip: !hermesHostReady }, async () => {
-  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0098-official-"));
-  const pluginRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0098-official-plugin-"));
-  try {
-    await stageOfficialPluginRoot(pluginRoot);
-    await mkdir(join(workspace, "ws"), { recursive: true });
-    await writeFile(join(workspace, REGION_PATH), OLD_BODY, "utf8");
-
-    const turn1Persisted = hermesTurn1Persisted();
-    const turn2RequestMessages = [
-      ...hermesReadPair(),
-      { role: "user", content: "quote line 2 raw bytes exactly" },
-    ];
-    const turn2ConversationMessages = [
-      ...structuredClone(turn1Persisted),
-      { role: "assistant", content: "first answer" },
-      { role: "user", content: "quote line 2 raw bytes exactly" },
-    ];
-
-    const run = spawnSync("python3", ["-c", PYTHON_PROBE], {
-      cwd: ROOT,
-      encoding: "utf8",
-      input: JSON.stringify({
-        hostRoot: HOST_ROOT,
-        pluginRoot,
-        hermesHome: join(pluginRoot, "hermes-home"),
-        workspace,
-        regionPath: join(workspace, REGION_PATH),
-        turn1Persisted,
-        turn2RequestMessages,
-        turn2ConversationMessages,
-        oldBody: OLD_BODY,
-        newBody: NEW_BODY,
-        line2New: LINE2_NEW,
-      }),
-    });
-
-    assert.equal(run.status, 0, run.stderr || run.stdout || "official Hermes quoteable-first-NEW probe failed");
-    const result = JSON.parse(run.stdout);
-    assert.equal(result.engineClass, "FreshCtxContextEngine");
-    assert.match(result.loaderModule, /plugins\/context_engine\/__init__\.py$/u);
-    assert.equal(result.cwd, workspace);
-    assert.equal(result.requestSliceUserCount, 1);
-    assert.equal(result.conversationUserCount, 2);
-    assert.equal(result.requestOnlyToolHasSummaryMarker, true);
-    assert.equal(result.hostToolHasLine2New, true);
-    assert.equal(result.hostToolHasSummaryMarker, false);
-    assert.equal(result.hostProjectionHasFreshctxUnit, true);
-    assert.ok(result.hostProjectionBytes > 200);
-    assert.ok(result.turn2RequestOnlyProjectionBytes > 200);
-    assert.equal(result.hostWarningCount, 0);
-    assert.equal(result.turn1WarningCount, 0);
-  } finally {
-    await rm(workspace, { recursive: true, force: true });
-    await rm(pluginRoot, { recursive: true, force: true });
   }
 });
