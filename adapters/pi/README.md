@@ -67,6 +67,31 @@ The replay harness in `adapters/pi/replay.mjs` mirrors the extension's
 `tool_result`, `turn_start`, and `context` handlers. See
 `docs/lab/pcr/0003-pi-smoke-capture.md`.
 
+## Generic host codec
+
+`codec.mjs` is the first production-shaped consumer of
+`adapters/host-codec.mjs`. It accepts Pi-native `toolCall` content parts paired
+with `toolResult` messages, decodes successful text `read` results, and composes
+the existing replay transformer on an ephemeral request copy. It does not
+replace the extension, invoke a model, use MCP as a data plane, or implement an
+Oh My Pi adapter.
+
+Its capability record is:
+
+| Field | Value |
+|---|---|
+| `host` | `pi` |
+| `hostVersion` | `c49906ec77788625aacbdc53ebca6fbe65bd20f5` (Pi 0.84.2) |
+| `adapter` | `freshctx-pi-host-codec` |
+| `adapterVersion` | `0.1.0` |
+| `canRewriteRequest` | `true` |
+
+The host commit is the immutable Pi revision in `bench/hosts.lock.json`. Every
+codec application reconstructs adapter state from the untouched Pi history,
+refreshes against the supplied `cwd`, validates native pairing, and serializes
+deterministically. Any capture, transformation, validation, or serialization
+failure returns the exact original request object through `applyHostCodec()`.
+
 ## Stateless requests
 
 Every unit the adapter selects carries its full current bytes in every request.
