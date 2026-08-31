@@ -220,6 +220,14 @@ test("Pi validator does not authorize retirement of non-read native pairs", asyn
   };
 
   assert.equal(validatePiNativeRequest({ messages: [] }, original), false);
+  assert.equal(
+    validatePiNativeRequest(
+      { messages: [] },
+      original,
+      { retiredToolCallIds: ["pi-write-call"] },
+    ),
+    false,
+  );
 });
 
 test("Pi read observation turns follow assistant turns, not user-message count", async () => {
@@ -376,6 +384,50 @@ test("Pi codec fails open without retiring a mixed refused read pair", async () 
   }
 });
 
+test("Pi codec preserves an ordinary bash pair beside a tracked read", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-bash-"));
+  try {
+    await writeFile(join(workspace, "source.ts"), CURRENT_ONE);
+    const original = {
+      messages: [
+        ...piReadHistory().slice(0, 2),
+        {
+          role: "assistant",
+          content: [{
+            type: "toolCall",
+            id: "pi-bash-ordinary",
+            name: "bash",
+            arguments: { command: "echo hi" },
+          }],
+        },
+        {
+          role: "toolResult",
+          toolCallId: "pi-bash-ordinary",
+          toolName: "bash",
+          content: [{ type: "text", text: "ordinary shell output" }],
+          isError: false,
+        },
+        { role: "user", content: "use both results" },
+      ],
+    };
+    const originalPairing = nativePairSequence(original.messages);
+
+    const result = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 2,
+    });
+
+    assert.equal(result.applied, true);
+    assert.deepEqual(nativePairSequence(result.request.messages), originalPairing);
+    assert.match(messageText(result.request.messages), /ordinary shell output/u);
+    assert.match(messageText(result.request.messages), /CURRENT_ONE/u);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
 test("Pi codec fails open on a truncated whole-file observation", async () => {
   const { createPiHostCodec } = await loadPiCodec();
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-truncated-"));
@@ -403,6 +455,50 @@ test("Pi codec fails open on a truncated whole-file observation", async () => {
     assert.equal(result.applied, false);
     assert.equal(result.request, original);
     assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec reconstructs continuation pagination exactly like the existing path", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-more-lines-"));
+  try {
+    const fileContent = "line one\nline two\nline three";
+    const observed = "line one\n\n[2 more lines in file. Use offset=2 to continue.]";
+    const input = { path: "source.ts", offset: 1, limit: 1 };
+    await writeFile(join(workspace, "source.ts"), fileContent);
+    const messages = piReadHistory(observed);
+    messages[0].content[0].arguments = input;
+    const oldAdapter = createPiAdapter({ budgetChars: BUDGET_CHARS });
+    await oldAdapter.onTurnStart({ turnIndex: 1 });
+    await oldAdapter.onToolResult(
+      {
+        toolName: "read",
+        toolCallId: CALL_ID,
+        input,
+        content: [{ type: "text", text: observed }],
+        isError: false,
+      },
+      { cwd: workspace },
+    );
+
+    const oldPath = await oldAdapter.onContext(
+      { messages: structuredClone(messages), budgetChars: BUDGET_CHARS },
+      { cwd: workspace },
+    );
+    const codecPath = await applyHostCodec(createPiHostCodec(), { messages }, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 1,
+    });
+
+    assert.ok(oldPath);
+    assert.equal(codecPath.applied, true);
+    assert.deepEqual(
+      canonicalProviderBytes(codecPath.request.messages),
+      canonicalProviderBytes(oldPath.messages),
+    );
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
@@ -514,6 +610,10 @@ test("Pi codec matches existing-path retirement of a superseded same-path read",
       ...readPair(secondCallId, secondObserved, 3),
       { role: "user", content: "Use the latest source.", timestamp: 5 },
     ];
+    persistedMessages[0].content.unshift(
+      { type: "text", text: "" },
+      { type: "thinking", thinking: "" },
+    );
     const original = { messages: persistedMessages };
     const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
     await writeFile(join(workspace, "source.ts"), CURRENT_ONE);
