@@ -87,10 +87,14 @@ Its capability record is:
 | `canRewriteRequest` | `true` |
 
 The host commit is the immutable Pi revision in `bench/hosts.lock.json`. Every
-codec application reconstructs adapter state from the untouched Pi history,
-refreshes against the supplied `cwd`, validates native pairing, and serializes
-deterministically. Any capture, transformation, validation, or serialization
-failure returns the exact original request object through `applyHostCodec()`.
+codec application reconstructs tracked units and call mappings from
+observation-time bytes in the untouched Pi history, refreshes against the
+supplied `cwd`, validates retained native pairing, and serializes
+deterministically. Complete superseded read pairs may be retired exactly as in
+the existing adapter; retained pairs keep their IDs and order. The prior
+transformed request is never an input to the next application. Any capture,
+transformation, validation, or serialization failure returns the exact original
+request object through `applyHostCodec()`.
 
 ## Stateless requests
 
