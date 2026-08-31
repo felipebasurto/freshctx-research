@@ -99,12 +99,16 @@ request object through `applyHostCodec()`.
 The codec reconstructs only histories whose observation-time bytes determine
 the same unit as the live adapter. Non-truncated whole-file reads, explicit
 regions/symbols, bounded pagination with a continuation marker, and
-offset-one pagination that reaches EOF are supported. Pi-truncated whole-file
-results and pagination that reaches EOF after omitting a file prefix do not
-contain enough historical bytes to recreate the live adapter's unit. Those
-cases—and a request mixing a supported read with an unsafe, binary, oversized,
-or escaping-symlink observation—fail open to the exact original request rather
-than guessing or retiring the refused pair.
+offset-one pagination that reaches EOF are supported. Any Pi result carrying
+truncation metadata, and pagination that reaches EOF after omitting a file
+prefix, lacks enough historical bytes to recreate the live adapter's unit.
+Those cases—and a request mixing a supported read with an unsafe, binary,
+oversized, or escaping-symlink observation—fail open to the exact original
+request rather than guessing or retiring the refused pair.
+
+Native `bash` and `shell` pairs are preserved as passthrough protocol events by
+the codec. Cat-class shell-read capture remains implemented by the live
+extension/replay adapter, not by this first codec slice.
 
 ## Stateless requests
 
