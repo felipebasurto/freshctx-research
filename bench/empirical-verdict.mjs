@@ -90,12 +90,43 @@ function isGoldError(error) {
 }
 
 export function stableEvaluateRecord(result) {
-  const { resources, ...rest } = result;
+  const { resources, traceRows, ...rest } = result;
   return rest;
 }
 
 export function formatEvaluateOutput(result) {
   return `EVALUATE_VERDICT=${result.verdict}\n${JSON.stringify(result, null, 2)}\n`;
+}
+
+export function countRedundantReadEvents(traces) {
+  let readEvents = 0;
+  let redundantReadEvents = 0;
+  for (const trace of traces) {
+    const seen = new Map();
+    for (const event of trace.events ?? []) {
+      if (event.type !== "read") continue;
+      readEvents += 1;
+      const key = `${event.path}\0${event.scope ?? ""}\0${event.selector ?? ""}`;
+      const prior = seen.get(key) ?? 0;
+      seen.set(key, prior + 1);
+      if (prior > 0) redundantReadEvents += 1;
+    }
+  }
+  return { readEvents, redundantReadEvents };
+}
+
+export function countReasoningCycles(traces) {
+  let reasoningCycles = 0;
+  for (const trace of traces) {
+    for (const event of trace.events ?? []) {
+      if (event.type === "capture-request") reasoningCycles += 1;
+    }
+  }
+  return reasoningCycles;
+}
+
+function sumCaptureField(result, field) {
+  return (result.captures ?? []).reduce((total, capture) => total + (capture.metrics?.[field] ?? 0), 0);
 }
 
 export function decideEmpiricalVerdict({
@@ -135,9 +166,13 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
   let goldAbsentDetected = false;
   let candidateBytes = 0;
   let baselineBytes = 0;
+  let candidateAccumulatedBytes = 0;
+  let baselineAccumulatedBytes = 0;
+  let duplicateCodeCopies = 0;
   let requiredCount = 0;
   let requiredHits = 0;
   const latencies = [];
+  const traceRows = [];
 
   for (const trace of traces) {
     let iseResult;
@@ -165,11 +200,31 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
 
     candidateBytes += iseCapture.metrics.payloadBytes;
     baselineBytes += corvusCapture.metrics.payloadBytes;
+    candidateAccumulatedBytes += sumCaptureField(iseResult, "payloadBytes");
+    baselineAccumulatedBytes += sumCaptureField(corvusResult, "payloadBytes");
+    duplicateCodeCopies += sumCaptureField(iseResult, "duplicateUnits");
     requiredCount += iseCapture.metrics.requiredCount;
     requiredHits += iseCapture.metrics.requiredRecall * iseCapture.metrics.requiredCount;
-    latencies.push(iseCapture.telemetry?.totalMs ?? iseCapture.metrics.transformP50Ms ?? 0);
+    const latencyMs = iseCapture.telemetry?.totalMs ?? iseCapture.metrics.transformP50Ms ?? 0;
+    latencies.push(latencyMs);
 
     const requiredUnits = iseCapture.event?.requiredUnits ?? [];
+    const recallHits = iseCapture.metrics.requiredRecall * iseCapture.metrics.requiredCount;
+    traceRows.push({
+      repo: String(trace.name ?? "").split("/")[0] ?? "",
+      commit: trace.source?.commit ?? "",
+      path: trace.goldExtract?.path ?? requiredUnits[0]?.path ?? "",
+      selector: trace.goldExtract?.selector ?? requiredUnits[0]?.selector ?? "",
+      payloadBytes: {
+        candidate: iseCapture.metrics.payloadBytes,
+        baseline: corvusCapture.metrics.payloadBytes,
+        delta: iseCapture.metrics.payloadBytes - corvusCapture.metrics.payloadBytes,
+      },
+      recallHits,
+      recallRequired: iseCapture.metrics.requiredCount,
+      peakRssBytes,
+      latencyMs,
+    });
     if (requiredUnits.length > 0 && (iseCapture.metrics.projectionBytes ?? 0) === 0) {
       failOpenDetected = true;
     }
@@ -188,7 +243,14 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
     recall,
     requiredCount,
   });
-  const { hardGates, verdict } = judged;
+  const { hardGates, forensicHold, verdict } = judged;
+  const reads = countRedundantReadEvents(traces);
+  const reasoningCycles = countReasoningCycles(traces);
+  const latencyMs = {
+    p50: percentile(latencies, 0.5),
+    p95: percentile(latencies, 0.95),
+    max: latencies.length === 0 ? 0 : Math.max(...latencies),
+  };
 
   return {
     schemaVersion: 1,
@@ -213,15 +275,33 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
         hits: requiredHits,
       },
     },
+    corvusEquivalents: {
+      redundantReadEvents: reads.redundantReadEvents,
+      readEvents: reads.readEvents,
+      duplicateCodeCopies,
+      reasoningCycles,
+      cycleReductionVsCorvus: 0,
+      finalRequestBytes: {
+        candidate: candidateBytes,
+        baseline: baselineBytes,
+      },
+      accumulatedPayloadBytes: {
+        candidate: candidateAccumulatedBytes,
+        baseline: baselineAccumulatedBytes,
+      },
+      passAt1: null,
+      passAt1Reason: "out-of-scope-adr-0002",
+    },
+    forensicHold,
+    host: "core",
+    adapter: "none",
     resources: {
       peakRssBytes,
-      latencyMs: {
-        p50: percentile(latencies, 0.5),
-        p95: percentile(latencies, 0.95),
-        max: latencies.length === 0 ? 0 : Math.max(...latencies),
-      },
+      latencyMs,
+      executionTimeMs: latencyMs,
     },
     hardGates,
     traces: traces.length,
+    traceRows,
   };
 }

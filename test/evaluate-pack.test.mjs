@@ -17,6 +17,17 @@ test("evaluate CLI binds --pack and defaults to no pack flag", () => {
   assert.deepEqual(parseEvaluateArgs(["node", "evaluate.mjs"]), {});
 });
 
+test("evaluate CLI binds additive --report and --report-path", () => {
+  assert.deepEqual(parseEvaluateArgs(["node", "evaluate.mjs", "--report"]), {
+    report: true,
+  });
+  assert.deepEqual(parseEvaluateArgs(["node", "evaluate.mjs", "--report-path=out/evaluate-corvus-table.md"]), {
+    report: true,
+    reportPath: "out/evaluate-corvus-table.md",
+  });
+  assert.throws(() => parseEvaluateArgs(["node", "evaluate.mjs", "--report-path"]), /--report-path requires a file path/);
+});
+
 test("evaluate --pack runs that pack instead of the synthetic fixture", async () => {
   const result = await runEvaluateBenchmark({
     pack: "symbol-scope-dev-v0.1",

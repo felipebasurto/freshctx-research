@@ -17,10 +17,11 @@
   ],
   "hardGates": [
     "tests_pass",
-    "stale_bytes_equals_zero",
-    "current_copies_equals_one",
-    "gold_recall_equals_one",
-    "unresolved_rate_equals_zero",
+    "fail-open",
+    "missing-engine",
+    "gold-absent",
+    "required-recall",
+    "empirical_verdict_pass",
     "deterministic_output"
   ],
   "tunables": {

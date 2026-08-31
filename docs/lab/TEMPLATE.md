@@ -21,7 +21,7 @@ Factual. No roadmap language presented as completed work.
 |---|---|---|---|
 | `npm test` | | | test count, not only “pass” |
 | `npm run check` | | | |
-| `npm run evaluate` | | | `AUTORESEARCH_SCORE=` and hard gates |
+| `npm run evaluate` | | | `EVALUATE_VERDICT=` and hard gates |
 | `npm run ctxbench` | | | payload hash, determinism |
 | `npm run demo` | | | |
 | `npm run repos:verify` | | | or “not on this branch” |

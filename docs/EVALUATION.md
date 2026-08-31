@@ -555,8 +555,11 @@ Implemented now:
 - `npm run evaluate` defaults to the highest available physical pack, or
   `public-repo-smoke` when no Level 4 / apex pack is on disk, and reports
   Isolated Semantic Engine versus CORVUS `payload_bytes`, oracle
-  retention, peak RSS, latency, and forensic gates (`fail-open`,
-  `missing-engine`, `gold-absent`, `required-recall`);
+  retention, peak RSS, latency, forensic gates (`fail-open`,
+  `missing-engine`, `gold-absent`, `required-recall`), and
+  `corvusEquivalents` ([CORVUS_MAPPING.md](CORVUS_MAPPING.md));
+  `npm run evaluate -- --report` prints a derived Markdown table and
+  **MUST NOT** write sealed pack `report.md` or `results.jsonl`;
   `holdout-v0.3-apex` is a bind-existing symbol pack on dense public-repo
   trees (Flask, Express, go-tools, ripgrep) with independent-symbols gold,
   including Flask nested `if@0` enclosing-span units. Freeze pinned the
@@ -610,3 +613,23 @@ Partially implemented (holdout v0.1 first slice; see PCR 0007, **unsealed**; fre
 
 This boundary is intentional. CtxBench is the contract the next implementation
 milestones must satisfy, not evidence that they are already complete.
+
+## 15. CORVUS paper metric translation
+
+The normative translation table, forbidden claims, extended-pack generator
+contract, and `--report` Markdown schema live in
+[CORVUS_MAPPING.md](CORVUS_MAPPING.md). `passAt1` stays `null`
+(`out-of-scope-adr-0002`). `cycleReductionVsCorvus` stays `0` on a fixed
+trace. Payload aliases are UTF-8 bytes, not tokens.
+
+## 16. Environment-gated TAP skips
+
+The old 26-skip TAP line is gone on this branch. `bench/skip-inventory.mjs`
+is the registry.
+
+The 16 go-tools lab boards always run. They read locked slices from
+`test/fixtures/go-tools`. They do not call `repos:fetch`.
+
+Live Hermes official-loader boards that required `bench/hosts/hermes` were
+removed in `b0f7282`. Replay boards remain and do not skip. Restore a live
+host contract only as its own change, behind `npm run hosts:fetch`.

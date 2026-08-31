@@ -12,17 +12,9 @@ node bench/ctxbench.mjs
 node autoresearch/evaluate.mjs
 ```
 
-`bench/run.mjs` compares four deterministic request shapes on one synthetic
-interior-edit fixture:
-
-- append-only without a re-read;
-- append-only with a re-read;
-- documented CORVUS whole-file synchronization (deviations in ADR 0003);
-- FreshCtx region synchronization.
-
-It reports freshness, duplication, current-code recall, estimated prompt size,
-and a cache-prefix proxy. The result is labeled `synthetic`; it is useful for
-regression and cannot support a public-repository or SOTA claim.
+`bench/run.mjs` calls the same EmpiricalVerdict path as `npm run evaluate`.
+It compares Isolated Semantic Engine payload bytes to `corvus-file` on the
+highest available physical pack. It does not emit a synthetic scalar.
 
 `bench/ctxbench.mjs` performs ten warmups and one hundred measured identical
 runs. It reports exact-current correctness, payload hashes, projection bytes,

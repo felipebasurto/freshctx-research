@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runPackEvaluation, stablePackRecord } from "../bench/evaluate-pack.mjs";
@@ -9,6 +10,7 @@ import {
   runEmpiricalEvaluation,
   stableEvaluateRecord,
 } from "../bench/empirical-verdict.mjs";
+import { assertSafeReportPath, formatEvaluateReport, resolveReportProvenance } from "../bench/evaluate-report.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -19,18 +21,32 @@ export function parseEvaluateArgs(argv) {
     const eq = arg.indexOf("=");
     const key = eq === -1 ? arg.slice(2) : arg.slice(2, eq);
     const value = eq === -1 ? true : arg.slice(eq + 1);
-    if (key !== "pack") continue;
-    if (value === true || value === "") {
-      throw new Error("--pack requires a pack id");
+    if (key === "pack") {
+      if (value === true || value === "") {
+        throw new Error("--pack requires a pack id");
+      }
+      flags.pack = value;
+      continue;
     }
-    flags.pack = value;
+    if (key === "report") {
+      flags.report = true;
+      continue;
+    }
+    if (key === "report-path") {
+      if (value === true || value === "") {
+        throw new Error("--report-path requires a file path");
+      }
+      flags.report = true;
+      flags.reportPath = value;
+    }
   }
   return flags;
 }
 
-export async function runEvaluateBenchmark({ pack, root = repoRoot } = {}) {
-  if (pack) return runPackEvaluation({ packId: pack, root });
-  return runEmpiricalEvaluation({ root });
+export async function runEvaluateBenchmark({ pack, root = repoRoot, report } = {}) {
+  if (pack && !report) return runPackEvaluation({ packId: pack, root });
+  const env = pack ? { ...process.env, FRESHCTX_EVAL_PACK: pack } : process.env;
+  return runEmpiricalEvaluation({ root, env });
 }
 
 function listFreshCtxTestFiles() {
@@ -72,11 +88,13 @@ export async function evaluate(options = {}) {
 
   const testRun = spawnSync(process.execPath, ["--test", ...testFiles], {
     encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
   });
   if (testRun.status !== 0) {
-    process.stderr.write(testRun.stdout);
-    process.stderr.write(testRun.stderr);
-    throw new Error("hard gate failed: regression tests did not pass");
+    process.stderr.write(testRun.stdout ?? "");
+    process.stderr.write(testRun.stderr ?? "");
+    const detail = testRun.error?.message ?? testRun.signal ?? `status ${testRun.status}`;
+    throw new Error(`hard gate failed: regression tests did not pass (${detail})`);
   }
 
   const result = await runEvaluateBenchmark(options);
@@ -100,6 +118,17 @@ export async function evaluate(options = {}) {
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
 if (import.meta.url === invokedPath) {
-  const result = await evaluate(parseEvaluateArgs(process.argv));
+  const args = parseEvaluateArgs(process.argv);
+  const result = await evaluate(args);
   process.stdout.write(printEvaluateResult(result));
+  if (args.report || args.reportPath) {
+    const provenance = await resolveReportProvenance({ root: repoRoot });
+    const markdown = formatEvaluateReport(result, provenance);
+    process.stdout.write(markdown.endsWith("\n") ? markdown : `${markdown}\n`);
+    if (args.reportPath) {
+      assertSafeReportPath(args.reportPath);
+      await mkdir(dirname(args.reportPath), { recursive: true });
+      await writeFile(args.reportPath, markdown.endsWith("\n") ? markdown : `${markdown}\n`);
+    }
+  }
 }

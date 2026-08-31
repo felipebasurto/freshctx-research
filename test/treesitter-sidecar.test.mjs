@@ -107,6 +107,14 @@ test("exclusive column-0 ends do not include the next line", () => {
   assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 0, column: 10 }), 1);
 });
 
+test("extractTreeSitterUnits deletes parser and tree in finally", async () => {
+  const source = await readFile(join(ROOT, "sidecar/treesitter/grammars.mjs"), "utf8");
+  assert.match(source, /try \{/u);
+  assert.match(source, /finally \{/u);
+  assert.match(source, /tree\?\.delete\(\)/u);
+  assert.match(source, /parser\.delete\(\)/u);
+});
+
 test("overlap filter drops a span that swallows a same-indent sibling", () => {
   const bytes = "function alpha() {\n  return 1;\n\nfunction beta() {\n  return 2;\n}\n";
   const kept = rejectUnnaturalSiblingOverlaps(
