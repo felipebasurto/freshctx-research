@@ -179,6 +179,14 @@ An adapter owns protocol-specific work:
 - return the original request on adapter failure;
 - expose telemetry and version information.
 
+The minimal executable boundary is `adapters/host-codec.mjs`. It serializes the
+original host request, gives capture and transformation callbacks only a cloned
+request, validates the transformed host-native schema, and returns the original
+object on any failure. Pairing rules belong to each codec's validator because
+hosts encode assistant calls and tool results differently. The no-model test
+double in `adapters/host-codec-test-double.mjs` covers capture, transformation,
+pair corruption, and byte-identical fail-open behavior.
+
 The core never imports Pi, Hermes, OMP, OpenAI, Anthropic, or Google message
 types.
 
