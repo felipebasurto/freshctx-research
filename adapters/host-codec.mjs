@@ -23,15 +23,16 @@ export function defineHostCodec({ name, capture, transform, validate, serialize 
 export async function applyHostCodec(codec, originalRequest, context = {}) {
   let originalBytes;
   try {
-    originalBytes = asBytes(codec.serialize(originalRequest));
-    const requestCopy = structuredClone(originalRequest);
+    const originalSnapshot = structuredClone(originalRequest);
+    originalBytes = asBytes(codec.serialize(structuredClone(originalSnapshot)));
+    const requestCopy = structuredClone(originalSnapshot);
     const captured = await codec.capture(requestCopy, context);
     const transformed = await codec.transform(requestCopy, { captured, context });
     const candidate = transformed ?? requestCopy;
     if (await codec.validate(candidate, { captured, context }) !== true) {
       throw new Error("host codec produced an invalid native request");
     }
-    if (!asBytes(codec.serialize(originalRequest)).equals(originalBytes)) {
+    if (!asBytes(codec.serialize(structuredClone(originalRequest))).equals(originalBytes)) {
       throw new Error("host codec mutated the original request");
     }
     return {

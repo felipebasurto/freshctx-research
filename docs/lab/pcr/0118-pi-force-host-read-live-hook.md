@@ -131,7 +131,7 @@ Dumped request JSON has no `usage.prompt_tokens`. Byte counts are the live metri
 `freshctx-no-ts` retried the same symbol read seven times after Isolated Semantic Engine-off
 fail-closed. That inflated t1 `request_bytes` to 73208. It is not a Tree-sitter
 saving and not a freshness defect.
-Dump scan token `Isolated Semantic Engine` remains the `resolutionMethod` code string only.
+Dump scan token `isolated-semantic-engine` remains the `resolutionMethod` code string only.
 Not a paper result.
 
 ## Recommended next experiment

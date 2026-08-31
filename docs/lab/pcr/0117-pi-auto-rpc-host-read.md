@@ -88,7 +88,7 @@ none observed.
 
 Live three-arm battery on Mac is still pending after merge.
 The force extension mutates model-chosen read calls rather than skipping the model on t1.
-Dump scan token `Isolated Semantic Engine` remains the `resolutionMethod` code string only.
+Dump scan token `isolated-semantic-engine` remains the `resolutionMethod` code string only.
 
 ## Recommended next experiment
 

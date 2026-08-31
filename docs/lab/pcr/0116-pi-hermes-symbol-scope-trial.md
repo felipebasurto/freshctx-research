@@ -84,7 +84,7 @@ No Level 4 sentence.
 Measured on synthetic replay: symbol-scope host read tracks `settleDailyLedger`
 with `scope=symbol` on Pi and Hermes.
 Measured: Tree-sitter arm turn-2 projection omits `settleWeeklyLedger` (`SW0`) and
-carries flipped marker `ST1` with `resolution="Isolated Semantic Engine"`.
+carries flipped marker `ST1` with `resolution="isolated-semantic-engine"`.
 Measured: Tree-sitter symbol-scope turn-2 serialized request bytes drop vs
 file-scope read on the same arm.
 Harness only.
@@ -98,7 +98,7 @@ none observed.
 
 Live three-arm battery on Mac is still pending.
 Thinker will run Hermes 3-arm live from 1:1 after merge.
-Dump scan token `Isolated Semantic Engine` remains the `resolutionMethod` code string only.
+Dump scan token `isolated-semantic-engine` remains the `resolutionMethod` code string only.
 
 ## Recommended next experiment
 

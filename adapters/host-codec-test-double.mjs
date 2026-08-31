@@ -10,7 +10,18 @@ function toolResultId(message) {
   return typeof message.tool_call_id === "string" ? message.tool_call_id : null;
 }
 
-export function validateTestHostPairing(request) {
+function pairingOrder(request) {
+  const calls = [];
+  const results = [];
+  for (const message of request.messages) {
+    for (const call of toolCalls(message)) calls.push(call.id);
+    const resultId = toolResultId(message);
+    if (resultId) results.push(resultId);
+  }
+  return { calls, results };
+}
+
+export function validateTestHostPairing(request, capturedRequest = null) {
   if (!request || !Array.isArray(request.messages)) return false;
   const calls = new Map();
   const results = new Map();
@@ -20,6 +31,7 @@ export function validateTestHostPairing(request) {
       if (typeof call?.id !== "string" || calls.has(call.id)) return false;
       calls.set(call.id, messageIndex);
     }
+    if (message?.role === "tool" && toolResultId(message) == null) return false;
     const resultId = toolResultId(message);
     if (!resultId) continue;
     if (results.has(resultId)) return false;
@@ -30,6 +42,12 @@ export function validateTestHostPairing(request) {
   for (const [callId, callIndex] of calls.entries()) {
     const resultIndex = results.get(callId);
     if (!Number.isInteger(resultIndex) || resultIndex <= callIndex) return false;
+  }
+  if (capturedRequest != null) {
+    if (!capturedRequest || !Array.isArray(capturedRequest.messages)) return false;
+    if (JSON.stringify(pairingOrder(request)) !== JSON.stringify(pairingOrder(capturedRequest))) {
+      return false;
+    }
   }
   return true;
 }
@@ -68,16 +86,27 @@ export function createHostCodecTestDouble({
         if (!resultId || !replacements.has(resultId)) return structuredClone(message);
         return replaceToolResultContent(message, String(replacements.get(resultId)));
       });
+      const corruptedMessages = corruptPairing === "drop-all"
+        ? messages
+          .filter((message) => message.role !== "tool")
+          .map((message) => (
+            Array.isArray(message.tool_calls)
+              ? { ...message, tool_calls: [] }
+              : message
+          ))
+        : messages.filter((message) => (
+          corruptPairing === "drop-result" || corruptPairing === true
+            ? toolResultId(message) == null
+            : true
+        ));
       return {
         ...structuredClone(request),
-        messages: corruptPairing
-          ? messages.filter((message) => toolResultId(message) == null)
-          : messages,
+        messages: corruptedMessages,
       };
     },
-    validate: (request) => {
+    validate: (request, { captured }) => {
       if (failAt === "validate") throw new Error("forced validation failure");
-      return validateTestHostPairing(request);
+      return validateTestHostPairing(request, captured);
     },
   });
 

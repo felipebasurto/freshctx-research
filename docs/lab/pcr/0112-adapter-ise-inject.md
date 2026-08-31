@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-29
 - Author / agent: Cursor Grok 4.6
-- Branch / PR: `cursor/adapter-Isolated Semantic Engine-inject-e24c` (draft PR #107)
+- Branch / PR: historical pre-vocabulary branch (draft PR #107)
 - Merge-base: `8952f4fb6e4c1a8f07c89e9605b5e31a56f5df16` (origin/main, PCR 0111)
 - Paper-manifest digest: `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`
 - Result labels used: `synthetic`; `replay`; `adapter-only`; `measurement`
@@ -13,7 +13,7 @@
 PCR 0111 put Python/JS/TS WASM parsing behind `{path,bytes}→{units,error}` at
 `ise/treesitter/parse.mjs`.
 Pi and Hermes adapters still constructed `FreshCtxEngine()` with no
-`Isolated Semantic EngineRunner`.
+`semanticEngineRunner`.
 Symbol-scoped refresh never reached `parseSource` on the adapter path.
 Reviewer no-merge on first HEAD `daf53dc` found factory inject alone was not
 enough.
@@ -28,7 +28,7 @@ Pi `extension.ts` and `replay.mjs` use the factory and track `scope: "symbol"`.
 Hermes `bridge.mjs` and `replay.mjs` use the factory and track symbol scope.
 `readObservationKey` and `officialObservationKey` now emit
 `symbol:path:selector` keys distinct from `file:path`.
-Hermes replay accepts optional `Isolated Semantic EngineRunner` for fail-closed probes.
+Hermes replay accepts optional `semanticEngineRunner` for fail-closed probes.
 Added `test/pcr-0112-adapter-ise-symbol-refresh.test.mjs` (7 tests).
 No edit to `src/`, door, lock, holdout gold, weights, or thresholds.
 No live Pi/Hermes runs.
@@ -105,7 +105,7 @@ Two symbol reads on one path last-won, so only one unit reached
 `selectContext`/`refresh`.
 Fix: `symbol:path:selector` keys.
 Test: file + two symbols on one path stay three distinct active observations;
-Pi dual-symbol refresh pins both `resolutionMethod: "Isolated Semantic Engine"`.
+Pi dual-symbol refresh pins both `resolutionMethod: "isolated-semantic-engine"`.
 
 Hole 2 — Hermes 0112 test did not prove Isolated Semantic Engine.
 Single-function fixture would pass on file-scope refresh.

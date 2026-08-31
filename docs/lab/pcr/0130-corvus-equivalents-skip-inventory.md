@@ -103,7 +103,7 @@ was not retuned.
 - PR 128 (`8dc6c5b0`) has no PCR of its own. The skip collapse from 26 to 0
   starts there. This SHA’s TAP is the first written count after that merge.
 - Laptop RSS and p95 stay telemetry. Not a publishable latency claim.
-- Isolated Semantic Engine naming wave (`Isolated Semantic Engine*` symbols) is not this PCR.
+- Isolated Semantic Engine naming wave (`semanticEngine*` symbols) is not this PCR.
 
 ## Next measurement
 

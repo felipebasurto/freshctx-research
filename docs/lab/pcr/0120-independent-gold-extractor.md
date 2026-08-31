@@ -23,7 +23,7 @@ use a bench-only declaration scan that blanks comments and strings first. The
 module does not import `ise/treesitter` or `resolveRegion`.
 
 `bench/gold-extract.mjs` still hashes the slice after a `replace-exact`
-mutation. `engineUnits` and the older `Isolated Semantic EngineUnits` argument are ignored.
+mutation. `engineUnits` and the older `semanticEngineUnits` argument are ignored.
 `unitScope: "symbol"` is opt-in on `sampleUnits`. The default file enumerator
 is unchanged, so sealed holdout generation and the synthetic score path stay
 on whole-file units.

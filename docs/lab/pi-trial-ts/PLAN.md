@@ -55,7 +55,7 @@ node docs/lab/pi-trial-ts/print-columns.mjs
 | `request_bytes` | UTF-8 bytes of serialized request JSON for the turn |
 | `prompt_tokens` | provider `usage.prompt_tokens` when present, else `—` |
 | `pi_stdout_current` | Pi stdout matches `SETTLE=ST1` |
-| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`Isolated Semantic Engine`, `whole-file`, …) |
+| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`isolated-semantic-engine`, `whole-file`, …) |
 
 No `AUTORESEARCH_SCORE` in this pack.
 

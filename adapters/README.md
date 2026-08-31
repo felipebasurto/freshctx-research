@@ -6,8 +6,9 @@ message types.
 
 `host-codec.mjs` defines the minimal request-boundary contract:
 
-1. serialize the original native request for byte-identity evidence;
-2. clone it before capture or transformation;
+1. snapshot the original native request and serialize a clone for byte-identity
+   evidence;
+2. pass only clones to codec callbacks;
 3. capture host-native observations from that ephemeral copy;
 4. transform only the copy;
 5. validate the resulting native schema and assistant/tool/result pairing;

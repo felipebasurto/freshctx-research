@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-29
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/file-region-Isolated Semantic Engine-fd3b` (draft PR #109)
+- Branch / PR: historical pre-vocabulary branch (draft PR #109)
 - Base SHA: `15c573e74f7dd84ab36f2a63bd49b53cfc61b19e` (PCR 0113 squash)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `replay`; `adapter-only`; `measurement`
@@ -10,7 +10,7 @@
 
 ## Hypothesis or change
 
-PCR 0112 injected `Isolated Semantic EngineRunner` into Pi/Hermes adapters but `engine.refresh` only
+PCR 0112 injected `semanticEngineRunner` into Pi/Hermes adapters but `engine.refresh` only
 called Tree-sitter when `scope === "symbol"`.
 Normal whole-file Pi/Hermes reads on `.py`/`.js`/`.ts` never reached `parseSource`.
 PCR 0113 added the three-arm Pi TypeScript measure harness (`nothing` /
@@ -18,14 +18,14 @@ PCR 0113 added the three-arm Pi TypeScript measure harness (`nothing` /
 This PCR routes file-scope and region refresh through the injected Isolated Semantic Engine on
 Tree-sitter languages when a runner is present.
 Region grain matches by `selector` and relocates the named unit.
-Arm B stays `Isolated Semantic EngineRunner: null` via the existing harness knob, not a new host
+Arm B stays `semanticEngineRunner: null` via the existing harness knob, not a new host
 flag.
 
 ## What we did
 
 1. Extended `src/registry.mjs` refresh for `.py`/`.js`/`.mjs`/`.cjs`/`.ts`/`.tsx`
-   when `Isolated Semantic EngineRunner` is injected.
-2. File scope calls the Isolated Semantic Engine and resolves with `resolutionMethod: "Isolated Semantic Engine"`
+   when `semanticEngineRunner` is injected.
+2. File scope calls the Isolated Semantic Engine and resolves with `resolutionMethod: "isolated-semantic-engine"`
    when parse is not broken (including unit-less parses).
 3. Region scope calls the Isolated Semantic Engine, matches units by `selector`/`qualifiedSelector`,
    and relocates the named unit to its current span.
@@ -93,8 +93,8 @@ Official accepted TAP on merge-base `4e4a930` remains **388 pass / 0 fail /
 No Level 4 sentence.
 Synthetic adapter replay only.
 Measured: Pi file-scope `.ts` refresh with default Isolated Semantic Engine yields
-`resolutionMethod: "Isolated Semantic Engine"` without host `scope=symbol`.
-Measured: same read with `Isolated Semantic EngineRunner: null` stays `whole-file`.
+`resolutionMethod: "isolated-semantic-engine"` without host `scope=symbol`.
+Measured: same read with `semanticEngineRunner: null` stays `whole-file`.
 Measured: Python region refresh by `selector` relocates when another unit
 occupies the old line span.
 Measured: parse-broken region with injected Isolated Semantic Engine stays unresolved while
@@ -113,5 +113,5 @@ Hermes extension does not yet read `FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` (Pi h
 ## Recommended next experiment
 
 Rerun PCR 0113 three-arm battery on Mac.
-Compare arm `freshctx-ts` `resolution=Isolated Semantic Engine` vs arm `freshctx-no-ts`
+Compare arm `freshctx-ts` `resolution=isolated-semantic-engine` vs arm `freshctx-no-ts`
 `resolution=whole-file` on the same whole-file prompts.

@@ -17,6 +17,7 @@ test("layout map names only existing contract directories", async () => {
   assert.equal(packageJson.scripts.test, "node --test test/*.test.mjs");
 
   const layout = await readFile(join(ROOT, "docs", "LAYOUT.md"), "utf8");
+  assert.ok(layout.includes("```text\nnode --test test/*.test.mjs\n```"));
   for (const relativePath of [
     "src/",
     "adapters/",

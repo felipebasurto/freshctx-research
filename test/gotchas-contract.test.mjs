@@ -29,4 +29,11 @@ test("architecture classifies protected and documented sharp edges", async () =>
     );
   }
   assert.match(architecture, /test\/report-hygiene\.test\.mjs/);
+
+  const [statelessTest, overCapTest] = await Promise.all([
+    readFile(join(ROOT, "test", "pcr-0079-stateless-request-bodies.test.mjs"), "utf8"),
+    readFile(join(ROOT, "test", "pcr-0080-refresh-over-budget.test.mjs"), "utf8"),
+  ]);
+  assert.match(statelessTest, /sends one current body in every stateless request/);
+  assert.match(overCapTest, /refresh that finds new bytes injects them even over the cap/);
 });

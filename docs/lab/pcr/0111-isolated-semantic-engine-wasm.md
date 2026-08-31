@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-08-28
 - Author / agent: Cursor Grok 4.6
-- Branch / PR: `cursor/treesitter-Isolated Semantic Engine-d320`
+- Branch / PR: historical pre-vocabulary branch
 - Merge-base: `8b2305c53662fa6feaaa6779e73fc3873a4dec34` (origin/main, PCR 0110)
 - Paper-manifest digest: `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`
 - Result labels used: `synthetic`; `measurement`
@@ -175,7 +175,7 @@ This is expected. It is not a fail-closed hole.
 Evidence:
 
 - `resolveSymbolUnit` (`src/registry.mjs`) has no language or extension
-  switch. It calls `Isolated Semantic EngineRunner({ path, bytes })`, matches
+  switch. It calls `semanticEngineRunner({ path, bytes })`, matches
   `selector` or `qualifiedSelector`, and slices current file bytes by
   `startLine`/`endLine`.
 - `createIsolatedSemanticEngineRunner` is language-agnostic. It spawns `parse.mjs` with

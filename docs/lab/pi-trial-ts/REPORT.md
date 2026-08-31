@@ -72,7 +72,7 @@ retry transcript stayed in the request.
 ### C `freshctx-ts`
 
 One forced symbol-scope read. `SETTLE=ST0` on t1. After the flip, `SETTLE=ST1`
-with `resolution=Isolated Semantic Engine`, `t2_exact_new_bytes=yes`, and no sibling bytes.
+with `resolution=isolated-semantic-engine`, `t2_exact_new_bytes=yes`, and no sibling bytes.
 
 ## Adapter smokes (synthetic)
 
