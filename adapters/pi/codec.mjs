@@ -1,7 +1,12 @@
+import { realpath } from "node:fs/promises";
+import { isAbsolute, relative, resolve, sep } from "node:path";
+
 import { defineHostCodec } from "../host-codec.mjs";
 import { createPiAdapter, readScopeFromInput } from "./replay.mjs";
 
 export const PI_HOST_COMMIT = "c49906ec77788625aacbdc53ebca6fbe65bd20f5";
+
+const MAX_TRACKED_FILE_BYTES = 512 * 1024;
 
 export const PI_CODEC_CAPABILITIES = Object.freeze({
   host: "pi",
@@ -135,21 +140,26 @@ export function validatePiNativeRequest(request, capturedRequest = null) {
     && isPairingSubsequence(pairing, capturedPairing);
 }
 
-export function decodePiReadObservations(request, { turn = 0 } = {}) {
+export function decodePiReadObservations(request, { turn } = {}) {
   if (!validatePiNativeRequest(request)) {
     throw new TypeError("Pi request has invalid native tool pairing");
   }
 
   const calls = new Map();
+  let inferredTurn = 0;
   for (const message of request.messages) {
-    for (const call of nativeToolCalls(message)) calls.set(call.id, call);
+    if (message?.role === "user") inferredTurn += 1;
+    for (const call of nativeToolCalls(message)) {
+      calls.set(call.id, { call, turn: Number.isInteger(turn) ? turn : inferredTurn });
+    }
   }
 
   const observations = [];
   for (const message of request.messages) {
     const result = nativeToolResult(message);
     if (!result || result.isError) continue;
-    const call = calls.get(result.toolCallId);
+    const callRecord = calls.get(result.toolCallId);
+    const call = callRecord?.call;
     if (!call || call.name !== "read" || result.toolName !== "read") continue;
 
     const input = call.arguments;
@@ -163,7 +173,7 @@ export function decodePiReadObservations(request, { turn = 0 } = {}) {
       path: input.path,
       scope: scope.scope,
       content,
-      turn,
+      turn: callRecord.turn,
       input: structuredClone(input),
     };
     if (scope.scope === "region") {
@@ -176,6 +186,78 @@ export function decodePiReadObservations(request, { turn = 0 } = {}) {
     observations.push(observation);
   }
   return observations;
+}
+
+function pathWithinRoot(root, candidate) {
+  return candidate === root || candidate.startsWith(`${root}${sep}`);
+}
+
+async function normalizeObservationPath(rootInput, requestedPath) {
+  const root = await realpath(rootInput);
+  const candidate = resolve(
+    root,
+    isAbsolute(requestedPath) ? relative(root, requestedPath) : requestedPath,
+  );
+  if (!pathWithinRoot(root, candidate)) {
+    throw new Error("FreshCtx refused an observation outside the active workspace");
+  }
+
+  let canonical = candidate;
+  try {
+    canonical = await realpath(candidate);
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  if (!pathWithinRoot(root, canonical)) {
+    throw new Error("FreshCtx refused an observation outside the active workspace");
+  }
+  return relative(root, canonical).split(sep).join("/");
+}
+
+function lineCount(content) {
+  return String(content).replaceAll("\r\n", "\n").split("\n").length;
+}
+
+async function seedReadObservation(adapter, observation, cwd) {
+  if (
+    Buffer.byteLength(observation.content, "utf8") > MAX_TRACKED_FILE_BYTES
+    || observation.content.includes("\0")
+  ) {
+    throw new Error("FreshCtx refused unsafe observation content");
+  }
+
+  const path = await normalizeObservationPath(cwd, observation.path);
+  const tracked = {
+    path,
+    content: observation.content,
+    scope: observation.scope,
+    turn: observation.turn,
+  };
+  if (observation.scope === "region") {
+    if (Number.isInteger(observation.startLine)) tracked.startLine = observation.startLine;
+    if (Number.isInteger(observation.endLine)) tracked.endLine = observation.endLine;
+    if (typeof observation.selector === "string") tracked.selector = observation.selector;
+  } else if (observation.scope === "symbol") {
+    tracked.startLine = 1;
+    tracked.endLine = lineCount(observation.content);
+    tracked.selector = observation.selector;
+  }
+
+  const unit = adapter.engine.trackRead(tracked);
+  adapter.callToUnit.set(observation.toolCallId, unit.id);
+  adapter.callMeta.set(observation.toolCallId, {
+    path,
+    scope: observation.scope,
+    ...(Number.isInteger(observation.startLine)
+      ? { startLine: observation.startLine }
+      : {}),
+    ...(Number.isInteger(observation.endLine)
+      ? { endLine: observation.endLine }
+      : {}),
+    ...(typeof observation.selector === "string"
+      ? { selector: observation.selector }
+      : {}),
+  });
 }
 
 function serializePiRequest(request) {
@@ -194,9 +276,7 @@ export function createPiHostCodec({
       const captured = structuredClone(request);
       return {
         request: captured,
-        observations: decodePiReadObservations(captured, {
-          turn: Number.isInteger(context.turnIndex) ? context.turnIndex : 0,
-        }),
+        observations: decodePiReadObservations(captured),
       };
     },
     transform: async (request, { captured, context }) => {
@@ -212,17 +292,13 @@ export function createPiHostCodec({
       const turnIndex = Number.isInteger(context.turnIndex) ? context.turnIndex : 1;
       await adapter.onTurnStart({ turnIndex });
       for (const observation of captured.observations) {
-        await adapter.onToolResult(
-          {
-            toolName: "read",
-            toolCallId: observation.toolCallId,
-            input: structuredClone(observation.input),
-            content: [{ type: "text", text: observation.content }],
-            isError: false,
-          },
-          { cwd: context.cwd },
-        );
+        try {
+          await seedReadObservation(adapter, observation, context.cwd);
+        } catch {
+          // Unsupported observations remain ordinary Pi results.
+        }
       }
+      if (adapter.engine.registry.list().length === 0) return structuredClone(request);
 
       const transformed = await adapter.onContext(
         {
