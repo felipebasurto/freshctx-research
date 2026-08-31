@@ -55,7 +55,7 @@ Exit gate, held at the current branch head:
 - Pi and Hermes projection bytes equal live core `freshctx-region`, asserted for
   equality rather than an upper bound;
 - a marker-only frame scores zero recall and zero exact-current;
-- `AUTORESEARCH_SCORE` and the ctxbench payload hash are unchanged.
+- `EVALUATE_VERDICT=PASS` on the physical board, and the ctxbench payload hash is unchanged.
 
 Nothing else is open at P0. A regression that puts a digest, a summary, or a
 prior request in place of selected current bytes returns here ahead of every

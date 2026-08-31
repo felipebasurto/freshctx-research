@@ -69,9 +69,10 @@ test("empirical PASS fails when required recall is below 1 even if payload shrin
   assert.equal(judged.verdict, "FAIL");
 });
 
-test("synthetic bench no longer emits the weighted search scalar", async () => {
+test("npm run bench is EmpiricalVerdict, not a synthetic scalar", async () => {
   const result = await runBenchmark();
   assert.equal(Object.hasOwn(result, "score"), false);
-  assert.equal(result.label, "synthetic");
-  assert.ok(Object.values(result.hardGates).every(Boolean));
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.pack.id, "holdout-v0.3-apex");
+  assert.equal(result.comparison.candidate, "isolated-semantic-engine");
 });

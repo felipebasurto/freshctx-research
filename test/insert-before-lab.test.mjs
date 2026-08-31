@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -7,7 +6,7 @@ import test from "node:test";
 import { buildInsertBeforeLabTraces } from "../bench/insert-before-lab.mjs";
 import { runTrace } from "../bench/trace-runner.mjs";
 
-const UTIL_FILE = fileURLToPath(new URL("../bench/repos/go-tools/go/buildutil/util.go", import.meta.url));
+const UTIL_FILE = fileURLToPath(new URL("../test/fixtures/go-tools/go/buildutil/util.go", import.meta.url));
 const GO_TOOLS_LOCKED_COMMIT = "ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49";
 
 const PROBED_SECOND_CAPTURE = {
@@ -26,7 +25,6 @@ function secondCaptureSha(trace) {
 
 test(
   "insert-before lab traces match probed gold and run without throw",
-  { skip: existsSync(UTIL_FILE) ? false : "go-tools util.go not fetched" },
   async () => {
     const goUtil = await readFile(UTIL_FILE, "utf8");
     const { traces } = await buildInsertBeforeLabTraces({
