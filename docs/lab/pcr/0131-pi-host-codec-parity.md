@@ -32,6 +32,9 @@ complete safely.
   bytes through the existing Pi transformer.
 - Preserved retained native IDs, order, pairing, image results, and ordinary
   shell pairs. Only complete superseded successful-read pairs may retire.
+- Pinned the offset-shift fail-closed rule: moving a `toolResult` past a later
+  user-message boundary invalidates the candidate request. Authorized complete
+  read-pair retirement does not weaken retained pair boundaries.
 - Kept each request transformation ephemeral. A second transform starts from
   the same observation-time history and resolves the then-current workspace.
 - Failed open for refused paths, binary/oversized observations, escaping
@@ -76,6 +79,7 @@ was not added.
 | old-path vs codec-path canonical payload | `07b5d223` | byte-identical on covered parity traces |
 | stale observation body in successful parity payload | `07b5d223` | 0 copies |
 | duplicate current body in successful parity payload | `07b5d223` | 0 extra copies |
+| `toolResult` moved across later user boundary | `07b5d223` | rejected; original request retained |
 | forced failure request identity | `07b5d223` | same original object |
 | model calls | `07b5d223` | 0 |
 | evaluation score / delta | `07b5d223` | n/a; evaluation did not run |
