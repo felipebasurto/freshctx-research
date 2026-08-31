@@ -2,7 +2,7 @@
 
 Append-only snapshots. Do not overwrite earlier rows.
 
-## Synthetic (`npm run evaluate` / `npm run ctxbench`)
+## Synthetic ledger (historical `AUTORESEARCH_SCORE`; live evaluate prints `EVALUATE_VERDICT`)
 
 | UTC | Commit | Tests | AUTORESEARCH_SCORE | stale | copies | recall | ctxbench payload sha256 | det. | PCR |
 |---|---|---|---|---|---|---|---|---|---|

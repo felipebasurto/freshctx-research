@@ -4,7 +4,43 @@ import { FreshCtxEngine } from "../src/engine.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { decodeProjectionUnits } from "../src/projector.mjs";
 import { annotateReadMessage } from "../src/transcript.mjs";
-import { fixture } from "./fixture.mjs";
+const region = {
+  task: "Change authorization to use the write permission and explain the behavior.",
+  path: "src/auth.ts",
+  initialRegion: [
+    "export function authorize(user) {",
+    "  if (!user) return false;",
+    "  return user.role === 'admin';",
+    "}",
+  ].join("\n"),
+  currentRegion: [
+    "export function authorize(user) {",
+    "  if (!user) return false;",
+    "  return user.permissions.includes('write');",
+    "}",
+  ].join("\n"),
+};
+
+const unrelatedPrefix = [
+  "export const DEFAULT_TIMEOUT = 5_000;",
+  "",
+  "export function normalizeUser(user) {",
+  "  return { ...user, name: user.name.trim() };",
+  "}",
+  "",
+].join("\n");
+
+const unrelatedSuffix = [
+  "",
+  "export function audit(event) {",
+  "  return JSON.stringify({ ...event, at: Date.now() });",
+  "}",
+  "",
+  ...Array.from({ length: 24 }, (_, index) => `// unrelated module documentation line ${index + 1}`),
+].join("\n");
+
+region.initialFile = `${unrelatedPrefix}${region.initialRegion}${unrelatedSuffix}`;
+region.currentFile = `${unrelatedPrefix}${region.currentRegion}${unrelatedSuffix}`;
 
 function count(value, needle) {
   return needle.length === 0 ? 0 : value.split(needle).length - 1;
@@ -62,32 +98,32 @@ function changedBytes(a, b) {
 async function runOne() {
   const engine = new FreshCtxEngine();
   const unit = engine.trackRead({
-    path: fixture.path,
-    content: fixture.initialRegion,
+    path: region.path,
+    content: region.initialRegion,
     startLine: 7,
     scope: "region",
   });
-  const historical = annotateReadMessage({ role: "tool", content: fixture.initialRegion }, unit);
+  const historical = annotateReadMessage({ role: "tool", content: region.initialRegion }, unit);
   const before = JSON.stringify((await engine.buildRequest([historical, historical], {
-    sourceProvider: { [fixture.path]: fixture.initialFile },
-    task: fixture.task,
+    sourceProvider: { [region.path]: region.initialFile },
+    task: region.task,
     budgetChars: 4_000,
   })).messages);
 
   engine.advanceTurn();
   const request = await engine.buildRequest([historical, historical], {
-    sourceProvider: { [fixture.path]: fixture.currentFile },
-    task: fixture.task,
+    sourceProvider: { [region.path]: region.currentFile },
+    task: region.task,
     budgetChars: 4_000,
   });
   const payload = JSON.stringify(request.messages);
   const visibleText = messageText(request.messages);
-  const currentCopies = count(visibleText, fixture.currentRegion);
-  const staleCopies = count(visibleText, fixture.initialRegion);
+  const currentCopies = count(visibleText, region.currentRegion);
+  const staleCopies = count(visibleText, region.initialRegion);
   const exactUnits = decodeProjectionUnits(request.projection.text).filter(
-    (decoded) => decoded.content === fixture.currentRegion,
+    (decoded) => decoded.content === region.currentRegion,
   ).length;
-  const workspaceChangedBytes = changedBytes(fixture.initialFile, fixture.currentFile);
+  const workspaceChangedBytes = changedBytes(region.initialFile, region.currentFile);
   const payloadChangedBytes = changedBytes(before, payload);
 
   return {
@@ -97,7 +133,7 @@ async function runOne() {
       exactCurrentRate: exactUnits / Math.max(1, request.projection.selected.length),
       requiredRecall: currentCopies > 0 ? 1 : 0,
       staleUnitRate: staleCopies > 0 ? 1 : 0,
-      staleBytes: staleCopies * Buffer.byteLength(fixture.initialRegion),
+      staleBytes: staleCopies * Buffer.byteLength(region.initialRegion),
       duplicateCurrentUnits: Math.max(0, currentCopies - 1),
       currentCopies,
       unresolvedUnits: request.projection.omitted.filter((item) => item.reason === "unresolved").length,
@@ -128,7 +164,7 @@ export async function runCtxBench({ warmups = 10, repetitions = 100 } = {}) {
   return {
     schemaVersion: 1,
     label: "synthetic",
-    fixture: fixture.name,
+    fixture: "empirical-region-refresh",
     warmups,
     repetitions,
     correctness: first.correctness,

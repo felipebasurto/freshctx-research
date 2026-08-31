@@ -34,7 +34,6 @@ async function runSymbolScopePack({ root }) {
     fixture: SYMBOL_PACK_ID,
     packId: SYMBOL_PACK_ID,
     tracesExecuted,
-    score: (passed / Math.max(1, result.rows.length)) * 100,
     hardGates: {
       allCellsPassed: result.rows.every((row) => row.verdict === "pass"),
       noFailOpen: result.rows.every((row) => row.failOpen === false),
@@ -117,7 +116,6 @@ async function runOnDiskTracePack({ packId, root }) {
     fixture: packId,
     packId,
     tracesExecuted: runs.length,
-    score: (passed / Math.max(1, runs.length)) * 100,
     hardGates: {
       allCellsPassed: passed === runs.length,
       noStaleBytes: runs.every((row) => row.staleBytes === 0),

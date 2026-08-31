@@ -61,8 +61,7 @@ function printEvaluateResult(result) {
   if (result.schemaVersion === 1 && result.verdict) {
     return formatEvaluateOutput(result);
   }
-  const { score, ...rest } = result;
-  return `EVALUATE_VERDICT=${evaluateVerdict(result)}\n${JSON.stringify(rest, null, 2)}\n`;
+  return `EVALUATE_VERDICT=${evaluateVerdict(result)}\n${JSON.stringify(result, null, 2)}\n`;
 }
 
 export async function evaluate(options = {}) {

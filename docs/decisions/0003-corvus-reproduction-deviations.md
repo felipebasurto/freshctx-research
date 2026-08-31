@@ -75,7 +75,7 @@ not a reviewed Strands Agents or SWE-Bench clone.
 - Walked Algorithm 1 against `CorvusSyncedFileSet`, `syncFile`, and `syncContext`
 - Same traces and `budgetChars` as FreshCtx; \(C_t\) is not truncated
 - `desync_file` remains absent
-- Score weights in `bench/run.mjs` are unchanged
+- Default evaluate uses `EmpiricalVerdict`, not a synthetic scalar
 - PDF sha256 still `204af5d8df1a25d09dcc2ef154b2aac8d3d3fcea4c9c737a511129f40cd27eaf`
 
 This sign-off does not authorize a “we beat CORVUS” or Level 4 sentence.
