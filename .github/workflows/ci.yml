@@ -2,11 +2,16 @@ name: ci
 
 on:
   push:
+    branches:
+      - main
+      - feat/freshctx-next
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - 'LICENSE'
   pull_request:
+    branches:
+      - main
     paths-ignore:
       - '**.md'
       - 'docs/**'
