@@ -1,4 +1,5 @@
 const REQUIRED_METHODS = ["capture", "transform", "validate", "serialize"];
+const REQUIRED_CAPABILITY_STRINGS = ["host", "hostVersion", "adapter", "adapterVersion"];
 
 function asBytes(value) {
   if (Buffer.isBuffer(value)) return Buffer.from(value);
@@ -7,7 +8,29 @@ function asBytes(value) {
   throw new TypeError("host codec serialize() must return bytes or a string");
 }
 
-export function defineHostCodec({ name, capture, transform, validate, serialize }) {
+function freezeCapabilities(capabilities) {
+  if (!capabilities || typeof capabilities !== "object") {
+    throw new TypeError("host codec requires capabilities");
+  }
+  for (const field of REQUIRED_CAPABILITY_STRINGS) {
+    if (typeof capabilities[field] !== "string" || capabilities[field].length === 0) {
+      throw new TypeError(`host codec capabilities require ${field}`);
+    }
+  }
+  if (typeof capabilities.canRewriteRequest !== "boolean") {
+    throw new TypeError("host codec capabilities require canRewriteRequest");
+  }
+  return Object.freeze({ ...capabilities });
+}
+
+export function defineHostCodec({
+  name,
+  capabilities,
+  capture,
+  transform,
+  validate,
+  serialize,
+}) {
   const methods = { capture, transform, validate, serialize };
   if (typeof name !== "string" || name.length === 0) {
     throw new TypeError("host codec requires a name");
@@ -17,7 +40,11 @@ export function defineHostCodec({ name, capture, transform, validate, serialize 
       throw new TypeError(`host codec requires ${method}()`);
     }
   }
-  return Object.freeze({ name, ...methods });
+  return Object.freeze({
+    name,
+    capabilities: freezeCapabilities(capabilities),
+    ...methods,
+  });
 }
 
 export async function applyHostCodec(codec, originalRequest, context = {}) {
@@ -40,6 +67,7 @@ export async function applyHostCodec(codec, originalRequest, context = {}) {
       request: candidate,
       captured,
       codec: codec.name,
+      capabilities: codec.capabilities,
     };
   } catch (error) {
     return {
@@ -47,6 +75,7 @@ export async function applyHostCodec(codec, originalRequest, context = {}) {
       request: originalRequest,
       captured: null,
       codec: codec?.name ?? "unknown",
+      capabilities: codec?.capabilities ?? null,
       error: error instanceof Error ? error.message : String(error),
     };
   }

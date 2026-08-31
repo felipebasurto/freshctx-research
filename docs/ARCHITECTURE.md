@@ -185,7 +185,8 @@ transformed host-native schema, and returns the original object on any failure.
 Pairing rules belong to each codec's validator because hosts encode assistant
 calls and tool results differently. The no-model test double in
 `adapters/host-codec-test-double.mjs` covers capture, transformation, pair
-corruption, and byte-identical fail-open behavior.
+corruption, and byte-identical fail-open behavior. Every codec declares its
+host and adapter versions plus whether the host can rewrite request context.
 
 The core never imports Pi, Hermes, OMP, OpenAI, Anthropic, or Google message
 types.

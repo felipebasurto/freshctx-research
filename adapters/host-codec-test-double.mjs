@@ -10,6 +10,60 @@ function toolResultId(message) {
   return typeof message.tool_call_id === "string" ? message.tool_call_id : null;
 }
 
+function textContent(content) {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .filter((part) => part?.type === "text" && typeof part.text === "string")
+    .map((part) => part.text)
+    .join("\n");
+}
+
+function toolArguments(call) {
+  const raw = call?.function?.arguments ?? {};
+  if (typeof raw !== "string") return raw && typeof raw === "object" ? raw : {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function captureReadObservations(request) {
+  const reads = new Map();
+  for (const message of request.messages) {
+    for (const call of toolCalls(message)) {
+      if (call?.function?.name !== "read" || typeof call.id !== "string") continue;
+      const args = toolArguments(call);
+      if (typeof args.path !== "string" || args.path.length === 0) continue;
+      reads.set(call.id, args);
+    }
+  }
+
+  const observations = [];
+  for (const message of request.messages) {
+    const callId = toolResultId(message);
+    const args = callId ? reads.get(callId) : null;
+    if (!args || message.is_error === true || message.isError === true) continue;
+    const observation = {
+      toolCallId: callId,
+      path: args.path,
+      scope: args.scope === "region" || args.scope === "symbol" ? args.scope : "file",
+      content: textContent(message.content),
+    };
+    if (observation.scope === "symbol" && typeof args.selector === "string") {
+      observation.selector = args.selector;
+    }
+    if (observation.scope === "region") {
+      if (Number.isInteger(args.startLine)) observation.startLine = args.startLine;
+      if (Number.isInteger(args.endLine)) observation.endLine = args.endLine;
+    }
+    observations.push(observation);
+  }
+  return observations;
+}
+
 function pairingOrder(request) {
   const calls = [];
   const results = [];
@@ -69,12 +123,22 @@ export function createHostCodecTestDouble({
   const captures = [];
   const codec = defineHostCodec({
     name: "freshctx-test-host-v1",
+    capabilities: {
+      host: "freshctx-test-host",
+      hostVersion: "1.0",
+      adapter: "host-codec-test-double",
+      adapterVersion: "1.0",
+      canRewriteRequest: true,
+    },
     serialize: (request) => Buffer.from(JSON.stringify(request), "utf8"),
     capture: (request) => {
       if (failAt === "capture") throw new Error("forced capture failure");
       const captured = structuredClone(request);
       captures.push(captured);
-      return captured;
+      return {
+        request: captured,
+        observations: captureReadObservations(captured),
+      };
     },
     transform: (request, { context }) => {
       if (failAt === "transform") throw new Error("forced transform failure");
@@ -106,7 +170,7 @@ export function createHostCodecTestDouble({
     },
     validate: (request, { captured }) => {
       if (failAt === "validate") throw new Error("forced validation failure");
-      return validateTestHostPairing(request, captured);
+      return validateTestHostPairing(request, captured.request);
     },
   });
 

@@ -7,6 +7,14 @@ import {
   validateTestHostPairing,
 } from "../adapters/host-codec-test-double.mjs";
 
+const TEST_CAPABILITIES = {
+  host: "freshctx-test-host",
+  hostVersion: "1.0",
+  adapter: "host-codec-test-double",
+  adapterVersion: "1.0",
+  canRewriteRequest: true,
+};
+
 function nativeRequest() {
   return {
     metadata: { requestId: "req-1" },
@@ -49,6 +57,15 @@ test("codec captures and transforms an ephemeral copy while preserving native pa
   assert.equal(result.applied, true);
   assert.notEqual(result.request, original);
   assert.deepEqual(host.captures, [original]);
+  assert.deepEqual(result.capabilities, TEST_CAPABILITIES);
+  assert.deepEqual(result.captured.observations, [
+    {
+      toolCallId: "read-1",
+      path: "src/a.mjs",
+      scope: "file",
+      content: "export const value = 'old';\n",
+    },
+  ]);
   assert.equal(validateTestHostPairing(result.request), true);
   assert.equal(result.request.messages[0].tool_calls[0].id, "read-1");
   assert.equal(result.request.messages[0].tool_calls[0].function.name, "read");
@@ -70,6 +87,7 @@ test("codec failure returns the original request byte-identically", async () => 
     assert.equal(result.applied, false, failAt);
     assert.equal(result.request, original, failAt);
     assert.equal(result.captured, null, failAt);
+    assert.deepEqual(result.capabilities, TEST_CAPABILITIES, failAt);
     assert.match(
       result.error,
       new RegExp(failAt === "validate" ? "validation" : failAt, "u"),
@@ -102,6 +120,7 @@ test("codec callbacks cannot mutate the original request", async () => {
   const originalBytes = Buffer.from(JSON.stringify(original));
   const codec = defineHostCodec({
     name: "mutating-serializer-probe",
+    capabilities: TEST_CAPABILITIES,
     serialize: (request) => {
       request.metadata.requestId = "mutated-copy";
       return JSON.stringify(request);
@@ -119,5 +138,24 @@ test("codec callbacks cannot mutate the original request", async () => {
 
   assert.equal(result.applied, false);
   assert.equal(result.request, original);
+  assert.deepEqual(Buffer.from(JSON.stringify(original)), originalBytes);
+});
+
+test("each transformation starts from the unchanged host request", async () => {
+  const original = nativeRequest();
+  const originalBytes = Buffer.from(JSON.stringify(original));
+  const host = createHostCodecTestDouble();
+
+  const first = await applyHostCodec(host.codec, original, {
+    replacementByCallId: { "read-1": "first-current" },
+  });
+  const second = await applyHostCodec(host.codec, original, {
+    replacementByCallId: { "read-1": "second-current" },
+  });
+
+  assert.match(first.request.messages[1].content, /first-current/u);
+  assert.match(second.request.messages[1].content, /second-current/u);
+  assert.doesNotMatch(second.request.messages[1].content, /first-current/u);
+  assert.deepEqual(host.captures, [original, original]);
   assert.deepEqual(Buffer.from(JSON.stringify(original)), originalBytes);
 });
