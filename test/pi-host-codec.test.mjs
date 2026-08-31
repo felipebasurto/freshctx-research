@@ -182,6 +182,20 @@ test("Pi codec preserves valid non-read native image results", async () => {
   assert.deepEqual(decodePiReadObservations(request), []);
 });
 
+test("Pi validator rejects a tool result moved across a native message boundary", async () => {
+  const { validatePiNativeRequest } = await loadPiCodec();
+  const original = { messages: piReadHistory() };
+  const reordered = {
+    messages: [
+      original.messages[0],
+      original.messages[2],
+      original.messages[1],
+    ],
+  };
+
+  assert.equal(validatePiNativeRequest(reordered, original), false);
+});
+
 test("Pi codec matches the existing adapter path byte-for-byte on one semantic trace", async () => {
   const {
     createPiHostCodec,
@@ -244,6 +258,141 @@ test("Pi codec matches the existing adapter path byte-for-byte on one semantic t
       nativePairSequence(persistedMessages),
     );
     assert.deepEqual(Buffer.from(JSON.stringify(originalRequest), "utf8"), persistedBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec matches existing-path retirement of a superseded same-path read", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-reread-"));
+  const firstCallId = "pi-read-first";
+  const secondCallId = "pi-read-second";
+  const firstObserved = "export const state = 'FIRST_OBSERVATION';\n";
+  const secondObserved = "export const state = 'SECOND_OBSERVATION';\n";
+  const readPair = (toolCallId, content, timestamp) => [
+    {
+      role: "assistant",
+      content: [{
+        type: "toolCall",
+        id: toolCallId,
+        name: "read",
+        arguments: { path: "source.ts" },
+      }],
+      timestamp,
+    },
+    {
+      role: "toolResult",
+      toolCallId,
+      toolName: "read",
+      content: [{ type: "text", text: content }],
+      isError: false,
+      timestamp: timestamp + 1,
+    },
+  ];
+
+  try {
+    const oldAdapter = createPiAdapter({ budgetChars: BUDGET_CHARS });
+    await oldAdapter.onTurnStart({ turnIndex: 1 });
+    await writeFile(join(workspace, "source.ts"), firstObserved);
+    await oldAdapter.onToolResult(
+      {
+        toolName: "read",
+        toolCallId: firstCallId,
+        input: { path: "source.ts" },
+        content: [{ type: "text", text: firstObserved }],
+        isError: false,
+      },
+      { cwd: workspace },
+    );
+    await writeFile(join(workspace, "source.ts"), secondObserved);
+    await oldAdapter.onToolResult(
+      {
+        toolName: "read",
+        toolCallId: secondCallId,
+        input: { path: "source.ts" },
+        content: [{ type: "text", text: secondObserved }],
+        isError: false,
+      },
+      { cwd: workspace },
+    );
+
+    const persistedMessages = [
+      ...readPair(firstCallId, firstObserved, 1),
+      ...readPair(secondCallId, secondObserved, 3),
+      { role: "user", content: "Use the latest source.", timestamp: 5 },
+    ];
+    const original = { messages: persistedMessages };
+    const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
+    await writeFile(join(workspace, "source.ts"), CURRENT_ONE);
+
+    const oldPath = await oldAdapter.onContext(
+      { messages: structuredClone(persistedMessages), budgetChars: BUDGET_CHARS },
+      { cwd: workspace },
+    );
+    const codecPath = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 1,
+    });
+
+    assert.ok(oldPath);
+    assert.equal(codecPath.applied, true);
+    assert.deepEqual(
+      canonicalProviderBytes(codecPath.request.messages),
+      canonicalProviderBytes(oldPath.messages),
+    );
+    assert.equal(count(messageText(codecPath.request.messages), firstObserved), 0);
+    assert.equal(count(messageText(codecPath.request.messages), secondObserved), 0);
+    assert.equal(count(messageText(codecPath.request.messages), CURRENT_ONE), 1);
+    assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec reconstructs a deleted observation and matches fail-closed old-path bytes", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-delete-"));
+  try {
+    const filePath = join(workspace, "source.ts");
+    await writeFile(filePath, OBSERVED);
+    const persistedMessages = piReadHistory();
+    const original = { messages: persistedMessages };
+    const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
+    const oldAdapter = createPiAdapter({ budgetChars: BUDGET_CHARS });
+    await oldAdapter.onTurnStart({ turnIndex: 1 });
+    await oldAdapter.onToolResult(
+      {
+        toolName: "read",
+        toolCallId: CALL_ID,
+        input: { path: "source.ts" },
+        content: [{ type: "text", text: OBSERVED }],
+        isError: false,
+      },
+      { cwd: workspace },
+    );
+    await rm(filePath);
+
+    const oldPath = await oldAdapter.onContext(
+      { messages: structuredClone(persistedMessages), budgetChars: BUDGET_CHARS },
+      { cwd: workspace },
+    );
+    const codecPath = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 1,
+    });
+
+    assert.ok(oldPath);
+    assert.equal(codecPath.applied, true);
+    assert.deepEqual(
+      canonicalProviderBytes(codecPath.request.messages),
+      canonicalProviderBytes(oldPath.messages),
+    );
+    assert.equal(count(messageText(codecPath.request.messages), OBSERVED), 0);
+    assert.deepEqual(projectionUnits(codecPath.request.messages), []);
+    assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
