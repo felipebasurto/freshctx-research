@@ -78,7 +78,7 @@ The prototype unit contains:
 |---|---|
 | `id` | Stable identity independent of content revision |
 | `path` | Normalized repository-relative source path |
-| `scope` | File, region, or future symbol scope |
+| `scope` | Whole-file, line-region, or symbol scope |
 | `selector` | Structural selector when present |
 | `content` | Last safely resolved current bytes |
 | `revision` | `sha256:<digest>` of current bytes |
@@ -93,11 +93,18 @@ identity but not the volatile revision hash.
 
 ### 4. Resolver
 
-The current prototype tries:
+Whole-file and line-region refresh use exact content and conservative boundary
+anchors. Symbol refresh calls the out-of-process Isolated Semantic Engine, whose
+Tree-sitter implementation supports Python, JavaScript, TypeScript, Go, and
+Rust. Parser packages are never imported by `src/`, which remains Node.js
+standard-library-only.
 
-1. unique exact occurrence of the previous region;
-2. a unique best pair of normalized boundary anchors;
-3. unresolved.
+Resolution fails closed:
+
+1. accept a unique exact or structural match;
+2. otherwise accept a unique best pair of normalized boundary anchors where
+   that scope permits it;
+3. otherwise mark the unit unresolved.
 
 The production resolution hierarchy is:
 
@@ -182,15 +189,16 @@ each LLM call. The reference adapter records successful `read` calls, leaves the
 stored result untouched, then rewrites matching tool results in the request copy
 and appends the live projection through `context`.
 
-The adapter synchronizes whole text files and line regions. Path-only reads and
-pagination that reaches end of file resolve to file scope. Explicit
-`scope: "region"` reads and finite `offset` and `limit` pairs map to line ranges,
-and interior edits can refresh through a stored line span without a re-read. The
-adapter also recognizes cat-class shell reads and routes them through the same
-workspace guard as the official `read` tool.
+The adapter synchronizes whole text files, line regions, and explicit symbol
+reads. Path-only reads and pagination that reaches end of file resolve to file
+scope. Explicit `scope: "region"` reads and finite `offset` and `limit` pairs map
+to line ranges; `scope: "symbol"` reads refresh through the Isolated Semantic
+Engine when the file language is supported. The adapter also recognizes
+cat-class shell reads and routes them through the same workspace guard as the
+official `read` tool.
 
-Symbol scope, persisted call mappings across restart, pinned-package type
-checking, and native provider-capture tests are release gates.
+Persisted call mappings across restart, pinned-package type checking, and native
+provider-capture tests remain product gates.
 
 ## Hermes integration
 
@@ -275,16 +283,19 @@ current.
 - Preserve host redaction, permissions, and approval behavior.
 - Run CtxBench with network disabled and a disposable writable worktree.
 
-## Prototype versus product
+## Current evidence and product gaps
 
-| Capability | 0.1 prototype | Product gate |
+| Area | Current repository fact | Missing production evidence or mechanism |
 |---|---|---|
-| Core | In-memory, Node standard library | Persistent local service/library |
-| Unit type | Whole file and anchored region | Multi-language structural symbols |
+| Core | In-memory and Node.js standard-library-only | Persistent local service/library |
+| Unit type | Whole-file, line-region, and symbol scope | Broader structural validation corpus |
+| Structural languages | Out-of-process Tree-sitter for Python, JavaScript, TypeScript, Go, and Rust | Versioned parser compatibility matrix |
 | Snapshot | Sequential source provider | Coherent workspace generation |
 | Recovery | In-memory revision map | Durable encrypted/permissioned archive |
-| Policy | Lexical deterministic heuristic | CtxBench-optimized frozen policy |
-| Pi | Reference TypeScript adapter | Pinned package, session persistence, CI |
-| Hermes | Preview bridge plugin | Packaged engine, locks, compatibility matrix |
-| Benchmark | Synthetic executable | Public-repo trace pack and capture provider |
-| Claim | Invariant prototype | Level 4 deterministic context-transformer result |
+| Pi | Request-only adapter with deterministic replay tests | Pinned host package and session persistence |
+| Hermes | Request-only plugin, bridge, installer, and replay tests | Published package, locks, and compatibility matrix |
+| Tests | Core and adapter invariants run without a model | Released-host end-to-end matrix |
+| Evaluate | `holdout-v0.3-apex` defaults on this checkout; recorded ISE 8504 payload bytes, whole-file 36701 payload bytes, required recall 5/5 | Pack is locally frozen, not production-GHA sealed; timing and RSS remain local telemetry |
+
+`passAt1` is always `null` and out of scope for this deterministic context
+benchmark. There are 126 Public Change Records under `docs/lab/pcr/`.

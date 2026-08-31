@@ -70,23 +70,25 @@ experimentar.
 
 ## Estado actual
 
-El repositorio incluye la tesis, `SOUL.md`, un núcleo sin dependencias con
-identidad estable y relocalización por anclas, tests de invariantes, benchmark
-sintético repetido, manifiestos de papers y repos públicos con locks, y el
-contrato completo de CtxBench.
+El núcleo de `src/` usa sólo la biblioteca estándar de Node.js. Ya están
+implementados los scopes de archivo completo, región de líneas y símbolo. La
+implementación Tree-sitter corre fuera del proceso del núcleo y cubre Python,
+JavaScript, TypeScript, Go y Rust.
 
-Pi y Hermes Agent ya no son scaffolds. Hay una extensión de Pi y un plugin
-`ContextEngine` de Hermes que sincronizan archivos completos y regiones de
-líneas, rastrean lecturas de shell tipo `cat`, reescriben sólo la copia del
-request y devuelven el request original del host si algo falla. Sus bytes de
-proyección coinciden exactamente con el baseline `freshctx-region` del núcleo, y
-los tests lo comprueban por igualdad.
+Pi y Hermes transforman sólo la copia del request, mantienen el emparejamiento
+nativo entre assistant, tool call y tool result, y devuelven intacto el request
+original si falla el adaptador. Los tests deterministas cubren esos contratos y
+los invariantes de frescura, unicidad, recuperación, ambigüedad y presupuesto
+sin invocar un modelo.
 
-Falta el generador multi-lenguaje, el muestreador determinista de la §5.1,
-tiempos por etapa y memoria en los adaptadores, tests fijados a una versión
-publicada de Pi o Hermes, y una reproducción revisada de CORVUS. La holdout v0.1
-es un pack de regresión sin sellar, no un resultado.
+En este checkout, `npm run evaluate` elige por defecto
+`holdout-v0.3-apex`. El pack está congelado localmente, no sellado por GitHub
+Actions de producción. La medición registrada fue 8504 bytes de payload para
+Isolated Semantic Engine, 36701 para el baseline de archivo completo y recall
+requerido 5/5. `passAt1` siempre es `null` y queda fuera de alcance.
 
-El autoresearch está en pausa hasta cerrar la prioridad P1 de
-[docs/ROADMAP.md](ROADMAP.md). Por tanto, el claim correcto hoy sigue siendo
-“prototipo de invariantes”, no “estado del arte”.
+Siguen faltando un archivo de revisiones durable y con permisos, una barrera de
+snapshot coherente, compatibilidad fijada contra releases de Pi y Hermes,
+telemetría completa por etapa y memoria, revisión independiente del baseline y
+atestación de congelación en CI de producción. Los 126 Public Change Records en
+`docs/lab/pcr/` conservan el historial de evidencia.

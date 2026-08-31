@@ -106,6 +106,9 @@ The adapter synchronizes:
   under the Hermes-parity end-of-file rules (see PCR 0073 and PCR 0074).
 - **Regions.** Explicit `scope: "region"` with `startLine` and `endLine`, or a
   finite `offset` and `limit` pair mapped to a line range.
+- **Symbol scope.** Explicit `scope: "symbol"` reads refresh through the
+  out-of-process Tree-sitter implementation for Python, JavaScript, TypeScript,
+  Go, and Rust.
 - **Cat-class shell reads.** A single-file `cat`, `head`, `tail`, `sed -n`, or
   `nl` issued through the `bash` or `shell` tool goes through the same workspace
   guard and tracking path as an official `read` (see PCR 0078). The parser is
@@ -153,7 +156,6 @@ whole file is a whole-repo dump.
 
 - Resume after process restart (no durable `callToUnit` or unit registry)
 - Hermes Agent integration (use `adapters/hermes/` instead)
-- Symbol / Tree-sitter providers
 - Session persistence beyond Pi's own session store
 - Integration test pinned to a specific Pi release (v0.2 gate)
 
