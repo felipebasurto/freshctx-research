@@ -97,5 +97,5 @@ upload as tarball after generate.
 ## Next measurement
 
 One scheduled remeasure of this sealed pack. Do not treat cells as a tuning
-signal. Optional: real Tree-sitter grammars behind the existing sidecar
+signal. Optional: real Tree-sitter grammars behind the existing Isolated Semantic Engine
 contract.

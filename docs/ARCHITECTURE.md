@@ -213,7 +213,7 @@ commands, and projects whole files and line regions under the same end-of-file
 rules as Pi. It persists only tool-call and path mappings, and it writes that
 state from `on_turn_complete()` alone. `select_context()` reads state and never
 writes it, which keeps one request from changing what the next request contains.
-Production should package the core as a stable sidecar or native library and add
+Production should package the core as a stable Isolated Semantic Engine or native library and add
 per-session locking, schema fixtures, and lifecycle cleanup.
 
 ## Why MCP is not the primary integration

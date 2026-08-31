@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
-import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { missingIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 import {
   NESTED_HELPER_NESTED_PATH,
   NESTED_HELPER_PARENT_PATH,
@@ -99,7 +99,7 @@ test("missing Isolated Semantic Engine spawn is an explicit failure", async () =
   assert.equal(judged.reason, "missing-engine");
 
   const probe = await probeIsolatedSemanticEngine(
-    () => new FreshCtxEngine({ sidecarRunner: missingSidecarRunner() }),
+    () => new FreshCtxEngine({ semanticEngineRunner: missingIsolatedSemanticEngineRunner() }),
   );
   assert.equal(probe.state, "missing");
 });
@@ -113,7 +113,7 @@ test("Isolated Semantic Engine cell fails closed when spawn is missing", async (
     gold: flask.gold,
     mutatedText: flask.trace.mutatedFiles[flask.target.path],
     system: "isolated-semantic-engine",
-    createEngine: () => new FreshCtxEngine({ sidecarRunner: missingSidecarRunner() }),
+    createEngine: () => new FreshCtxEngine({ semanticEngineRunner: missingIsolatedSemanticEngineRunner() }),
     engineSpawn: "missing",
   });
   assert.equal(row.verdict, "fail");

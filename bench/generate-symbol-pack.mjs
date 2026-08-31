@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createAdapterEngine } from "../adapters/engine-factory.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 import { annotateReadMessage } from "../src/transcript.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { CorvusSyncedFileSet, renderSyncedContext } from "./corvus.mjs";

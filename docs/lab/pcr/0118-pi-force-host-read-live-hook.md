@@ -16,7 +16,7 @@ PCR 0117 left live Pi auto-rpc fail-closed on all three arms at t1-read.
 The model never passed `scope=symbol` selector `settleDailyLedger`.
 Mock tests only exercised `tool_call`.
 Pi emits `tool_execution_start` before `tool_call`, so RPC capture saw pre-mutation args while execution may differ.
-Leftover dump on dest `freshctx-measure-46169f50` before the throw: `nothing` 9335 SW0 yes resolution none; `freshctx-no-ts` 11394 SW0 yes whole-file; `freshctx-ts` 5212 SW0 omitted resolution sidecar.
+Leftover dump on dest `freshctx-measure-46169f50` before the throw: `nothing` 9335 SW0 yes resolution none; `freshctx-no-ts` 11394 SW0 yes whole-file; `freshctx-ts` 5212 SW0 omitted resolution Isolated Semantic Engine.
 File-scope Tree-sitter still pruned sibling.
 Not a valid symbol-scope live.
 The harness must intercept live Pi tool calls on `tool_execution_start` and `tool_call`.
@@ -42,13 +42,13 @@ Recorded t1 args must be the live RPC capture with no post-hoc rewrite before `a
 | arm | FreshCtx | Tree-sitter | turn-1 host read |
 |---|---|---|---|
 | `nothing` | no | n/a | `scope=symbol`, selector `settleDailyLedger` (forced in harness) |
-| `freshctx-no-ts` | yes | off (`FRESHCTX_SIDECAR=off`) | same |
+| `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off`) | same |
 | `freshctx-ts` | yes | on (default) | same |
 
 ## Benchmarks run
 
 Canonical TAP from this Mac after Tree-sitter WASM install
-(`npm run sidecar:install`, HEAD `1a002ffa`). First `npm test` hit a
+(`npm run ise:install`, HEAD `1a002ffa`). First `npm test` hit a
 `repos-fetch` neovim clone timeout while two suites ran in parallel.
 `npm run evaluate` then ran the same suite alone and passed.
 
@@ -102,7 +102,7 @@ nothing	2	no	yes	12044	—	no	none
 freshctx-no-ts	1	n/a	n/a	73208	—	n/a	n/a
 freshctx-no-ts	2	no	no	15291	—	no	none
 freshctx-ts	1	n/a	n/a	12806	—	n/a	n/a
-freshctx-ts	2	yes	no	7794	—	yes	sidecar
+freshctx-ts	2	yes	no	7794	—	yes	Isolated Semantic Engine
 ```
 
 Full write-up: [REPORT.md](../pi-trial-ts/REPORT.md).
@@ -119,7 +119,7 @@ Live official Pi 0.84.3 three-arm at `1a002ffa` recorded
 No leftover bash or grep.
 Tree-sitter arm t2 last request is 7794 bytes vs Pi-alone 12044 (4250 bytes, 35.3% drop).
 That arm omitted sibling `SW0`, served `ST1`, and printed `SETTLE=ST1`.
-Sidecar-off fail-closed as in PCR 0116. Seven symbol-scope retries, then unresolved.
+Isolated Semantic Engine-off fail-closed as in PCR 0116. Seven symbol-scope retries, then unresolved.
 
 ## Conflicts with constitutions
 
@@ -128,10 +128,10 @@ none observed.
 ## Limitations
 
 Dumped request JSON has no `usage.prompt_tokens`. Byte counts are the live metric.
-`freshctx-no-ts` retried the same symbol read seven times after sidecar-off
+`freshctx-no-ts` retried the same symbol read seven times after Isolated Semantic Engine-off
 fail-closed. That inflated t1 `request_bytes` to 73208. It is not a Tree-sitter
 saving and not a freshness defect.
-Dump scan token `sidecar` remains the `resolutionMethod` code string only.
+Dump scan token `Isolated Semantic Engine` remains the `resolutionMethod` code string only.
 Not a paper result.
 
 ## Recommended next experiment

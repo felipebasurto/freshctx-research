@@ -19,7 +19,7 @@ units still fail-close. Direct class methods stay `class Owner::method name`.
 
 ## What we did
 
-`sidecar/treesitter/grammars.mjs` walks from each unit to the root. Named
+`ise/treesitter/grammars.mjs` walks from each unit to the root. Named
 scopes (class, impl type, function, method) and control-flow blocks (if, else,
 elif, for, while, match) become path segments. An `if` consequence is `if`.
 An `if` alternative is `else`. Repeated anonymous siblings of the same type

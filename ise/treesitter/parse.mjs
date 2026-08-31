@@ -62,10 +62,10 @@ export async function parseSource({ path, bytes }) {
     return finishUnits(hashExtractedUnits(text, extracted.units));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (message.includes("sidecar-missing") || message.includes("Cannot find module")) {
-      return { units: [], error: "sidecar-missing" };
+    if (message.includes("isolated-semantic-engine-missing") || message.includes("Cannot find module")) {
+      return { units: [], error: "isolated-semantic-engine-missing" };
     }
-    return { units: [], error: "sidecar-error" };
+    return { units: [], error: "isolated-semantic-engine-error" };
   }
 }
 

@@ -82,7 +82,7 @@ Requirements: Node.js 22 or newer. Install the isolated parser dependencies,
 then run the deterministic suite:
 
 ```bash
-npm run sidecar:install
+npm run ise:install
 npm test
 npm run bench
 npm run ctxbench
@@ -105,7 +105,7 @@ locked to immutable commits before a benchmark freeze.
 ```text
 src/                      Provider-independent Node.js standard-library core
 adapters/                 Host codecs, request translation, and replay harnesses
-sidecar/treesitter/       Out-of-process Tree-sitter implementation
+ise/treesitter/       Out-of-process Tree-sitter implementation
 test/                     Deterministic invariant tests
 bench/                    Replay benchmark and whole-file baseline
 capture/                  No-model provider request recorder

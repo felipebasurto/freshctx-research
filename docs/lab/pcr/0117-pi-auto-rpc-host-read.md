@@ -31,13 +31,13 @@ The harness should force or inject `hostReadToolArgs()` from `pack.mjs` so Fresh
 | arm | FreshCtx | Tree-sitter | turn-1 host read |
 |---|---|---|---|
 | `nothing` | no | n/a | `scope=symbol`, selector `settleDailyLedger` (forced in harness) |
-| `freshctx-no-ts` | yes | off (`FRESHCTX_SIDECAR=off`) | same |
+| `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off`) | same |
 | `freshctx-ts` | yes | on (default) | same |
 
 ## Benchmarks run
 
 Canonical TAP from this run on branch HEAD after Tree-sitter WASM install
-(`npm run sidecar:install`, base `fdc49ae`).
+(`npm run ise:install`, base `fdc49ae`).
 
 ```
 1..443
@@ -88,7 +88,7 @@ none observed.
 
 Live three-arm battery on Mac is still pending after merge.
 The force extension mutates model-chosen read calls rather than skipping the model on t1.
-Dump scan token `sidecar` remains the `resolutionMethod` code string only.
+Dump scan token `Isolated Semantic Engine` remains the `resolutionMethod` code string only.
 
 ## Recommended next experiment
 

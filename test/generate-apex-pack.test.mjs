@@ -15,7 +15,7 @@ import {
 } from "../bench/generate-apex-pack.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const BANNED = "sidecar";
+const BANNED = "semanticEngine";
 
 test("apex generator source does not use the banned Isolated Semantic Engine alias", async () => {
   const source = await readFile(join(ROOT, "bench/generate-apex-pack.mjs"), "utf8");

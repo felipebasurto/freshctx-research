@@ -17,7 +17,7 @@ project. The Isolated Semantic Engine stdin/stdout shape stays
 
 ## What we did
 
-`finishUnits` in `sidecar/treesitter/parse.mjs` now partitions by
+`finishUnits` in `ise/treesitter/parse.mjs` now partitions by
 `qualifiedSelector`. Count === 1 units stay. Count > 1 units drop. If any
 unique units remain, the engine returns `{ units: unique, error: null }`. If
 every unit collided, it still returns `{ units: [], error: "ambiguous" }`.

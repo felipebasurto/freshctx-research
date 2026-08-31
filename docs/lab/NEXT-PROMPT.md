@@ -4,7 +4,7 @@
 
 | When | What | Evidence |
 |---|---|---|
-| PCR 0109 | Sealed-lab substrate: attestation consume, sampler, canary, v0.2 **draft**, sidecar + gold. Local classify is `locally-frozen`, never `sealed`. | [0109](pcr/0109-sealed-lab-program.md) |
+| PCR 0109 | Sealed-lab substrate: attestation consume, sampler, canary, v0.2 **draft**, Isolated Semantic Engine + gold. Local classify is `locally-frozen`, never `sealed`. | [0109](pcr/0109-sealed-lab-program.md) |
 | PR-W [#104](https://github.com/felipebasurto/freshctx/pull/104) | `holdout-generate.yml`: optional `generator` input, strip `--fixture=synthetic`, verify `--attestation=`, upload pack. `contents: read`. Attest YAML untouched. | merge `d64c48d` |
 | Action-F | `repositoryIds: ["flask"]`. Freeze via protocol (no hand-edit of `status`). Traces absent at freeze commit. Local `holdout-write-attestation` exits 1. | freeze `2bf91d8` |
 | Attest | Production attestation. `workflowRunId` = run id. Laptop cannot write this file. | [run 33201069400](https://github.com/felipebasurto/freshctx/actions/runs/33201069400) |
@@ -45,7 +45,7 @@ agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
 `docs/lab/NEXT-PROMPT.md` (milestones and decisions above the first rule),
 `docs/lab/pcr/0110-seal-holdout-v0.2.md`,
 `docs/lab/pcr/0079-stateless-byte-exact-requests.md`,
-`docs/decisions/0004-treesitter-sidecar.md`,
+`docs/decisions/0004-isolated-semantic-engine.md`,
 `docs/decisions/holdout-protocol-threat-model.md`,
 `bench/holdout-protocol.mjs`, `bench/holdout-verify.mjs`.
 
@@ -59,14 +59,14 @@ hill-climb on that pack.
 1. Keep v0.2 off the tuning path. One scheduled remeasure only. Do not edit
    `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs` to chase these
    cells.
-2. Optional: replace sidecar regex extractors with a real Tree-sitter pack
+2. Optional: replace Isolated Semantic Engine regex extractors with a real Tree-sitter pack
    **behind the same stdin/stdout contract**. Do not import a parser into `src/`.
 3. Do not forge `sealed` on a laptop. Production attestation stays Actions-only.
 
 ## Locked invariant: stateless byte-exact requests
 
 PCR 0079 still holds. Selected units carry current bytes. No `unchanged`
-attribute. The sidecar must not cache prior request bodies.
+attribute. The Isolated Semantic Engine must not cache prior request bodies.
 
 ## Hard restrictions
 
@@ -76,7 +76,7 @@ attribute. The sidecar must not cache prior request bodies.
 - ctxbench payload
   `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` stays frozen.
   Do not restore `AUTORESEARCH_SCORE` or the weighted synthetic scalar.
-- Neovim C/Lua remain out of the first sidecar.
+- Neovim C/Lua remain out of the first Isolated Semantic Engine.
 - Holdout v0.2 is **not a tuning set**.
 
 ## Required loop

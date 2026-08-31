@@ -4,7 +4,7 @@ Tres brazos. Tres procesos Pi separados. Modelo fijado: **`deepseek-v4-flash`**
 (solo flash, nunca pro).
 
 Mismos PROMPT en los tres brazos. Tree-sitter se controla en el harness
-(`FRESHCTX_SIDECAR=off` en brazo B). El host pasa `scope=symbol` con selector
+(`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` en brazo B). El host pasa `scope=symbol` con selector
 `settleDailyLedger`; FreshCtx recibe esa observación vía tool args.
 
 Ventana **PI** para PROMPT. Ventana **CMD** para `live.mjs` / `print-columns.mjs`.
@@ -69,7 +69,7 @@ Anota la respuesta. Cierra Pi.
 ```bash
 node docs/lab/pi-trial-ts/live.mjs reset freshctx-no-ts
 cd docs/lab/pi-trial-ts/.work/freshctx-no-ts
-export FRESHCTX_SIDECAR=off
+export FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off
 pi -e /path/to/freshctx/adapters/pi/extension.ts --provider deepseek --model deepseek-v4-flash
 ```
 
@@ -79,7 +79,7 @@ Sustituye `/path/to/freshctx` por la raíz del checkout (directorio que contiene
 Opcional: captura de requests
 
 ```bash
-export FRESHCTX_SIDECAR=off
+export FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off
 export PI_TRIAL_DUMP_DIR=/tmp/pi-trial-ts-freshctx-no-ts
 pi -e /path/to/freshctx/adapters/pi/extension.ts -e /path/to/freshctx/docs/lab/pi-trial-ts/dump-request.ts ...
 ```
@@ -96,7 +96,7 @@ Cierra Pi.
 
 ## Brazo C. FreshCtx con Tree-sitter (`freshctx-ts`)
 
-Sidecar inyectado por defecto. Turn-1 host read usa `scope=symbol` con selector
+Isolated Semantic Engine inyectado por defecto. Turn-1 host read usa `scope=symbol` con selector
 `settleDailyLedger`. Tree-sitter refresca solo ese símbolo tras el flip.
 
 ### C0. CMD
@@ -104,7 +104,7 @@ Sidecar inyectado por defecto. Turn-1 host read usa `scope=symbol` con selector
 ```bash
 node docs/lab/pi-trial-ts/live.mjs reset freshctx-ts
 cd docs/lab/pi-trial-ts/.work/freshctx-ts
-unset FRESHCTX_SIDECAR
+unset FRESHCTX_ISOLATED_SEMANTIC_ENGINE
 pi -e /path/to/freshctx/adapters/pi/extension.ts --provider deepseek --model deepseek-v4-flash
 ```
 

@@ -19,7 +19,7 @@ import {
 } from "../adapters/hermes/replay.mjs";
 import { readScopeFromHermesArgs } from "../adapters/hermes/bridge.mjs";
 import { latestReadCallIdsByObservation } from "../adapters/request-prune.mjs";
-import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { missingIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
 
 const PYTHON_ALPHA_OBSERVED = "def alpha():\n    return 1\n";
 const PYTHON_BETA_OBSERVED = "def beta():\n    return 2\n";
@@ -74,7 +74,7 @@ test("observation keys keep two symbols and file+symbol distinct on one path", (
   );
 });
 
-test("Pi replay keeps two symbol observations on one file and refreshes both via sidecar", async () => {
+test("Pi replay keeps two symbol observations on one file and refreshes both via isolated-semantic-engine", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0112-pi-dual-"));
   await writeFile(join(workspace, "mod.py"), PYTHON_DUAL_UPDATED);
 
@@ -121,10 +121,10 @@ test("Pi replay keeps two symbol observations on one file and refreshes both via
   const units = adapter.engine.registry.list().sort((a, b) => a.selector.localeCompare(b.selector));
   assert.equal(units.length, 2);
   assert.equal(units[0].selector, "alpha");
-  assert.equal(units[0].resolutionMethod, "sidecar");
+  assert.equal(units[0].resolutionMethod, "isolated-semantic-engine");
   assert.match(units[0].content, /return 11/u);
   assert.equal(units[1].selector, "beta");
-  assert.equal(units[1].resolutionMethod, "sidecar");
+  assert.equal(units[1].resolutionMethod, "isolated-semantic-engine");
   assert.match(units[1].content, /return 22/u);
 
   const payloadText = messageText(result.messages);
@@ -132,7 +132,7 @@ test("Pi replay keeps two symbol observations on one file and refreshes both via
   assert.match(payloadText, /return 22/u);
 });
 
-test("Pi replay symbol refresh resolves through the injected sidecar", async () => {
+test("Pi replay symbol refresh resolves through the injected isolated-semantic-engine", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0112-pi-"));
   await writeFile(join(workspace, "sample.py"), "def alpha():\n    return 42\n");
 
@@ -169,13 +169,13 @@ test("Pi replay symbol refresh resolves through the injected sidecar", async () 
   assert.equal(unit.scope, "symbol");
   assert.equal(unit.selector, "alpha");
   assert.equal(unit.state, "resolved");
-  assert.equal(unit.resolutionMethod, "sidecar");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine");
   assert.match(unit.content, /return 42/u);
   assert.match(messageText(result.messages), /return 42/u);
   assert.doesNotMatch(messageText(result.messages), /return 1/u);
 });
 
-test("Hermes replay symbol refresh resolves through the injected sidecar", async () => {
+test("Hermes replay symbol refresh resolves through the injected isolated-semantic-engine", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0112-hermes-"));
   await writeFile(join(workspace, "module.ts"), TS_DUAL_UPDATED);
 
@@ -207,7 +207,7 @@ test("Hermes replay symbol refresh resolves through the injected sidecar", async
   assert.doesNotMatch(projectionText, new RegExp(TS_BETA_MARKER, "u"));
 });
 
-test("Hermes replay fails closed on symbol refresh when the sidecar is missing", async () => {
+test("Hermes replay fails closed on symbol refresh when the semanticEngine is missing", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0112-hermes-missing-"));
   await writeFile(join(workspace, "module.ts"), TS_DUAL_UPDATED);
 
@@ -215,7 +215,7 @@ test("Hermes replay fails closed on symbol refresh when the sidecar is missing",
   const adapter = createHermesAdapter({
     stateFile,
     budgetChars: 16_000,
-    sidecarRunner: missingSidecarRunner(),
+    semanticEngineRunner: missingIsolatedSemanticEngineRunner(),
   });
   const ctx = { cwd: workspace };
   const callId = "call-symbol-alpha";
@@ -240,8 +240,8 @@ test("Hermes replay fails closed on symbol refresh when the sidecar is missing",
   assert.doesNotMatch(projectionText, /return 99/u);
 });
 
-test("adapter engine factory fails closed when sidecar is missing", async () => {
-  const engine = createAdapterEngine({ sidecarRunner: missingSidecarRunner() });
+test("adapter engine factory fails closed when semanticEngine is missing", async () => {
+  const engine = createAdapterEngine({ semanticEngineRunner: missingIsolatedSemanticEngineRunner() });
   engine.trackRead({
     path: "sample.py",
     content: PYTHON_ALPHA_OBSERVED,
@@ -253,5 +253,5 @@ test("adapter engine factory fails closed when sidecar is missing", async () => 
   await engine.refresh({ "sample.py": "def alpha():\n    return 42\n" });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "unresolved");
-  assert.equal(unit.resolutionMethod, "sidecar-error");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine-error");
 });

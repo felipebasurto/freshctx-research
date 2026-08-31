@@ -322,7 +322,7 @@ async function loadRuntime() {
   try {
     ({ Parser, Language, Query } = await import("web-tree-sitter"));
   } catch {
-    throw new Error("sidecar-missing");
+    throw new Error("isolated-semantic-engine-missing");
   }
   await Parser.init({
     locateFile(scriptName) {
@@ -337,7 +337,7 @@ async function languageForKey(key) {
   const loaded = await loadRuntime();
   if (loaded.languages.has(key)) return loaded.languages.get(key);
   const spec = WASM_FILES[key];
-  if (!spec) throw new Error("sidecar-missing");
+  if (!spec) throw new Error("isolated-semantic-engine-missing");
   const wasm = packageFile(spec[0], spec[1]);
   const language = await loaded.Language.load(wasm);
   loaded.languages.set(key, language);
@@ -349,7 +349,7 @@ function queryFor(languageKey, language) {
   const queryKey = languageKey === "tsx" ? "typescript" : languageKey;
   if (loaded.queries.has(queryKey)) return loaded.queries.get(queryKey);
   const source = QUERIES[queryKey];
-  if (!source) throw new Error("sidecar-missing");
+  if (!source) throw new Error("isolated-semantic-engine-missing");
   const query = new loaded.Query(language, source);
   loaded.queries.set(queryKey, query);
   return query;

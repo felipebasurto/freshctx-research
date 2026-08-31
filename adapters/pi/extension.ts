@@ -179,7 +179,7 @@ function replaceCapturedReads(
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = createAdapterEngine(
-    process.env.FRESHCTX_SIDECAR === "off" ? { sidecarRunner: null } : {},
+    process.env.FRESHCTX_ISOLATED_SEMANTIC_ENGINE === "off" ? { semanticEngineRunner: null } : {},
   );
   const callToUnit = new Map<string, string>();
   const callMeta = new Map<string, {

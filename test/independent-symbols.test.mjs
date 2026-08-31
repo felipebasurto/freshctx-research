@@ -10,7 +10,7 @@ import {
   enumerateIndependentSymbols,
   qualifiedSelector,
 } from "../bench/independent-symbols.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 import { sampleUnits, tracesFromSample } from "../bench/unit-sampler.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));

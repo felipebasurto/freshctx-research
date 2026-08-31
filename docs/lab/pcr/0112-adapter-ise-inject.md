@@ -1,8 +1,8 @@
-# PCR 0112 — Inject Tree-sitter sidecar into live-shaped Pi/Hermes adapters
+# PCR 0112 — Inject Tree-sitter Isolated Semantic Engine into live-shaped Pi/Hermes adapters
 
 - Date (UTC): 2026-08-29
 - Author / agent: Cursor Grok 4.6
-- Branch / PR: `cursor/adapter-sidecar-inject-e24c` (draft PR #107)
+- Branch / PR: `cursor/adapter-Isolated Semantic Engine-inject-e24c` (draft PR #107)
 - Merge-base: `8952f4fb6e4c1a8f07c89e9605b5e31a56f5df16` (origin/main, PCR 0111)
 - Paper-manifest digest: `442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`
 - Result labels used: `synthetic`; `replay`; `adapter-only`; `measurement`
@@ -11,9 +11,9 @@
 ## Hypothesis or change
 
 PCR 0111 put Python/JS/TS WASM parsing behind `{path,bytes}→{units,error}` at
-`sidecar/treesitter/parse.mjs`.
+`ise/treesitter/parse.mjs`.
 Pi and Hermes adapters still constructed `FreshCtxEngine()` with no
-`sidecarRunner`.
+`Isolated Semantic EngineRunner`.
 Symbol-scoped refresh never reached `parseSource` on the adapter path.
 Reviewer no-merge on first HEAD `daf53dc` found factory inject alone was not
 enough.
@@ -23,13 +23,13 @@ mapped symbol reads to `file:path`, so two symbols on one file last-won.
 ## What we did
 
 Added `adapters/engine-factory.mjs` with `createAdapterEngine()` defaulting to
-`createSidecarRunner()`.
+`createIsolatedSemanticEngineRunner()`.
 Pi `extension.ts` and `replay.mjs` use the factory and track `scope: "symbol"`.
 Hermes `bridge.mjs` and `replay.mjs` use the factory and track symbol scope.
 `readObservationKey` and `officialObservationKey` now emit
 `symbol:path:selector` keys distinct from `file:path`.
-Hermes replay accepts optional `sidecarRunner` for fail-closed probes.
-Added `test/pcr-0112-adapter-sidecar-symbol-refresh.test.mjs` (7 tests).
+Hermes replay accepts optional `Isolated Semantic EngineRunner` for fail-closed probes.
+Added `test/pcr-0112-adapter-ise-symbol-refresh.test.mjs` (7 tests).
 No edit to `src/`, door, lock, holdout gold, weights, or thresholds.
 No live Pi/Hermes runs.
 
@@ -56,7 +56,7 @@ Official accepted table on merge-base `8952f4fb` remains **381 pass / 0 fail /
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `npm test` | yes | 0 | TAP above |
-| `npm run check` | yes | 0 | includes observation-key + sidecar paths |
+| `npm run check` | yes | 0 | includes observation-key + Isolated Semantic Engine paths |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165` |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`79e29d09a9ec12b1128617f683f50a35a3c8809e` |
 
@@ -76,13 +76,13 @@ Official accepted table on merge-base `8952f4fb` remains **381 pass / 0 fail /
 ## Comparison
 
 No Level 4 sentence.
-Adapter-only sidecar wiring on synthetic Pi/Hermes replay.
+Adapter-only Isolated Semantic Engine wiring on synthetic Pi/Hermes replay.
 Not a public-repo performance claim and not a CORVUS comparison.
 Measured: two Python symbols on one file stay distinct through observation keys
-and both refresh via sidecar on Pi replay.
+and both refresh via Isolated Semantic Engine on Pi replay.
 Measured: Hermes TypeScript symbol refresh on a two-function file projects only
 the selected symbol's updated body and omits the sibling marker.
-Measured: Hermes symbol refresh with `missingSidecarRunner()` does not inject
+Measured: Hermes symbol refresh with `missingIsolatedSemanticEngineRunner()` does not inject
 relocated bytes.
 
 ## Conflicts with constitutions
@@ -91,10 +91,10 @@ none observed.
 
 ## Limitations
 
-Go and Rust still use regex in the sidecar.
+Go and Rust still use regex in the Isolated Semantic Engine.
 Live Pi/Hermes hosts were not run; replay only.
 Symbol-shaped holdout units still need a dedicated pack.
-One sidecar spawn per refresh call; no warm daemon.
+One Isolated Semantic Engine spawn per refresh call; no warm daemon.
 
 ## Reviewer no-merge (`daf53dc` vs main `8952f4f`)
 
@@ -105,13 +105,13 @@ Two symbol reads on one path last-won, so only one unit reached
 `selectContext`/`refresh`.
 Fix: `symbol:path:selector` keys.
 Test: file + two symbols on one path stay three distinct active observations;
-Pi dual-symbol refresh pins both `resolutionMethod: "sidecar"`.
+Pi dual-symbol refresh pins both `resolutionMethod: "Isolated Semantic Engine"`.
 
-Hole 2 — Hermes 0112 test did not prove sidecar.
+Hole 2 — Hermes 0112 test did not prove Isolated Semantic Engine.
 Single-function fixture would pass on file-scope refresh.
 Fix: two-function TypeScript file; symbol read for `alpha` only; projection
 must include `return 99` and must not include sibling `BETA_SYMBOL_MARKER`.
-Fail-closed probe: Hermes replay with `missingSidecarRunner()` omits relocated
+Fail-closed probe: Hermes replay with `missingIsolatedSemanticEngineRunner()` omits relocated
 bytes.
 
 Hole 3 — METRICS.md not updated on first pass.
@@ -120,5 +120,5 @@ INDEX, and PCR carry the measured TAP line above.
 
 ## Next measurement
 
-Symbol holdout pack with sidecar-proposed units, or live host confirm that read
+Symbol holdout pack with Isolated Semantic Engine-proposed units, or live host confirm that read
 tools pass `scope: "symbol"` + `selector` in production sessions.

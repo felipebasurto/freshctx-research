@@ -11,8 +11,8 @@ import {
   createPiAdapter,
   messageText,
 } from "../adapters/pi/replay.mjs";
-import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { missingIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 
 const TS_OBSERVED = "export function alpha() {\n  return 1;\n}\n";
 const TS_UPDATED = "export function alpha() {\n  return 99;\n}\n";
@@ -25,7 +25,7 @@ const PY_DUAL_INITIAL =
 const PY_RELOCATED =
   "def beta():\n    return 22\n\ndef alpha():\n    return 11\n";
 
-test("Pi replay file-scope TypeScript refresh uses injected sidecar without symbol args", async () => {
+test("Pi replay file-scope TypeScript refresh uses injected semanticEngine without symbol args", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0114-pi-ts-file-"));
   await writeFile(join(workspace, "module.ts"), TS_UPDATED);
 
@@ -57,16 +57,16 @@ test("Pi replay file-scope TypeScript refresh uses injected sidecar without symb
   assert.equal(unit.scope, "file");
   assert.equal(unit.selector, null);
   assert.equal(unit.state, "resolved");
-  assert.equal(unit.resolutionMethod, "sidecar");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine");
   assert.match(unit.content, /return 99/u);
   assert.doesNotMatch(messageText(result.messages), /return 1;/u);
 });
 
-test("same Pi file-scope TypeScript refresh stays whole-file when sidecarRunner is null", async () => {
+test("same Pi file-scope TypeScript refresh stays whole-file when semanticEngineRunner is null", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0114-pi-ts-null-"));
   await writeFile(join(workspace, "module.ts"), TS_UPDATED);
 
-  const adapter = createPiAdapter({ budgetChars: 8_000, sidecarRunner: null });
+  const adapter = createPiAdapter({ budgetChars: 8_000, semanticEngineRunner: null });
   const ctx = { cwd: workspace };
   const callId = "call-file-ts-null";
 
@@ -97,7 +97,7 @@ test("same Pi file-scope TypeScript refresh stays whole-file when sidecarRunner 
   assert.match(unit.content, /return 99/u);
 });
 
-test("injected sidecar resolves Python region reads by selector and relocates the named unit", async () => {
+test("injected semanticEngine resolves Python region reads by selector and relocates the named unit", async () => {
   const parsed = await parseSource({ path: "sample.py", bytes: PY_ALPHA_OBSERVED });
   assert.equal(parsed.error, null);
   const alpha = parsed.units.find((unit) => unit.selector === "alpha");
@@ -118,12 +118,12 @@ test("injected sidecar resolves Python region reads by selector and relocates th
   assert.equal(unit.scope, "region");
   assert.equal(unit.selector, "alpha");
   assert.equal(unit.state, "resolved");
-  assert.equal(unit.resolutionMethod, "sidecar");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine");
   assert.match(unit.content, /return 11/u);
   assert.doesNotMatch(unit.content, /return 1\n/u);
 });
 
-test("region sidecar follows selector when a different unit occupies the old line span", async () => {
+test("region semanticEngine follows selector when a different unit occupies the old line span", async () => {
   const initial = await parseSource({ path: "sample.py", bytes: PY_DUAL_INITIAL });
   const alpha = initial.units.find((unit) => unit.selector === "alpha");
   assert.ok(alpha);
@@ -150,15 +150,15 @@ test("region sidecar follows selector when a different unit occupies the old lin
   await engine.refresh({ "sample.py": PY_RELOCATED });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "resolved");
-  assert.equal(unit.resolutionMethod, "sidecar");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine");
   assert.equal(unit.startLine, alphaMoved.startLine);
   assert.equal(unit.endLine, alphaMoved.endLine);
   assert.match(unit.content, /return 11/u);
   assert.doesNotMatch(unit.content, /return 22/u);
 });
 
-test("file-scope TypeScript refresh fails closed when the injected sidecar is missing", async () => {
-  const engine = createAdapterEngine({ sidecarRunner: missingSidecarRunner() });
+test("file-scope TypeScript refresh fails closed when the injected semanticEngine is missing", async () => {
+  const engine = createAdapterEngine({ semanticEngineRunner: missingIsolatedSemanticEngineRunner() });
   engine.trackRead({
     path: "module.ts",
     content: TS_OBSERVED,
@@ -169,7 +169,7 @@ test("file-scope TypeScript refresh fails closed when the injected sidecar is mi
   await engine.refresh({ "module.ts": TS_UPDATED });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "unresolved");
-  assert.equal(unit.resolutionMethod, "sidecar-error");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine-error");
 });
 
 test("file-scope Python refresh fails closed on parse-broken syntax", async () => {
@@ -182,7 +182,7 @@ test("file-scope Python refresh fails closed on parse-broken syntax", async () =
   await engine.refresh({ "broken.py": "def alpha(\n" });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "unresolved");
-  assert.equal(unit.resolutionMethod, "sidecar-unresolved");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine-unresolved");
 });
 
 test("region refresh fails closed on parse-broken and does not use stored-line-span", async () => {
@@ -197,17 +197,17 @@ test("region refresh fails closed on parse-broken and does not use stored-line-s
     observedFileLineCount: 2,
   };
 
-  const withSidecar = createAdapterEngine();
-  withSidecar.trackRead(track);
-  await withSidecar.refresh({ "sample.py": broken });
-  const blocked = withSidecar.registry.list()[0];
+  const withIsolatedSemanticEngine = createAdapterEngine();
+  withIsolatedSemanticEngine.trackRead(track);
+  await withIsolatedSemanticEngine.refresh({ "sample.py": broken });
+  const blocked = withIsolatedSemanticEngine.registry.list()[0];
   assert.equal(blocked.state, "unresolved");
-  assert.equal(blocked.resolutionMethod, "sidecar-unresolved");
+  assert.equal(blocked.resolutionMethod, "isolated-semantic-engine-unresolved");
 
-  const withoutSidecar = createAdapterEngine({ sidecarRunner: null });
-  withoutSidecar.trackRead(track);
-  await withoutSidecar.refresh({ "sample.py": broken });
-  const legacy = withoutSidecar.registry.list()[0];
+  const withoutIsolatedSemanticEngine = createAdapterEngine({ semanticEngineRunner: null });
+  withoutIsolatedSemanticEngine.trackRead(track);
+  await withoutIsolatedSemanticEngine.refresh({ "sample.py": broken });
+  const legacy = withoutIsolatedSemanticEngine.registry.list()[0];
   assert.equal(legacy.state, "resolved");
-  assert.notEqual(legacy.resolutionMethod, "sidecar-unresolved");
+  assert.notEqual(legacy.resolutionMethod, "isolated-semantic-engine-unresolved");
 });

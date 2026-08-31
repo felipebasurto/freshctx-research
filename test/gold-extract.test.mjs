@@ -3,9 +3,9 @@ import test from "node:test";
 
 import { extractGold, extractGoldFromTrace, sha256Bytes, OUT_OF_SCOPE_LANGUAGES } from "../bench/gold-extract.mjs";
 import { sampleUnits, tracesFromSample } from "../bench/unit-sampler.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 
-test("gold comes from generator offsets, not sidecar ranges", () => {
+test("gold comes from generator offsets, not semanticEngine ranges", () => {
   const initial = "def alpha():\n    return 1\n";
   const offsets = {
     path: "src/alpha.py",
@@ -17,14 +17,14 @@ test("gold comes from generator offsets, not sidecar ranges", () => {
   const sabotaged = extractGold({
     initialText: initial,
     offsets,
-    sidecarUnits: [{ selector: "alpha", startLine: 2, endLine: 2 }],
+    semanticEngineUnits: [{ selector: "alpha", startLine: 2, endLine: 2 }],
   });
   assert.equal(honest.sha256, sabotaged.sha256);
   assert.equal(honest.bytes, "def alpha(): // sampler interior edit\n    return 1");
   assert.equal(honest.source, "generator-offsets");
 });
 
-test("sabotaged sidecar cannot change sampler-trace gold", async () => {
+test("sabotaged semanticEngine cannot change sampler-trace gold", async () => {
   const sample = sampleUnits({
     commit: "abc",
     scenario: "interior-edit",
@@ -33,12 +33,12 @@ test("sabotaged sidecar cannot change sampler-trace gold", async () => {
   });
   const [trace] = tracesFromSample({ sample });
   const gold = extractGoldFromTrace(trace);
-  const sidecar = await parseSource({
+  const semanticEngine = await parseSource({
     path: "src/alpha.py",
     bytes: "def other():\n    return 9\n",
   });
-  const again = extractGoldFromTrace(trace, { sidecarUnits: sidecar.units });
-  const engineAgain = extractGoldFromTrace(trace, { engineUnits: sidecar.units });
+  const again = extractGoldFromTrace(trace, { semanticEngineUnits: semanticEngine.units });
+  const engineAgain = extractGoldFromTrace(trace, { engineUnits: semanticEngine.units });
   assert.equal(gold.sha256, again.sha256);
   assert.equal(gold.sha256, engineAgain.sha256);
   assert.equal(gold.sha256, trace.goldExtract.postSha256);

@@ -40,7 +40,7 @@ holdout gold, weight, threshold, or `bench/traces/holdout/**` edit. No laptop
 
 ## Benchmarks run
 
-Targeted TAP (`test/treesitter-sidecar.test.mjs` plus
+Targeted TAP (`test/treesitter-ise.test.mjs` plus
 `test/adr-0004-treesitter.test.mjs`):
 
 ```
@@ -72,7 +72,7 @@ Full `npm test` TAP on this dirty tree, dest `cloud-agent`, env
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm --prefix sidecar/treesitter ci --omit=dev` | yes | 0 | lock installs `tree-sitter-go` and `tree-sitter-rust` |
+| `npm --prefix ise/treesitter ci --omit=dev` | yes | 0 | lock installs `tree-sitter-go` and `tree-sitter-rust` |
 | targeted Tree-sitter suite | yes | 0 | 20 pass |
 | `npm test` | yes | 0 | TAP above |
 | `npm run check` | yes | 0 | includes Isolated Semantic Engine `*.mjs` |
@@ -118,7 +118,7 @@ none observed.
 
 ## Next measurement
 
-Wire `createSidecarRunner` into a bench-only path without touching holdout
+Wire `createIsolatedSemanticEngineRunner` into a bench-only path without touching holdout
 cells, or sample symbol-shaped units once gold is an independent extractor.
 Do not retune `src/anchors.mjs` against sealed v0.2. The live interior-edit
 miss is already closed.
