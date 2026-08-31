@@ -102,12 +102,12 @@ a generated commit lock before a benchmark freeze:
 npm run repos:fetch
 ```
 
-`npm run bench` runs a labeled synthetic stale-context fixture. It is a
-regression probe, not the thesis metric. `npm run evaluate` replays the
-highest available physical pack, or `public-repo-smoke` when no Level 4
-pack is present, and prints `EVALUATE_VERDICT` plus Isolated Semantic
-Engine versus CORVUS payload bytes, oracle retention, peak RSS, latency,
-and forensic gates.
+`npm run bench` runs the physical EmpiricalVerdict board once and prints
+the verdict. It does not enforce it. `npm run ctxbench` is the synthetic
+in-memory latency board. `npm run evaluate` runs the tests, then the
+physical board twice, and throws unless the verdict is `PASS`. Default
+target is the highest apex pack on disk. The printer names the judge
+(`pack-on-disk` or `empirical-verdict`) before `EVALUATE_VERDICT`.
 
 ## What already works
 

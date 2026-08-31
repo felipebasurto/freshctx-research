@@ -21,9 +21,12 @@ Optional projection budget override (characters; default is 32768):
 FRESHCTX_BUDGET_CHARS=24000 pi -e ./adapters/pi/extension.ts
 ```
 
-That is the only supported install path and the only configuration env var this
-adapter reads. There is no separate install script, session store, or packaging
-step.
+That is the only supported install path. The extension reads one other
+environment variable. `FRESHCTX_SIDECAR=off` builds the engine with a null
+sidecar runner, which turns symbol-scope refresh and sidecar-assisted file and
+region refresh into ordinary anchor-based refresh. Nothing else in the extension
+reads the environment. There is no install script, session store, or packaging
+step. The Hermes live bridge does not read this variable.
 
 ## What is in-memory
 
@@ -106,15 +109,26 @@ The adapter synchronizes:
   under the Hermes-parity end-of-file rules (see PCR 0073 and PCR 0074).
 - **Regions.** Explicit `scope: "region"` with `startLine` and `endLine`, or a
   finite `offset` and `limit` pair mapped to a line range.
+- **Symbols.** A `read` with `scope: "symbol"` and a non-empty `selector`
+  tracks a symbol unit. Refresh resolves it in the out-of-process Tree-sitter
+  sidecar when the sidecar runner is present.
 - **Cat-class shell reads.** A single-file `cat`, `head`, `tail`, `sed -n`, or
   `nl` issued through the `bash` or `shell` tool goes through the same workspace
   guard and tracking path as an official `read` (see PCR 0078). The parser is
   deliberately narrow. It rejects pipes, subshells, multiple files, and anything
   it does not recognize, and those stay ordinary shell results.
 
+The scopes take their bytes from different sources. A whole-file read tracks the
+bytes the adapter reads from disk through `safeWorkspaceFile`, so a host that
+truncated or annotated its own output does not poison the tracked unit. A region
+or symbol read tracks the tool-result body, because that is the only record of
+which slice the model saw. A region read with an empty tool result is skipped
+rather than tracked.
+
 Region reads store the observed tool-result body at track time plus disk line
-count for refresh. Interior edits can project via `stored-line-span` without a
-re-read when anchors still resolve.
+count for refresh. `stored-line-span` runs only after the exact and anchor
+paths fail, only for a single-line region, and only when the file's line count
+is unchanged.
 
 ## Refused reads
 
@@ -153,9 +167,15 @@ whole file is a whole-repo dump.
 
 - Resume after process restart (no durable `callToUnit` or unit registry)
 - Hermes Agent integration (use `adapters/hermes/` instead)
-- Symbol / Tree-sitter providers
+- Symbol refresh when `FRESHCTX_SIDECAR=off` (the unit stays unresolved)
 - Session persistence beyond Pi's own session store
 - Integration test pinned to a specific Pi release (v0.2 gate)
+
+Symbol scope ships. The sidecar carries WASM grammars for Python, JavaScript,
+TypeScript, Go, and Rust. File and region refresh route through it only for
+`.py`, `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx`, so a Go or Rust file-scope read
+refreshes as a whole file and a Go or Rust region read refreshes by anchors.
+Symbol scope reaches the sidecar for any extension the sidecar recognizes.
 
 The source targets the current `@earendil-works/pi-coding-agent` package. Pi's
 official extension contract is documented at

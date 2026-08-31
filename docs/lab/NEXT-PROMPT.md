@@ -1,4 +1,4 @@
-# Next-iteration prompt — after sealed holdout v0.2
+# Next-iteration prompt, after locally-frozen holdout v0.3-apex
 
 ## Milestones (2026-08-28)
 
@@ -10,6 +10,8 @@
 | Attest | Production attestation. `workflowRunId` = run id. Laptop cannot write this file. | [run 33201069400](https://github.com/felipebasurto/freshctx/actions/runs/33201069400) |
 | Action-G | Generate with `freeze_run_id=33201069400` and `generator=holdout-v0.2`. Runner verify `sealed` / `valid: true`. | [run 33201275503](https://github.com/felipebasurto/freshctx/actions/runs/33201275503) on `70df2f4` |
 | PR-S [#105](https://github.com/felipebasurto/freshctx/pull/105) | Commit GHA pack + `freeze-attestation.json` + [PCR 0110](pcr/0110-seal-holdout-v0.2.md). | tip `0c2bdf3` |
+| 2026-08-30 | `holdout-v0.3-apex` generated and locally frozen. Bind-existing symbol pack on Flask, Express, go-tools, and ripgrep with independent-symbols gold. `classification` is `locally-frozen` and `remoteAttestation` is `null`. | `bench/packs/holdout-v0.3-apex/state.json` |
+| PR [#129](https://github.com/felipebasurto/freshctx/pull/129) | `corvusEquivalents` block on the evaluate record. `passAt1` is `null` with reason `out-of-scope-adr-0002`. | tip `e4b9ae0` |
 
 Verify that must keep working:
 
@@ -44,6 +46,8 @@ agent. Read completely: `THESIS.md`, `SOUL.md`, `AGENTS.md`,
 `docs/EVALUATION.md`, `docs/ROADMAP.md`,
 `docs/lab/NEXT-PROMPT.md` (milestones and decisions above the first rule),
 `docs/lab/pcr/0110-seal-holdout-v0.2.md`,
+`docs/lab/pcr/0129-freeze-holdout-v03-apex.md`,
+`docs/lab/pcr/0130-corvus-equivalents-skip-inventory.md`,
 `docs/lab/pcr/0079-stateless-byte-exact-requests.md`,
 `docs/decisions/0004-treesitter-sidecar.md`,
 `docs/decisions/holdout-protocol-threat-model.md`,
@@ -53,15 +57,20 @@ Treat `SOUL.md` and `docs/EVALUATION.md` as constitutions.
 
 ## Goal
 
-PCR 0110 committed a GHA-sealed holdout v0.2 pack. Next work is **not** a
-hill-climb on that pack.
+PCR 0110 committed a GHA-sealed holdout v0.2 pack. PCR 0129 locally froze
+`holdout-v0.3-apex`. Next work is **not** a hill-climb on either pack.
 
-1. Keep v0.2 off the tuning path. One scheduled remeasure only. Do not edit
-   `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs` to chase these
-   cells.
-2. Optional: replace sidecar regex extractors with a real Tree-sitter pack
-   **behind the same stdin/stdout contract**. Do not import a parser into `src/`.
+1. Keep v0.2 and v0.3-apex off the tuning path. One scheduled remeasure only.
+   Do not edit `src/policy.mjs`, `src/anchors.mjs`, or `src/projector.mjs` to
+   chase these cells.
+2. Done. `sidecar/treesitter/` runs real Tree-sitter WASM grammars for Python,
+   JavaScript, TypeScript, Go, and Rust behind the same stdin/stdout contract,
+   and no parser is imported into `src/`. The open piece is `src/registry.mjs`,
+   which routes file and region refresh through the sidecar for `.py`, `.js`,
+   `.mjs`, `.cjs`, `.ts`, and `.tsx` only. Go and Rust reach the sidecar for
+   symbol scope alone.
 3. Do not forge `sealed` on a laptop. Production attestation stays Actions-only.
+   The open attest is `holdout-v0.3-apex`, blocked on billing.
 
 ## Locked invariant: stateless byte-exact requests
 
@@ -78,6 +87,7 @@ attribute. The sidecar must not cache prior request bodies.
   Do not restore `AUTORESEARCH_SCORE` or the weighted synthetic scalar.
 - Neovim C/Lua remain out of the first sidecar.
 - Holdout v0.2 is **not a tuning set**.
+- Holdout v0.3-apex is **not a tuning set**.
 
 ## Required loop
 
@@ -89,8 +99,16 @@ npm run evaluate
 npm run ctxbench
 npm run holdout:verify -- --pack=holdout-v0.1
 npm run holdout:verify -- --pack=holdout-v0.2 --attestation=bench/packs/holdout-v0.2/provenance/freeze-attestation.json
+npm run holdout:verify -- --pack=holdout-v0.3-apex
 npm run holdout:ci-guard -- --base=origin/main
 ```
 
 Baseline at PCR 0110: v0.2 verify prints `valid: true` and
 `classification: "sealed"`. v0.1 stays `unsealed-regression`.
+v0.3-apex verify prints `locally-frozen`.
+
+`npm run evaluate` with no flags now targets `holdout-v0.3-apex`, because
+`discoverEvaluateTarget` takes the last apex-matching pack id on disk. That pack
+is `locally-frozen`. The sealed v0.2 figure comes only from the explicit
+`holdout:verify` line above. Do not report a bare `npm run evaluate` number as a
+sealed result.

@@ -6,7 +6,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-import { parseEvaluateArgs, runEvaluateBenchmark } from "../autoresearch/evaluate.mjs";
+import {
+  evaluateJudge,
+  parseEvaluateArgs,
+  printEvaluateResult,
+  runEvaluateBenchmark,
+} from "../autoresearch/evaluate.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -15,6 +20,27 @@ test("evaluate CLI binds --pack and defaults to no pack flag", () => {
     pack: "symbol-scope-dev-v0.1",
   });
   assert.deepEqual(parseEvaluateArgs(["node", "evaluate.mjs"]), {});
+});
+
+test("evaluate --pack without --report names the on-disk pack judge", () => {
+  assert.equal(evaluateJudge({ pack: "symbol-scope-dev-v0.1" }), "pack-on-disk");
+  assert.equal(evaluateJudge(parseEvaluateArgs(["node", "evaluate.mjs", "--pack=symbol-scope-dev-v0.1"])), "pack-on-disk");
+});
+
+test("evaluate --pack with --report names the empirical judge", () => {
+  assert.equal(evaluateJudge({ pack: "holdout-v0.3-apex", report: true }), "empirical-verdict");
+  assert.equal(
+    evaluateJudge(parseEvaluateArgs(["node", "evaluate.mjs", "--pack=holdout-v0.3-apex", "--report"])),
+    "empirical-verdict",
+  );
+  assert.equal(evaluateJudge({}), "empirical-verdict");
+});
+
+test("evaluate printer names the judge without changing the record", () => {
+  const packText = printEvaluateResult({ packId: "symbol-scope-dev-v0.1", hardGates: {} });
+  assert.match(packText, /^judge=pack-on-disk\nEVALUATE_VERDICT=/);
+  const empiricalText = printEvaluateResult({ schemaVersion: 1, verdict: "PASS" });
+  assert.match(empiricalText, /^judge=empirical-verdict\nEVALUATE_VERDICT=PASS\n/);
 });
 
 test("evaluate CLI binds additive --report and --report-path", () => {

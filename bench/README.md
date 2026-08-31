@@ -3,10 +3,12 @@
 This directory contains the executable part of the deterministic evaluation
 contract in `docs/EVALUATION.md`.
 
-- `fixture.mjs`: labeled synthetic before/after source for `npm run bench`.
-- `run.mjs`: synthetic baseline comparison. Not the default evaluate board.
+- `run.mjs`: `npm run bench` entry. Runs the physical EmpiricalVerdict
+  board once and prints the verdict without enforcing it. Not the default
+  `npm run evaluate` gate.
+- `ctxbench.mjs`: synthetic in-memory region-refresh fixture plus the
+  100-repetition latency board. There is no `fixture.mjs`.
 - `empirical-verdict.mjs`: physical-pack evaluate record (ISE vs CORVUS).
-- `ctxbench.mjs`: repeated correctness, determinism, and latency measurement.
 - `smoke.mjs`: public-repo smoke control board (`npm run ctxbench:smoke`).
 - `holdout.mjs`: public-repo holdout slice board (`npm run ctxbench:holdout`).
 - `pi-smoke.mjs`, `pi-holdout.mjs`, `pi-trace-runner.mjs`: Pi adapter replay boards (`npm run ctxbench:pi-smoke`, `npm run ctxbench:pi-holdout`).

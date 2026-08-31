@@ -61,3 +61,11 @@ Use a **sidecar process** at `sidecar/treesitter/`.
   behind the same stdin/stdout contract without touching `src/`.
 - Root `package.json` stays free of runtime dependencies.
 - This ADR does not authorize a Level 4 claim.
+- The parser language map and the registry file/region auto-invoke set are
+  different lists. `sidecar/treesitter/parse.mjs` accepts `.go` and `.rs`.
+  `SIDECAR_TREE_SITTER_EXTENSIONS` in `src/registry.mjs` does not. Symbol
+  scope always calls the sidecar when a runner is injected. File and region
+  refresh on Go and Rust stay on whole-file and anchor paths. Extending the
+  registry set is a separate change. Adapter engines inject a live runner by
+  default while the core `freshctx-region` baseline does not, so a silent
+  extension-set edit would break adapter/core byte-equality tests.

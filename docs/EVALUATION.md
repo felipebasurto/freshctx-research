@@ -550,8 +550,25 @@ Implemented now:
 
 - invariant tests for exact refresh, stable markers, ambiguity, recovery,
   deduplication, budget selection, and render ordering;
-- one deterministic synthetic mutation fixture, used by `npm run bench`
-  and `npm run ctxbench` only, not by `npm run evaluate`;
+- three commands, three jobs. `npm run ctxbench` runs one synthetic
+  in-memory region-refresh fixture 100 times after 10 warmups and reports
+  latency plus a SHA-256 payload hash. It touches no repository traces.
+  `npm run bench` runs the physical evaluation once over the
+  auto-discovered pack and prints the verdict without enforcing it.
+  `npm run evaluate` is the gate. It runs every `test/*.test.mjs` file
+  first, runs the physical evaluation twice, and throws unless the two
+  stable records match and the verdict is `PASS`.
+- `--pack` selects one of two judges. `--pack <id>` alone calls
+  `runPackEvaluation` and compares records with `stablePackRecord`.
+  `--pack <id> --report` sets `FRESHCTX_EVAL_PACK` and calls
+  `runEmpiricalEvaluation`, which compares `schemaVersion: 1` records
+  with `stableEvaluateRecord`. The CLI prints `judge=pack-on-disk` or
+  `judge=empirical-verdict` so the two paths cannot be quoted as one
+  number. Do not unify the record shapes.
+- the reported candidate name and the runner key are different strings.
+  `comparison.candidate` is the constant `isolated-semantic-engine`. The
+  trace that fills it runs under the baseline key `freshctx-region`.
+  Those two strings name the same arm.
 - `npm run evaluate` defaults to the highest available physical pack, or
   `public-repo-smoke` when no Level 4 / apex pack is on disk, and reports
   Isolated Semantic Engine versus CORVUS `payload_bytes`, oracle
@@ -564,16 +581,19 @@ Implemented now:
   trees (Flask, Express, go-tools, ripgrep) with independent-symbols gold,
   including Flask nested `if@0` enclosing-span units. Freeze pinned the
   PR 126 trace-set and result-set hashes. Local verify is
-  `locally-frozen`. It is not a GHA-sealed Level 4 result. Payload-byte
-  deltas are measured by `npm run ctxbench:apex-pack`. RSS and p95 on a
-  laptop are telemetry, not a publishable latency claim (§10).
+  `locally-frozen`. It is not a GHA-sealed Level 4 result. A bare
+  `npm run evaluate` number is a locally-frozen figure. Say so when
+  quoting it. Payload-byte deltas are measured by
+  `npm run ctxbench:apex-pack`. RSS and p95 on a laptop are telemetry,
+  not a publishable latency claim (§10).
 - append-only, re-read, whole-file-sync, and region-sync comparison;
 - a 100-repetition `npm run ctxbench` latency/determinism runner;
 - a loopback OpenAI-compatible capture provider with fixed responses and
   request hashes;
 - paper and public-repository manifests plus fetch/verify tooling;
 - a Pi extension and a Hermes `ContextEngine` plugin, both tracking whole files,
-  line regions, and cat-class shell reads, both request-only, both fail-open;
+  line regions, symbol units, and cat-class shell reads, both request-only,
+  both fail-open;
 - request capture through both adapters on smoke and holdout v0.1 traces, with
   adapter projection bytes asserted equal to the live core `freshctx-region`
   baseline.
@@ -598,10 +618,11 @@ Not yet implemented and therefore not claimable:
 - full stage-level timing and peak-memory reporting in every adapter (§9.2 and
   §9.5 cannot be filled from this repository today);
 - pinned Pi/Hermes compatibility tests against released host packages;
-- production GHA freeze attestation on this laptop (consumption and binding
-  check are implemented; `holdout-freeze-attest` run 33335497653 on
+- production GHA freeze attestation for `holdout-v0.3-apex` (consumption and
+  binding check are implemented; v0.2 is already `sealed` against Actions
+  run 33201069400; `holdout-freeze-attest` run 33335497653 on
   `feat/seal-holdout-v03-apex` did not start because of account billing
-  limits. A real `sealed` classification still requires a numeric Actions
+  limits. A new `sealed` classification still requires a numeric Actions
   run).
 
 Partially implemented (holdout v0.1 first slice; see PCR 0007, **unsealed**; freeze protocol in PCR 0009):

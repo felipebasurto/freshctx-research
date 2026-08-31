@@ -76,17 +76,35 @@ sintético repetido, manifiestos de papers y repos públicos con locks, y el
 contrato completo de CtxBench.
 
 Pi y Hermes Agent ya no son scaffolds. Hay una extensión de Pi y un plugin
-`ContextEngine` de Hermes que sincronizan archivos completos y regiones de
-líneas, rastrean lecturas de shell tipo `cat`, reescriben sólo la copia del
-request y devuelven el request original del host si algo falla. Sus bytes de
-proyección coinciden exactamente con el baseline `freshctx-region` del núcleo, y
-los tests lo comprueban por igualdad.
+`ContextEngine` de Hermes que sincronizan archivos completos, regiones de líneas
+y unidades de símbolo, rastrean lecturas de shell tipo `cat`, reescriben sólo la
+copia del request y devuelven el request original del host si algo falla. Sus
+bytes de proyección coinciden exactamente con el baseline `freshctx-region` del
+núcleo, y los tests lo comprueban por igualdad.
 
-Falta el generador multi-lenguaje, el muestreador determinista de la §5.1,
-tiempos por etapa y memoria en los adaptadores, tests fijados a una versión
-publicada de Pi o Hermes, y una reproducción revisada de CORVUS. La holdout v0.1
-es un pack de regresión sin sellar, no un resultado.
+El scope de símbolo se resuelve en un sidecar Tree-sitter fuera de proceso, con
+gramáticas WASM para Python, JavaScript, TypeScript, Go y Rust. Ningún módulo de
+`src/` importa un parser. `src/registry.mjs` sólo enruta el refresh de archivo y
+región por el sidecar para `.py`, `.js`, `.mjs`, `.cjs`, `.ts` y `.tsx`, así que
+Go y Rust pasan por el sidecar únicamente en scope de símbolo.
+
+Hay tres packs de holdout con tres estados distintos. `holdout-v0.1` sigue
+siendo `unsealed-regression`, y es evidencia de regresión, no un resultado.
+`holdout-v0.2` está `sealed` contra la run de Actions 33201069400.
+`holdout-v0.3-apex` está `locally-frozen` con `remoteAttestation` en `null`, y es
+el pack que `npm run evaluate` elige por defecto. Una cifra de `npm run evaluate`
+sin argumentos es una cifra locally-frozen, y hay que decirlo al citarla.
+
+El muestreador de la §5.1 existe como módulo. Sus puertas de salida P1 pueden
+seguir abiertas. Faltan tiempos por etapa y memoria en los adaptadores, tests
+fijados a una versión publicada de Pi o Hermes, una reproducción de CORVUS
+revisada por un segundo mantenedor, y la atestación remota de producción
+necesaria para clasificar un pack nuevo como `sealed`.
 
 El autoresearch está en pausa hasta cerrar la prioridad P1 de
-[docs/ROADMAP.md](ROADMAP.md). Por tanto, el claim correcto hoy sigue siendo
-“prototipo de invariantes”, no “estado del arte”.
+[docs/ROADMAP.md](ROADMAP.md). Lo que el repositorio puede demostrar hoy es
+corrección a nivel de bytes sobre trazas de regresión sin sellar más un pack
+sellado, medida con captura de request en dos hosts. No puede demostrar una
+comparación contra una reproducción revisada de CORVUS, ni un corpus muestreado
+que cubra todas las familias de lenguaje declaradas, ni ningún conjunto de datos
+crudos publicado. No es un estado del arte.

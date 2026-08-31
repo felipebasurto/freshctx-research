@@ -23,12 +23,16 @@ projection, serialization, and total transformation. It makes no model call.
 
 `autoresearch/evaluate.mjs` runs tests, then a benchmark twice. With no
 `--pack`, that benchmark is the physical empirical board (`public-repo-smoke`
-unless a Level 4 / apex pack is on disk). `--pack=<id>` loads that pack.
-`symbol-scope-dev-v0.1` uses the Isolated Semantic Engine runner. Other ids
-load `bench/packs/<id>/traces/` read-only. The printer emits
-`EVALUATE_VERDICT=`. It does not emit `AUTORESEARCH_SCORE`. Public reports
-use the Pareto metrics in `EVALUATION.md`. Evaluate does not call the
-holdout freeze/run writer, so a remasure cannot rewrite sealed provenance.
+unless a Level 4 / apex pack is on disk). `--pack=<id>` without `--report`
+runs `runPackEvaluation` (`judge=pack-on-disk`). `--pack=<id> --report` sets
+`FRESHCTX_EVAL_PACK` and runs EmpiricalVerdict (`judge=empirical-verdict`).
+Those two judges produce different records on the same pack id. The printer
+emits `judge=` then `EVALUATE_VERDICT=`. It does not emit
+`AUTORESEARCH_SCORE`. The comparison candidate string is
+`isolated-semantic-engine`. The runner key that fills it is `freshctx-region`.
+Public reports use the Pareto metrics in `EVALUATION.md`. Evaluate does not
+call the holdout freeze/run writer, so a remeasure cannot rewrite sealed
+provenance.
 
 ## Corpus bootstrap
 

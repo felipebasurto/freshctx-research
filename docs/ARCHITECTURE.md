@@ -39,7 +39,6 @@ Maps host-native successful reads to the FreshCtx observation contract:
 
 ```js
 {
-  observationId,
   path,
   scope: "file" | "region" | "symbol",
   selector,
@@ -50,9 +49,21 @@ Maps host-native successful reads to the FreshCtx observation contract:
 }
 ```
 
-It records the native tool-call ID so the corresponding result can be masked in
-the request copy. Failed, binary, oversized, or out-of-root reads are not
-captured and remain ordinary host observations.
+Core `trackRead` stores a stable `unit.id` from `stableUnitId`. It does not
+store a separate observation id. Adapters keep the host tool-call id in an
+in-process `callToUnit` map so the matching result can be masked. Transcript
+markers write that unit id as `metadata.freshctx.unitId`.
+
+The two scopes take their bytes from different sources. A file-scope read
+tracks the bytes the adapter reads from disk under the workspace guard, not the
+body the host printed in its tool result. A region-scope or symbol-scope read
+tracks the tool-result body, because the host result is the only record of which
+slice the model actually saw. A region read records the file's line count at
+observation time so refresh can fall back to the stored line span. A region read
+whose tool result is empty is skipped rather than tracked.
+
+Failed, binary, oversized, or out-of-root reads are not captured and remain
+ordinary host observations.
 
 ### 2. Revision archive
 
@@ -78,7 +89,7 @@ The prototype unit contains:
 |---|---|
 | `id` | Stable identity independent of content revision |
 | `path` | Normalized repository-relative source path |
-| `scope` | File, region, or future symbol scope |
+| `scope` | File, region, or symbol. Symbol units resolve through the out-of-process Tree-sitter sidecar |
 | `selector` | Structural selector when present |
 | `content` | Last safely resolved current bytes |
 | `revision` | `sha256:<digest>` of current bytes |
@@ -93,11 +104,22 @@ identity but not the volatile revision hash.
 
 ### 4. Resolver
 
-The current prototype tries:
+The current prototype tries, in order:
 
-1. unique exact occurrence of the previous region;
-2. a unique best pair of normalized boundary anchors;
-3. unresolved.
+1. the out-of-process Tree-sitter sidecar, for symbol units always, and for
+   file and region units when a sidecar runner is present and the extension is
+   `.py`, `.js`, `.mjs`, `.cjs`, `.ts`, or `.tsx`;
+2. unique exact occurrence of the previous region;
+3. a unique best pair of normalized boundary anchors;
+4. the stored line span, for a single-line region only, and only when the file's
+   line count still matches the count recorded at observation time;
+5. unresolved.
+
+A `parse-broken` result from the sidecar blocks step 4 instead of falling
+through to it. A broken parse is evidence the line numbers moved. Go and Rust
+file and region units skip step 1 even when the sidecar can parse those
+extensions. That split is documented in ADR 0004. Extending the registry gate
+is a separate change because adapter and core sidecar injection differ.
 
 The production resolution hierarchy is:
 
@@ -149,6 +171,19 @@ where that temptation led and why the state was removed.
 A unit is either selected with its full current bytes or reported as unresolved
 or budget-omitted. There is no third rendering.
 
+An empty selection still emits the envelope. `projectContext` writes the opening
+tag with `selected="0"` and the unresolved and budget-omitted counts, writes the
+closing tag, and drops only the preamble sentence. A reader can tell the
+difference between FreshCtx selecting nothing and FreshCtx not running.
+
+The decoder frames each unit by byte length instead of searching for the closing
+tag. `renderUnit` writes `content-bytes` as the UTF-8 length of the body, and
+`decodeProjectionUnits` reads exactly that many bytes, then checks that the
+closing frame lands where the length said it would. Source code may legally
+contain the string `</freshctx-unit>`, and a delimiter search would truncate that
+unit. A length that does not align with its closing frame throws rather than
+returning a short unit.
+
 The XML-like prototype format is not a security boundary. Production should use
 a host-native data/content distinction when the provider supports one, escape
 metadata, preserve code bytes exactly, and treat source comments as untrusted
@@ -189,8 +224,9 @@ and interior edits can refresh through a stored line span without a re-read. The
 adapter also recognizes cat-class shell reads and routes them through the same
 workspace guard as the official `read` tool.
 
-Symbol scope, persisted call mappings across restart, pinned-package type
-checking, and native provider-capture tests are release gates.
+Symbol scope ships and refreshes through the sidecar. Persisted call mappings
+across restart, pinned-package type checking, and native provider-capture tests
+are release gates.
 
 ## Hermes integration
 
@@ -201,10 +237,14 @@ observe a completed turn. The preview plugin subclasses Hermes'
 through a fail-open local bridge.
 
 The bridge recognizes common OpenAI-format read tools and cat-class shell
-commands, and projects whole files and line regions under the same end-of-file
-rules as Pi. It persists only tool-call and path mappings, and it writes that
-state from `on_turn_complete()` alone. `select_context()` reads state and never
-writes it, which keeps one request from changing what the next request contains.
+commands, and projects whole files, line regions, and symbol units under the
+same end-of-file rules as Pi. `on_turn_complete()` writes tool-call and path
+mappings. `select_context()` also writes pending-ack fields
+(`pendingInjectedRevision`, `pendingAckAfterUserIndex`) before it returns, so
+the next turn can acknowledge an inject that this request just produced
+(PCR 0097). Official file-scope reads track `observation.content` from the
+persisted tool message. Pi official file reads track disk bytes instead. The
+live Hermes bridge does not read `FRESHCTX_SIDECAR`.
 Production should package the core as a stable sidecar or native library and add
 per-session locking, schema fixtures, and lifecycle cleanup.
 
@@ -250,6 +290,33 @@ Production needs a request snapshot barrier:
 FreshCtx must not combine half of one revision with half of another and call it
 current.
 
+## Behavior that stays fixed
+
+Each behavior below has a test. Changing one is its own reviewable change with
+a stated reason, not a side effect of an optimization.
+
+- `renderUnit` embeds `unit.content` on every call. It has no branch that puts
+  a revision digest, a summary, or a marker where a selected unit's body goes.
+- A read marker carries the stable unit id and the path. It never carries the
+  revision hash, so the marker text is unchanged by a content revision.
+- A unit whose state is not `resolved` scores negative infinity and is omitted
+  with reason `unresolved`. Last-known bytes are never rendered as current. The
+  archived revision stays reachable through `registry.recover()`, which no
+  projection path calls.
+- An already-tracked unit whose bytes changed this turn is selected before the
+  budget loop runs, so its body ships even when it is larger than the cap. A
+  first-time read competes for the cap like anything else.
+- Selection order and render order are computed separately. Selection ranks by
+  pinned, then score, then id. Rendering re-sorts by change count, then id. Do
+  not collapse the two into one sort.
+- A projection with zero selected units still emits the envelope and its counts.
+- The decoder reads each unit body by the `content-bytes` length. It does not
+  search for a closing tag.
+- When the sidecar reports `parse-broken`, refresh skips the stored-line-span
+  rescue.
+- If the adapter throws, the host sends its original request. Pi returns
+  `undefined`. Hermes returns `None`.
+
 ## Failure matrix
 
 | Failure | Freshness behavior | Host behavior |
@@ -280,11 +347,11 @@ current.
 | Capability | 0.1 prototype | Product gate |
 |---|---|---|
 | Core | In-memory, Node standard library | Persistent local service/library |
-| Unit type | Whole file and anchored region | Multi-language structural symbols |
+| Unit type | Whole file, anchored region, and sidecar-resolved symbol | Structural symbols across every declared language family |
 | Snapshot | Sequential source provider | Coherent workspace generation |
 | Recovery | In-memory revision map | Durable encrypted/permissioned archive |
 | Policy | Lexical deterministic heuristic | CtxBench-optimized frozen policy |
 | Pi | Reference TypeScript adapter | Pinned package, session persistence, CI |
 | Hermes | Preview bridge plugin | Packaged engine, locks, compatibility matrix |
 | Benchmark | Synthetic executable | Public-repo trace pack and capture provider |
-| Claim | Invariant prototype | Level 4 deterministic context-transformer result |
+| Claim | Byte-level correctness on unsealed traces plus one sealed pack | The full gate list in `docs/EVALUATION.md` §13 |

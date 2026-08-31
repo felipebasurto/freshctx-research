@@ -43,6 +43,10 @@ export function parseEvaluateArgs(argv) {
   return flags;
 }
 
+export function evaluateJudge({ pack, report } = {}) {
+  return pack && !report ? "pack-on-disk" : "empirical-verdict";
+}
+
 export async function runEvaluateBenchmark({ pack, root = repoRoot, report } = {}) {
   if (pack && !report) return runPackEvaluation({ packId: pack, root });
   const env = pack ? { ...process.env, FRESHCTX_EVAL_PACK: pack } : process.env;
@@ -73,11 +77,14 @@ function benchmarkRecordsMatch(left, right) {
   return JSON.stringify(stablePackRecord(left)) === JSON.stringify(stablePackRecord(right));
 }
 
-function printEvaluateResult(result) {
-  if (result.schemaVersion === 1 && result.verdict) {
-    return formatEvaluateOutput(result);
-  }
-  return `EVALUATE_VERDICT=${evaluateVerdict(result)}\n${JSON.stringify(result, null, 2)}\n`;
+export function printEvaluateResult(result) {
+  const judge = result.schemaVersion === 1 && result.verdict
+    ? "empirical-verdict"
+    : "pack-on-disk";
+  const body = result.schemaVersion === 1 && result.verdict
+    ? formatEvaluateOutput(result)
+    : `EVALUATE_VERDICT=${evaluateVerdict(result)}\n${JSON.stringify(result, null, 2)}\n`;
+  return `judge=${judge}\n${body}`;
 }
 
 export async function evaluate(options = {}) {

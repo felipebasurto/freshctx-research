@@ -4,9 +4,12 @@ Work is ordered by priority band, and each band is ordered by evidence rather
 than feature count. An item is done when its exit gate passes and its
 limitations are written down in a Public Change Record under `docs/lab/pcr/`.
 
-The claim today is "invariant prototype with adapter request capture on unsealed
-regression traces". It is not a state-of-the-art claim. The wording ladder lives
-in `docs/EVALUATION.md` §13 and this file does not widen it.
+What this repository can show today is byte-level correctness on unsealed
+regression traces plus one sealed pack, measured through request capture in two
+hosts. It cannot show a comparison against a reviewed CORVUS reproduction, a
+sampled public-repo corpus across every declared language family, or any
+published raw result set. The wording ladder lives in `docs/EVALUATION.md` §13
+and this file does not widen it.
 
 Autoresearch is paused. The campaign stays paused until every P1 item closes,
 because a search loop over unsealed traces with an incomplete attestation path
@@ -21,8 +24,10 @@ would produce numbers nobody can check.
 - Stateless projection. Every selected unit carries its current bytes in every
   provider request. See P0 below.
 - Pi extension and replay harness, and a Hermes `ContextEngine` plugin with a
-  Node bridge. Both track whole files and line regions, track cat-class shell
-  reads, prune unserved read pairs, and fail open to the untouched host request.
+  Node bridge. Both track whole files, line regions, and symbol units, track
+  cat-class shell reads, prune unserved read pairs, and fail open to the
+  untouched host request. Symbol refresh runs in an out-of-process Tree-sitter
+  sidecar that no module under `src/` imports.
 - Frozen public-repo locks (`bench/repos.lock.json`), pinned host commits
   (`bench/hosts.lock.json`), a JSON trace runner over `bench/trace.schema.json`,
   an independent byte oracle, and append-only, observation-mask, whole-file
@@ -31,7 +36,7 @@ would produce numbers nobody can check.
   makes zero inference calls.
 - Holdout freeze, generate, run, report, and verify commands with negative tests
   for the protocol invariant.
-- 75 Public Change Records and an append-only metric ledger
+- Public Change Records under `docs/lab/pcr/`
   (`ls docs/lab/pcr/*.md | wc -l`).
 
 Holdout v0.1 is an unsealed regression pack that predates the freeze protocol.
@@ -87,6 +92,10 @@ deleted, and no holdout-v0.2 artifact is created by it.
 tuning set**. Do not reopen this item as a hill-climb. One scheduled
 remeasure only.
 
+**Seal `holdout-v0.3-apex` via production GHA attestation once billing permits.**
+Local classify stays `locally-frozen` until then. Do not hand-edit `status` or
+`classification`.
+
 **Pinned host compatibility and request capture.** `bench/hosts.lock.json` pins
 Pi at `c49906ec` and a Hermes commit for the native bake-off, and neither
 adapter has a test pinned to a released host package. Add pinned-release
@@ -125,6 +134,19 @@ TypeScript and JavaScript, Rust, and Go, qualified structural selectors, and
 independent gold extractors. Exit gate: zero wrong-symbol resolution on the
 frozen validation suite, ambiguous cases fail closed, and exact required recall
 on budget-satisfiable traces.
+
+Partly shipped. `sidecar/treesitter/` runs Tree-sitter WASM grammars for Python,
+JavaScript, TypeScript, Go, and Rust behind a stdin/stdout contract, and
+`docs/decisions/0004-treesitter-sidecar.md` keeps parsers out of `src/`. Two
+gaps remain. `src/registry.mjs` routes file and region refresh through the
+sidecar for six Python, JavaScript, and TypeScript extensions only, so Go and
+Rust reach it for symbol scope alone. The zero-wrong-symbol and
+fail-closed-ambiguity gates are measured on `holdout-v0.3-apex` and the dev
+packs, not on a frozen validation suite.
+
+**Optional LSP/SCIP identity providers per language family.** Slot them into the
+resolution hierarchy after Tree-sitter validation gates pass. The prototype has
+no LSP integration.
 
 **Reviewed CORVUS reproduction.** `bench/corvus.mjs` is a documented
 whole-file baseline written from the paper, not a reviewed reproduction. Exit

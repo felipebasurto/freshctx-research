@@ -171,11 +171,10 @@ function replaceCapturedReads(
  *
  * It is deliberately request-only: persisted tool results remain untouched.
  * If this extension fails, returning undefined makes Pi use its original
- * context. This adapter synchronizes whole text files or region-scoped reads
- * when the read tool arguments include `scope: "region"` plus line metadata,
- * or finite `offset`/`limit` pagination mapped to line ranges with the same
- * EOF promotion rule as Hermes; the core and benchmark already exercise finer
- * region synchronization.
+ * context. This adapter synchronizes whole text files, region-scoped reads,
+ * and symbol-scoped reads when a sidecar runner is present. Region mapping
+ * uses `scope: "region"` plus line metadata, or finite `offset`/`limit`
+ * pagination with the same EOF promotion rule as Hermes.
  */
 export default function freshCtxExtension(pi: ExtensionAPI) {
   const engine = createAdapterEngine(
