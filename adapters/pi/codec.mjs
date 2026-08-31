@@ -30,6 +30,17 @@ function textContent(content) {
   return parts.map((part) => part.text).join("\n");
 }
 
+function validNativeContent(content) {
+  if (!Array.isArray(content)) return false;
+  return content.every((part) => (
+    part?.type === "text"
+      ? typeof part.text === "string"
+      : part?.type === "image"
+        && typeof part.data === "string"
+        && typeof part.mimeType === "string"
+  ));
+}
+
 function pairingRecord(request) {
   if (!request || typeof request !== "object" || !Array.isArray(request.messages)) {
     return null;
@@ -67,7 +78,7 @@ function pairingRecord(request) {
       || typeof result.toolName !== "string"
       || result.toolName.length === 0
       || typeof result.isError !== "boolean"
-      || textContent(result.content) == null
+      || !validNativeContent(result.content)
     ) {
       return null;
     }
