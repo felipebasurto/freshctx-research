@@ -6,7 +6,7 @@ import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
 import { createSidecarRunner, missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
-import { inclusiveEndLine } from "../sidecar/treesitter/grammars.mjs";
+import { inclusiveEndLine, rejectUnnaturalSiblingOverlaps } from "../sidecar/treesitter/grammars.mjs";
 import { parseSource } from "../sidecar/treesitter/parse.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -105,6 +105,21 @@ test("exclusive column-0 ends do not include the next line", () => {
   assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 2, column: 0 }), 2);
   assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 1, column: 12 }), 2);
   assert.equal(inclusiveEndLine({ row: 0, column: 0 }, { row: 0, column: 10 }), 1);
+});
+
+test("overlap filter drops a span that swallows a same-indent sibling", () => {
+  const bytes = "function alpha() {\n  return 1;\n\nfunction beta() {\n  return 2;\n}\n";
+  const kept = rejectUnnaturalSiblingOverlaps(
+    [
+      { selector: "alpha", startLine: 1, endLine: 6 },
+      { selector: "beta", startLine: 4, endLine: 6 },
+    ],
+    bytes,
+  );
+  assert.deepEqual(
+    kept.map((unit) => unit.selector),
+    ["beta"],
+  );
 });
 
 test("adjacent tree-sitter defs stay on their own lines", async () => {
