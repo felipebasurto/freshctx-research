@@ -2,6 +2,7 @@ import { realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import { defineHostCodec } from "../host-codec.mjs";
+import { SHELL_TOOLS } from "../shell-read.mjs";
 import { createPiAdapter, readScopeFromInput } from "./replay.mjs";
 
 export const PI_HOST_COMMIT = "c49906ec77788625aacbdc53ebca6fbe65bd20f5";
@@ -24,6 +25,17 @@ function nativeToolCalls(message) {
 function nativeToolResult(message) {
   if (message?.role !== "toolResult") return null;
   return message;
+}
+
+function nativeAssistantHasNonToolContent(message) {
+  if (message?.role !== "assistant" || !Array.isArray(message.content)) return false;
+  return message.content.some((part) => (
+    part?.type === "text"
+      ? typeof part.text === "string" && part.text.trim().length > 0
+      : part?.type === "thinking"
+        && typeof part.thinking === "string"
+        && part.thinking.trim().length > 0
+  ));
 }
 
 function textContent(content) {
@@ -112,16 +124,44 @@ function pairingRecord(request) {
       pendingCalls.push({ id: call.id, name: call.name, messageIndex });
       events.push({ kind: "call", id: call.id, name: call.name, boundaryIndex });
     }
-    if (
-      calls.length === 0
-      || message.content.some((part) => part?.type !== "toolCall")
-    ) {
+    if (calls.length === 0 || nativeAssistantHasNonToolContent(message)) {
       boundaryIndex += 1;
     }
   }
 
   if (pendingCalls.length > 0 || seenCalls.size !== seenResults.size) return null;
   return events;
+}
+
+function successfulNativeReadCallIds(request) {
+  const calls = new Map();
+  for (const message of request.messages) {
+    for (const call of nativeToolCalls(message)) {
+      if (
+        call.name === "read"
+        && typeof call.id === "string"
+        && typeof call.arguments?.path === "string"
+        && call.arguments.path.length > 0
+      ) {
+        calls.set(call.id, call);
+      }
+    }
+  }
+
+  const successful = new Set();
+  for (const message of request.messages) {
+    const result = nativeToolResult(message);
+    if (
+      result
+      && result.isError === false
+      && result.toolName === "read"
+      && calls.has(result.toolCallId)
+      && textContent(result.content) != null
+    ) {
+      successful.add(result.toolCallId);
+    }
+  }
+  return successful;
 }
 
 export function validatePiNativeRequest(
@@ -138,11 +178,15 @@ export function validatePiNativeRequest(
   const retired = retiredToolCallIds instanceof Set
     ? retiredToolCallIds
     : new Set(retiredToolCallIds);
+  const retirable = successfulNativeReadCallIds(capturedRequest);
+  for (const toolCallId of retired) {
+    if (!retirable.has(toolCallId)) return false;
+  }
   const expected = capturedPairing.filter((event) => !retired.has(event.id));
   return JSON.stringify(pairing) === JSON.stringify(expected);
 }
 
-const PI_MORE_LINES_RE = /\n\n\[\d+ more lines in file\. Use offset=\d+ to continue\.\]$/u;
+const PI_MORE_LINES_RE = /\n\n\[(\d+) more lines in file\. Use offset=\d+ to continue\.\]$/u;
 
 function readReconstruction(input, result, content) {
   if (result.details?.truncation?.truncated === true) {
@@ -159,10 +203,16 @@ function readReconstruction(input, result, content) {
   const limit = Number(input.limit);
   const hasOffset = Number.isFinite(offset) && offset >= 1;
   const hasLimit = Number.isFinite(limit) && limit >= 1;
-  const hasMoreLines = PI_MORE_LINES_RE.test(content);
+  const moreLinesMatch = PI_MORE_LINES_RE.exec(content);
+  const hasMoreLines = moreLinesMatch != null;
 
   if (hasOffset && hasLimit) {
-    if (hasMoreLines) return { scope: readScopeFromInput(input) };
+    if (hasMoreLines) {
+      return {
+        scope: readScopeFromInput(input),
+        observedFileLineCount: offset - 1 + limit + Number(moreLinesMatch[1]),
+      };
+    }
     if (offset === 1) return { scope: { scope: "file" } };
     return {
       scope: { scope: "file" },
@@ -216,6 +266,9 @@ export function decodePiReadObservations(request, { turn } = {}) {
       input: structuredClone(input),
     };
     if (reconstruction.issue) observation.reconstructionIssue = reconstruction.issue;
+    if (Number.isInteger(reconstruction.observedFileLineCount)) {
+      observation.observedFileLineCount = reconstruction.observedFileLineCount;
+    }
     if (scope.scope === "region") {
       if (Number.isInteger(scope.startLine)) observation.startLine = scope.startLine;
       if (Number.isInteger(scope.endLine)) observation.endLine = scope.endLine;
@@ -272,6 +325,9 @@ async function seedReadObservation(adapter, observation, cwd) {
     content: observation.content,
     scope: observation.scope,
     turn: observation.turn,
+    ...(Number.isInteger(observation.observedFileLineCount)
+      ? { observedFileLineCount: observation.observedFileLineCount }
+      : {}),
   };
   if (observation.scope === "region") {
     if (Number.isInteger(observation.startLine)) tracked.startLine = observation.startLine;
@@ -298,6 +354,36 @@ async function seedReadObservation(adapter, observation, cwd) {
       ? { selector: observation.selector }
       : {}),
   });
+}
+
+function protectPassthroughShellPairs(messages) {
+  const protectedNames = new Map();
+  const copy = structuredClone(messages);
+  for (const message of copy) {
+    for (const call of nativeToolCalls(message)) {
+      if (!SHELL_TOOLS.has(call.name)) continue;
+      protectedNames.set(call.id, call.name);
+      call.name = `freshctx-passthrough-${call.name}`;
+    }
+    const result = nativeToolResult(message);
+    const originalName = result ? protectedNames.get(result.toolCallId) : null;
+    if (originalName) result.toolName = `freshctx-passthrough-${originalName}`;
+  }
+  return { messages: copy, protectedNames };
+}
+
+function restorePassthroughShellPairs(messages, protectedNames) {
+  const copy = structuredClone(messages);
+  for (const message of copy) {
+    for (const call of nativeToolCalls(message)) {
+      const originalName = protectedNames.get(call.id);
+      if (originalName) call.name = originalName;
+    }
+    const result = nativeToolResult(message);
+    const originalName = result ? protectedNames.get(result.toolCallId) : null;
+    if (originalName) result.toolName = originalName;
+  }
+  return copy;
 }
 
 function serializePiRequest(request) {
@@ -339,15 +425,20 @@ export function createPiHostCodec({
       }
       if (adapter.engine.registry.list().length === 0) return structuredClone(request);
 
+      const passthrough = protectPassthroughShellPairs(request.messages);
       const transformed = await adapter.onContext(
         {
-          messages: request.messages,
+          messages: passthrough.messages,
           budgetChars: context.budgetChars ?? budgetChars,
         },
         { cwd: context.cwd },
       );
       if (!transformed) throw new Error("Pi adapter context transformation failed");
-      const transformedPairing = pairingRecord({ messages: transformed.messages });
+      const nativeMessages = restorePassthroughShellPairs(
+        transformed.messages,
+        passthrough.protectedNames,
+      );
+      const transformedPairing = pairingRecord({ messages: nativeMessages });
       const transformedCallIds = new Set(
         (transformedPairing ?? [])
           .filter((event) => event.kind === "call")
@@ -358,7 +449,7 @@ export function createPiHostCodec({
         .filter((toolCallId) => !transformedCallIds.has(toolCallId));
       return {
         ...structuredClone(request),
-        messages: transformed.messages,
+        messages: nativeMessages,
       };
     },
     validate: (request, { captured }) =>
