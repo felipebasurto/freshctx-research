@@ -251,18 +251,25 @@ test("Pi codec matches the existing adapter path byte-for-byte on one semantic t
 
 test("Pi codec failures return the exact original request object unchanged", async () => {
   const { createPiHostCodec } = await loadPiCodec();
-  for (const phase of ["capture", "transform", "validate", "serialize"]) {
-    const original = { messages: piReadHistory() };
-    const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
-    const result = await applyHostCodec(
-      withForcedFailure(createPiHostCodec(), phase),
-      original,
-      { cwd: "/unused" },
-    );
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-failure-"));
+  try {
+    await writeFile(join(workspace, "source.ts"), CURRENT_ONE);
+    for (const phase of ["capture", "transform", "validate", "serialize"]) {
+      const original = { messages: piReadHistory() };
+      const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
+      const result = await applyHostCodec(
+        withForcedFailure(createPiHostCodec(), phase),
+        original,
+        { cwd: workspace, budgetChars: BUDGET_CHARS, turnIndex: 1 },
+      );
 
-    assert.equal(result.applied, false, phase);
-    assert.equal(result.request, original, phase);
-    assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes, phase);
+      assert.equal(result.applied, false, phase);
+      assert.equal(result.request, original, phase);
+      assert.match(result.error, new RegExp(phase, "u"), phase);
+      assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes, phase);
+    }
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
   }
 });
 
