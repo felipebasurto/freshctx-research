@@ -136,7 +136,7 @@ These behaviors are in both the Pi extension and the Hermes context engine:
 
 These evaluation tools exist:
 
-- Synthetic benchmark, regression tests, and an autoresearch score contract.
+- Synthetic ctxbench, regression tests, and an EmpiricalVerdict evaluate contract.
 - Loopback OpenAI-compatible request recorder that returns a fixed, zero-model
   response for adapter tests.
 - Frozen public-repo and host commit locks, a JSON trace runner, an independent
@@ -168,7 +168,7 @@ src/                      Dependency-free prototype core
 test/                     Invariant and policy tests
 bench/                    Deterministic replay benchmark
 capture/                  No-model provider payload recorder
-autoresearch/             Search contract, score, and experiment ledger
+autoresearch/             Search contract, EmpiricalVerdict, and experiment ledger
 adapters/pi/              Pi extension, replay harness, and adapter notes
 adapters/hermes/          Hermes ContextEngine plugin, Node bridge, and installer
 docs/ARCHITECTURE.md      Runtime architecture and data model

@@ -110,6 +110,5 @@ export function projectContext(
     omitted: selection.omitted,
     rawCodeChars: selection.usedChars,
     renderedChars: text.length,
-    estimatedTokens: Math.ceil(text.length / 4),
   };
 }
