@@ -196,6 +196,72 @@ test("Pi validator rejects a tool result moved across a native message boundary"
   assert.equal(validatePiNativeRequest(reordered, original), false);
 });
 
+test("Pi validator does not authorize retirement of non-read native pairs", async () => {
+  const { validatePiNativeRequest } = await loadPiCodec();
+  const original = {
+    messages: [
+      {
+        role: "assistant",
+        content: [{
+          type: "toolCall",
+          id: "pi-write-call",
+          name: "write",
+          arguments: { path: "source.ts", content: "new" },
+        }],
+      },
+      {
+        role: "toolResult",
+        toolCallId: "pi-write-call",
+        toolName: "write",
+        content: [{ type: "text", text: "ok" }],
+        isError: false,
+      },
+    ],
+  };
+
+  assert.equal(validatePiNativeRequest({ messages: [] }, original), false);
+});
+
+test("Pi read observation turns follow assistant turns, not user-message count", async () => {
+  const { decodePiReadObservations } = await loadPiCodec();
+  const pair = (id, timestamp) => [
+    {
+      role: "assistant",
+      content: [{
+        type: "toolCall",
+        id,
+        name: "read",
+        arguments: { path: `${id}.ts` },
+      }],
+      timestamp,
+    },
+    {
+      role: "toolResult",
+      toolCallId: id,
+      toolName: "read",
+      content: [{ type: "text", text: `// ${id}\n` }],
+      isError: false,
+      timestamp: timestamp + 1,
+    },
+  ];
+  const request = {
+    messages: [
+      { role: "user", content: "inspect both", timestamp: 1 },
+      ...pair("first", 2),
+      ...pair("second", 4),
+      { role: "user", content: "continue", timestamp: 6 },
+    ],
+  };
+
+  assert.deepEqual(
+    decodePiReadObservations(request).map(({ toolCallId, turn }) => ({ toolCallId, turn })),
+    [
+      { toolCallId: "first", turn: 0 },
+      { toolCallId: "second", turn: 1 },
+    ],
+  );
+});
+
 test("Pi codec matches the existing adapter path byte-for-byte on one semantic trace", async () => {
   const {
     createPiHostCodec,
@@ -258,6 +324,132 @@ test("Pi codec matches the existing adapter path byte-for-byte on one semantic t
       nativePairSequence(persistedMessages),
     );
     assert.deepEqual(Buffer.from(JSON.stringify(originalRequest), "utf8"), persistedBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec fails open without retiring a mixed refused read pair", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-refused-"));
+  try {
+    await writeFile(join(workspace, "source.ts"), CURRENT_ONE);
+    const safePair = piReadHistory().slice(0, 2);
+    const refusedPair = [
+      {
+        role: "assistant",
+        content: [{
+          type: "toolCall",
+          id: "pi-read-outside",
+          name: "read",
+          arguments: { path: "/etc/hosts" },
+        }],
+      },
+      {
+        role: "toolResult",
+        toolCallId: "pi-read-outside",
+        toolName: "read",
+        content: [{ type: "text", text: "outside observation" }],
+        isError: false,
+      },
+    ];
+    const original = {
+      messages: [
+        ...safePair,
+        ...refusedPair,
+        { role: "user", content: "compare reads" },
+      ],
+    };
+    const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
+
+    const result = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 2,
+    });
+
+    assert.equal(result.applied, false);
+    assert.equal(result.request, original);
+    assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec fails open on a truncated whole-file observation", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-truncated-"));
+  try {
+    const current = `${CURRENT_ONE}${"x".repeat(64_000)}\n`;
+    await writeFile(join(workspace, "source.ts"), current);
+    const messages = piReadHistory("truncated prefix\n");
+    messages[1].details = {
+      truncation: {
+        truncated: true,
+        truncatedBy: "bytes",
+        outputLines: 1,
+        totalLines: 2,
+      },
+    };
+    const original = { messages };
+    const originalBytes = Buffer.from(JSON.stringify(original), "utf8");
+
+    const result = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 1,
+    });
+
+    assert.equal(result.applied, false);
+    assert.equal(result.request, original);
+    assert.deepEqual(Buffer.from(JSON.stringify(original), "utf8"), originalBytes);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("Pi codec promotes reconstructable offset-one EOF reads exactly like the existing path", async () => {
+  const { createPiHostCodec } = await loadPiCodec();
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-pi-codec-eof-"));
+  try {
+    const content = "line one\nline two\n";
+    await writeFile(join(workspace, "source.ts"), content);
+    const messages = piReadHistory(content);
+    messages[0].content[0].arguments = {
+      path: "source.ts",
+      offset: 1,
+      limit: 10,
+    };
+    const original = { messages };
+    const oldAdapter = createPiAdapter({ budgetChars: BUDGET_CHARS });
+    await oldAdapter.onTurnStart({ turnIndex: 1 });
+    await oldAdapter.onToolResult(
+      {
+        toolName: "read",
+        toolCallId: CALL_ID,
+        input: { path: "source.ts", offset: 1, limit: 10 },
+        content: [{ type: "text", text: content }],
+        isError: false,
+      },
+      { cwd: workspace },
+    );
+
+    const oldPath = await oldAdapter.onContext(
+      { messages: structuredClone(messages), budgetChars: BUDGET_CHARS },
+      { cwd: workspace },
+    );
+    const codecPath = await applyHostCodec(createPiHostCodec(), original, {
+      cwd: workspace,
+      budgetChars: BUDGET_CHARS,
+      turnIndex: 1,
+    });
+
+    assert.ok(oldPath);
+    assert.equal(codecPath.applied, true);
+    assert.deepEqual(
+      canonicalProviderBytes(codecPath.request.messages),
+      canonicalProviderBytes(oldPath.messages),
+    );
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
