@@ -150,6 +150,38 @@ test("Pi codec decodes pinned native read calls and publishes capabilities", asy
   });
 });
 
+test("Pi codec preserves valid non-read native image results", async () => {
+  const {
+    decodePiReadObservations,
+    validatePiNativeRequest,
+  } = await loadPiCodec();
+  const request = {
+    messages: [
+      {
+        role: "assistant",
+        content: [
+          {
+            type: "toolCall",
+            id: "pi-image-call",
+            name: "screenshot",
+            arguments: {},
+          },
+        ],
+      },
+      {
+        role: "toolResult",
+        toolCallId: "pi-image-call",
+        toolName: "screenshot",
+        content: [{ type: "image", data: "AA==", mimeType: "image/png" }],
+        isError: false,
+      },
+    ],
+  };
+
+  assert.equal(validatePiNativeRequest(request), true);
+  assert.deepEqual(decodePiReadObservations(request), []);
+});
+
 test("Pi codec matches the existing adapter path byte-for-byte on one semantic trace", async () => {
   const {
     createPiHostCodec,
