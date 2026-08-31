@@ -360,38 +360,41 @@ export async function extractTreeSitterUnits({ path, bytes, language }) {
   const loaded = await loadRuntime();
   const grammar = await languageForKey(grammarKey);
   const parser = new loaded.Parser();
-  parser.setLanguage(grammar);
-  const tree = parser.parse(bytes);
-  if (!tree) {
+  let tree = null;
+  try {
+    parser.setLanguage(grammar);
+    tree = parser.parse(bytes);
+    if (!tree) {
+      return { units: [], error: "parse-broken", hasError: true };
+    }
+    const query = queryFor(grammarKey, grammar);
+    const seen = new Set();
+    const units = [];
+    for (const match of query.matches(tree.rootNode)) {
+      const nameNode = match.captures.find((capture) => capture.name === "name")?.node;
+      const unitNode = match.captures.find((capture) => capture.name === "unit")?.node;
+      if (!nameNode || !unitNode) continue;
+      const unit = unitFromCapture({
+        path,
+        language,
+        text: bytes,
+        unitNode,
+        name: nameNode.text,
+      });
+      if (!unit) continue;
+      const key = `${unit.startLine}:${unit.endLine}:${unit.qualifiedSelector}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      units.push(unit);
+    }
+    units.sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
+    const errors = collectErrorSpans(tree.rootNode);
+    const withoutErrorSpans = units.filter((unit) => !errorOnDeclarationLine(unit, errors));
+    const bounded = rejectUnnaturalSiblingOverlaps(withoutErrorSpans, bytes);
+    const hasError = tree.rootNode.hasError;
+    return { units: bounded, error: null, hasError };
+  } finally {
+    tree?.delete();
     parser.delete();
-    return { units: [], error: "parse-broken", hasError: true };
   }
-  const query = queryFor(grammarKey, grammar);
-  const seen = new Set();
-  const units = [];
-  for (const match of query.matches(tree.rootNode)) {
-    const nameNode = match.captures.find((capture) => capture.name === "name")?.node;
-    const unitNode = match.captures.find((capture) => capture.name === "unit")?.node;
-    if (!nameNode || !unitNode) continue;
-    const unit = unitFromCapture({
-      path,
-      language,
-      text: bytes,
-      unitNode,
-      name: nameNode.text,
-    });
-    if (!unit) continue;
-    const key = `${unit.startLine}:${unit.endLine}:${unit.qualifiedSelector}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    units.push(unit);
-  }
-  units.sort((a, b) => a.startLine - b.startLine || a.endLine - b.endLine);
-  const errors = collectErrorSpans(tree.rootNode);
-  const withoutErrorSpans = units.filter((unit) => !errorOnDeclarationLine(unit, errors));
-  const bounded = rejectUnnaturalSiblingOverlaps(withoutErrorSpans, bytes);
-  const hasError = tree.rootNode.hasError;
-  tree.delete();
-  parser.delete();
-  return { units: bounded, error: null, hasError };
 }
