@@ -52,6 +52,12 @@ performance.
 This checkout's default physical evaluate pack is `holdout-v0.3-apex`. It is
 locally frozen, not production-GHA sealed.
 
+The CORVUS whole-file comparison keeps its implementation in
+`bench/corvus.mjs` and its result key as `corvus-file`, following
+[Zheng et al., arXiv:2607.22711](https://arxiv.org/abs/2607.22711). It is the
+whole-file baseline for this measurement, not a claim that the systems are
+equivalent beyond the pinned trace and budget.
+
 The recorded apex measurement is:
 
 | System | Payload |

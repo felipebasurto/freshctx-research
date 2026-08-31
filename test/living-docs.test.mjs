@@ -46,6 +46,22 @@ test("README separates behavior, test evidence, measurement, and production gaps
   assert.doesNotMatch(readme, /\bCursor\b|\bClaude(?: Code)?\b/);
 });
 
+test("README presents FreshCtx before the exactly-once whole-file citation", async () => {
+  const readme = await read("README.md");
+  const citation = "Zheng et al., arXiv:2607.22711";
+  const citationOffset = readme.indexOf(citation);
+
+  assert.equal(readme.match(/Zheng et al\./gu)?.length, 1);
+  assert.equal(readme.match(/https:\/\/arxiv\.org\/abs\/2607\.22711/gu)?.length, 1);
+  assert.equal(readme.match(/\bCORVUS\b/gu)?.length, 1);
+  assert.ok(citationOffset > readme.indexOf("FreshCtx is a local-first context substrate"));
+  assert.match(readme, /bench\/corvus\.mjs/);
+  assert.match(readme, /`corvus-file`/);
+  assert.match(readme, /Isolated Semantic Engine \| 8504 payload bytes/);
+  assert.match(readme, /Whole-file baseline \(`corvus-file`\) \| 36701 payload bytes/);
+  assert.match(readme, /Required recall was \*\*5\/5\*\*/);
+});
+
 test("Pi documentation reports implemented symbol refresh", async () => {
   const piReadme = await read("adapters/pi/README.md");
 
