@@ -78,7 +78,7 @@ The prototype unit contains:
 |---|---|
 | `id` | Stable identity independent of content revision |
 | `path` | Normalized repository-relative source path |
-| `scope` | File, region, or future symbol scope |
+| `scope` | Whole-file, line-region, or symbol scope |
 | `selector` | Structural selector when present |
 | `content` | Last safely resolved current bytes |
 | `revision` | `sha256:<digest>` of current bytes |
@@ -93,11 +93,18 @@ identity but not the volatile revision hash.
 
 ### 4. Resolver
 
-The current prototype tries:
+Whole-file and line-region refresh use exact content and conservative boundary
+anchors. Symbol refresh calls the out-of-process Isolated Semantic Engine, whose
+Tree-sitter implementation supports Python, JavaScript, TypeScript, Go, and
+Rust. Parser packages are never imported by `src/`, which remains Node.js
+standard-library-only.
 
-1. unique exact occurrence of the previous region;
-2. a unique best pair of normalized boundary anchors;
-3. unresolved.
+Resolution fails closed:
+
+1. accept a unique exact or structural match;
+2. otherwise accept a unique best pair of normalized boundary anchors where
+   that scope permits it;
+3. otherwise mark the unit unresolved.
 
 The production resolution hierarchy is:
 
@@ -172,6 +179,15 @@ An adapter owns protocol-specific work:
 - return the original request on adapter failure;
 - expose telemetry and version information.
 
+The minimal executable boundary is `adapters/host-codec.mjs`. It snapshots the
+original host request, gives every codec callback only a clone, validates the
+transformed host-native schema, and returns the original object on any failure.
+Pairing rules belong to each codec's validator because hosts encode assistant
+calls and tool results differently. The no-model test double in
+`adapters/host-codec-test-double.mjs` covers capture, transformation, pair
+corruption, and byte-identical fail-open behavior. Every codec declares its
+host and adapter versions plus whether the host can rewrite request context.
+
 The core never imports Pi, Hermes, OMP, OpenAI, Anthropic, or Google message
 types.
 
@@ -182,15 +198,16 @@ each LLM call. The reference adapter records successful `read` calls, leaves the
 stored result untouched, then rewrites matching tool results in the request copy
 and appends the live projection through `context`.
 
-The adapter synchronizes whole text files and line regions. Path-only reads and
-pagination that reaches end of file resolve to file scope. Explicit
-`scope: "region"` reads and finite `offset` and `limit` pairs map to line ranges,
-and interior edits can refresh through a stored line span without a re-read. The
-adapter also recognizes cat-class shell reads and routes them through the same
-workspace guard as the official `read` tool.
+The adapter synchronizes whole text files, line regions, and explicit symbol
+reads. Path-only reads and pagination that reaches end of file resolve to file
+scope. Explicit `scope: "region"` reads and finite `offset` and `limit` pairs map
+to line ranges; `scope: "symbol"` reads refresh through the Isolated Semantic
+Engine when the file language is supported. The adapter also recognizes
+cat-class shell reads and routes them through the same workspace guard as the
+official `read` tool.
 
-Symbol scope, persisted call mappings across restart, pinned-package type
-checking, and native provider-capture tests are release gates.
+Persisted call mappings across restart, pinned-package type checking, and native
+provider-capture tests remain product gates.
 
 ## Hermes integration
 
@@ -205,7 +222,7 @@ commands, and projects whole files and line regions under the same end-of-file
 rules as Pi. It persists only tool-call and path mappings, and it writes that
 state from `on_turn_complete()` alone. `select_context()` reads state and never
 writes it, which keeps one request from changing what the next request contains.
-Production should package the core as a stable sidecar or native library and add
+Production should package the core as a stable Isolated Semantic Engine or native library and add
 per-session locking, schema fixtures, and lifecycle cleanup.
 
 ## Why MCP is not the primary integration
@@ -263,6 +280,25 @@ current.
 | Workspace changes mid-refresh | Retry or unresolved | Continue only with coherent units |
 | Projection exceeds budget | Deterministic omissions | Continue with omission metadata |
 
+## Sharp-edge audit
+
+`KEEP` marks intentional behavior protected by invariants. `DOCUMENT` marks
+valid but surprising behavior that callers must account for. `FIX` requires a
+bounded defect and a red-green invariant test.
+
+| Sharp edge | Classification | Contract or action |
+|---|---|---|
+| PCR 0079 stateless request bodies | KEEP | Every selected unit carries its current bytes in every request, including unchanged later turns. |
+| PCR 0080 refreshed-unit cap exception | KEEP | A same-turn refresh of an already observed unit may exceed the cap; first-time reads still compete for it. |
+| Fail-closed freshness | KEEP | Ambiguous, missing, or unsafe current bytes are omitted; last-known bytes are never injected. |
+| Adapter fail-open | KEEP | A failed host transformation returns the original native request unchanged. |
+| Selection order versus render order | KEEP | Selection maximizes utility under budget; rendering independently stabilizes the request prefix. |
+| Revision-free historical markers | KEEP | Marker identity stays stable across content revisions; current revision metadata belongs in the live projection. |
+| Process-local adapter state | DOCUMENT | Pi and the current archive lose FreshCtx mappings on restart; host-persisted history remains untouched. |
+| Out-of-process parser availability | DOCUMENT | A missing or failed Isolated Semantic Engine makes structural units unresolved rather than falling back to stale bytes. |
+| Local apex classification | DOCUMENT | `holdout-v0.3-apex` is locally frozen; production GitHub Actions attestation is still absent. |
+| Programmatic benchmark report writes | FIX | `runNestedHelperShowdown()` rewrote tracked timing/RSS reports during `npm test`. Programmatic calls now default to no writes; CLI entrypoints opt in. `test/report-hygiene.test.mjs` is the red-green invariant. |
+
 ## Security boundary
 
 - Canonicalize paths and verify real paths remain under the active root.
@@ -275,16 +311,19 @@ current.
 - Preserve host redaction, permissions, and approval behavior.
 - Run CtxBench with network disabled and a disposable writable worktree.
 
-## Prototype versus product
+## Current evidence and product gaps
 
-| Capability | 0.1 prototype | Product gate |
+| Area | Current repository fact | Missing production evidence or mechanism |
 |---|---|---|
-| Core | In-memory, Node standard library | Persistent local service/library |
-| Unit type | Whole file and anchored region | Multi-language structural symbols |
+| Core | In-memory and Node.js standard-library-only | Persistent local service/library |
+| Unit type | Whole-file, line-region, and symbol scope | Broader structural validation corpus |
+| Structural languages | Out-of-process Tree-sitter for Python, JavaScript, TypeScript, Go, and Rust | Versioned parser compatibility matrix |
 | Snapshot | Sequential source provider | Coherent workspace generation |
 | Recovery | In-memory revision map | Durable encrypted/permissioned archive |
-| Policy | Lexical deterministic heuristic | CtxBench-optimized frozen policy |
-| Pi | Reference TypeScript adapter | Pinned package, session persistence, CI |
-| Hermes | Preview bridge plugin | Packaged engine, locks, compatibility matrix |
-| Benchmark | Synthetic executable | Public-repo trace pack and capture provider |
-| Claim | Invariant prototype | Level 4 deterministic context-transformer result |
+| Pi | Request-only adapter with deterministic replay tests | Pinned host package and session persistence |
+| Hermes | Request-only plugin, bridge, installer, and replay tests | Published package, locks, and compatibility matrix |
+| Tests | Core and adapter invariants run without a model | Released-host end-to-end matrix |
+| Evaluate | `holdout-v0.3-apex` defaults on this checkout; recorded ISE 8504 payload bytes, whole-file 36701 payload bytes, required recall 5/5 | Pack is locally frozen, not production-GHA sealed; timing and RSS remain local telemetry |
+
+`passAt1` is always `null` and out of scope for this deterministic context
+benchmark. There are 126 Public Change Records under `docs/lab/pcr/`.

@@ -3,11 +3,11 @@ import { FreshRegistry } from "./registry.mjs";
 import { rewriteHistoricalReads } from "./transcript.mjs";
 
 export class FreshCtxEngine {
-  constructor({ policy = {}, turn = 0, sidecarRunner = null } = {}) {
+  constructor({ policy = {}, turn = 0, semanticEngineRunner = null } = {}) {
     this.policy = policy;
     this.turn = turn;
-    this.sidecarRunner = sidecarRunner;
-    this.registry = new FreshRegistry({ sidecarRunner });
+    this.semanticEngineRunner = semanticEngineRunner;
+    this.registry = new FreshRegistry({ semanticEngineRunner });
   }
 
   trackRead(read) {

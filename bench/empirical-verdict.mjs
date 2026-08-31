@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { FreshCtxRegionBaseline } from "./baselines.mjs";
 import { percentile } from "./metrics.mjs";
 import { finalCapture, runTrace } from "./trace-runner.mjs";
-import { createSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { createIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
 
 const DEFAULT_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const CANDIDATE_NAME = "isolated-semantic-engine";
@@ -60,7 +60,7 @@ function packTarget(root, packId) {
 }
 
 export function probeIsolatedSemanticEngine(root = DEFAULT_ROOT) {
-  const parsePath = join(root, "sidecar", "treesitter", "parse.mjs");
+  const parsePath = join(root, "ise", "treesitter", "parse.mjs");
   try {
     accessSync(parsePath, constants.R_OK);
     return { available: true };
@@ -160,7 +160,7 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
   }
 
   const engine = probeIsolatedSemanticEngine(root);
-  const runner = engine.available ? createSidecarRunner() : null;
+  const runner = engine.available ? createIsolatedSemanticEngineRunner() : null;
   let peakRssBytes = process.memoryUsage().rss;
   let failOpenDetected = false;
   let goldAbsentDetected = false;
@@ -179,7 +179,7 @@ export async function runEmpiricalEvaluation({ root = DEFAULT_ROOT, env = proces
     let corvusResult;
     try {
       iseResult = await runTrace(trace, "freshctx-region", {
-        baseline: new FreshCtxRegionBaseline({ sidecarRunner: runner }),
+        baseline: new FreshCtxRegionBaseline({ semanticEngineRunner: runner }),
       });
       corvusResult = await runTrace(trace, "corvus-file");
     } catch (error) {

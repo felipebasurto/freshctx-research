@@ -18,9 +18,9 @@ export function sliceUnit(text, { startLine, endLine }) {
   return lines.slice(startLine - 1, endLine).join("\n");
 }
 
-export function extractGold({ initialText, offsets, engineUnits, sidecarUnits }) {
+export function extractGold({ initialText, offsets, engineUnits, semanticEngineUnits }) {
   void engineUnits;
-  void sidecarUnits;
+  void semanticEngineUnits;
   const mutated = applyGeneratorMutation(initialText, offsets.mutation);
   const body = sliceUnit(mutated, offsets);
   return {
@@ -37,13 +37,13 @@ export function extractGold({ initialText, offsets, engineUnits, sidecarUnits })
   };
 }
 
-export function extractGoldFromTrace(trace, { engineUnits, sidecarUnits } = {}) {
+export function extractGoldFromTrace(trace, { engineUnits, semanticEngineUnits } = {}) {
   const offsets = trace.goldExtract;
   if (!offsets || offsets.source !== "generator-offsets") {
     throw new Error("trace is missing generator-owned goldExtract");
   }
   const initialText = trace.initialFiles[offsets.path];
-  return extractGold({ initialText, offsets, engineUnits, sidecarUnits });
+  return extractGold({ initialText, offsets, engineUnits, semanticEngineUnits });
 }
 
 export function extractSymbolGold({ path, initialText, unit, mutation }) {

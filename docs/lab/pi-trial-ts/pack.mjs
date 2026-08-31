@@ -8,7 +8,7 @@ const packDir = dirname(fileURLToPath(import.meta.url));
 
 export const PACK_ROOT = new URL(".", import.meta.url);
 
-/** Pi alone, FreshCtx without sidecar, FreshCtx with sidecar (same prompts). */
+/** Pi alone, FreshCtx without semanticEngine, FreshCtx with semanticEngine (same prompts). */
 export const ARMS = ["nothing", "freshctx-no-ts", "freshctx-ts"];
 
 export const TARGET_FILE = "src/settlement.ts";
@@ -68,9 +68,9 @@ export function freshCtxExtensionForArm(arm, repoRoot = resolveRepoRoot()) {
   return freshCtxExtensionPath(repoRoot);
 }
 
-/** Sidecar off in harness code for `freshctx-no-ts` only; host still passes scope=symbol. */
+/** IsolatedSemanticEngine off in harness code for `freshctx-no-ts` only; host still passes scope=symbol. */
 export function freshCtxEnvForArm(arm) {
-  if (arm === "freshctx-no-ts") return { FRESHCTX_SIDECAR: "off" };
+  if (arm === "freshctx-no-ts") return { FRESHCTX_ISOLATED_SEMANTIC_ENGINE: "off" };
   return {};
 }
 

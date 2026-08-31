@@ -34,7 +34,7 @@ interior flip (`ST0`→`ST1`) and omit sibling `settleWeeklyLedger` noise.
 | arm | FreshCtx | Tree-sitter | turn-1 host read |
 |---|---|---|---|
 | `nothing` | no | n/a | `scope=symbol`, selector `settleDailyLedger` |
-| `freshctx-no-ts` | yes | off (`FRESHCTX_SIDECAR=off`) | same |
+| `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off`) | same |
 | `freshctx-ts` | yes | on (default) | same |
 
 Model remains `deepseek-v4-flash` only.
@@ -44,7 +44,7 @@ Tree-sitter is inside FreshCtx.
 ## Benchmarks run
 
 Canonical TAP from this run on branch HEAD after Tree-sitter WASM install
-(`npm run sidecar:install`, base `5bb53c3`).
+(`npm run ise:install`, base `5bb53c3`).
 
 ```
 1..432
@@ -84,7 +84,7 @@ No Level 4 sentence.
 Measured on synthetic replay: symbol-scope host read tracks `settleDailyLedger`
 with `scope=symbol` on Pi and Hermes.
 Measured: Tree-sitter arm turn-2 projection omits `settleWeeklyLedger` (`SW0`) and
-carries flipped marker `ST1` with `resolution="sidecar"`.
+carries flipped marker `ST1` with `resolution="isolated-semantic-engine"`.
 Measured: Tree-sitter symbol-scope turn-2 serialized request bytes drop vs
 file-scope read on the same arm.
 Harness only.
@@ -98,7 +98,7 @@ none observed.
 
 Live three-arm battery on Mac is still pending.
 Thinker will run Hermes 3-arm live from 1:1 after merge.
-Dump scan token `sidecar` remains the `resolutionMethod` code string only.
+Dump scan token `isolated-semantic-engine` remains the `resolutionMethod` code string only.
 
 ## Recommended next experiment
 

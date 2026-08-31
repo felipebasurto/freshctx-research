@@ -19,7 +19,7 @@ units still fail-close. Direct class methods stay `class Owner::method name`.
 
 ## What we did
 
-`sidecar/treesitter/grammars.mjs` walks from each unit to the root. Named
+`ise/treesitter/grammars.mjs` walks from each unit to the root. Named
 scopes (class, impl type, function, method) and control-flow blocks (if, else,
 elif, for, while, match) become path segments. An `if` consequence is `if`.
 An `if` alternative is `else`. Repeated anonymous siblings of the same type
@@ -64,7 +64,7 @@ Post-merge TAP on this dest (includes PCR 0122):
 |---|---|---|---|
 | `npm run ctxbench:symbol-pack` | yes | 0 | flask `as_view` Isolated Semantic Engine **pass**, 2995 bytes, gold present; express still −636 |
 | `npm test` | yes | 0 | TAP above. +6 vs PCR 0122 (485/459) |
-| `npm run check` | yes | 0 | includes Isolated Semantic Engine `grammars.mjs` |
+| `npm run check` | yes | 0 | includes `ise/treesitter/grammars.mjs` |
 | `npm run evaluate` | yes | 0 | `AUTORESEARCH_SCORE=89.107165`; four hard gates true |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644`; six hard gates true |
 | `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |

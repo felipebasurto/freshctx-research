@@ -6,10 +6,10 @@ Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 
 Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
 `settleDailyLedger` and an interior flip on that symbol? Does Tree-sitter inside
-FreshCtx change the outcome vs the same adapter with the sidecar off?
+FreshCtx change the outcome vs the same adapter with the Isolated Semantic Engine off?
 
 Answered in [REPORT.md](REPORT.md) at `1a002ffa`. Tree-sitter arm t2 last
-request is 7794 bytes vs Pi-alone 12044. Sidecar-off fail-closed. Not a paper
+request is 7794 bytes vs Pi-alone 12044. Isolated Semantic Engine-off fail-closed. Not a paper
 result.
 
 Tree-sitter lives inside FreshCtx. The host passes `scope=symbol` with selector
@@ -20,10 +20,10 @@ Tree-sitter lives inside FreshCtx. The host passes `scope=symbol` with selector
 Same fixture, same symbol-scope read prompt, same interior flip (`ST0` → `ST1` in
 `settleDailyLedger`), same turn-2 user prompt on every arm.
 
-| Arm | Pi | FreshCtx | Tree-sitter sidecar |
+| Arm | Pi | FreshCtx | Tree-sitter Isolated Semantic Engine |
 |---|---|---|---|
 | A `nothing` | yes | no | n/a |
-| B `freshctx-no-ts` | yes | yes | off (`FRESHCTX_SIDECAR=off` in harness) |
+| B `freshctx-no-ts` | yes | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` in harness) |
 | C `freshctx-ts` | yes | yes | on (default `adapters/pi/extension.ts`) |
 
 Arm B and C share the same extension path and prompts. Only harness env differs.
@@ -55,7 +55,7 @@ node docs/lab/pi-trial-ts/print-columns.mjs
 | `request_bytes` | UTF-8 bytes of serialized request JSON for the turn |
 | `prompt_tokens` | provider `usage.prompt_tokens` when present, else `—` |
 | `pi_stdout_current` | Pi stdout matches `SETTLE=ST1` |
-| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`sidecar`, `whole-file`, …) |
+| `resolution` | `none` (arm A) or FreshCtx mechanism on B/C (`isolated-semantic-engine`, `whole-file`, …) |
 
 No `AUTORESEARCH_SCORE` in this pack.
 

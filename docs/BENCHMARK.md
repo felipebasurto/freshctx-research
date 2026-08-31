@@ -22,8 +22,9 @@ delta amplification proxy, prefix reuse, and p50/p95/p99 for refresh, rewrite,
 projection, serialization, and total transformation. It makes no model call.
 
 `autoresearch/evaluate.mjs` runs tests, then a benchmark twice. With no
-`--pack`, that benchmark is the physical empirical board (`public-repo-smoke`
-unless a Level 4 / apex pack is on disk). `--pack=<id>` loads that pack.
+`--pack`, that benchmark is the highest available physical empirical board. In
+this checkout the default is `holdout-v0.3-apex`; a checkout without an apex
+pack falls back to `public-repo-smoke`. `--pack=<id>` loads that pack.
 `symbol-scope-dev-v0.1` uses the Isolated Semantic Engine runner. Other ids
 load `bench/packs/<id>/traces/` read-only. The printer emits
 `EVALUATE_VERDICT=`. It does not emit `AUTORESEARCH_SCORE`. Public reports

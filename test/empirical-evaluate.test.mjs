@@ -170,7 +170,7 @@ test("evaluate report cites locks and repeats JSON integers", () => {
   assert.match(markdown, /-28197/);
   assert.match(markdown, /51707904/);
   assert.match(markdown, /telemetry/);
-  assert.equal(markdown.includes("sidecar"), false);
+  assert.equal(markdown.includes("semanticEngine"), false);
 });
 
 test("evaluate report fails closed without provenance", () => {

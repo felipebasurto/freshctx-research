@@ -5,13 +5,13 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { FreshCtxEngine } from "../src/engine.mjs";
-import { createSidecarRunner, missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
-import { inclusiveEndLine, rejectUnnaturalSiblingOverlaps } from "../sidecar/treesitter/grammars.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { createIsolatedSemanticEngineRunner, missingIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
+import { inclusiveEndLine, rejectUnnaturalSiblingOverlaps } from "../ise/treesitter/grammars.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
-test("sidecar parses Python, TypeScript, JavaScript, Rust, and Go", async () => {
+test("semanticEngine parses Python, TypeScript, JavaScript, Rust, and Go", async () => {
   const python = await parseSource({ path: "a.py", bytes: "def alpha():\n    return 1\n" });
   assert.equal(python.error, null);
   assert.equal(python.units[0].selector, "alpha");
@@ -32,7 +32,7 @@ test("sidecar parses Python, TypeScript, JavaScript, Rust, and Go", async () => 
   assert.equal(go.units[0].selector, "ParseFile");
 });
 
-test("sidecar fails closed on broken syntax", async () => {
+test("semanticEngine fails closed on broken syntax", async () => {
   const broken = await parseSource({ path: "a.go", bytes: "func ParseFile() {\n" });
   assert.equal(broken.error, "parse-broken");
   assert.deepEqual(broken.units, []);
@@ -108,7 +108,7 @@ test("exclusive column-0 ends do not include the next line", () => {
 });
 
 test("extractTreeSitterUnits deletes parser and tree in finally", async () => {
-  const source = await readFile(join(ROOT, "sidecar/treesitter/grammars.mjs"), "utf8");
+  const source = await readFile(join(ROOT, "ise/treesitter/grammars.mjs"), "utf8");
   assert.match(source, /try \{/u);
   assert.match(source, /finally \{/u);
   assert.match(source, /tree\?\.delete\(\)/u);
@@ -148,8 +148,8 @@ test("adjacent tree-sitter defs stay on their own lines", async () => {
   assert.equal(betaBody.includes("def alpha"), false);
 });
 
-test("injected missing sidecar leaves symbol units unresolved", async () => {
-  const engine = new FreshCtxEngine({ sidecarRunner: missingSidecarRunner() });
+test("injected missing semanticEngine leaves symbol units unresolved", async () => {
+  const engine = new FreshCtxEngine({ semanticEngineRunner: missingIsolatedSemanticEngineRunner() });
   engine.trackRead({
     path: "a.go",
     content: "func ParseFile() {\n  return\n}\n",
@@ -162,18 +162,18 @@ test("injected missing sidecar leaves symbol units unresolved", async () => {
   await engine.refresh({ "a.go": "func ParseFile() {\n  return\n}\n" });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "unresolved");
-  assert.equal(unit.resolutionMethod, "sidecar-error");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine-error");
 });
 
-test("live sidecar runner relocates a Go function and stays off src imports", async () => {
-  const runner = createSidecarRunner();
+test("live semanticEngine runner relocates a Go function and stays off src imports", async () => {
+  const runner = createIsolatedSemanticEngineRunner();
   const parsed = await runner({
     path: "util.go",
     bytes: "func ParseFile() {\n  return\n}\n",
   });
   assert.equal(parsed.units[0].selector, "ParseFile");
 
-  const engine = new FreshCtxEngine({ sidecarRunner: runner });
+  const engine = new FreshCtxEngine({ semanticEngineRunner: runner });
   engine.trackRead({
     path: "util.go",
     content: "func ParseFile() {\n  return\n}\n",
@@ -186,7 +186,7 @@ test("live sidecar runner relocates a Go function and stays off src imports", as
   await engine.refresh({ "util.go": "func ParseFile() {\n  return nil\n}\n" });
   const unit = engine.registry.list()[0];
   assert.equal(unit.state, "resolved");
-  assert.equal(unit.resolutionMethod, "sidecar");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine");
   assert.match(unit.content, /return nil/u);
   assert.ok(unit.content.length > 0);
 
@@ -194,40 +194,40 @@ test("live sidecar runner relocates a Go function and stays off src imports", as
   for (const name of srcFiles.filter((item) => item.endsWith(".mjs"))) {
     const source = await readFile(join(ROOT, "src", name), "utf8");
     assert.equal(source.includes("tree-sitter"), false, name);
-    assert.equal(source.includes("sidecar/treesitter"), false, name);
+    assert.equal(source.includes("ise/treesitter"), false, name);
   }
 });
 
-test("sidecar client does not retain prior request bodies", async () => {
-  const source = await readFile(join(ROOT, "sidecar/treesitter/client.mjs"), "utf8");
+test("semanticEngine client does not retain prior request bodies", async () => {
+  const source = await readFile(join(ROOT, "ise/treesitter/client.mjs"), "utf8");
   assert.equal(source.includes("lastBytes"), false);
   assert.equal(source.includes("cache"), false);
 });
 
-test("spawned sidecar is byte-identical for the same request", async () => {
-  const runner = createSidecarRunner();
+test("spawned semanticEngine is byte-identical for the same request", async () => {
+  const runner = createIsolatedSemanticEngineRunner();
   const request = { path: "a.py", bytes: "def alpha():\n    return 1\n" };
   const first = JSON.stringify(await runner(request));
   const second = JSON.stringify(await runner(request));
   assert.equal(first, second);
 });
 
-test("a later sidecar call does not keep earlier request bytes", async () => {
-  const runner = createSidecarRunner();
+test("a later semanticEngine call does not keep earlier request bytes", async () => {
+  const runner = createIsolatedSemanticEngineRunner();
   const first = await runner({
     path: "a.py",
-    bytes: "def unique_first():\n    return 'PCR_SIDECAR_FIRST'\n",
+    bytes: "def unique_first():\n    return 'PCR_ISOLATED_SEMANTIC_ENGINE_FIRST'\n",
   });
   const second = await runner({
     path: "b.py",
-    bytes: "def unique_second():\n    return 'PCR_SIDECAR_SECOND'\n",
+    bytes: "def unique_second():\n    return 'PCR_ISOLATED_SEMANTIC_ENGINE_SECOND'\n",
   });
   assert.equal(first.units[0].selector, "unique_first");
   assert.equal(second.units[0].selector, "unique_second");
   assert.equal(second.units.some((unit) => unit.selector === "unique_first"), false);
   assert.equal(second.units.some((unit) => unit.sha256 === first.units[0].sha256), false);
   const encoded = JSON.stringify(second);
-  assert.equal(encoded.includes("PCR_SIDECAR_FIRST"), false);
+  assert.equal(encoded.includes("PCR_ISOLATED_SEMANTIC_ENGINE_FIRST"), false);
   assert.equal(encoded.includes(first.units[0].sha256), false);
 });
 
@@ -275,7 +275,7 @@ test("unique method still resolves when nested functions collide", async () => {
   assert.ok(asView);
   assert.equal(asView.qualifiedSelector, "class View::method as_view");
 
-  const engine = new FreshCtxEngine({ sidecarRunner: createSidecarRunner() });
+  const engine = new FreshCtxEngine({ semanticEngineRunner: createIsolatedSemanticEngineRunner() });
   engine.trackRead({
     path: "views.py",
     content: bytes,
@@ -439,7 +439,7 @@ test("engine resolves a nested function by enclosing qualifiedSelector", async (
   const parsed = await parseSource({ path: "mod.py", bytes });
   const helper = parsed.units.find((unit) => unit.qualifiedSelector === "function outer::function helper");
   assert.ok(helper);
-  const engine = new FreshCtxEngine({ sidecarRunner: createSidecarRunner() });
+  const engine = new FreshCtxEngine({ semanticEngineRunner: createIsolatedSemanticEngineRunner() });
   engine.trackRead({
     path: "mod.py",
     content: bytes.split("\n").slice(helper.startLine - 1, helper.endLine).join("\n"),
@@ -472,7 +472,7 @@ test("class-qualified methods can coexist", async () => {
 });
 
 test("Go and Rust no longer use regex leftover extractors", async () => {
-  const source = await readFile(join(ROOT, "sidecar/treesitter/parse.mjs"), "utf8");
+  const source = await readFile(join(ROOT, "ise/treesitter/parse.mjs"), "utf8");
   assert.equal(source.includes("REGEX_LANGUAGES"), false);
   assert.equal(source.includes("parseWithRegex"), false);
   assert.equal(source.includes("PATTERNS"), false);

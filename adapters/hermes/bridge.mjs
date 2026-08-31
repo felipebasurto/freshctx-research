@@ -634,7 +634,7 @@ export async function selectContext(payload) {
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
   const engine = createAdapterEngine(
-    payload.sidecarRunner === undefined ? {} : { sidecarRunner: payload.sidecarRunner },
+    payload.semanticEngineRunner === undefined ? {} : { semanticEngineRunner: payload.semanticEngineRunner },
   );
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));

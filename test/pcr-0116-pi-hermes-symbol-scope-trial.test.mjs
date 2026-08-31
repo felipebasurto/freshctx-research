@@ -20,7 +20,7 @@ import {
   createHermesStateFile,
 } from "../adapters/hermes/replay.mjs";
 import { loadState, readScopeFromHermesArgs } from "../adapters/hermes/bridge.mjs";
-import { missingSidecarRunner } from "../sidecar/treesitter/client.mjs";
+import { missingIsolatedSemanticEngineRunner } from "../ise/treesitter/client.mjs";
 import {
   exportFunctionBlock,
   flipTargetInteriorMarker,
@@ -150,7 +150,7 @@ test("PCR 0116 Pi Tree-sitter symbol refresh omits settleWeeklyLedger after flip
   assert.match(capture.projectionText, /"ST1"/u);
   assert.doesNotMatch(capture.projectionText, /"SW0"/u);
   assert.doesNotMatch(capture.projectionText, new RegExp(`export function ${SIBLING_SYMBOL}`, "u"));
-  assert.match(capture.projectionText, /resolution="sidecar"/u);
+  assert.match(capture.projectionText, /resolution="isolated-semantic-engine"/u);
   assert.equal(payloadText.includes(SIBLING_MARKER), false);
   assert.equal(payloadText.includes(MARKER_V1), true);
 
@@ -167,12 +167,12 @@ test("PCR 0116 Pi Tree-sitter symbol refresh omits settleWeeklyLedger after flip
   );
 });
 
-test("PCR 0116 Pi sidecar-off symbol read fails closed and drops vs Tree-sitter arm", async () => {
+test("PCR 0116 Pi semanticEngine-off symbol read fails closed and drops vs Tree-sitter arm", async () => {
   const { observedSymbol, flippedFile } = await loadFixturePair();
   const workspace = await mkdtemp(join(tmpdir(), "freshctx-pcr-0116-pi-no-ts-"));
   await writeFixtureWorkspace(workspace, flippedFile);
 
-  const adapter = createPiAdapter({ budgetChars: 80_000, sidecarRunner: missingSidecarRunner() });
+  const adapter = createPiAdapter({ budgetChars: 80_000, semanticEngineRunner: missingIsolatedSemanticEngineRunner() });
   const ctx = { cwd: workspace };
   const callId = "call-no-ts";
   await adapter.onToolResult(
@@ -190,7 +190,7 @@ test("PCR 0116 Pi sidecar-off symbol read fails closed and drops vs Tree-sitter 
   const unit = adapter.engine.registry.list()[0];
   assert.equal(unit.scope, "symbol");
   assert.equal(unit.selector, TARGET_SYMBOL);
-  assert.equal(unit.resolutionMethod, "sidecar-error");
+  assert.equal(unit.resolutionMethod, "isolated-semantic-engine-error");
   assert.doesNotMatch(messageText(result?.messages ?? messages), /"ST1"/u);
 
   const treeSitterCapture = await capturePiProviderRequest({
@@ -200,7 +200,7 @@ test("PCR 0116 Pi sidecar-off symbol read fails closed and drops vs Tree-sitter 
   });
   assert.ok(
     requestUtf8Bytes(result?.messages ?? messages) < requestUtf8Bytes(treeSitterCapture.payload),
-    "sidecar-off arm turn-2 request_bytes should stay below Tree-sitter arm injection size",
+    "semanticEngine-off arm turn-2 request_bytes should stay below Tree-sitter arm injection size",
   );
 });
 
@@ -235,7 +235,7 @@ test("PCR 0116 Hermes replay tracks symbol-scope host read of settleDailyLedger"
   assert.ok(selectResult?.applied);
   assert.match(selectResult.projectionText ?? "", /"ST0"/u);
   assert.doesNotMatch(selectResult.projectionText ?? "", /"SW0"/u);
-  assert.match(selectResult.projectionText ?? "", /resolution="sidecar"/u);
+  assert.match(selectResult.projectionText ?? "", /resolution="isolated-semantic-engine"/u);
 });
 
 test("PCR 0116 Hermes Tree-sitter symbol refresh omits settleWeeklyLedger after flip", async () => {
@@ -258,7 +258,7 @@ test("PCR 0116 Hermes Tree-sitter symbol refresh omits settleWeeklyLedger after 
   const symbolPayloadText = JSON.stringify(symbolCapture.payload);
   assert.match(symbolCapture.projectionText, /"ST1"/u);
   assert.doesNotMatch(symbolCapture.projectionText, /"SW0"/u);
-  assert.match(symbolCapture.projectionText, /resolution="sidecar"/u);
+  assert.match(symbolCapture.projectionText, /resolution="isolated-semantic-engine"/u);
   assert.equal(symbolPayloadText.includes(SIBLING_MARKER), false);
 
   const fileStateFile = await createHermesStateFile("freshctx-pcr-0116-hermes-file-state-");

@@ -4,12 +4,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createAdapterEngine } from "../adapters/engine-factory.mjs";
-import { parseSource } from "../sidecar/treesitter/parse.mjs";
+import { parseSource } from "../ise/treesitter/parse.mjs";
 import { annotateReadMessage } from "../src/transcript.mjs";
 import { sha256 } from "../src/hash.mjs";
 import { CorvusSyncedFileSet, renderSyncedContext } from "./corvus.mjs";
 import { enumerateIndependentSymbols } from "./independent-symbols.mjs";
 import { percentile } from "./metrics.mjs";
+import { shouldWriteTrackedReports } from "./report-artifacts.mjs";
 
 export const SYMBOL_PACK_ID = "symbol-scope-dev-v0.1";
 export const SYMBOL_PACK_LABEL = "symbol-scope-dev";
@@ -569,6 +570,7 @@ export async function runSymbolPack({
   generated,
   createEngine = createAdapterEngine,
   skipReportWrite = false,
+  invoked = false,
 } = {}) {
   const pack = generated ?? await generateSymbolPack({ root });
   const probe = await probeIsolatedSemanticEngine(createEngine);
@@ -590,7 +592,7 @@ export async function runSymbolPack({
   }
   const reportsDir = join(root, "bench/packs", SYMBOL_PACK_ID, "reports");
   const table = formatTelemetryTable(rows);
-  if (!skipReportWrite) {
+  if (shouldWriteTrackedReports({ skipReportWrite, invoked })) {
     await mkdir(reportsDir, { recursive: true });
     const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
     await writeFile(join(reportsDir, "results.jsonl"), jsonl ? `${jsonl}\n` : "");
@@ -641,6 +643,8 @@ export function formatNestedHelperTable(rows) {
 export async function runNestedHelperShowdown({
   root = ROOT,
   createEngine = createAdapterEngine,
+  skipReportWrite = false,
+  invoked = false,
 } = {}) {
   const cell = NESTED_HELPER_SHOWDOWN;
   const initialText = await loadSmokeFile(root, cell);
@@ -677,22 +681,24 @@ export async function runNestedHelperShowdown({
     });
   }
   const reportsDir = join(root, "bench/packs", SYMBOL_PACK_ID, "reports");
-  await mkdir(reportsDir, { recursive: true });
-  const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
-  await writeFile(join(reportsDir, "nested-helper-showdown.jsonl"), jsonl ? `${jsonl}\n` : "");
   const table = formatNestedHelperTable(rows);
-  await writeFile(
-    join(reportsDir, "nested-helper-showdown.md"),
-    `# nested-helper-showdown\n\nDisposable Isolated Semantic Engine granularity cell. Not official symbol-pack gold and not a holdout result.\nSpans come from Isolated Semantic Engine parse, not \`bench/independent-symbols.mjs\`.\nPayload bytes are \`Buffer.byteLength(JSON.stringify(messages), \"utf8\")\`.\nLatency uses ${SYMBOL_PACK_WARMUPS} warmups and ${SYMBOL_PACK_REPS} measured repetitions.\n\n${table}`,
-  );
+  if (shouldWriteTrackedReports({ skipReportWrite, invoked })) {
+    await mkdir(reportsDir, { recursive: true });
+    const jsonl = rows.map((row) => JSON.stringify(publicCellRow(row))).join("\n");
+    await writeFile(join(reportsDir, "nested-helper-showdown.jsonl"), jsonl ? `${jsonl}\n` : "");
+    await writeFile(
+      join(reportsDir, "nested-helper-showdown.md"),
+      `# nested-helper-showdown\n\nDisposable Isolated Semantic Engine granularity cell. Not official symbol-pack gold and not a holdout result.\nSpans come from Isolated Semantic Engine parse, not \`bench/independent-symbols.mjs\`.\nPayload bytes are \`Buffer.byteLength(JSON.stringify(messages), \"utf8\")\`.\nLatency uses ${SYMBOL_PACK_WARMUPS} warmups and ${SYMBOL_PACK_REPS} measured repetitions.\n\n${table}`,
+    );
+  }
   return { rows, table, reportsDir, engineSpawn: probe.state };
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith("generate-symbol-pack.mjs");
 if (isMain) {
   const generated = await generateSymbolPack({ root: ROOT });
-  const result = await runSymbolPack({ root: ROOT, generated });
-  const showdown = await runNestedHelperShowdown({ root: ROOT });
+  const result = await runSymbolPack({ root: ROOT, generated, invoked: true });
+  const showdown = await runNestedHelperShowdown({ root: ROOT, invoked: true });
   process.stdout.write(result.table);
   process.stdout.write("\n");
   process.stdout.write(showdown.table);

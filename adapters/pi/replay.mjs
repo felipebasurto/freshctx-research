@@ -210,9 +210,9 @@ export function messageText(messages) {
  * Pi's `context` hook is request-only: persisted session messages stay as Pi
  * recorded them; only the returned copy is sent to the provider.
  */
-export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS, sidecarRunner } = {}) {
+export function createPiAdapter({ budgetChars = DEFAULT_BUDGET_CHARS, semanticEngineRunner } = {}) {
   const engine = createAdapterEngine(
-    sidecarRunner === undefined ? {} : { sidecarRunner },
+    semanticEngineRunner === undefined ? {} : { semanticEngineRunner },
   );
   const callToUnit = new Map();
   const callMeta = new Map();

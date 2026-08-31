@@ -59,10 +59,10 @@ test("pi-trial-ts hostReadToolArgs pass symbol scope through harness", () => {
   });
 });
 
-test("pi-trial-ts freshCtxEnvForArm toggles sidecar in harness code only", () => {
+test("pi-trial-ts freshCtxEnvForArm toggles semanticEngine in harness code only", () => {
   assert.deepEqual(freshCtxEnvForArm("nothing"), {});
   assert.deepEqual(freshCtxEnvForArm("freshctx-ts"), {});
-  assert.deepEqual(freshCtxEnvForArm("freshctx-no-ts"), { FRESHCTX_SIDECAR: "off" });
+  assert.deepEqual(freshCtxEnvForArm("freshctx-no-ts"), { FRESHCTX_ISOLATED_SEMANTIC_ENGINE: "off" });
   assert.equal(freshCtxExtensionForArm("nothing"), null);
   assert.match(freshCtxExtensionForArm("freshctx-ts"), /adapters\/pi\/extension\.ts$/u);
 });

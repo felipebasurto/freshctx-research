@@ -1,4 +1,4 @@
-# PCR 0109 — Sealed lab program (attestation, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, sidecar)
+# PCR 0109 — Sealed lab program (attestation, sampler, canary, v0.2 draft, interior-edit lock, CORVUS review, Isolated Semantic Engine)
 
 - Date (UTC): 2026-08-28
 - Author / agent: Cursor Grok 4.6
@@ -13,7 +13,7 @@
 
 Build the sealed-lab substrate (remote attestation consume, §5.1 sampler,
 disposable canary, holdout v0.2 protocol path, interior-edit characterization,
-CORVUS review, Tree-sitter sidecar + independent gold) without claiming Level 4
+CORVUS review, Tree-sitter Isolated Semantic Engine + independent gold) without claiming Level 4
 and without treating v0.2 as a tuning set.
 
 ## What we did
@@ -48,15 +48,15 @@ Same traces and `budgetChars`; \(C_t\) not truncated; no `desync_file`; score
 weights untouched. PDF sha256
 `204af5d8df1a25d09dcc2ef154b2aac8d3d3fcea4c9c737a511129f40cd27eaf`.
 
-**PR-H.** ADR 0004 accepts a sidecar. `src/` stays stdlib. Gold is a second
+**PR-H.** ADR 0004 accepts an Isolated Semantic Engine. `src/` stays stdlib. Gold is a second
 program. No LSP. Stateless. Hermes `adapters/hermes/bridge.mjs` is the spawn
 precedent.
 
-**PR-I.** `sidecar/treesitter/` JSON stdin/stdout. Injected runner on
-`FreshCtxEngine`. Missing or broken sidecar fail-closes. No `tree-sitter`
+**PR-I.** `ise/treesitter/` JSON stdin/stdout. Injected runner on
+`FreshCtxEngine`. Missing or broken Isolated Semantic Engine fail-closes. No `tree-sitter`
 import in `src/`.
 
-**PR-J.** `bench/gold-extract.mjs` reads generator offsets. Sabotaged sidecar
+**PR-J.** `bench/gold-extract.mjs` reads generator offsets. Sabotaged Isolated Semantic Engine
 units do not change gold. Neovim C/Lua remain out of scope.
 
 No Level 4 sentence. README stays prototype.
@@ -66,7 +66,7 @@ No Level 4 sentence. README stays prototype.
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `npm test` | yes | 1 | **390** total; **364** pass; **2** fail; **24** skip — PCR 0096/0097 require `bench/hosts/hermes` (pre-existing) |
-| `npm run check` | yes | 0 | includes `sidecar/treesitter/*.mjs` |
+| `npm run check` | yes | 0 | includes `ise/treesitter/*.mjs` |
 | `node bench/run.mjs` | yes | 0 | `score` 89.10716495057945 (`AUTORESEARCH_SCORE=89.107165`) |
 | `npm run ctxbench` | yes | 0 | payload sha256 `697e74e3aef763a9c1e61f80efed86ed1fff57fab3c7426080654b574f99b644` |
 | `npm run holdout:verify -- --pack=holdout-v0.1` | yes | 0 | `unsealed-regression`, `valid: true` |
@@ -101,8 +101,8 @@ none observed. v0.2 is not sealed on this laptop; the PCR says so.
 
 - `sealed` still needs a production GHA freeze-attest run. A draft split is
   not a sealed board.
-- Sampler is whole-file; symbol units are sidecar-proposed, not gold.
-- Sidecar extractors are contract-compatible regex grammars, not a native
+- Sampler is whole-file; symbol units are Isolated Semantic Engine-proposed, not gold.
+- Isolated Semantic Engine extractors are contract-compatible regex grammars, not a native
   Tree-sitter addon.
 - Neovim C/Lua stay out of scope.
 - 0096/0097 still need `bench/hosts/hermes`.
