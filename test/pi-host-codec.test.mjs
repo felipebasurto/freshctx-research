@@ -495,6 +495,7 @@ test("Pi codec reconstructs continuation pagination exactly like the existing pa
 
     assert.ok(oldPath);
     assert.equal(codecPath.applied, true);
+    assert.equal(codecPath.captured.observations[0].observedFileLineCount, 3);
     assert.deepEqual(
       canonicalProviderBytes(codecPath.request.messages),
       canonicalProviderBytes(oldPath.messages),
