@@ -74,5 +74,5 @@ test("PCR count in public status matches Markdown files on disk", async () => {
   const entries = await readdir(join(ROOT, "docs", "lab", "pcr"));
   const count = entries.filter((name) => name.endsWith(".md")).length;
 
-  assert.equal(count, 126);
+  assert.equal(count, 127);
 });
