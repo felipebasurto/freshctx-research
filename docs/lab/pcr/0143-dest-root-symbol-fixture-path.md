@@ -67,19 +67,36 @@ FreshCtx without Tree-sitter does not exist.
 This leftover does not replace the official accepted table.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
-This-run TAP is pasted only after `npm test` on this leftover. Not invented.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..634
+# tests 634
+# pass 591
+# fail 43
+# skipped 0
+```
+
+The 43 fails are `isolated-semantic-engine-missing` plus living-docs PCR
+count (`137 !== 135`). Living-docs is the next pack. This leftover does
+not chase README / INDEX PCR counts. That GHA-class Isolated Semantic
+Engine WASM-missing suite is not invented.
+
+`node --test test/pcr-0143-dest-root-symbol-fixture.test.mjs` is **5 pass / 0 fail**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this leftover | n/a | real TAP will be pasted; not invented |
-| `npm run evaluate` | pending this leftover | n/a | policy/door/lock unchanged |
-| door/lock `git hash-object` | pending | n/a | must hold `f8771c93…` / `4a953591…` |
+| this-run `npm test` | yes | 1 | 634/591/43; Isolated Semantic Engine WASM missing; living-docs next pack; not official table |
+| `node --test test/pcr-0143-dest-root-symbol-fixture.test.mjs` | yes | 0 | 5 pass / 0 fail |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
+| door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
 ## Metric snapshot
 
 | metric | official `79958de` | PCR 0143 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
+| this-run Cloud Agent TAP | n/a | **634/591/43** | Isolated Semantic Engine WASM missing; living-docs next pack; not GHA |
 | dest-root `src/settlement.ts` | missing | still missing | engine `.mjs` only |
 | t1 forced symbol path | dest-root abs miss | `.work/<arm>/src/settlement.ts` when workspace env is set | path miss is the leftover |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
