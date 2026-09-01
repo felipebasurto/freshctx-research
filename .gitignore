@@ -16,3 +16,4 @@ bench/reports/*.jsonl
 autoresearch/runs/
 docs/lab/pi-trial/.work/
 docs/lab/pi-trial-ts/.work/
+docs/lab/hermes-trial-ts/.work/
