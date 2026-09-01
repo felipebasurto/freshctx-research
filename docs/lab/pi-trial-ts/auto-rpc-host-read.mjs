@@ -6,6 +6,7 @@ import {
   PI_TRIAL_WORKSPACE_ENV,
   hostReadToolArgs,
   isDestRootSettlementSearch,
+  isWorkFixtureSettlementPath,
 } from "./pack.mjs";
 
 const packDir = fileURLToPath(new URL(".", import.meta.url));
@@ -41,8 +42,9 @@ export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   if (!tool || tool.toolName !== "read") return false;
   const args = tool.args ?? {};
   const expected = hostReadToolArgs({ workspace });
+  const pathOk = args.path === expected.path || isWorkFixtureSettlementPath(args.path);
   return (
-    args.path === expected.path &&
+    pathOk &&
     args.scope === expected.scope &&
     args.selector === expected.selector &&
     args.offset === undefined &&

@@ -62,12 +62,20 @@ export function hostReadToolArgs({ workspace, env = process.env } = {}) {
 /** Hermes dest-root search of the missing settlement fixture. Not a t1 match. */
 export const DEST_ROOT_SEARCH_TOOLS = new Set(["search_files"]);
 
+/** Multi-turn `.work/<host>/<arm>/` or two-turn `.work/<arm>/` settlement fixture. */
+const WORK_FIXTURE_SETTLEMENT = /\/\.work\/(?:(?:pi|hermes)\/)?(?:nothing|freshctx-no-ts|freshctx-ts)\/src\/settlement\.ts$/u;
+
+export function isWorkFixtureSettlementPath(path) {
+  return typeof path === "string" && WORK_FIXTURE_SETTLEMENT.test(path);
+}
+
 export function searchPathFromArgs(args = {}) {
   return args.path ?? args.directory ?? args.target_directory ?? args.root ?? args.file ?? null;
 }
 
 export function isDestRootSettlementPath(path, { workspace, destRoot } = {}) {
   if (typeof path !== "string" || path.length === 0) return false;
+  if (isWorkFixtureSettlementPath(path)) return false;
   const fixture = workspace ? join(workspace, TARGET_FILE) : null;
   if (fixture && path === fixture) return false;
   if (workspace && path === TARGET_FILE) return true;
