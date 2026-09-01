@@ -4,7 +4,7 @@
   "notSweBench": true,
   "measuredSweScores": null,
   "model": "deepseek-v4-flash",
-  "note": "Tiny synthetic pack for fail-closed task pass/fail. Not a live host dump. Not a SWE-bench instance. Do not invent Pass@1.",
+  "note": "Tiny synthetic pack for fail-closed task pass/fail. Not a live host dump. Not a SWE-bench instance. Do not invent Pass@1. Arms are nothing vs FreshCtx only.",
   "tasks": [
     {
       "host": "pi",
@@ -17,20 +17,20 @@
     },
     {
       "host": "pi",
-      "arm": "freshctx-no-ts",
-      "task": "synthetic-mini-board-001",
-      "cells": [
-        { "turn": 1, "exact_current_bytes": "n/a", "stdout_current": "n/a" },
-        { "turn": 2, "missing": true }
-      ]
-    },
-    {
-      "host": "pi",
-      "arm": "freshctx-ts",
+      "arm": "freshctx",
       "task": "synthetic-mini-board-001",
       "cells": [
         { "turn": 1, "exact_current_bytes": "n/a", "stdout_current": "n/a" },
         { "turn": 2, "exact_current_bytes": "yes", "stdout_current": "yes" }
+      ]
+    },
+    {
+      "host": "hermes",
+      "arm": "freshctx",
+      "task": "synthetic-mini-board-001",
+      "cells": [
+        { "turn": 1, "exact_current_bytes": "n/a", "stdout_current": "n/a" },
+        { "turn": 2, "missing": true }
       ]
     }
   ]

@@ -22,8 +22,9 @@ skip-as-pass. Official table stays **549/0/0/549**.
 
 1. Added `docs/lab/success-board/` with pack, board scorer, run helper,
    SCOPE, and one tiny synthetic pack.
-2. Arms are `nothing` / `freshctx-ts`, plus `freshctx-no-ts` because that
-   arm is already in the host trial.
+2. Arms are `nothing` vs `freshctx` only. FreshCtx is Isolated Semantic
+   Engine (Tree-sitter) by default. FreshCtx without Tree-sitter does not
+   exist. No `freshctx-no-ts` arm.
 3. Pass requires later-turn `exact_current_bytes=yes` and `stdout_current=yes`.
 4. Missing dump fail-closes. Turn-1 `n/a` alone is not a pass.
 5. Added `test/pcr-0141-success-board.test.mjs`.
@@ -38,8 +39,7 @@ skip-as-pass. Official table stays **549/0/0/549**.
 | arm | FreshCtx | Isolated Semantic Engine | scored asserts |
 |---|---|---|---|
 | `nothing` | no | n/a | `exact_current_bytes`, `stdout_current` |
-| `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off`) | same |
-| `freshctx-ts` | yes | on (default factory; Tree-sitter when installed) | same |
+| `freshctx` | yes | on (Tree-sitter default) | same |
 
 Model remains `deepseek-v4-flash` only.
 Host never exposes a Tree-sitter toggle.
@@ -99,8 +99,8 @@ Synthetic board on this leftover (not a live host table):
 ```
 host	arm	task	verdict	reason
 pi	nothing	synthetic-mini-board-001	fail	assert-failed
-pi	freshctx-no-ts	synthetic-mini-board-001	fail	missing-dump
-pi	freshctx-ts	synthetic-mini-board-001	pass	exact-current-and-stdout
+pi	freshctx	synthetic-mini-board-001	pass	exact-current-and-stdout
+hermes	freshctx	synthetic-mini-board-001	fail	missing-dump
 ```
 
 Do not invent `request_bytes` or Pass@1.

@@ -52,7 +52,7 @@ test("PCR 0141 board is harness-only task pass/fail, not SWE Pass@1", () => {
   assert.equal(KIND, "harness-only-success-board");
   assert.equal(MODEL, "deepseek-v4-flash");
   assert.deepEqual(HOSTS, ["pi", "hermes"]);
-  assert.deepEqual(ARMS, ["nothing", "freshctx-no-ts", "freshctx-ts"]);
+  assert.deepEqual(ARMS, ["nothing", "freshctx"]);
   assert.deepEqual(ASSERTS, ["exact_current_bytes", "stdout_current"]);
   assert.equal(SUCCESS_METRIC, "task-pass-fail-exact-current-and-stdout");
   assert.ok(SUCCESS_METRIC_NOT.includes("pass@1"));
@@ -63,12 +63,12 @@ test("PCR 0141 board is harness-only task pass/fail, not SWE Pass@1", () => {
   assert.equal(sweHostMeasuredSweScores(), null);
 });
 
-test("PCR 0141 keeps the three trial arms and rejects invented SWE arms", () => {
+test("PCR 0141 compares nothing vs FreshCtx only and rejects a no-ts arm", () => {
   assert.doesNotThrow(() => validateArm("nothing"));
-  assert.doesNotThrow(() => validateArm("freshctx-ts"));
-  assert.doesNotThrow(() => validateArm("freshctx-no-ts"));
-  assert.throws(() => validateArm("freshctx"), /nothing\|freshctx-no-ts\|freshctx-ts/u);
-  assert.throws(() => validateArm("with-symbol"), /nothing\|freshctx-no-ts\|freshctx-ts/u);
+  assert.doesNotThrow(() => validateArm("freshctx"));
+  assert.throws(() => validateArm("freshctx-no-ts"), /nothing\|freshctx/u);
+  assert.throws(() => validateArm("freshctx-ts"), /nothing\|freshctx/u);
+  assert.throws(() => validateArm("with-symbol"), /nothing\|freshctx/u);
 });
 
 test("PCR 0141 missing dump is fail, not skip-as-pass", () => {
@@ -147,7 +147,7 @@ test("PCR 0141 task fail-closes when later dumps are missing or only n/a", () =>
   assert.equal(assertFailed.reason, "assert-failed");
 });
 
-test("PCR 0141 synthetic pack scores nothing / freshctx-no-ts / freshctx-ts fail-closed", async () => {
+test("PCR 0141 synthetic pack scores nothing vs FreshCtx fail-closed", async () => {
   const pack = await loadSyntheticPack(fixturePath);
   assert.equal(pack.label, "synthetic");
   assert.equal(pack.liveHost, false);
@@ -159,8 +159,8 @@ test("PCR 0141 synthetic pack scores nothing / freshctx-no-ts / freshctx-ts fail
     board.rows.map((row) => [row.host, row.arm, row.task, row.verdict, row.reason]),
     [
       ["pi", "nothing", "synthetic-mini-board-001", "fail", "assert-failed"],
-      ["pi", "freshctx-no-ts", "synthetic-mini-board-001", "fail", "missing-dump"],
-      ["pi", "freshctx-ts", "synthetic-mini-board-001", "pass", "exact-current-and-stdout"],
+      ["pi", "freshctx", "synthetic-mini-board-001", "pass", "exact-current-and-stdout"],
+      ["hermes", "freshctx", "synthetic-mini-board-001", "fail", "missing-dump"],
     ],
   );
   assert.equal(board.measuredSweScores, null);

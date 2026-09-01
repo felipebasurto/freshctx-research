@@ -12,7 +12,8 @@ Official accepted TAP stays **549/0/0/549**.
 ## What this is
 
 - A tiny synthetic pack (`synthetic-mini-board-001`).
-- Arms already used in the host trial: `nothing`, `freshctx-no-ts`, `freshctx-ts`.
+- Arms: `nothing` vs `freshctx`. FreshCtx is Isolated Semantic Engine
+  (Tree-sitter) by default. FreshCtx without Tree-sitter does not exist.
 - Pass only when later-turn dumps show both asserts.
 - Missing dump = **fail**, not skip-as-pass.
 
@@ -24,8 +25,9 @@ Official accepted TAP stays **549/0/0/549**.
 - Not a live measurement. `measuredSweScores()` is `null`.
 - Not a cost ledger.
 
-Isolated Semantic Engine (Tree-sitter) is a FreshCtx-internal default when
-installed. This leftover does not add a Tree-sitter host toggle.
+Isolated Semantic Engine (Tree-sitter) is the FreshCtx default. This leftover
+does not add a Tree-sitter host toggle. FreshCtx without Tree-sitter does not
+exist.
 
 ## Commands
 

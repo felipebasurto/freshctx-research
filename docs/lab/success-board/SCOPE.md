@@ -5,7 +5,7 @@ This directory is a **harness-only success board**. It is **not a full SWE-bench
 ## In scope
 
 1. Fail-closed task pass/fail from `exact_current_bytes` and `stdout_current`.
-2. Arms `nothing` / `freshctx-ts`, plus `freshctx-no-ts` because that arm is already in the trial.
+2. Arms `nothing` vs `freshctx` only. FreshCtx is Isolated Semantic Engine (Tree-sitter) by default.
 3. A tiny synthetic pack so the board can run without a live dump.
 4. Missing dump = fail. Never skip-as-pass.
 
@@ -19,7 +19,8 @@ This directory is a **harness-only success board**. It is **not a full SWE-bench
 - Editing cost-ledger or PCR 0140.
 - Editing `src/`, door (`src/anchors.mjs`), or `bench/repos.lock.json`.
 - `--relock`.
-- A Tree-sitter host toggle. Isolated Semantic Engine (Tree-sitter) is not a host switch.
+- A `freshctx-no-ts` arm. FreshCtx without Tree-sitter does not exist.
+- A Tree-sitter host toggle. Isolated Semantic Engine (Tree-sitter) is the FreshCtx default, not a host switch.
 - Pasting API keys. Never paste an API key.
 
 ## Success metric

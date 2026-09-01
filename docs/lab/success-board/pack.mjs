@@ -4,7 +4,7 @@ export const PACK_ID = "success-board-v0.1";
 export const KIND = "harness-only-success-board";
 export const MODEL = "deepseek-v4-flash";
 export const HOSTS = ["pi", "hermes"];
-export const ARMS = ["nothing", "freshctx-no-ts", "freshctx-ts"];
+export const ARMS = ["nothing", "freshctx"];
 export const ASSERTS = ["exact_current_bytes", "stdout_current"];
 export const SUCCESS_METRIC = "task-pass-fail-exact-current-and-stdout";
 export const SUCCESS_METRIC_NOT = ["pass@1", "swe-bench-score", "cost", "tokens"];
@@ -42,5 +42,5 @@ export function freshCtxOn(arm) {
 
 export function isolatedSemanticEngineOn(arm) {
   validateArm(arm);
-  return arm === "freshctx-ts";
+  return arm === "freshctx";
 }
