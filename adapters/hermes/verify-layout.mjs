@@ -27,7 +27,11 @@ export async function missingLayoutPaths(pluginsDir) {
   const required = [
     ["bridge", layout.bridge],
     ["request-prune.mjs", layout.requestPrune],
+    ["engine-factory.mjs", layout.engineFactory],
+    ["shell-read.mjs", layout.shellRead],
     ["src/index.mjs", join(layout.srcDir, "index.mjs")],
+    ["ise/treesitter/client.mjs", join(layout.iseDir, "treesitter", "client.mjs")],
+    ["ise/treesitter/parse.mjs", join(layout.iseDir, "treesitter", "parse.mjs")],
   ];
   const missing = [];
   for (const [label, path] of required) {

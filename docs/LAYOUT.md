@@ -22,16 +22,20 @@ node --test test/*.test.mjs
 
 ## Hermes installed shape
 
-`npm run hermes:install -- <plugins-dir>` creates three symlinks:
+`npm run hermes:install -- <plugins-dir>` creates six symlinks:
 
 ```text
 <plugins-dir>/context_engine/freshctx  -> adapters/hermes/
 <plugins-dir>/context_engine/request-prune.mjs -> adapters/request-prune.mjs
+<plugins-dir>/context_engine/engine-factory.mjs -> adapters/engine-factory.mjs
+<plugins-dir>/context_engine/shell-read.mjs -> adapters/shell-read.mjs
 <plugins-dir>/src -> src/
+<plugins-dir>/ise -> ise/
 ```
 
 Installing only `adapters/hermes/` is incomplete because `bridge.mjs` imports
-both the shared request-pruning module and the core.
+request pruning, the Isolated Semantic Engine factory, shell-read tracking, and
+the core.
 
 ## Cleanup boundary
 
