@@ -633,6 +633,11 @@ function userMessageCount(messages) {
   return count;
 }
 
+function selectedIsolatedSemanticEngineSymbol(unit) {
+  if (unit?.scope !== "symbol") return false;
+  return String(unit?.resolutionMethod ?? "") === "isolated-semantic-engine";
+}
+
 export function shouldCollapseCurrentProjection(
   messages,
   projection,
@@ -642,6 +647,12 @@ export function shouldCollapseCurrentProjection(
   if (hasHistoricalProjectionMessage(messages)) return false;
   if (userMessageCount(userCountMessages) <= 1) return false;
   if ((projection?.selected?.length ?? 0) === 0) return false;
+  // PCR 0148: an Isolated Semantic Engine symbol that resolved this request
+  // must stay on the live tail. Empty-tail collapse prints resolution=none
+  // (PCR 0139 t4 leftover). File-scope unchanged collapse stays PCR 0103.
+  if ((projection.selected ?? []).some(selectedIsolatedSemanticEngineSymbol)) {
+    return false;
+  }
   // Budget-omitted units were never served in the live projection; collapse
   // when every unit we would serve this turn is already injected (PCR 0100).
   return projection.selected.length === skipEligibleSelections;
