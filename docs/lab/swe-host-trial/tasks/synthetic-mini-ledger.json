@@ -1,0 +1,17 @@
+{
+  "instance_id": "synthetic-mini-ledger-001",
+  "origin": "synthetic-local-fixture",
+  "notFromSweBench": true,
+  "repo": "docs/lab/swe-host-trial/fixture/mini-ledger",
+  "base_commit": null,
+  "problem_statement": "settleDaily returns MARKER_SETTLE. After an interior flip the host must quote the current marker. This card is a local synthetic fixture, not a SWE-bench instance.",
+  "fail_to_pass": ["node --test test/settle.test.mjs"],
+  "pass_to_pass": [],
+  "host_read": {
+    "path": "src/settle.mjs",
+    "scope": "symbol",
+    "selector": "settleDaily"
+  },
+  "success_metric": "host-request-bytes-and-resolution",
+  "success_metric_not": ["pass@1", "swe-bench-score"]
+}
