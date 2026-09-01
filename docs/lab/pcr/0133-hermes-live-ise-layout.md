@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/hermes-live-ise-engage-814e` / draft (this PR)
+- Branch / PR: `cursor/hermes-live-ise-engage-814e` / [135](https://github.com/felipebasurto/freshctx/pull/135)
 - Base SHA: `4acdcb09e0da7cea1f104460f188a275c4ec4475`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `adapter-only`; `measurement`
@@ -55,27 +55,31 @@ Host never exposes a Tree-sitter toggle.
 Canonical TAP from this HEAD after `npm test`.
 
 ```
-TAP pending this run
+1..570
+# tests 570
+# pass 570
+# fail 0
+# skipped 0
 ```
 
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending | n/a | fill from this run |
-| `npm run evaluate` | pending | n/a | fill from this run |
-| door/lock `git hash-object` | pending | n/a | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
+| `npm test` | yes | 0 | TAP above (+3 vs 567 on `4acdcb09`) |
+| `npm run evaluate` | yes | 0 | `EVALUATE_VERDICT=PASS` |
+| door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
 ## Metric snapshot
 
 | metric | official `4acdcb09` | PCR 0133 (this run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | 567 | pending | pending |
-| `npm test` TAP `# pass` | 567 | pending | pending |
-| `npm test` TAP `# fail` | 0 | pending | pending |
-| `npm test` TAP `# skipped` | 0 | pending | pending |
-| evaluate | n/a on official table | pending | not a live-pack score |
+| `npm test` TAP `# tests` | 567 | **570** | **+3** |
+| `npm test` TAP `# pass` | 567 | **570** | **+3** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | `EVALUATE_VERDICT=PASS` | not a live-pack score |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
 

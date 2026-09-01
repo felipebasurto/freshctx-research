@@ -125,7 +125,7 @@ Append-only snapshots. Do not overwrite earlier rows.
 | 2026-09-01 | (PCR 0132) Hermes TypeScript three-arm measure pack; launch-proxy; dest=`cloud-agent`; official table hold | TAP 562 / 562 pass / 0 fail / 0 skip | n/a (`EVALUATE_VERDICT=PASS`) | n/a | n/a | n/a | n/a (harness-only; no live Hermes table) | 1.0 | [0132](pcr/0132-hermes-trial-ts-measure-pack.md) |
 | 2026-09-01 | (PCR 0132 leftover) force-host-read general plugin + CLI t1 always-assert; dest=`cloud-agent`; official table hold | TAP 567 / 567 pass / 0 fail / 0 skip | n/a (`EVALUATE_VERDICT=PASS`) | n/a | n/a | n/a | n/a (harness-only; no live Hermes table) | 1.0 | [0132](pcr/0132-hermes-trial-ts-measure-pack.md) |
 | 2026-09-01 | (PCR 0132 leftover) raw `toolsFromHermesEvents` capture; no pre-assert rewrite; dest=`cloud-agent`; official table hold | TAP 567 / 567 pass / 0 fail / 0 skip | n/a (`EVALUATE_VERDICT=PASS`) | n/a | n/a | n/a | n/a (harness-only; no live Hermes table) | 1.0 | [0132](pcr/0132-hermes-trial-ts-measure-pack.md) |
-| 2026-09-01 | (PCR 0133) Hermes destaged Isolated Semantic Engine layout; dest=`cloud-agent`; official table hold | TAP pending this run | n/a (pending evaluate) | n/a | n/a | n/a | n/a (adapter layout; no live Hermes table) | 1.0 | [0133](pcr/0133-hermes-live-ise-layout.md) |
+| 2026-09-01 | (PCR 0133) Hermes destaged Isolated Semantic Engine layout; dest=`cloud-agent`; official table hold | TAP 570 / 570 pass / 0 fail / 0 skip | n/a (`EVALUATE_VERDICT=PASS`) | n/a | n/a | n/a | n/a (adapter layout; no live Hermes table) | 1.0 | [0133](pcr/0133-hermes-live-ise-layout.md) |
 
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total** on `79958de`.
 
