@@ -87,6 +87,9 @@ export function hermesLaunchArgs(protocol) {
   return ["chat"];
 }
 
+/** CLI prompts go through `runCliQuery`. A persistent `hermes chat` sibling shares HERMES_HOME. */
+export const CLI_PROTOCOL_SPAWNS_PERSISTENT_CHILD = false;
+
 function runHelp(bin) {
   return new Promise((resolve) => {
     const child = spawn(bin, ["--help"], { stdio: ["ignore", "pipe", "pipe"] });
@@ -173,6 +176,21 @@ export async function launchHermes({
   const args = hermesLaunchArgs(detected);
   const argvReason = cliQueryArgvInvalidReason(args);
   if (argvReason) throw new Error(argvReason);
+  if (detected === "cli" && !CLI_PROTOCOL_SPAWNS_PERSISTENT_CHILD) {
+    return {
+      proc: null,
+      protocol: detected,
+      env,
+      args,
+      prepared,
+      exit: Promise.resolve({ code: 0, signal: null, stdout: "", stderr: "" }),
+      async stop() {
+        return { code: 0, signal: null, stdout: "", stderr: "" };
+      },
+      getStdout: () => "",
+      getStderr: () => "",
+    };
+  }
   const child = launchChild({
     command: bin,
     args,

@@ -107,6 +107,7 @@ async function runArm(arm) {
           message: prompt,
           continueSession: cell.turn > 1,
           logPath: join(CAPTURE, arm, `${cell.id}.cli.stderr.log`),
+          hermesHome,
         });
         reply = query.reply;
       }

@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 
+/** Piped stdio is a non-TTY. Hermes `chat -q` then oneshot-exits; stderr may be 0. */
+export const CHILD_STDIO = ["pipe", "pipe", "pipe"];
+
 export function mergeChildEnv(extra = {}) {
   const merged = { ...process.env, ...extra };
   if (extra.PATH) merged.PATH = extra.PATH;
@@ -18,7 +21,7 @@ export function launchChild({ command, args = [], cwd, env, logPath }) {
   const proc = spawn(command, args, {
     cwd,
     env: merged,
-    stdio: ["pipe", "pipe", "pipe"],
+    stdio: CHILD_STDIO,
   });
   let stdout = "";
   let stderr = "";
