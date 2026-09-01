@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/cost-ledger-pcr-0137-5d99` (draft)
+- Branch / PR: `cursor/cost-ledger-pcr-0137-5d99` / [138](https://github.com/felipebasurto/freshctx/pull/138) (draft)
 - Base SHA: `4ab081fd8d81335cc58dd776f2d3726ce73920ac`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -60,15 +60,27 @@ A 4-byte estimate may fill `cost_proxy_usd_estimated` and is labeled
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test` is recorded after the first
-verification pass on this branch.
+Canonical TAP from this HEAD after `npm test`.
+
+```
+1..587
+# tests 587
+# pass 586
+# fail 1
+# skipped 0
+```
+
+`test/pcr-0137-cost-ledger.test.mjs` is **13 pass / 0 fail**.
+The one suite fail is `PCR count in public status matches Markdown files on disk`
+(`132 !== 131` in `test/living-docs.test.mjs`). This leftover must not edit
+README PCR counts, INDEX.md, or METRICS.md, so the living-docs pin stays 131.
 
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this HEAD | n/a | fill after verification |
-| `npm run evaluate` | pending this HEAD | n/a | no policy/door/lock edit |
+| `npm test` | yes | 1 | TAP above; living-docs PCR count only |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | no | n/a | ledger + unit tests first |
 
@@ -77,7 +89,11 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 | metric | official `79958de` | PCR 0137 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| evaluate | n/a on official table | pending this HEAD | not a live-pack score |
+| `npm test` TAP `# tests` | 549 | **587** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **586** | +13 PCR 0137; living-docs count fail |
+| `npm test` TAP `# fail` | 0 | **1** | living-docs `132 !== 131` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on living-docs | not a live-pack score |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
 | live long-session table | n/a | **none** | not invented |
@@ -101,6 +117,9 @@ on the request body.
 Cost proxy is cited list price, cache-unaware by default, not a billed invoice.
 `.work/` is local and not gitignored from this leftover (gitignore is out of
 path).
+Living-docs still pins public PCR count at 131. Adding `0137-*.md` makes the
+on-disk count 132. README / INDEX / METRICS were out of path, so that test
+fails until a later count bump.
 
 ## Recommended next experiment
 
