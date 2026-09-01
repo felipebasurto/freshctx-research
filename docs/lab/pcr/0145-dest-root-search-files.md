@@ -1,9 +1,10 @@
-# PCR 0144 — Dest-root `search_files` fail-closed for settlement fixture
+# PCR 0145 — Dest-root `search_files` fail-closed for settlement fixture
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/dest-root-search-fail-close-538f` (draft)
+- Branch / PR: `cursor/dest-root-search-fail-close-538f` / [148](https://github.com/felipebasurto/freshctx/pull/148) (draft)
 - Base SHA: `6673013ab983686b0a32df94b4fcad4fcf02a616` (PCR 0143 on main)
+- Number: **0145**. PCR 0144 on main is the not-paper remesure (PR 147). This leftover does not reuse that number.
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
 - `repos.lock` blob: `4a953591e4b175e9fd69f13d6012831b01116dce` (hold)
@@ -38,13 +39,14 @@ No `--relock`. Never paste the key. No live rerun on this leftover.
    search alone must not pass. Fixture `.work` `read_file` + dest-root search
    is a t1 hit.
 3. Force-host-read blocks dest-root settlement `search_files`.
-4. Added `test/pcr-0144-dest-root-search-files.test.mjs`.
+4. Added `test/pcr-0145-dest-root-search-files.test.mjs`.
 5. Did not edit INDEX, METRICS, or README PCR counts.
 6. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`,
    holdout packs, door, or lock.
 7. Did not `--relock`.
 8. Did not invent live `$` or TAP.
 9. Did not mix dest `d8cdd3d5` paper table.
+10. Numbered this leftover **0145**. PCR 0144 on main is PR 147 not-paper remesure.
 
 ## Arms
 
@@ -77,7 +79,7 @@ count (`140 !== 135`). Living-docs is the next pack. This leftover does
 not chase README / INDEX PCR counts. That GHA-class Isolated Semantic
 Engine WASM-missing suite is not invented.
 
-`node --test test/pcr-0144-dest-root-search-files.test.mjs` is **4 pass / 0 fail**.
+`node --test test/pcr-0145-dest-root-search-files.test.mjs` is **4 pass / 0 fail**.
 That row includes dest-root `search_files` fail-closed: dest-root search
 alone is not the t1 match; dest-root search plus `.work` fixture read is
 a t1 hit.
@@ -87,14 +89,14 @@ Isolated leftover + 0143/0132/0117 is **32 pass / 0 fail**.
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | this-run `npm test` | yes | 1 | 638/595/43; Isolated Semantic Engine WASM missing; living-docs next pack; not official table |
-| `node --test test/pcr-0144-dest-root-search-files.test.mjs` | yes | 0 | 4 pass / 0 fail |
+| `node --test test/pcr-0145-dest-root-search-files.test.mjs` | yes | 0 | 4 pass / 0 fail |
 | isolated leftover + 0143/0132/0117 | yes | 0 | 32 pass / 0 fail |
 | `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
 ## Metric snapshot
 
-| metric | official `79958de` | PCR 0144 (this leftover) | delta |
+| metric | official `79958de` | PCR 0145 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
 | this-run Cloud Agent TAP | n/a | **638/595/43** | Isolated Semantic Engine WASM missing; living-docs next pack; not GHA |

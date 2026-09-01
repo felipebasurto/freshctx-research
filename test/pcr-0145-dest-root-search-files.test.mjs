@@ -45,7 +45,7 @@ test("dest-root src/settlement.ts is still missing; engine .mjs only", () => {
 });
 
 test("relative and abs dest-root settlement paths are dest-root when workspace is .work", async () => {
-  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0144-paths-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0145-paths-"));
   try {
     const dest = join(tempRoot, "dest");
     const work = join(dest, ".work", "freshctx-ts");
@@ -85,7 +85,7 @@ test("relative and abs dest-root settlement paths are dest-root when workspace i
 
 test("dest-root search_files is not a t1 match and does not miss when fixture read hits .work", async () => {
   const prior = snapshotWorkspaceEnv();
-  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0144-dest-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0145-dest-"));
   try {
     const dest = join(tempRoot, "dest");
     const work = join(dest, ".work", "freshctx-ts");
@@ -141,7 +141,7 @@ test("dest-root search_files is not a t1 match and does not miss when fixture re
 
 test("force-host-read fail-closes dest-root settlement search_files", async () => {
   const prior = snapshotWorkspaceEnv();
-  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0144-block-"));
+  const tempRoot = await mkdtemp(join(tmpdir(), "freshctx-pcr-0145-block-"));
   try {
     const dest = join(tempRoot, "dest");
     const work = join(dest, ".work", "freshctx-ts");
