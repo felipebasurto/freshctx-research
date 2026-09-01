@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, stat } from "node:fs/promises";
 
 import { launchChild } from "./launch-child.mjs";
 import { hermesBin } from "./launch-hermes.mjs";
@@ -174,14 +174,19 @@ export const HERMES_Q_EXPECTED_ONE_ARGUMENT =
 export const HERMES_CLI_STDERR_LOG_MISSING =
   "t1-read.cli.stderr.log missing: CLI child exited without persisting logPath";
 
+export const HERMES_CLI_STDERR_LOG_EMPTY =
+  "t1-read.cli.stderr.log empty: CLI child persisted 0 bytes (not a query log)";
+
 export async function cliStderrLogMissingReason(logPath) {
   if (!logPath) return HERMES_CLI_STDERR_LOG_MISSING;
   try {
     await access(logPath);
-    return null;
   } catch {
     return HERMES_CLI_STDERR_LOG_MISSING;
   }
+  const size = (await stat(logPath)).size;
+  if (size === 0) return HERMES_CLI_STDERR_LOG_EMPTY;
+  return null;
 }
 
 export function cliQueryArgvInvalidReason(args) {
