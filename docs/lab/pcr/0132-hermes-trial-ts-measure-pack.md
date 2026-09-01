@@ -27,9 +27,10 @@ Isolated Semantic Engine off is harness env only.
 6. Dump proxy writes `scan.json` and redacts Authorization. It never prints the DeepSeek key.
 7. Wired `handleForceHostReadToolCall` through a Hermes general plugin (`pre_tool_call`) installed on all three arms, including `nothing`. Not a second context engine. Not product `src/`.
 8. `auto-rpc.mjs` always calls `assertT1HostReadTools` on t1. Empty tools fail closed. CLI fallback reads plugin-recorded tools when RPC events are absent.
-9. Bumped public PCR count to 128 so living-docs matches `docs/lab/pcr/*.md`.
-10. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout packs, door, or lock.
-11. Did not `--relock`. No apex or GHA work. No Pi rewrite.
+9. `toolsFromHermesEvents` returns raw host events. It does not call `applyForceHostReadToTools` before `assertT1HostReadTools`. Live mutation stays in `handleForceHostReadToolCall`. Same class as Pi PCR 0118.
+10. Bumped public PCR count to 128 so living-docs matches `docs/lab/pcr/*.md`.
+11. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout packs, door, or lock.
+12. Did not `--relock`. No apex or GHA work. No Pi rewrite.
 
 ## Arms
 
@@ -44,7 +45,7 @@ Host never exposes a Tree-sitter toggle.
 
 ## Benchmarks run
 
-Canonical TAP from this run on branch HEAD.
+Canonical TAP from this HEAD after `npm test`.
 
 ```
 1..567
@@ -95,7 +96,7 @@ none observed.
 `auto-rpc.mjs` requires `hermes` on PATH.
 Dump-only proxy answers with a dummy completion when no key is present.
 The force-host-read general plugin must be enabled in isolated `HERMES_HOME` config.
-CLI t1 now fail-closes on empty tools. Live host still needs official Hermes to fire `pre_tool_call`.
+CLI t1 now fail-closes on empty tools. Capture copies stay honest. Live host still needs official Hermes to fire `pre_tool_call`.
 
 ## Recommended next experiment
 
