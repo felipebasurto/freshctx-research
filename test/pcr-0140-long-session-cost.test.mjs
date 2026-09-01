@@ -309,6 +309,7 @@ test("PCR 0140 prose says Tree-sitter and Isolated Semantic Engine, never a nick
     assert.match(text, /Isolated Semantic Engine/u);
     assert.doesNotMatch(text, /tsitter|tree sitter|TreeSitter|TS engine/u);
     assert.doesNotMatch(text, /freshctx-no-ts/u);
+    assert.doesNotMatch(text, new RegExp(["side", "car"].join(""), "iu"));
     assert.doesNotMatch(text, SECRET_LEAK);
   }
 });
