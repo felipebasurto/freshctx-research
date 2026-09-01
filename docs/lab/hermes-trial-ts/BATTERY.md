@@ -14,7 +14,8 @@ Working copies en `docs/lab/hermes-trial-ts/.work/`. El fixture fuente está en
 `docs/lab/pi-trial-ts/fixture/`. Dest-root `src/settlement.ts` no existe (solo
 engine `.mjs`). Arranca Hermes en la working copy y exporta
 `FRESHCTX_CWD` / `HERMES_TRIAL_WORKSPACE` a esa carpeta para que el
-`read_file` de t1 no apunte al dest-root.
+`read_file` de t1 no apunte al dest-root. Dest-root `search_files` of
+`src/settlement.ts` is fail-closed and is not the t1 match.
 
 FreshCtx plugin path: desde la raíz del repo FreshCtx
 (`adapters/hermes`), no desde `docs/`.

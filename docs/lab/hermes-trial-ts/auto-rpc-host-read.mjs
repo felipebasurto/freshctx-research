@@ -2,7 +2,12 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FRESHCTX_CWD_ENV, HERMES_TRIAL_WORKSPACE_ENV, hostReadToolArgs } from "./pack.mjs";
+import {
+  FRESHCTX_CWD_ENV,
+  HERMES_TRIAL_WORKSPACE_ENV,
+  hostReadToolArgs,
+  isDestRootSettlementSearch,
+} from "./pack.mjs";
 import {
   BLOCKED_T1_TOOLS,
   FORCE_HOST_READ_ENV,
@@ -73,11 +78,15 @@ export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   );
 }
 
-export function t1HostReadToolsInvalidReason(tools, { workspace } = {}) {
+export function t1HostReadToolsInvalidReason(tools, { workspace, destRoot } = {}) {
   if (!Array.isArray(tools) || tools.length === 0) {
     return "t1-read recorded no host tools";
   }
+  let sawMatch = false;
   for (const tool of tools) {
+    if (isDestRootSettlementSearch(tool, { workspace, destRoot })) {
+      continue;
+    }
     if (BLOCKED_T1_TOOLS.has(tool.toolName)) {
       return `t1-read leftover ${tool.toolName} tool is invalid`;
     }
@@ -87,16 +96,20 @@ export function t1HostReadToolsInvalidReason(tools, { workspace } = {}) {
     if (!readToolMatchesHostArgs(tool, { workspace })) {
       return "t1-read read tool must use scope=symbol selector settleDailyLedger with no offset/limit";
     }
+    sawMatch = true;
+  }
+  if (!sawMatch) {
+    return "t1-read dest-root search_files is not a fixture match";
   }
   return null;
 }
 
-export function t1HostReadToolsValid(tools, { workspace } = {}) {
-  return t1HostReadToolsInvalidReason(tools, { workspace }) === null;
+export function t1HostReadToolsValid(tools, { workspace, destRoot } = {}) {
+  return t1HostReadToolsInvalidReason(tools, { workspace, destRoot }) === null;
 }
 
-export function assertT1HostReadTools(tools, { arm = "unknown", workspace } = {}) {
-  const reason = t1HostReadToolsInvalidReason(tools, { workspace });
+export function assertT1HostReadTools(tools, { arm = "unknown", workspace, destRoot } = {}) {
+  const reason = t1HostReadToolsInvalidReason(tools, { workspace, destRoot });
   if (reason) {
     throw new Error(`${reason} (arm=${arm}): ${JSON.stringify(tools)}`);
   }

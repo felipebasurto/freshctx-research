@@ -13,7 +13,8 @@ Working copies: `docs/lab/cost-ledger/.work/` (local). Fixture fuente:
 `docs/lab/pi-trial-ts/fixture/`. Dest-root `src/settlement.ts` is missing
 (engine `.mjs` only). Start the host in that working copy and set
 `FRESHCTX_CWD` / `HERMES_TRIAL_WORKSPACE` (or `PI_TRIAL_WORKSPACE`) to it
-so t1 symbol reads hit `.work/<arm>/src/settlement.ts`.
+so t1 symbol reads hit `.work/<arm>/src/settlement.ts`. Dest-root
+`search_files` of `src/settlement.ts` is fail-closed and is not the t1 match.
 
 ---
 

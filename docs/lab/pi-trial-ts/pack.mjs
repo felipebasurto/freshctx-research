@@ -59,6 +59,28 @@ export function hostReadToolArgs({ workspace, env = process.env } = {}) {
   };
 }
 
+/** Hermes dest-root search of the missing settlement fixture. Not a t1 match. */
+export const DEST_ROOT_SEARCH_TOOLS = new Set(["search_files"]);
+
+export function searchPathFromArgs(args = {}) {
+  return args.path ?? args.directory ?? args.target_directory ?? args.root ?? args.file ?? null;
+}
+
+export function isDestRootSettlementPath(path, { workspace, destRoot } = {}) {
+  if (typeof path !== "string" || path.length === 0) return false;
+  const fixture = workspace ? join(workspace, TARGET_FILE) : null;
+  if (fixture && path === fixture) return false;
+  if (workspace && path === TARGET_FILE) return true;
+  if (destRoot && path === join(destRoot, TARGET_FILE)) return true;
+  return Boolean(workspace && path.endsWith(`/${TARGET_FILE}`) && path !== fixture);
+}
+
+export function isDestRootSettlementSearch(tool, { workspace, destRoot } = {}) {
+  if (!tool || !DEST_ROOT_SEARCH_TOOLS.has(tool.toolName)) return false;
+  const args = tool.args ?? tool.input ?? {};
+  return isDestRootSettlementPath(searchPathFromArgs(args), { workspace, destRoot });
+}
+
 export const CELLS = [
   { id: "t1-read", turn: 1, mutate: null, prompt: PROMPT_T1 },
   { id: "t2-settle", turn: 2, mutate: "flip-settle", prompt: PROMPT_T2 },

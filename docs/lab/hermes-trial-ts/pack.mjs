@@ -24,8 +24,12 @@ import {
   TARGET_SYMBOL,
   freshCtxEnvForArm,
   hostReadToolArgs,
+  isDestRootSettlementPath,
+  isDestRootSettlementSearch,
   promptForCell,
   resolveHostReadWorkspace,
+  searchPathFromArgs,
+  DEST_ROOT_SEARCH_TOOLS,
   validateArm,
 } from "../pi-trial-ts/pack.mjs";
 
@@ -55,8 +59,12 @@ export {
   TARGET_SYMBOL,
   freshCtxEnvForArm,
   hostReadToolArgs,
+  isDestRootSettlementPath,
+  isDestRootSettlementSearch,
   promptForCell,
   resolveHostReadWorkspace,
+  searchPathFromArgs,
+  DEST_ROOT_SEARCH_TOOLS,
   validateArm,
 };
 

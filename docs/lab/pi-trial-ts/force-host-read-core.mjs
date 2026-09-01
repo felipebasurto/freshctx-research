@@ -1,4 +1,4 @@
-import { hostReadToolArgs } from "./pack.mjs";
+import { hostReadToolArgs, isDestRootSettlementSearch, resolveHostReadWorkspace } from "./pack.mjs";
 
 export const BLOCKED_T1_TOOLS = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
 
@@ -30,6 +30,14 @@ export function handleForceHostReadToolCall(event, state) {
     };
   }
 
+  const workspace = resolveHostReadWorkspace();
+  if (isDestRootSettlementSearch(event, { workspace })) {
+    return {
+      block: true,
+      reason: "Pi trial dest-root search_files of src/settlement.ts is fail-closed; fixture is .work",
+    };
+  }
+
   return null;
 }
 
@@ -46,6 +54,14 @@ export function handleForceHostReadExecutionStart(event, state) {
     return {
       block: true,
       reason: "Pi trial t1-read requires read with scope=symbol selector settleDailyLedger",
+    };
+  }
+
+  const workspace = resolveHostReadWorkspace();
+  if (isDestRootSettlementSearch(event, { workspace })) {
+    return {
+      block: true,
+      reason: "Pi trial dest-root search_files of src/settlement.ts is fail-closed; fixture is .work",
     };
   }
 
