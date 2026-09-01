@@ -15,8 +15,8 @@ This directory is a **harness-only success board**. It is **not a full SWE-bench
 - Inventing Pass@1 or any SWE score. Do not invent numbers.
 - Cost, provider token counts, or dollar figures.
 - Replacing the official accepted table. It stays **549/0/0/549**.
-- Rewriting PCR 0139 INDEX or METRICS rows.
-- Adding PCR 0140 or cost-ledger rows. INDEX and METRICS take a 0141 append after 0139 only.
+- Editing `docs/lab/INDEX.md` or `docs/lab/METRICS.md`. Living PCR count stays for the next pack.
+- Editing cost-ledger or PCR 0140.
 - Editing `src/`, door (`src/anchors.mjs`), or `bench/repos.lock.json`.
 - `--relock`.
 - A Tree-sitter host toggle. Isolated Semantic Engine (Tree-sitter) is not a host switch.
