@@ -62,17 +62,34 @@ FreshCtx without Tree-sitter does not exist.
 This leftover does not replace the official accepted table.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
-Isolated leftover suite before this-run `npm test`:
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
 
-`node --test test/pcr-0144-dest-root-search-files.test.mjs test/pcr-0143-dest-root-symbol-fixture.test.mjs test/pcr-0132-hermes-trial-ts-measure-pack.test.mjs test/pcr-0117-pi-auto-rpc-host-read.test.mjs` is **32 pass / 0 fail**.
+```
+1..638
+# tests 638
+# pass 595
+# fail 43
+# skipped 0
+```
 
-This-run Cloud Agent TAP is pasted below after `npm test`. Not invented.
+The 43 fails are `isolated-semantic-engine-missing` plus living-docs PCR
+count (`140 !== 135`). Living-docs is the next pack. This leftover does
+not chase README / INDEX PCR counts. That GHA-class Isolated Semantic
+Engine WASM-missing suite is not invented.
+
+`node --test test/pcr-0144-dest-root-search-files.test.mjs` is **4 pass / 0 fail**.
+That row includes dest-root `search_files` fail-closed: dest-root search
+alone is not the t1 match; dest-root search plus `.work` fixture read is
+a t1 hit.
+
+Isolated leftover + 0143/0132/0117 is **32 pass / 0 fail**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
+| this-run `npm test` | yes | 1 | 638/595/43; Isolated Semantic Engine WASM missing; living-docs next pack; not official table |
+| `node --test test/pcr-0144-dest-root-search-files.test.mjs` | yes | 0 | 4 pass / 0 fail |
 | isolated leftover + 0143/0132/0117 | yes | 0 | 32 pass / 0 fail |
-| this-run `npm test` | pending | — | paste real TAP; Isolated Semantic Engine WASM missing expected; living-docs next pack; not official table |
-| `npm run evaluate` | pending | — | hard gate follows this-run tests |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
 ## Metric snapshot
@@ -80,6 +97,7 @@ This-run Cloud Agent TAP is pasted below after `npm test`. Not invented.
 | metric | official `79958de` | PCR 0144 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
+| this-run Cloud Agent TAP | n/a | **638/595/43** | Isolated Semantic Engine WASM missing; living-docs next pack; not GHA |
 | dest-root `src/settlement.ts` | missing | still missing | engine `.mjs` only |
 | t1 fixture `read_file` | HIT `.work` on `6673013a` | still HIT `.work` | PCR 0143 hold |
 | dest-root `search_files` as t1 | counted as miss (`hostReadArgsMatched=false`) | **fail-closed**; not the t1 match | leftover on `6673013a` |
