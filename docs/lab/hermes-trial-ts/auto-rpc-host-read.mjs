@@ -7,6 +7,7 @@ import {
   HERMES_TRIAL_WORKSPACE_ENV,
   hostReadToolArgs,
   isDestRootSettlementSearch,
+  isWorkFixtureSettlementPath,
 } from "./pack.mjs";
 import {
   BLOCKED_T1_TOOLS,
@@ -69,8 +70,9 @@ export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   if (!tool || !isHermesReadTool(tool.toolName)) return false;
   const args = tool.args ?? tool.input ?? {};
   const expected = hostReadToolArgs({ workspace });
+  const pathOk = args.path === expected.path || isWorkFixtureSettlementPath(args.path);
   return (
-    args.path === expected.path &&
+    pathOk &&
     args.scope === expected.scope &&
     args.selector === expected.selector &&
     args.offset === undefined &&
