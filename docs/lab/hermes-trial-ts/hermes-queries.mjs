@@ -218,6 +218,9 @@ export function cliQueryArgs({ continueSession = false, message } = {}) {
 }
 
 export async function runCliQuery({ cwd, env, message, continueSession = false, logPath }) {
+  if (!logPath) {
+    throw new Error(HERMES_CLI_STDERR_LOG_MISSING);
+  }
   const child = launchChild({
     command: hermesBin(),
     args: cliQueryArgs({ continueSession, message }),
@@ -226,6 +229,8 @@ export async function runCliQuery({ cwd, env, message, continueSession = false, 
     logPath,
   });
   const result = await child.exit;
+  const missing = await cliStderrLogMissingReason(logPath);
+  if (missing) throw new Error(missing);
   const reason = hermesCliQueryFailedReason(result);
   if (reason) throw new Error(reason);
   return {

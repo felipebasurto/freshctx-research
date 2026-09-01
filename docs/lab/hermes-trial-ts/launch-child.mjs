@@ -7,6 +7,11 @@ export function mergeChildEnv(extra = {}) {
   return merged;
 }
 
+export async function persistLaunchLog(logPath, stderr) {
+  if (!logPath) return;
+  await writeFile(logPath, stderr ?? "");
+}
+
 export function launchChild({ command, args = [], cwd, env, logPath }) {
   if (!command) throw new Error("launchChild requires command");
   const merged = mergeChildEnv(env);
@@ -23,8 +28,12 @@ export function launchChild({ command, args = [], cwd, env, logPath }) {
   proc.stderr.on("data", (chunk) => {
     stderr += chunk.toString("utf8");
   });
-  const exit = new Promise((resolve) => {
+  const closed = new Promise((resolve) => {
     proc.on("close", (code, signal) => resolve({ code, signal, stdout, stderr }));
+  });
+  const exit = closed.then(async (result) => {
+    await persistLaunchLog(logPath, result.stderr);
+    return result;
   });
   proc.on("error", (error) => {
     stderr += error instanceof Error ? error.message : String(error);
@@ -46,7 +55,7 @@ export function launchChild({ command, args = [], cwd, env, logPath }) {
         }, waitMs);
       }),
     ]);
-    if (logPath) await writeFile(logPath, result.stderr);
+    await persistLaunchLog(logPath, result.stderr);
     return result;
   }
 
