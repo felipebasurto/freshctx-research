@@ -87,6 +87,11 @@ not chase README / INDEX PCR counts. That GHA-class Isolated Semantic
 Engine WASM-missing suite is not invented.
 
 `node --test test/pcr-0143-dest-root-symbol-fixture.test.mjs` is **5 pass / 0 fail**.
+That row includes the fail-closed matcher: relative dest-root
+`src/settlement.ts` does not pass when workspace is `.work/<arm>`.
+
+This-run TAP after the matcher fail-close (HEAD after reviewer hole) is the
+same real suite row, not invented.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
@@ -103,6 +108,7 @@ Engine WASM-missing suite is not invented.
 | this-run Cloud Agent TAP | n/a | **634/591/43** | Isolated Semantic Engine WASM missing; living-docs next pack; not GHA |
 | dest-root `src/settlement.ts` | missing | still missing | engine `.mjs` only |
 | t1 forced symbol path | dest-root abs miss | `.work/<arm>/src/settlement.ts` when workspace env is set | path miss is the leftover |
+| t1 matcher relative dest-root | OR `src/settlement.ts` still passed | **fail-closed**; relative dest-root must not pass | reviewer hole on `26c25561` |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
 
