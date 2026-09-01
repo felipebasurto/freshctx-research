@@ -7,9 +7,11 @@ reuses the FreshCtx core and stores only tool-call-to-path mappings per session.
 
 ## Install (layout-complete)
 
-`bridge.mjs` imports sibling modules from this repository (`request-prune.mjs`
-and `src/`). Symlinking only `adapters/hermes` into Hermes leaves those imports
-unreachable and the bridge exits 1 — live `select_context` returns `None`.
+`bridge.mjs` imports sibling modules from this repository (`request-prune.mjs`,
+`engine-factory.mjs`, `shell-read.mjs`, `src/`, and the Isolated Semantic
+Engine under `ise/`). Symlinking only `adapters/hermes` into Hermes leaves
+those imports unreachable and the bridge exits 1 — live `select_context`
+returns `None`.
 
 From a FreshCtx source checkout, run the install script against your Hermes
 Agent `plugins/` directory (the folder that contains `context_engine/`):
@@ -18,13 +20,21 @@ Agent `plugins/` directory (the folder that contains `context_engine/`):
 node /path/to/freshctx/adapters/hermes/install.mjs /path/to/hermes-agent/plugins
 ```
 
-This stages three symlinks by default:
+This stages six symlinks by default:
 
 | Hermes path | FreshCtx source |
 |---|---|
 | `plugins/context_engine/freshctx/` | `adapters/hermes/` |
 | `plugins/context_engine/request-prune.mjs` | `adapters/request-prune.mjs` |
+| `plugins/context_engine/engine-factory.mjs` | `adapters/engine-factory.mjs` |
+| `plugins/context_engine/shell-read.mjs` | `adapters/shell-read.mjs` |
 | `plugins/src/` | `src/` |
+| `plugins/ise/` | `ise/` |
+
+Tree-sitter lives in `ise/treesitter/`. Run `npm run ise:install` in the
+FreshCtx checkout so the Isolated Semantic Engine can load WASM. Without that
+runtime, a destaged live plugin fail-closes symbol refresh and omits
+`<freshctx-unit>`.
 
 Verify the staged layout (fails on hermes-only extracts):
 

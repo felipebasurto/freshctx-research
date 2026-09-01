@@ -2,7 +2,8 @@
 /** Stage a layout-complete Hermes FreshCtx plugin from a source checkout.
 
 Creates symlinks (default) so `bridge.mjs` resolves sibling imports:
-  context_engine/freshctx/bridge.mjs  ->  ../request-prune.mjs, ../../src/index.mjs
+  context_engine/freshctx/bridge.mjs  ->  ../request-prune.mjs, ../engine-factory.mjs,
+  ../shell-read.mjs, ../../src/index.mjs, ../../ise/treesitter/client.mjs
 
 Usage:
   node adapters/hermes/install.mjs [plugins-dir]
@@ -22,7 +23,10 @@ const REPO_ROOT = dirname(ADAPTERS_DIR);
 export const LAYOUT_PATHS = {
   freshctxDir: ["context_engine", "freshctx"],
   requestPrune: ["context_engine", "request-prune.mjs"],
+  engineFactory: ["context_engine", "engine-factory.mjs"],
+  shellRead: ["context_engine", "shell-read.mjs"],
   srcDir: ["src"],
+  iseDir: ["ise"],
 };
 
 export function resolveLayoutPaths(pluginsDir) {
@@ -31,7 +35,10 @@ export function resolveLayoutPaths(pluginsDir) {
     pluginsDir: root,
     freshctxDir: join(root, ...LAYOUT_PATHS.freshctxDir),
     requestPrune: join(root, ...LAYOUT_PATHS.requestPrune),
+    engineFactory: join(root, ...LAYOUT_PATHS.engineFactory),
+    shellRead: join(root, ...LAYOUT_PATHS.shellRead),
     srcDir: join(root, ...LAYOUT_PATHS.srcDir),
+    iseDir: join(root, ...LAYOUT_PATHS.iseDir),
     bridge: join(root, ...LAYOUT_PATHS.freshctxDir, "bridge.mjs"),
   };
 }
@@ -66,11 +73,17 @@ export async function installHermesPlugin(pluginsDir, { mode = "symlink" } = {})
   const layout = resolveLayoutPaths(pluginsDir);
   const hermesSource = join(ADAPTERS_DIR, "hermes");
   const requestPruneSource = join(ADAPTERS_DIR, "request-prune.mjs");
+  const engineFactorySource = join(ADAPTERS_DIR, "engine-factory.mjs");
+  const shellReadSource = join(ADAPTERS_DIR, "shell-read.mjs");
   const srcSource = join(REPO_ROOT, "src");
+  const iseSource = join(REPO_ROOT, "ise");
 
   await ensureSymlink(hermesSource, layout.freshctxDir);
   await ensureSymlink(requestPruneSource, layout.requestPrune);
+  await ensureSymlink(engineFactorySource, layout.engineFactory);
+  await ensureSymlink(shellReadSource, layout.shellRead);
   await ensureSymlink(srcSource, layout.srcDir);
+  await ensureSymlink(iseSource, layout.iseDir);
 
   return layout;
 }
@@ -83,9 +96,12 @@ async function main() {
   process.stdout.write(
     `${[
       "FreshCtx Hermes plugin installed (layout-complete):",
-      `  freshctx     -> ${layout.freshctxDir}`,
+      `  freshctx      -> ${layout.freshctxDir}`,
       `  request-prune -> ${layout.requestPrune}`,
-      `  src          -> ${layout.srcDir}`,
+      `  engine-factory -> ${layout.engineFactory}`,
+      `  shell-read    -> ${layout.shellRead}`,
+      `  src           -> ${layout.srcDir}`,
+      `  ise           -> ${layout.iseDir}`,
       "",
       "Select in Hermes configuration:",
       "  context:",

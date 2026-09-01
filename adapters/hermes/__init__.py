@@ -74,7 +74,7 @@ class FreshCtxContextEngine(ContextCompressor):
                 input=json.dumps(payload),
                 capture_output=True,
                 text=True,
-                timeout=float(os.environ.get("FRESHCTX_BRIDGE_TIMEOUT", "2.0")),
+                timeout=float(os.environ.get("FRESHCTX_BRIDGE_TIMEOUT", "15.0")),
                 check=False,
             )
             if completed.returncode != 0:

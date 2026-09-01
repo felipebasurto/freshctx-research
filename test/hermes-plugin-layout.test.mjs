@@ -22,7 +22,10 @@ test("hermes-only plugin layout fails layout check", async () => {
   try {
     const missing = await missingLayoutPaths(pluginsDir);
     assert.ok(missing.some((item) => item.label === "request-prune.mjs"));
+    assert.ok(missing.some((item) => item.label === "engine-factory.mjs"));
+    assert.ok(missing.some((item) => item.label === "shell-read.mjs"));
     assert.ok(missing.some((item) => item.label === "src/index.mjs"));
+    assert.ok(missing.some((item) => item.label === "ise/treesitter/client.mjs"));
     await assert.rejects(
       () => assertLayoutComplete(pluginsDir),
       /hermes-only or incomplete plugin layout/u,
