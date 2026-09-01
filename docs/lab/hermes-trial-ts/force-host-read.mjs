@@ -1,4 +1,4 @@
-import { hostReadToolArgs } from "./pack.mjs";
+import { hostReadToolArgs, isDestRootSettlementSearch, resolveHostReadWorkspace } from "./pack.mjs";
 
 export const HERMES_READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
 export const BLOCKED_T1_TOOLS = new Set(["bash", "shell", "grep", "find", "edit", "write"]);
@@ -40,6 +40,14 @@ export function handleForceHostReadToolCall(event, state) {
     return {
       block: true,
       reason: "Hermes trial t1-read requires read_file with scope=symbol selector settleDailyLedger",
+    };
+  }
+
+  const workspace = resolveHostReadWorkspace();
+  if (isDestRootSettlementSearch(event, { workspace })) {
+    return {
+      block: true,
+      reason: "Hermes trial dest-root search_files of src/settlement.ts is fail-closed; fixture is .work",
     };
   }
 
