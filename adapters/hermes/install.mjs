@@ -12,7 +12,7 @@ Usage:
 `HERMES_PLUGINS` when set. Pass the directory that contains `context_engine/`.
 */
 
-import { access, lstat, mkdir, rm, symlink } from "node:fs/promises";
+import { access, lstat, mkdir, readFile, rm, symlink } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,8 +20,11 @@ const HERMES_DIR = dirname(fileURLToPath(import.meta.url));
 const ADAPTERS_DIR = dirname(HERMES_DIR);
 const REPO_ROOT = dirname(ADAPTERS_DIR);
 
+export const FRESHCTX_ENGINE_NAME = "freshctx";
+
 export const LAYOUT_PATHS = {
   freshctxDir: ["context_engine", "freshctx"],
+  userPluginDir: ["freshctx"],
   requestPrune: ["context_engine", "request-prune.mjs"],
   engineFactory: ["context_engine", "engine-factory.mjs"],
   shellRead: ["context_engine", "shell-read.mjs"],
@@ -34,6 +37,7 @@ export function resolveLayoutPaths(pluginsDir) {
   return {
     pluginsDir: root,
     freshctxDir: join(root, ...LAYOUT_PATHS.freshctxDir),
+    userPluginDir: join(root, ...LAYOUT_PATHS.userPluginDir),
     requestPrune: join(root, ...LAYOUT_PATHS.requestPrune),
     engineFactory: join(root, ...LAYOUT_PATHS.engineFactory),
     shellRead: join(root, ...LAYOUT_PATHS.shellRead),
@@ -41,6 +45,61 @@ export function resolveLayoutPaths(pluginsDir) {
     iseDir: join(root, ...LAYOUT_PATHS.iseDir),
     bridge: join(root, ...LAYOUT_PATHS.freshctxDir, "bridge.mjs"),
   };
+}
+
+function parseContextEngine(configYaml) {
+  const match = String(configYaml ?? "").match(/^\s*engine:\s*(\S+)/mu);
+  return match?.[1] ?? null;
+}
+
+function parseEnabledPlugins(configYaml) {
+  const enabled = [];
+  const lines = String(configYaml ?? "").split("\n");
+  let inEnabled = false;
+  for (const line of lines) {
+    if (/^[ \t]+enabled:\s*$/u.test(line)) {
+      inEnabled = true;
+      continue;
+    }
+    if (inEnabled) {
+      const name = line.match(/^[ \t]+-[ \t]+(\S+)\s*$/u)?.[1];
+      if (!name) break;
+      enabled.push(name);
+    }
+  }
+  return enabled;
+}
+
+export async function discoverFreshctxEngine({
+  bundledContextEngineDir,
+  userPluginsDir,
+  configYaml,
+} = {}) {
+  const selected = parseContextEngine(configYaml);
+  if (selected !== FRESHCTX_ENGINE_NAME) {
+    return { found: false, reason: "not-selected", name: selected };
+  }
+
+  const bundledInit = join(bundledContextEngineDir, FRESHCTX_ENGINE_NAME, "__init__.py");
+  if (await pathExists(bundledInit)) {
+    return { found: true, source: "bundled-context-engine", name: FRESHCTX_ENGINE_NAME };
+  }
+
+  const enabled = parseEnabledPlugins(configYaml);
+  const userDir = join(userPluginsDir, FRESHCTX_ENGINE_NAME);
+  const userInit = join(userDir, "__init__.py");
+  const userYaml = join(userDir, "plugin.yaml");
+  if (!enabled.includes(FRESHCTX_ENGINE_NAME) || !(await pathExists(userInit)) || !(await pathExists(userYaml))) {
+    return { found: false, reason: "not-found", name: FRESHCTX_ENGINE_NAME };
+  }
+
+  const [python, yaml] = await Promise.all([readFile(userInit, "utf8"), readFile(userYaml, "utf8")]);
+  const named = /^\s*name:\s*freshctx\s*$/mu.test(yaml);
+  const registers = /def register\(ctx\):/u.test(python) && /register_context_engine\(/u.test(python);
+  if (!named || !registers) {
+    return { found: false, reason: "not-found", name: FRESHCTX_ENGINE_NAME };
+  }
+  return { found: true, source: "user-plugin", name: FRESHCTX_ENGINE_NAME };
 }
 
 async function pathExists(path) {
@@ -79,6 +138,7 @@ export async function installHermesPlugin(pluginsDir, { mode = "symlink" } = {})
   const iseSource = join(REPO_ROOT, "ise");
 
   await ensureSymlink(hermesSource, layout.freshctxDir);
+  await ensureSymlink(hermesSource, layout.userPluginDir);
   await ensureSymlink(requestPruneSource, layout.requestPrune);
   await ensureSymlink(engineFactorySource, layout.engineFactory);
   await ensureSymlink(shellReadSource, layout.shellRead);
@@ -97,6 +157,7 @@ async function main() {
     `${[
       "FreshCtx Hermes plugin installed (layout-complete):",
       `  freshctx      -> ${layout.freshctxDir}`,
+      `  user-plugin   -> ${layout.userPluginDir}`,
       `  request-prune -> ${layout.requestPrune}`,
       `  engine-factory -> ${layout.engineFactory}`,
       `  shell-read    -> ${layout.shellRead}`,
@@ -104,6 +165,9 @@ async function main() {
       `  ise           -> ${layout.iseDir}`,
       "",
       "Select in Hermes configuration:",
+      "  plugins:",
+      "    enabled:",
+      "      - freshctx",
       "  context:",
       "    engine: freshctx",
     ].join("\n")}\n`,

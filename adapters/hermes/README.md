@@ -20,11 +20,12 @@ Agent `plugins/` directory (the folder that contains `context_engine/`):
 node /path/to/freshctx/adapters/hermes/install.mjs /path/to/hermes-agent/plugins
 ```
 
-This stages six symlinks by default:
+This stages seven symlinks by default:
 
 | Hermes path | FreshCtx source |
 |---|---|
 | `plugins/context_engine/freshctx/` | `adapters/hermes/` |
+| `plugins/freshctx/` | `adapters/hermes/` (user-plugin name Hermes loads) |
 | `plugins/context_engine/request-prune.mjs` | `adapters/request-prune.mjs` |
 | `plugins/context_engine/engine-factory.mjs` | `adapters/engine-factory.mjs` |
 | `plugins/context_engine/shell-read.mjs` | `adapters/shell-read.mjs` |
@@ -42,9 +43,14 @@ Verify the staged layout (fails on hermes-only extracts):
 node /path/to/freshctx/adapters/hermes/verify-layout.mjs /path/to/hermes-agent/plugins
 ```
 
-Then select the engine in Hermes configuration:
+Then select the engine in Hermes configuration. Isolated `HERMES_HOME`
+also needs the install name in `plugins.enabled` so `register()` can
+call `register_context_engine`:
 
 ```yaml
+plugins:
+  enabled:
+    - freshctx
 context:
   engine: freshctx
 ```

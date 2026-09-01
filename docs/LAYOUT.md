@@ -22,10 +22,11 @@ node --test test/*.test.mjs
 
 ## Hermes installed shape
 
-`npm run hermes:install -- <plugins-dir>` creates six symlinks:
+`npm run hermes:install -- <plugins-dir>` creates seven symlinks:
 
 ```text
 <plugins-dir>/context_engine/freshctx  -> adapters/hermes/
+<plugins-dir>/freshctx -> adapters/hermes/
 <plugins-dir>/context_engine/request-prune.mjs -> adapters/request-prune.mjs
 <plugins-dir>/context_engine/engine-factory.mjs -> adapters/engine-factory.mjs
 <plugins-dir>/context_engine/shell-read.mjs -> adapters/shell-read.mjs

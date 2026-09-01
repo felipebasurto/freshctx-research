@@ -127,3 +127,8 @@ class FreshCtxContextEngine(ContextCompressor):
     ) -> None:
         self._call_bridge("observe", messages, usage=usage, turn=kwargs)
 
+
+def register(ctx):
+    """Register the engine so isolated HERMES_HOME can load name `freshctx`."""
+    ctx.register_context_engine(FreshCtxContextEngine())
+
