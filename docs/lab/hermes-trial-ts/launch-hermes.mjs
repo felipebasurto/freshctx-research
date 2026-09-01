@@ -14,6 +14,7 @@ import {
   forceHostReadPluginDir,
 } from "./auto-rpc-host-read.mjs";
 import { launchChild } from "./launch-child.mjs";
+import { cliQueryArgvInvalidReason } from "./hermes-queries.mjs";
 import {
   MODEL,
   freshCtxEnvForArm,
@@ -83,7 +84,7 @@ export function detectHermesProtocol(helpText) {
 export function hermesLaunchArgs(protocol) {
   if (protocol === "acp") return ["acp"];
   if (protocol === "tui-gateway") return ["--tui"];
-  return ["chat", "-q"];
+  return ["chat"];
 }
 
 function runHelp(bin) {
@@ -170,6 +171,8 @@ export async function launchHermes({
     extra: { PATH: `${dirname(bin)}:${process.env.PATH ?? ""}` },
   });
   const args = hermesLaunchArgs(detected);
+  const argvReason = cliQueryArgvInvalidReason(args);
+  if (argvReason) throw new Error(argvReason);
   const child = launchChild({
     command: bin,
     args,
