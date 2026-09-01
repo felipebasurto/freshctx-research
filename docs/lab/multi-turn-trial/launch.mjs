@@ -36,14 +36,14 @@ export function piDumpExtensionPath() {
   return PI_DUMP_EXT;
 }
 
-export function piLaunchSpec(arm, { dumpDir } = {}) {
+export function piLaunchSpec(arm, { dumpDir, workspace } = {}) {
   validateArm(arm);
   assertFlashOnlyModel();
   const repoRoot = resolveRepoRoot();
   const env = envWithForceHostRead({
     ...freshCtxEnvForArm(arm),
     PI_TRIAL_DUMP_DIR: dumpDir,
-  });
+  }, { workspace });
   delete env.FRESHCTX_BUDGET_CHARS;
   return {
     host: "pi",
@@ -59,7 +59,7 @@ export function piLaunchSpec(arm, { dumpDir } = {}) {
   };
 }
 
-export function hermesLaunchSpec(arm, { proxyBaseUrl, dumpDir, hermesHome } = {}) {
+export function hermesLaunchSpec(arm, { proxyBaseUrl, dumpDir, hermesHome, workspace } = {}) {
   validateArm(arm);
   assertFlashOnlyModel();
   const env = hermesEnvForArm({
@@ -67,6 +67,7 @@ export function hermesLaunchSpec(arm, { proxyBaseUrl, dumpDir, hermesHome } = {}
     proxyBaseUrl,
     dumpDir,
     hermesHome,
+    workspace,
   });
   return {
     host: "hermes",

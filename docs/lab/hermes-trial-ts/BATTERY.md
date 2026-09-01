@@ -11,7 +11,10 @@ Ventana **HERMES** para PROMPT. Ventana **CMD** para `live.mjs` / `print-columns
 Nunca pegues un PROMPT en CMD. Nunca pegues una API key.
 
 Working copies en `docs/lab/hermes-trial-ts/.work/`. El fixture fuente está en
-`docs/lab/pi-trial-ts/fixture/`.
+`docs/lab/pi-trial-ts/fixture/`. Dest-root `src/settlement.ts` no existe (solo
+engine `.mjs`). Arranca Hermes en la working copy y exporta
+`FRESHCTX_CWD` / `HERMES_TRIAL_WORKSPACE` a esa carpeta para que el
+`read_file` de t1 no apunte al dest-root.
 
 FreshCtx plugin path: desde la raíz del repo FreshCtx
 (`adapters/hermes`), no desde `docs/`.

@@ -15,6 +15,9 @@ export const TARGET_FILE = "src/settlement.ts";
 export const TARGET_SYMBOL = "settleDailyLedger";
 export const SIBLING_SYMBOL = "settleWeeklyLedger";
 export const HOST_READ_SCOPE = "symbol";
+export const FRESHCTX_CWD_ENV = "FRESHCTX_CWD";
+export const HERMES_TRIAL_WORKSPACE_ENV = "HERMES_TRIAL_WORKSPACE";
+export const PI_TRIAL_WORKSPACE_ENV = "PI_TRIAL_WORKSPACE";
 
 export const MARKER_V0 = "ST0";
 export const MARKER_V1 = "ST1";
@@ -35,8 +38,25 @@ No edites. No crees archivos. Responde solo:
 SETTLE=...`;
 
 /** Host read tool args the harness expects Pi/Hermes to pass through to FreshCtx. */
-export function hostReadToolArgs() {
-  return { path: TARGET_FILE, scope: "symbol", selector: TARGET_SYMBOL };
+export function resolveHostReadWorkspace(env = process.env) {
+  const candidates = [
+    env[FRESHCTX_CWD_ENV],
+    env[HERMES_TRIAL_WORKSPACE_ENV],
+    env[PI_TRIAL_WORKSPACE_ENV],
+  ].filter((dir) => typeof dir === "string" && dir.length > 0);
+  for (const dir of candidates) {
+    if (existsSync(join(dir, TARGET_FILE))) return dir;
+  }
+  return null;
+}
+
+export function hostReadToolArgs({ workspace, env = process.env } = {}) {
+  const root = workspace ?? resolveHostReadWorkspace(env);
+  return {
+    path: root ? join(root, TARGET_FILE) : TARGET_FILE,
+    scope: "symbol",
+    selector: TARGET_SYMBOL,
+  };
 }
 
 export const CELLS = [

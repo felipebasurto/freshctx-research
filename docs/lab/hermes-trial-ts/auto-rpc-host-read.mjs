@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { hostReadToolArgs } from "./pack.mjs";
+import { FRESHCTX_CWD_ENV, HERMES_TRIAL_WORKSPACE_ENV, TARGET_FILE, hostReadToolArgs } from "./pack.mjs";
 import {
   BLOCKED_T1_TOOLS,
   FORCE_HOST_READ_ENV,
@@ -18,8 +18,13 @@ export const FORCE_HOST_READ_HOOK_ENV = "HERMES_TRIAL_FORCE_HOST_READ_HOOK";
 export const FORCE_HOST_READ_PLUGIN_NAME = "force-host-read";
 export const FORCE_HOST_READ_TOOLS_LOG = "force-host-read.tools.jsonl";
 
-export function envWithForceHostRead(baseEnv = {}) {
-  return { ...baseEnv, [FORCE_HOST_READ_ENV]: "1" };
+export function envWithForceHostRead(baseEnv = {}, { workspace } = {}) {
+  const env = { ...baseEnv, [FORCE_HOST_READ_ENV]: "1" };
+  if (workspace) {
+    env[FRESHCTX_CWD_ENV] = workspace;
+    env[HERMES_TRIAL_WORKSPACE_ENV] = workspace;
+  }
+  return env;
 }
 
 export function forceHostReadPluginDir() {
@@ -55,12 +60,13 @@ export function t1ToolsForAssert({ eventTools = [], recordedTools = [] } = {}) {
   return recordedTools.length > 0 ? recordedTools : eventTools;
 }
 
-export function readToolMatchesHostArgs(tool) {
+export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   if (!tool || !isHermesReadTool(tool.toolName)) return false;
   const args = tool.args ?? tool.input ?? {};
-  const expected = hostReadToolArgs();
+  const expected = hostReadToolArgs({ workspace });
+  const pathOk = args.path === expected.path || args.path === TARGET_FILE;
   return (
-    args.path === expected.path &&
+    pathOk &&
     args.scope === expected.scope &&
     args.selector === expected.selector &&
     args.offset === undefined &&
@@ -68,7 +74,7 @@ export function readToolMatchesHostArgs(tool) {
   );
 }
 
-export function t1HostReadToolsInvalidReason(tools) {
+export function t1HostReadToolsInvalidReason(tools, { workspace } = {}) {
   if (!Array.isArray(tools) || tools.length === 0) {
     return "t1-read recorded no host tools";
   }
@@ -79,19 +85,19 @@ export function t1HostReadToolsInvalidReason(tools) {
     if (!isHermesReadTool(tool.toolName)) {
       return `t1-read unexpected tool ${tool.toolName}`;
     }
-    if (!readToolMatchesHostArgs(tool)) {
+    if (!readToolMatchesHostArgs(tool, { workspace })) {
       return "t1-read read tool must use scope=symbol selector settleDailyLedger with no offset/limit";
     }
   }
   return null;
 }
 
-export function t1HostReadToolsValid(tools) {
-  return t1HostReadToolsInvalidReason(tools) === null;
+export function t1HostReadToolsValid(tools, { workspace } = {}) {
+  return t1HostReadToolsInvalidReason(tools, { workspace }) === null;
 }
 
-export function assertT1HostReadTools(tools, { arm = "unknown" } = {}) {
-  const reason = t1HostReadToolsInvalidReason(tools);
+export function assertT1HostReadTools(tools, { arm = "unknown", workspace } = {}) {
+  const reason = t1HostReadToolsInvalidReason(tools, { workspace });
   if (reason) {
     throw new Error(`${reason} (arm=${arm}): ${JSON.stringify(tools)}`);
   }

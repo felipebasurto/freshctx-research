@@ -248,7 +248,7 @@ async function runPiArm(arm) {
   await mkdir(dumpDir, { recursive: true });
   await live(["reset", "pi", arm]);
   const cwd = join(WORK, "pi", arm);
-  const spec = piLaunchSpec(arm, { dumpDir });
+  const spec = piLaunchSpec(arm, { dumpDir, workspace: cwd });
   process.stdout.write(`start host=pi arm=${arm} cwd=${cwd} model=${MODEL}\n`);
   const client = new PiRpc({
     cwd,
@@ -277,7 +277,7 @@ async function runPiArm(arm) {
       const requests = await overlayRequests(dumpDir, dumpsBefore, dumpsAfter, cell);
       const tools = toolsFromExecutionStartEvents(events);
       if (cell.id === "t1-read") {
-        assertT1HostReadTools(tools, { arm });
+        assertT1HostReadTools(tools, { arm, workspace: cwd });
       }
       const row = cellRow({
         cell,
@@ -286,7 +286,7 @@ async function runPiArm(arm) {
         reply,
         requests,
         arm,
-        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools, { workspace: cwd }) : null,
       });
       cells.push(row);
       await writeFile(join(CAPTURE, "pi", arm, `${cell.id}.json`), `${JSON.stringify(row, null, 2)}\n`);
@@ -315,6 +315,7 @@ async function runHermesArm(arm) {
     proxyBaseUrl: bound.baseUrl,
     dumpDir,
     hermesHome,
+    workspace: cwd,
   });
   const launched = await spec.launch({
     cwd,
@@ -356,7 +357,7 @@ async function runHermesArm(arm) {
         recordedTools,
       });
       if (cell.id === "t1-read") {
-        assertHermesT1HostReadTools(tools, { arm });
+        assertHermesT1HostReadTools(tools, { arm, workspace: cwd });
       }
       const row = cellRow({
         cell,
@@ -365,7 +366,7 @@ async function runHermesArm(arm) {
         reply,
         requests,
         arm,
-        hostReadArgsMatched: cell.id === "t1-read" ? hermesT1HostReadToolsValid(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? hermesT1HostReadToolsValid(tools, { workspace: cwd }) : null,
       });
       cells.push(row);
       await writeFile(join(CAPTURE, "hermes", arm, `${cell.id}.json`), `${JSON.stringify(row, null, 2)}\n`);

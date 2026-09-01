@@ -56,6 +56,13 @@ class FreshCtxContextEngine(ContextCompressor):
     def _bridge_path(self) -> Path:
         return Path(__file__).with_name("bridge.mjs")
 
+    def _workspace_cwd(self) -> str:
+        for key in ("FRESHCTX_CWD", "HERMES_TRIAL_WORKSPACE"):
+            value = os.environ.get(key)
+            if value:
+                return value
+        return os.getcwd()
+
     def _call_bridge(self, operation: str, messages: List[Dict[str, Any]], **extra: Any):
         state_file = getattr(self, "_freshctx_state_file", None)
         if state_file is None:
@@ -64,7 +71,7 @@ class FreshCtxContextEngine(ContextCompressor):
         payload = {
             "operation": operation,
             "messages": messages,
-            "cwd": os.getcwd(),
+            "cwd": self._workspace_cwd(),
             "stateFile": str(state_file),
             **extra,
         }
