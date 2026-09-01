@@ -60,9 +60,10 @@ No `AUTORESEARCH_SCORE` in this pack.
 1. **Manual battery.** `BATTERY.md` plus `live.mjs` reset/mutate/status.
 2. **Launch-proxy harness.** `auto-rpc.mjs` when official `hermes` is on PATH.
    Dump proxy intercepts provider POSTs. `launch-hermes` stages an isolated
-   `HERMES_HOME` and installs FreshCtx on arms B/C. Model pinned to
-   `deepseek-v4-flash`. Resolves repo root by walking up to
-   `adapters/hermes/bridge.mjs`.
+   `HERMES_HOME`, installs the force-host-read general plugin on all three arms,
+   and installs FreshCtx on arms B/C. Model pinned to `deepseek-v4-flash`.
+   Resolves repo root by walking up to `adapters/hermes/bridge.mjs`.
+   CLI fallback always asserts t1 host-read tools. Empty tools fail closed.
 
 Working copies: `docs/lab/hermes-trial-ts/.work/` (gitignored).
 

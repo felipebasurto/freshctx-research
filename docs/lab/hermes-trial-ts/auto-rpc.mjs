@@ -3,7 +3,12 @@ import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { assertT1HostReadTools, t1HostReadToolsValid } from "./auto-rpc-host-read.mjs";
+import {
+  assertT1HostReadTools,
+  readRecordedHostReadTools,
+  t1HostReadToolsValid,
+  t1ToolsForAssert,
+} from "./auto-rpc-host-read.mjs";
 import {
   HermesRpc,
   assistantTextFromEvents,
@@ -88,6 +93,7 @@ async function runArm(arm) {
       if (cell.mutate) await live(["mutate", arm, cell.mutate]);
       const disk = JSON.parse(await live(["status", arm]));
       const dumpsBefore = await listScans(dumpDir);
+      const recordedBefore = await readRecordedHostReadTools(dumpDir);
       const prompt = promptForCell(cell);
       let events = [];
       let reply = "";
@@ -112,8 +118,13 @@ async function runArm(arm) {
         requests.push({ file: name, ...scan });
       }
       const lastRequest = requests.at(-1) ?? null;
-      const tools = toolsFromHermesEvents(events);
-      if (cell.id === "t1-read" && tools.length > 0) {
+      const recordedAfter = await readRecordedHostReadTools(dumpDir);
+      const recordedTools = recordedAfter.slice(recordedBefore.length);
+      const tools = t1ToolsForAssert({
+        eventTools: toolsFromHermesEvents(events),
+        recordedTools,
+      });
+      if (cell.id === "t1-read") {
         assertT1HostReadTools(tools, { arm });
       }
       const row = {
@@ -122,7 +133,7 @@ async function runArm(arm) {
         mutate: cell.mutate,
         disk: disk.markers,
         tools,
-        hostReadArgsMatched: cell.id === "t1-read" && tools.length > 0 ? t1HostReadToolsValid(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
         reply,
         stdoutMatchesCurrent: stdoutMatchesCurrent(reply),
         requests,

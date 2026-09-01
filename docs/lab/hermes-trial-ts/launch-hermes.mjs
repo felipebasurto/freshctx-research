@@ -1,10 +1,19 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { access, lstat, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { spawn } from "node:child_process";
 
 import { installHermesPlugin } from "../../../adapters/hermes/install.mjs";
+import {
+  FORCE_HOST_READ_HOOK_ENV,
+  FORCE_HOST_READ_PLUGIN_NAME,
+  envWithForceHostRead,
+  forceHostReadHookPath,
+  forceHostReadPluginDest,
+  forceHostReadPluginDir,
+} from "./auto-rpc-host-read.mjs";
+import { launchChild } from "./launch-child.mjs";
 import {
   MODEL,
   freshCtxEnvForArm,
@@ -13,8 +22,6 @@ import {
   resolveRepoRoot,
   validateArm,
 } from "./pack.mjs";
-import { envWithForceHostRead } from "./auto-rpc-host-read.mjs";
-import { launchChild } from "./launch-child.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +34,9 @@ export function hermesConfigYaml({ engine } = {}) {
     "model:",
     `  default: ${MODEL}`,
     "provider: openai",
+    "plugins:",
+    "  enabled:",
+    `    - ${FORCE_HOST_READ_PLUGIN_NAME}`,
   ];
   if (engine === "freshctx") {
     lines.push("context:", "  engine: freshctx");
@@ -53,6 +63,7 @@ export function hermesEnvForArm({
     OPENAI_MODEL: MODEL,
     OPENAI_BASE_URL: proxyBaseUrl,
     HERMES_TRIAL_DUMP_DIR: dumpDir,
+    [FORCE_HOST_READ_HOOK_ENV]: forceHostReadHookPath(),
     ...extra,
   });
   delete env.FRESHCTX_BUDGET_CHARS;
@@ -87,18 +98,49 @@ function runHelp(bin) {
   });
 }
 
+async function pathExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureSymlink(target, linkPath) {
+  if (await pathExists(linkPath)) {
+    const stat = await lstat(linkPath);
+    if (stat.isSymbolicLink()) {
+      await rm(linkPath);
+    } else {
+      throw new Error(`refusing to replace non-symlink: ${linkPath}`);
+    }
+  }
+  await mkdir(dirname(linkPath), { recursive: true });
+  await symlink(target, linkPath);
+}
+
+export async function installForceHostReadPlugin(pluginsDir) {
+  const dest = forceHostReadPluginDest(pluginsDir);
+  await ensureSymlink(forceHostReadPluginDir(), dest);
+  return dest;
+}
+
 export async function prepareHermesHome({ arm, hermesHome, repoRoot = resolveRepoRoot() }) {
   validateArm(arm);
   await mkdir(hermesHome, { recursive: true });
   const engine = hermesContextEngineForArm(arm);
+  const pluginsDir = pluginsDirForHome(hermesHome);
   await writeFile(join(hermesHome, "config.yaml"), hermesConfigYaml({ engine }));
+  await installForceHostReadPlugin(pluginsDir);
   if (engine === "freshctx") {
-    await installHermesPlugin(pluginsDirForHome(hermesHome));
+    await installHermesPlugin(pluginsDir);
   }
   return {
     hermesHome,
     engine,
-    pluginsDir: pluginsDirForHome(hermesHome),
+    pluginsDir,
+    forceHostReadPlugin: forceHostReadPluginDest(pluginsDir),
     installScript: freshCtxHermesInstallScript(repoRoot),
   };
 }

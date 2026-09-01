@@ -45,3 +45,44 @@ export function handleForceHostReadToolCall(event, state) {
 
   return null;
 }
+
+export function forcedArgsFromEvent(event) {
+  if (event.input && typeof event.input === "object") return event.input;
+  if (event.args && typeof event.args === "object") return event.args;
+  return {};
+}
+
+export function hermesPreToolCallDirective(event, state) {
+  const result = handleForceHostReadToolCall(event, state);
+  if (result?.block) {
+    return { action: "block", message: result.reason };
+  }
+  if (isHermesReadTool(event.toolName)) {
+    return { action: "modify", args: { ...forcedArgsFromEvent(event) } };
+  }
+  return null;
+}
+
+export function registerForceHostReadHermesPlugin(ctx, { env = process.env, record } = {}) {
+  const state = { hostReadSatisfied: false };
+  ctx.register_hook("pre_tool_call", (toolName, args, taskId, extra = {}) => {
+    if (!forceHostReadEnabled(env)) return null;
+    const target = args && typeof args === "object" ? args : {};
+    const event = {
+      toolName,
+      args: target,
+      input: target,
+      toolCallId: extra.tool_call_id ?? extra.toolCallId ?? taskId ?? null,
+    };
+    const directive = hermesPreToolCallDirective(event, state);
+    if (typeof record === "function") {
+      record({
+        toolCallId: event.toolCallId,
+        toolName,
+        args: { ...forcedArgsFromEvent(event) },
+      });
+    }
+    return directive;
+  });
+  return state;
+}

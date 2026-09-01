@@ -1,0 +1,3 @@
+name: force-host-read
+version: "0.1.0"
+description: Trial-only t1-read force of read_file symbol scope. Not a context engine.
