@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0140-long-session-cost-1228` (draft)
+- Branch / PR: `cursor/pcr-0140-long-session-cost-1228` / [144](https://github.com/felipebasurto/freshctx/pull/144) (draft)
 - Base SHA: `dbfd044322570a03650c5f7f06dfacde36a1f63c` (PCR 0139 on main)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -68,18 +68,24 @@ Fixture `$` is that formula on fixture tokens, not a billed invoice.
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test` (filled after the first run).
+Canonical TAP from this HEAD after `npm test`.
 
 ```
-pending this-run TAP
+1..619
+# tests 619
+# pass 575
+# fail 44
+# skipped 0
 ```
 
+`node --test test/pcr-0140-long-session-cost.test.mjs` is **12 pass / 0 fail**.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
+This-run living suite is **619 / 575 / 44 / 0**. Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending | — | TAP above |
-| `npm run evaluate` | pending | — | |
+| `npm test` | yes | 1 | TAP above; 42 Isolated Semantic Engine misses on this checkout plus living-docs `136 !== 135` plus pre-existing evaluate/empirical fails; PCR 0140 is 12/12 |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | no | n/a | no provider key; no `pi`; no `hermes` |
 
@@ -88,6 +94,10 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 | metric | official `79958de` | PCR 0140 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
+| `npm test` TAP `# tests` | 549 | **619** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **575** | +12 PCR 0140; ISE-missing and living-docs remain |
+| `npm test` TAP `# fail` | 0 | **44** | living-docs `136 !== 135` plus pre-existing ISE misses |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | live long-session `prompt_tokens` | n/a | **none** | not invented |
 | live long-session `$` | n/a | **none** | not invented |
 | two-turn ingest as long-session | PCR 0139 leftover note | **INVALID** | fail-closed |

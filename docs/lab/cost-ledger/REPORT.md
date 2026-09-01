@@ -5,8 +5,9 @@ Status: **harness-only**. No live long-session table.
 Official accepted TAP stays **549/0/0/549**. This leftover does not replace
 that table. INDEX.md and METRICS.md were not edited.
 
-This HEAD `npm test`: `# tests 587` `# pass 586` `# fail 1` `# skipped 0`.
-The fail is living-docs PCR count `132 !== 131`. PCR 0137 tests are 13/13.
+This HEAD `npm test`: `# tests 619` `# pass 575` `# fail 44` `# skipped 0`.
+PCR 0137 tests are 13/13. PCR 0140 tests are 12/12.
+The new living-docs fail is PCR count `136 !== 135` after adding `0140-*.md`.
 
 ## What this leftover measured
 
