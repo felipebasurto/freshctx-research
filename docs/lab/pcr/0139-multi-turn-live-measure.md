@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0139-multi-turn-live-1cf1` (draft)
+- Branch / PR: `cursor/pcr-0139-multi-turn-live-1cf1` / [142](https://github.com/felipebasurto/freshctx/pull/142) (draft)
 - Base SHA: `dd9ad11ba6224e652d26dc18b1812e633edbff11` (living PCR count 134 on main)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -30,7 +30,7 @@ Official accepted table stays 549/0/0/549.
 1. Wrote this PCR with the live multi-turn table from tip `dd9ad11`.
 2. Appended INDEX and METRICS.
 3. Bumped public PCR count to 135 so living-docs matches on-disk PCR files.
-4. Did not edit adapters, sidecar, `src/`, door, lock, or harness behavior.
+4. Did not edit adapters, `src/`, door, lock, or harness behavior.
 5. Did not `--relock`.
 6. Same Cloud Agent wrote PCR, INDEX, and METRICS.
 7. No apex or GHA work.
@@ -58,23 +58,36 @@ Host never exposes a Tree-sitter toggle.
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test` is pending this Cloud Agent run.
-Do not invent scores. Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
+Canonical TAP from this HEAD after `npm test`.
+
+```
+1..607
+# tests 607
+# pass 565
+# fail 42
+# skipped 0
+```
+
+Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
+This-run living suite is **607 / 565 / 42 / 0**. Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending | n/a | paper trail first; TAP will be pasted from this Cloud Agent |
-| `npm run evaluate` | pending | n/a | paper trail only; no policy, door, or lock edit |
+| `npm test` | yes | 1 | TAP above; 42 fails print `isolated-semantic-engine-missing` on this Cloud Agent checkout |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live multi-turn host | already captured | n/a | table below is the remesure; this leftover does not re-run hosts |
 
 ## Metric snapshot
 
-| metric | official `79958de` | PCR 0139 (this leftover) | delta |
+| metric | official `79958de` | PCR 0139 (this-run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP | 549/0/0/549 | pending this Cloud Agent | do not invent |
-| evaluate | n/a on official table | pending | paper trail only |
+| `npm test` TAP `# tests` | 549 | **607** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **565** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **42** | `isolated-semantic-engine-missing` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
 
@@ -158,6 +171,8 @@ Byte counts are the live metric.
 No other live columns were invented.
 Cost-ledger on this tip is still not an eight-turn live total.
 SWE scores stay `null`.
+This Cloud Agent checkout has no Tree-sitter WASM.
+`npm test` therefore printed `# pass 565` `# fail 42`.
 This leftover does not change product code.
 Not a paper result.
 Official table is not replaced.
