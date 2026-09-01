@@ -16,8 +16,10 @@ PCR 0137 shipped the eight-turn ledger.
 Two-turn ingest is INVALID as a long-session cost table.
 This leftover distinguishes that ingest, captures provider **response**
 `usage.prompt_tokens` / `usage.completion_tokens`, and reprints a cited
-DeepSeek v4 flash cost-proxy `$` for arms `nothing` vs `freshctx-ts` on
-Pi and Hermes.
+DeepSeek v4 flash cost-proxy `$` for arms `nothing` vs FreshCtx
+(`freshctx-ts`: Isolated Semantic Engine / Tree-sitter) on Pi and Hermes.
+FreshCtx without Tree-sitter does not exist. This leftover does not run a
+third arm.
 
 CI uses fixture dumps. Those dumps are labeled `fixture` / `liveHost: false`.
 They replay the PCR 0137 unit-test provider pairs. They are not a live host
@@ -34,8 +36,9 @@ No success board.
 2. Added response-usage parse. Dump-only dummy `prompt_tokens: 0` stays `—`.
 3. Added a cost-ledger dump proxy that writes request bytes and, when an
    upstream reply is present, `*.response.usage.json`.
-4. Added Pi / Hermes fixture dumps for `nothing` vs `freshctx-ts`.
+4. Added Pi / Hermes fixture dumps for `nothing` vs FreshCtx (`freshctx-ts`).
 5. `print-ledger.mjs --fixture` reprints those dumps for CI.
+   Live reset/mutate accepts only those two arms.
 6. Added `test/pcr-0140-long-session-cost.test.mjs`.
 7. Did not edit INDEX, METRICS, README PCR counts, `src/`, door, lock,
    adapters, sidecar, success-board, SWE, or multi-turn-trial.
@@ -44,15 +47,15 @@ No success board.
 
 ## Arms
 
-| arm | FreshCtx | Isolated Semantic Engine | 0140 compare |
-|---|---|---|---|
-| `nothing` | no | n/a | yes |
-| `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off`) | pack only |
-| `freshctx-ts` | yes | on (Tree-sitter default) | yes |
+| arm | FreshCtx | Isolated Semantic Engine / Tree-sitter |
+|---|---|---|
+| `nothing` | no | n/a |
+| `freshctx-ts` | yes | on (Tree-sitter is the Isolated Semantic Engine default) |
 
 Hosts: `pi`, `hermes`.
 Model remains `deepseek-v4-flash` only.
 Host never exposes a Tree-sitter toggle.
+FreshCtx without Tree-sitter does not exist.
 
 ## Turns
 

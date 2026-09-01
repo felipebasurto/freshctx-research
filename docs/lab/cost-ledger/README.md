@@ -1,8 +1,9 @@
 # Cost ledger (prototype harness)
 
 Accumulate `request_bytes`, tokens, and a cited DeepSeek v4 flash cost proxy
-across a long session. Three arms: FreshCtx off, FreshCtx with Isolated Semantic
-Engine off, FreshCtx with Tree-sitter Isolated Semantic Engine on.
+across a long session. Two arms: FreshCtx off (`nothing`) and FreshCtx
+(`freshctx-ts`: Isolated Semantic Engine / Tree-sitter, the default).
+FreshCtx without Tree-sitter does not exist.
 
 PCR 0140 adds Pi and Hermes dump ingest for `nothing` vs `freshctx-ts`.
 Two-turn measure-pack ingest is INVALID for a long-session cost claim.

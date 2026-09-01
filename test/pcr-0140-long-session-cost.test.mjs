@@ -30,6 +30,7 @@ import {
   MIN_LONG_SESSION_TURNS,
   MODEL,
   SESSION_TURNS,
+  validateCostCompareArm,
   validateHost,
   validateModel,
 } from "../docs/lab/cost-ledger/pack.mjs";
@@ -51,6 +52,7 @@ import { usageFromResponseText, usageFromScan } from "../docs/lab/cost-ledger/us
 const here = dirname(fileURLToPath(import.meta.url));
 const packDir = join(here, "../docs/lab/cost-ledger");
 const printLedgerPath = join(packDir, "print-ledger.mjs");
+const livePath = join(packDir, "live.mjs");
 const pcrPath = join(here, "../docs/lab/pcr/0140-long-session-real-cost.md");
 const fixtureJsonPath = join(packDir, "fixture/long-session-ci.json");
 const twoTurnJsonPath = join(packDir, "fixture/two-turn-ingest.json");
@@ -64,6 +66,14 @@ test("PCR 0140 pins DeepSeek v4 flash only and Pi/Hermes compare arms", () => {
   assert.throws(() => validateModel("deepseek-v4-pro"), /deepseek-v4-flash/u);
   assert.deepEqual(HOSTS, ["pi", "hermes"]);
   assert.deepEqual(COST_COMPARE_ARMS, ["nothing", "freshctx-ts"]);
+  assert.equal(COST_COMPARE_ARMS.includes("freshctx-no-ts"), false);
+  assert.doesNotThrow(() => validateCostCompareArm("nothing"));
+  assert.doesNotThrow(() => validateCostCompareArm("freshctx-ts"));
+  assert.throws(() => validateCostCompareArm("freshctx-no-ts"), /nothing\|freshctx-ts/u);
+  const live = spawnSync(process.execPath, [livePath, "reset", "freshctx-no-ts"], { encoding: "utf8" });
+  assert.equal(live.status, 1);
+  assert.match(live.stderr, /nothing\|freshctx-ts/u);
+  assert.doesNotMatch(live.stdout + live.stderr, SECRET_LEAK);
   assert.doesNotThrow(() => validateHost("pi"));
   assert.doesNotThrow(() => validateHost("hermes"));
   assert.throws(() => validateHost("cursor"), /pi\|hermes/u);
@@ -100,6 +110,8 @@ test("PCR 0140 eight-turn fixture session is long-session and not two-turn inges
   assert.equal(fixture.label, "fixture");
   assert.equal(fixture.liveHost, false);
   assert.equal(fixture.sessionKind, SESSION_KIND_LONG);
+  assert.equal(fixture.hosts.pi.arms["freshctx-no-ts"], undefined);
+  assert.equal(fixture.hosts.hermes.arms["freshctx-no-ts"], undefined);
   const piNothing = fixture.hosts.pi.arms.nothing.turns;
   assert.equal(piNothing.length, 8);
   assert.equal(classifySessionKind(piNothing).kind, SESSION_KIND_LONG);
@@ -296,6 +308,7 @@ test("PCR 0140 prose says Tree-sitter and Isolated Semantic Engine, never a nick
     assert.match(text, /Tree-sitter/u);
     assert.match(text, /Isolated Semantic Engine/u);
     assert.doesNotMatch(text, /tsitter|tree sitter|TreeSitter|TS engine/u);
+    assert.doesNotMatch(text, /freshctx-no-ts/u);
     assert.doesNotMatch(text, SECRET_LEAK);
   }
 });

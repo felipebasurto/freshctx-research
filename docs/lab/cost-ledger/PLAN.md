@@ -6,8 +6,7 @@ Label: `harness-only`. Not a paper result. Not CtxBench. Not SOTA.
 
 Across many turns, do accumulated `request_bytes`, provider tokens, and a cited
 DeepSeek v4 flash cost proxy stay lower with FreshCtx on than with FreshCtx off?
-Does Tree-sitter inside the Isolated Semantic Engine change the accumulated
-curve versus the same adapter with Isolated Semantic Engine off?
+FreshCtx here is Isolated Semantic Engine with Tree-sitter (the default).
 
 This pack does not answer that from a live host. It accumulates captured or
 synthetic turn rows. A later live run may fill `.work/capture/`.
@@ -16,14 +15,13 @@ synthetic turn rows. A later live run may fill `.work/capture/`.
 
 Same prompts on every arm. Model pinned to `deepseek-v4-flash` only.
 
-| Arm | FreshCtx | Tree-sitter Isolated Semantic Engine |
+| Arm | FreshCtx | Isolated Semantic Engine / Tree-sitter |
 |---|---|---|
 | A `nothing` | no | n/a |
-| B `freshctx-no-ts` | yes | off (`FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` in harness) |
-| C `freshctx-ts` | yes | on (default Isolated Semantic Engine) |
+| B `freshctx-ts` | yes | on (Tree-sitter is the Isolated Semantic Engine default) |
 
-The host never exposes a Tree-sitter toggle. Arm ids keep `freshctx-ts` /
-`freshctx-no-ts` so they match the two-turn measure packs.
+The host never exposes a Tree-sitter toggle. FreshCtx without Tree-sitter
+does not exist. PCR 0140 does not run a third arm.
 
 ## Turns
 
@@ -66,7 +64,8 @@ Those dumps replay the PCR 0137 unit-test provider pairs. They are labeled
 `fixture` / `liveHost: false`. They are not a live Pi or Hermes capture.
 
 Hosts in the 0140 reprint: `pi` and `hermes`. Compared arms: `nothing` vs
-`freshctx-ts` (FreshCtx off vs Tree-sitter Isolated Semantic Engine on).
+`freshctx-ts` (FreshCtx off vs FreshCtx: Isolated Semantic Engine / Tree-sitter).
+FreshCtx without Tree-sitter does not exist.
 
 ## Out of scope
 

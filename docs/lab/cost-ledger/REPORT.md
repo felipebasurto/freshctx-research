@@ -17,7 +17,7 @@ Unit tests for `docs/lab/cost-ledger/`:
 - keep missing provider tokens as `—`;
 - compute a cited DeepSeek v4 flash cost proxy only from provider tokens;
 - label a 4-byte token estimate separately;
-- compare FreshCtx off vs on, and Tree-sitter Isolated Semantic Engine off vs on.
+- compare FreshCtx off (`nothing`) vs FreshCtx (`freshctx-ts`, Isolated Semantic Engine / Tree-sitter).
 
 The file `fixture/synthetic-session.json` is labeled `synthetic` /
 `liveHost: false`. It is a fixture for accumulation math. It is not a live host
@@ -40,7 +40,7 @@ Two-turn ingest is INVALID for long-session cost. PCR 0135 Hermes
 `request_bytes` stay a two-turn table. They are not summed here.
 
 CI reprints `fixture/long-session-ci.json` (label `fixture`, `liveHost: false`)
-for `pi` and `hermes`, arms `nothing` vs `freshctx-ts`. Those token and `$`
+for `pi` and `hermes`, arms `nothing` vs FreshCtx (`freshctx-ts`). Those token and `$`
 columns are the PCR 0137 unit-test provider pairs plus the cited flash
 cost-proxy table. They are not a live host score.
 

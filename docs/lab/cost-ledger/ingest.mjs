@@ -3,7 +3,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { MODEL, validateArm, validateHost, validateModel } from "./pack.mjs";
+import { MODEL, validateArm, validateCostCompareArm, validateHost, validateModel } from "./pack.mjs";
 import { assertLongSessionCost } from "./session-kind.mjs";
 import { usageFromScan } from "./usage.mjs";
 
@@ -111,13 +111,13 @@ export async function ingestScanDir(dir, meta = {}) {
 
 export async function ingestHostArmDumps({ root, host, arm }) {
   validateHost(host);
-  validateArm(arm);
+  validateCostCompareArm(arm);
   return ingestScanDir(join(root, host, arm), { host, arm });
 }
 
 export function fixtureTurns(fixture, host, arm) {
   validateHost(host);
-  validateArm(arm);
+  validateCostCompareArm(arm);
   const turns = fixture?.hosts?.[host]?.arms?.[arm]?.turns;
   if (!Array.isArray(turns)) {
     throw new Error(`fixture missing turns for ${host}/${arm}`);

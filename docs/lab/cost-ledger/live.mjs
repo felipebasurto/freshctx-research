@@ -6,19 +6,19 @@ import { fileURLToPath } from "node:url";
 
 import { flipTargetInteriorMarker } from "../pi-trial-ts/live.mjs";
 import { MARKER_V0, MARKER_V1, TARGET_FILE, TARGET_SYMBOL } from "../pi-trial-ts/pack.mjs";
-import { ARMS, validateArm } from "./pack.mjs";
+import { COST_COMPARE_ARMS, validateCostCompareArm } from "./pack.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FIXTURE = join(here, "../pi-trial-ts/fixture");
 const WORK_ROOT = join(here, ".work");
 
 export function workDir(arm) {
-  validateArm(arm);
+  validateCostCompareArm(arm);
   return join(WORK_ROOT, arm);
 }
 
 export async function reset(arm, source = FIXTURE) {
-  validateArm(arm);
+  validateCostCompareArm(arm);
   const dest = workDir(arm);
   await rm(dest, { recursive: true, force: true });
   await mkdir(WORK_ROOT, { recursive: true });
@@ -27,7 +27,7 @@ export async function reset(arm, source = FIXTURE) {
 }
 
 export async function mutate(arm, name) {
-  validateArm(arm);
+  validateCostCompareArm(arm);
   if (name !== "flip-settle") {
     throw new Error(`unknown mutate ${name}. use flip-settle`);
   }
@@ -49,7 +49,7 @@ async function main(argv) {
     return;
   }
   if (cmd === "arms") {
-    process.stdout.write(`${ARMS.join("\n")}\n`);
+    process.stdout.write(`${COST_COMPARE_ARMS.join("\n")}\n`);
     return;
   }
   throw new Error("usage: live.mjs reset|mutate|arms ...");
