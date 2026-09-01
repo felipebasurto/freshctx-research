@@ -1,4 +1,5 @@
-import { access, stat } from "node:fs/promises";
+import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 
 import { launchChild } from "./launch-child.mjs";
 import { hermesBin } from "./launch-hermes.mjs";
@@ -177,6 +178,68 @@ export const HERMES_CLI_STDERR_LOG_MISSING =
 export const HERMES_CLI_STDERR_LOG_EMPTY =
   "t1-read.cli.stderr.log empty: CLI child persisted 0 bytes (not a query log)";
 
+export function cliQueryCompanionPaths(logPath) {
+  const stderrLog = String(logPath ?? "");
+  if (stderrLog.endsWith(".cli.stderr.log")) {
+    return {
+      stderrLog,
+      stdoutLog: stderrLog.replace(/\.cli\.stderr\.log$/u, ".cli.stdout.log"),
+      spawnLog: stderrLog.replace(/\.cli\.stderr\.log$/u, ".cli.spawn.json"),
+      homeLog: stderrLog.replace(/\.cli\.stderr\.log$/u, ".cli.hermes-home.log"),
+    };
+  }
+  return {
+    stderrLog,
+    stdoutLog: `${stderrLog}.stdout.log`,
+    spawnLog: `${stderrLog}.spawn.json`,
+    homeLog: `${stderrLog}.hermes-home.log`,
+  };
+}
+
+export function cliQueryChannelReason({ stderr, stdout } = {}) {
+  const stderrBytes = Buffer.byteLength(String(stderr ?? ""));
+  const stdoutBytes = Buffer.byteLength(String(stdout ?? ""));
+  if (stderrBytes > 0 || stdoutBytes > 0) return null;
+  return HERMES_CLI_STDERR_LOG_EMPTY;
+}
+
+export async function readHermesHomeQueryLog(hermesHome) {
+  if (!hermesHome) return "";
+  const logsDir = join(hermesHome, "logs");
+  const chunks = [];
+  for (const name of ["agent.log", "errors.log"]) {
+    try {
+      chunks.push(await readFile(join(logsDir, name), "utf8"));
+    } catch {
+      // absent channel
+    }
+  }
+  return chunks.join("");
+}
+
+export async function persistCliQueryCompanions({
+  logPath,
+  args,
+  result,
+  hermesHomeLog = "",
+} = {}) {
+  if (!logPath) return null;
+  const paths = cliQueryCompanionPaths(logPath);
+  await mkdir(dirname(paths.stdoutLog), { recursive: true });
+  await writeFile(paths.stdoutLog, result?.stdout ?? "");
+  await writeFile(paths.homeLog, hermesHomeLog ?? "");
+  const record = {
+    args: Array.isArray(args) ? args : [],
+    code: result?.code ?? null,
+    signal: result?.signal ?? null,
+    stderrBytes: Buffer.byteLength(String(result?.stderr ?? "")),
+    stdoutBytes: Buffer.byteLength(String(result?.stdout ?? "")),
+    hermesHomeBytes: Buffer.byteLength(String(hermesHomeLog ?? "")),
+  };
+  await writeFile(paths.spawnLog, `${JSON.stringify(record, null, 2)}\n`);
+  return paths;
+}
+
 export async function cliStderrLogMissingReason(logPath) {
   if (!logPath) return HERMES_CLI_STDERR_LOG_MISSING;
   try {
@@ -222,20 +285,36 @@ export function cliQueryArgs({ continueSession = false, message } = {}) {
   return args;
 }
 
-export async function runCliQuery({ cwd, env, message, continueSession = false, logPath }) {
+export async function runCliQuery({ cwd, env, message, continueSession = false, logPath, hermesHome }) {
   if (!logPath) {
     throw new Error(HERMES_CLI_STDERR_LOG_MISSING);
   }
+  const args = cliQueryArgs({ continueSession, message });
   const child = launchChild({
     command: hermesBin(),
-    args: cliQueryArgs({ continueSession, message }),
+    args,
     cwd,
     env,
     logPath,
   });
+  try {
+    child.proc.stdin.end();
+  } catch {
+    // already closed
+  }
   const result = await child.exit;
+  const home = hermesHome ?? env?.HERMES_HOME ?? "";
+  const hermesHomeLog = await readHermesHomeQueryLog(home);
+  await persistCliQueryCompanions({ logPath, args, result, hermesHomeLog });
   const missing = await cliStderrLogMissingReason(logPath);
-  if (missing) throw new Error(missing);
+  if (missing === HERMES_CLI_STDERR_LOG_MISSING) throw new Error(missing);
+  if (missing === HERMES_CLI_STDERR_LOG_EMPTY) {
+    const channel = cliQueryChannelReason({
+      stderr: result.stderr,
+      stdout: result.stdout,
+    });
+    if (channel) throw new Error(channel);
+  }
   const reason = hermesCliQueryFailedReason(result);
   if (reason) throw new Error(reason);
   return {
