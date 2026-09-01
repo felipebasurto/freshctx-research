@@ -1,0 +1,44 @@
+{
+  "label": "synthetic",
+  "liveHost": false,
+  "model": "deepseek-v4-flash",
+  "note": "Lab-local request_bytes only. Not a live host score. prompt_tokens stay null.",
+  "arms": {
+    "nothing": {
+      "turns": [
+        { "arm": "nothing", "turn": 1, "cellId": "t1-read", "requestBytes": 10000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 2, "cellId": "t2-settle", "requestBytes": 12000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 3, "cellId": "t3-reread", "requestBytes": 15000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 4, "cellId": "t4-settle", "requestBytes": 18000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 5, "cellId": "t5-ask-again", "requestBytes": 22000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 6, "cellId": "t6-reread", "requestBytes": 26000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 7, "cellId": "t7-settle", "requestBytes": 30000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "nothing", "turn": 8, "cellId": "t8-ask-again", "requestBytes": 35000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" }
+      ]
+    },
+    "freshctx-no-ts": {
+      "turns": [
+        { "arm": "freshctx-no-ts", "turn": 1, "cellId": "t1-read", "requestBytes": 11000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 2, "cellId": "t2-settle", "requestBytes": 11500, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 3, "cellId": "t3-reread", "requestBytes": 11600, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 4, "cellId": "t4-settle", "requestBytes": 11600, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 5, "cellId": "t5-ask-again", "requestBytes": 11700, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 6, "cellId": "t6-reread", "requestBytes": 11700, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 7, "cellId": "t7-settle", "requestBytes": 11800, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-no-ts", "turn": 8, "cellId": "t8-ask-again", "requestBytes": 11800, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" }
+      ]
+    },
+    "freshctx-ts": {
+      "turns": [
+        { "arm": "freshctx-ts", "turn": 1, "cellId": "t1-read", "requestBytes": 8000, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 2, "cellId": "t2-settle", "requestBytes": 7500, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 3, "cellId": "t3-reread", "requestBytes": 7600, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 4, "cellId": "t4-settle", "requestBytes": 7550, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 5, "cellId": "t5-ask-again", "requestBytes": 7500, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 6, "cellId": "t6-reread", "requestBytes": 7480, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 7, "cellId": "t7-settle", "requestBytes": 7460, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" },
+        { "arm": "freshctx-ts", "turn": 8, "cellId": "t8-ask-again", "requestBytes": 7440, "promptTokens": null, "completionTokens": null, "model": "deepseek-v4-flash", "source": "synthetic" }
+      ]
+    }
+  }
+}
