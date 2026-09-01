@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/hermes-freshctx-engine-register-a905` / draft
+- Branch / PR: `cursor/hermes-freshctx-engine-register-a905` / [136](https://github.com/felipebasurto/freshctx/pull/136)
 - Base SHA: `dc1837544c69b7e0bed24b6e788a648e27135677`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Result labels used: `synthetic`; `adapter-only`; `measurement`
@@ -66,8 +66,8 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending | — | TAP above filled from this run |
-| `npm run evaluate` | pending | — | |
+| `npm test` | yes | 0 | TAP above (+4 vs 570 on `dc183754`) |
+| `npm run evaluate` | yes | 0 | `EVALUATE_VERDICT=PASS` |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
 ## Metric snapshot
@@ -75,11 +75,11 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 | metric | official `dc183754` | PCR 0134 (this run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | 570 | pending | pending |
-| `npm test` TAP `# pass` | 570 | pending | pending |
-| `npm test` TAP `# fail` | 0 | pending | pending |
-| `npm test` TAP `# skipped` | 0 | pending | pending |
-| evaluate | n/a on official table | pending | not a live-pack score |
+| `npm test` TAP `# tests` | 570 | **574** | **+4** |
+| `npm test` TAP `# pass` | 570 | **574** | **+4** |
+| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | `EVALUATE_VERDICT=PASS` | not a live-pack score |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
 

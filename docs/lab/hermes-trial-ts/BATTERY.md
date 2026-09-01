@@ -75,7 +75,7 @@ export HERMES_HOME="$PWD/hermes-home"
 hermes chat --provider openai --model deepseek-v4-flash
 ```
 
-Configura `context.engine: freshctx` y `plugins.enabled` including `freshctx` in `HERMES_HOME/config.yaml`.
+Configura `context.engine: freshctx` y añade `freshctx` a `plugins.enabled` en `HERMES_HOME/config.yaml`.
 
 ### B1. HERMES — mismo PROMPT que A1
 
@@ -103,7 +103,7 @@ export HERMES_HOME="$PWD/hermes-home"
 hermes chat --provider openai --model deepseek-v4-flash
 ```
 
-Configura `context.engine: freshctx` y `plugins.enabled` including `freshctx` in `HERMES_HOME/config.yaml`.
+Configura `context.engine: freshctx` y añade `freshctx` a `plugins.enabled` en `HERMES_HOME/config.yaml`.
 
 ### C1. HERMES — mismo PROMPT que A1
 
