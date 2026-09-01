@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FRESHCTX_CWD_ENV, HERMES_TRIAL_WORKSPACE_ENV, TARGET_FILE, hostReadToolArgs } from "./pack.mjs";
+import { FRESHCTX_CWD_ENV, HERMES_TRIAL_WORKSPACE_ENV, hostReadToolArgs } from "./pack.mjs";
 import {
   BLOCKED_T1_TOOLS,
   FORCE_HOST_READ_ENV,
@@ -64,9 +64,8 @@ export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   if (!tool || !isHermesReadTool(tool.toolName)) return false;
   const args = tool.args ?? tool.input ?? {};
   const expected = hostReadToolArgs({ workspace });
-  const pathOk = args.path === expected.path || args.path === TARGET_FILE;
   return (
-    pathOk &&
+    args.path === expected.path &&
     args.scope === expected.scope &&
     args.selector === expected.selector &&
     args.offset === undefined &&

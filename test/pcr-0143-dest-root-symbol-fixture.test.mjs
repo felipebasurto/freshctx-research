@@ -91,6 +91,14 @@ test("force-host-read remaps dest-root abs src/settlement.ts to .work/<arm> fixt
 
     assert.equal(
       readToolMatchesHostArgs(
+        { toolName: "read_file", args: { path: TARGET_FILE, scope: "symbol", selector: TARGET_SYMBOL } },
+        { workspace: work },
+      ),
+      false,
+      "relative dest-root src/settlement.ts must not pass when workspace is the .work fixture",
+    );
+    assert.equal(
+      readToolMatchesHostArgs(
         { toolName: "read_file", args: { path: join(dest, TARGET_FILE), scope: "symbol", selector: TARGET_SYMBOL } },
         { workspace: work },
       ),

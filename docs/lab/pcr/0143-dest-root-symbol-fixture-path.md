@@ -26,7 +26,9 @@ retry loop.
 This leftover remaps symbol-scope host reads to the real fixture path when
 `FRESHCTX_CWD` / `HERMES_TRIAL_WORKSPACE` / `PI_TRIAL_WORKSPACE` points at a
 workspace that actually contains `src/settlement.ts`. Dest-root is ignored
-because that file is not there.
+because that file is not there. The t1 matcher is fail-closed: with a
+workspace set, only that `.work/<arm>` fixture path passes. Relative
+dest-root `src/settlement.ts` must not pass.
 
 Official accepted table stays 549/0/0/549.
 INDEX / METRICS / README PCR counts stay untouched (next pack).
@@ -44,12 +46,14 @@ No `--relock`. Never paste the key.
    dir.
 4. Hermes engine `_workspace_cwd()` prefers `FRESHCTX_CWD` /
    `HERMES_TRIAL_WORKSPACE` over dest-root `getcwd()`.
-5. Added `test/pcr-0143-dest-root-symbol-fixture.test.mjs`.
-6. Did not edit INDEX, METRICS, or README PCR counts.
-7. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`,
+5. Fail-closed the t1 matcher: workspace `.work` path only. Removed the
+   `|| path === src/settlement.ts` OR that let dest-root miss pass.
+6. Added `test/pcr-0143-dest-root-symbol-fixture.test.mjs`.
+7. Did not edit INDEX, METRICS, or README PCR counts.
+8. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`,
    holdout packs, door, or lock.
-8. Did not `--relock`.
-9. Did not invent live `$` or TAP.
+9. Did not `--relock`.
+10. Did not invent live `$` or TAP.
 
 ## Arms
 
@@ -78,7 +82,7 @@ This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
 ```
 
 The 43 fails are `isolated-semantic-engine-missing` plus living-docs PCR
-count (`137 !== 135`). Living-docs is the next pack. This leftover does
+count (`138 !== 135`). Living-docs is the next pack. This leftover does
 not chase README / INDEX PCR counts. That GHA-class Isolated Semantic
 Engine WASM-missing suite is not invented.
 
