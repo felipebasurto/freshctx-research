@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+
 import { launchChild } from "./launch-child.mjs";
 import { hermesBin } from "./launch-hermes.mjs";
 import { MODEL, promptForCell } from "./pack.mjs";
@@ -168,6 +170,19 @@ export class HermesRpc {
 
 export const HERMES_Q_EXPECTED_ONE_ARGUMENT =
   "hermes chat: error: argument -q/--query: expected one argument";
+
+export const HERMES_CLI_STDERR_LOG_MISSING =
+  "t1-read.cli.stderr.log missing: CLI child exited without persisting logPath";
+
+export async function cliStderrLogMissingReason(logPath) {
+  if (!logPath) return HERMES_CLI_STDERR_LOG_MISSING;
+  try {
+    await access(logPath);
+    return null;
+  } catch {
+    return HERMES_CLI_STDERR_LOG_MISSING;
+  }
+}
 
 export function cliQueryArgvInvalidReason(args) {
   const list = Array.isArray(args) ? args : [];
