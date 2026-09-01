@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0146-874ef52b-cost-afde` (draft)
+- Branch / PR: `cursor/pcr-0146-874ef52b-cost-afde` / [149](https://github.com/felipebasurto/freshctx/pull/149) (draft)
 - Base SHA: `874ef52b555bf6dc2b690e5edd7b384f9eab5f7a` (PCR 0145 on main; PR 148 squash)
 - Number: **0146**. PCR 0142 remains the paper Hermes eight-turn cost on dest
   `d8cdd3d5`. This leftover does not reuse or replace that number.
@@ -182,13 +182,26 @@ That leftover is recorded. It does not replace PCR 0142.
 This leftover does not replace the official accepted table.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
-This-run Cloud Agent TAP is pasted after `npm test` on this leftover.
-This leftover does not invent TAP.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..638
+# tests 638
+# pass 595
+# fail 43
+# skipped 0
+```
+
+This-run Cloud Agent TAP is **638 / 595 / 43 / 0**. That print is **not GHA**.
+Isolated Semantic Engine WASM is missing on this checkout, so 42 fails print
+`isolated-semantic-engine-missing` (or equivalent Isolated Semantic Engine /
+Tree-sitter runner absence). The 43rd fail is living-docs `142 !== 135`.
+That count leftover is not fixed on this PR. Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this-run | n/a | TAP pasted after this leftover runs it; not invented |
-| `npm run evaluate` | pending this-run | n/a | hard gate expected if this-run TAP fails |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; living-docs `142 !== 135`; next pack; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | already captured | n/a | dest `/workspace/freshctx-measure-874ef52b-cost-live`; this leftover does not re-run hosts |
 
@@ -197,7 +210,11 @@ This leftover does not invent TAP.
 | metric | official `79958de` | PCR 0146 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP | 549/0/0/549 | pending this-run | not invented |
+| `npm test` TAP `# tests` | 549 | **638** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **595** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **43** | 42 Isolated Semantic Engine WASM missing; 1 living-docs `142 !== 135`; not GHA |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | live Hermes `nothing` `$` | n/a | **0.03112208** | dest `874ef52b`; not invented |
 | live Hermes `freshctx-ts` `$` | n/a | **0.02211352** | dest `874ef52b`; not invented |
 | live Hermes session `$` delta | n/a | **-0.00900856** | arithmetic on the two arm totals |
