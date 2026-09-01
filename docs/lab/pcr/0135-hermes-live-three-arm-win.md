@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0135-hermes-live-three-arm-6bc9` / draft (number after open)
+- Branch / PR: `cursor/pcr-0135-hermes-live-three-arm-6bc9` / [137](https://github.com/felipebasurto/freshctx/pull/137)
 - Base SHA: `85c6c99d4c74812a8223715915e6ab64928a540a` (PCR 0134 on main)
 - Live dest: `/workspace/freshctx-measure-85c6c99d`
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
@@ -56,8 +56,8 @@ Canonical TAP from this HEAD after `npm test`.
 ```
 1..574
 # tests 574
-# pass 574
-# fail 0
+# pass 532
+# fail 42
 # skipped 0
 ```
 
@@ -65,9 +65,10 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this HEAD | — | TAP above is the 0134 suite; this leftover adds no test file |
+| `npm test` | yes | 1 | TAP above; 42 fails print `isolated-semantic-engine-missing` |
 | `npm run evaluate` | no | n/a | paper trail only; no policy, door, or lock edit |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
+| `npm run ise:install` | no | n/a | this Cloud Agent checkout has no Tree-sitter WASM; pstack was not reinstalled |
 
 ## Metric snapshot
 
@@ -75,8 +76,8 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
 | `npm test` TAP `# tests` | 549 | **574** | living suite; official table stays 549 |
-| `npm test` TAP `# pass` | 549 | **574** | living suite; official table stays 549 |
-| `npm test` TAP `# fail` | 0 | **0** | `0` |
+| `npm test` TAP `# pass` | 549 | **532** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **42** | `isolated-semantic-engine-missing` |
 | `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | evaluate | n/a on official table | not rerun | paper trail only |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
@@ -123,6 +124,10 @@ none observed.
 `prompt_tokens` were not in the dumps (`—`).
 Byte counts are the live metric.
 No other live columns were invented.
+This Cloud Agent checkout has no Tree-sitter WASM.
+`npm test` therefore printed `# pass 532` `# fail 42`.
+The live dest already resolved Isolated Semantic Engine.
+pstack was not reinstalled.
 Not a paper result.
 Official table is not replaced.
 
