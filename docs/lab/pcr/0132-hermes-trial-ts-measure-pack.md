@@ -15,6 +15,7 @@ The pack is the same family as `docs/lab/pi-trial-ts/`.
 Host turn-1 read stays `scope=symbol` selector `settleDailyLedger`.
 Tree-sitter lives inside FreshCtx.
 Isolated Semantic Engine off is harness env only.
+`handleForceHostReadToolCall` must run on the Hermes live/plugin path so CLI fallback cannot skip the t1 assert when `tools=[]`.
 
 ## What we did
 
@@ -24,8 +25,11 @@ Isolated Semantic Engine off is harness env only.
 4. Hermes bridge honors `FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` when replay does not pass a runner.
 5. Launch-proxy speaks TUI gateway or ACP when the host exposes them. It does not invent `--mode rpc`.
 6. Dump proxy writes `scan.json` and redacts Authorization. It never prints the DeepSeek key.
-7. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout packs, door, or lock.
-8. Did not `--relock`. No apex or GHA work. No Pi rewrite.
+7. Wired `handleForceHostReadToolCall` through a Hermes general plugin (`pre_tool_call`) installed on all three arms, including `nothing`. Not a second context engine. Not product `src/`.
+8. `auto-rpc.mjs` always calls `assertT1HostReadTools` on t1. Empty tools fail closed. CLI fallback reads plugin-recorded tools when RPC events are absent.
+9. Bumped public PCR count to 128 so living-docs matches `docs/lab/pcr/*.md`.
+10. Did not edit `src/policy.mjs`, `src/anchors.mjs`, `src/projector.mjs`, holdout packs, door, or lock.
+11. Did not `--relock`. No apex or GHA work. No Pi rewrite.
 
 ## Arms
 
@@ -40,12 +44,12 @@ Host never exposes a Tree-sitter toggle.
 
 ## Benchmarks run
 
-Canonical TAP from this run on branch HEAD after `npm run ise:install`.
+Canonical TAP from this run on branch HEAD.
 
 ```
-1..562
-# tests 562
-# pass 562
+1..567
+# tests 567
+# pass 567
 # fail 0
 # skipped 0
 ```
@@ -54,7 +58,7 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total** on `
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 0 | TAP above (+13 vs official 549) |
+| `npm test` | yes | 0 | TAP above (+18 vs official 549) |
 | `npm run evaluate` | yes | 0 | `EVALUATE_VERDICT=PASS` |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | `auto-rpc.mjs` live three-arm | no | n/a | needs official `hermes` on PATH and a key |
@@ -64,8 +68,8 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total** on `
 | metric | official `79958de` | PCR 0132 (this run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | 549 | **562** | **+13** |
-| `npm test` TAP `# pass` | 549 | **562** | **+13** |
+| `npm test` TAP `# tests` | 549 | **567** | **+18** |
+| `npm test` TAP `# pass` | 549 | **567** | **+18** |
 | `npm test` TAP `# fail` | 0 | **0** | `0` |
 | `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | evaluate | n/a on official table | `EVALUATE_VERDICT=PASS` | not a live-pack score |
@@ -90,7 +94,8 @@ none observed.
 
 `auto-rpc.mjs` requires `hermes` on PATH.
 Dump-only proxy answers with a dummy completion when no key is present.
-T1 force-host-read rewrites recorded tool args. Live host mutation still depends on Hermes tool.start surfaces.
+The force-host-read general plugin must be enabled in isolated `HERMES_HOME` config.
+CLI t1 now fail-closes on empty tools. Live host still needs official Hermes to fire `pre_tool_call`.
 
 ## Recommended next experiment
 
