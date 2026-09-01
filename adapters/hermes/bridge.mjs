@@ -20,6 +20,22 @@ import {
 import { createAdapterEngine } from "../engine-factory.mjs";
 
 export const READ_TOOLS = new Set(["read", "read_file", "read_text_file"]);
+
+/** Isolated Semantic Engine off is a harness env knob, same family as adapters/pi/extension.ts. */
+export function isolatedSemanticEngineOffFromEnv(env = process.env) {
+  return env.FRESHCTX_ISOLATED_SEMANTIC_ENGINE === "off";
+}
+
+/** Replay may pass a runner. Live Hermes honors FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off. */
+export function semanticEngineOptionsForBridge(payload = {}, env = process.env) {
+  if (payload.semanticEngineRunner !== undefined) {
+    return { semanticEngineRunner: payload.semanticEngineRunner };
+  }
+  if (isolatedSemanticEngineOffFromEnv(env)) {
+    return { semanticEngineRunner: null };
+  }
+  return {};
+}
 const HERMES_TRACKED_TOOLS = trackedReadTools(READ_TOOLS);
 const MAX_FILE_BYTES = 512 * 1024;
 
@@ -633,9 +649,7 @@ export async function selectContext(payload) {
     budgetTokens: payload.budgetTokens,
     defaultBudget: DEFAULT_BUDGET_CHARS,
   });
-  const engine = createAdapterEngine(
-    payload.semanticEngineRunner === undefined ? {} : { semanticEngineRunner: payload.semanticEngineRunner },
-  );
+  const engine = createAdapterEngine(semanticEngineOptionsForBridge(payload));
   const unitsByCall = new Map();
   const shellCallIds = new Set(Object.keys(shellCallsFromMessages(payload.messages)));
   const activeOfficialCallIds = latestOfficialReadCallIds(payload.messages, tracked);
