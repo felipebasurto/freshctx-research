@@ -236,9 +236,10 @@ test("PCR 0136 scan scores later-turn current ST2 and stale ST1 without inventin
   assert.ok(COLUMN_NAMES.includes("exact_current_bytes"));
 });
 
-test("PCR 0136 leftover sources never paste keys, call Tree-sitter a sidecar, or invent live scores", async () => {
+test("PCR 0136 leftover sources never paste keys or invent live scores", async () => {
   const source = await readPackSources();
-  assert.doesNotMatch(source, /\bsidecar\b/iu);
+  const retired = ["side", "car"].join("");
+  assert.equal(source.toLowerCase().includes(retired), false);
   assert.doesNotMatch(source, /sk-[A-Za-z0-9]{8,}/u);
   assert.doesNotMatch(source, /DEEPSEEK_API_KEY\s*=\s*['"][^'"]+['"]/u);
   assert.doesNotMatch(source, /OPENAI_API_KEY\s*=\s*['"][^'"]+['"]/u);

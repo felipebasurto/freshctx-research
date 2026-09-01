@@ -19,9 +19,9 @@ turn 2 only (`ST0` → `ST1`). This pack continues the same session:
 | 3 `t3-settle` | `flip-settle-2` | `ST2` |
 | 4 `t4-unchanged` | none | `ST2` |
 
-Tree-sitter lives inside FreshCtx. The host still passes `scope=symbol` with
-selector `settleDailyLedger`. The harness never exposes a Tree-sitter toggle.
-Never call Tree-sitter a sidecar.
+Tree-sitter lives inside FreshCtx as the Isolated Semantic Engine.
+The host still passes `scope=symbol` with selector `settleDailyLedger`.
+The harness never exposes a Tree-sitter toggle.
 
 ## Arms
 

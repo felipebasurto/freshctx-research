@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0136-multi-turn-trial-5a68` (draft)
+- Branch / PR: `cursor/pcr-0136-multi-turn-trial-5a68` / [139](https://github.com/felipebasurto/freshctx/pull/139)
 - Base SHA: `4ab081fd8d81335cc58dd776f2d3726ce73920ac` (PCR 0135 on main)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -59,19 +59,32 @@ Host never exposes a Tree-sitter toggle.
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test` is pending the first push.
-The numbers below will be filled from the same Cloud Agent `npm test` on this branch.
+Canonical TAP from this HEAD after `npm test`.
 
 ```
-pending this HEAD npm test
+1..583
+# tests 583
+# pass 540
+# fail 43
+# skipped 0
+```
+
+`node --test test/pcr-0136-multi-turn-host-trial.test.mjs` on this HEAD:
+
+```
+1..9
+# tests 9
+# pass 9
+# fail 0
+# skipped 0
 ```
 
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `node --test test/pcr-0136-multi-turn-host-trial.test.mjs` | pending | n/a | files this leftover added |
-| `npm test` | pending | n/a | living suite; official table stays 549 |
+| `node --test test/pcr-0136-multi-turn-host-trial.test.mjs` | yes | 0 | 9/9; files this leftover added |
+| `npm test` | yes | 1 | TAP above; 42 fails print `isolated-semantic-engine-missing`; 1 fail is `living-docs` PCR file count 132 vs README 131 |
 | `npm run evaluate` | no | n/a | paper trail only; no policy, door, or lock edit |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | `auto-rpc.mjs` live multi-turn | no | n/a | needs official `pi` and/or `hermes` on PATH and a key |
@@ -81,10 +94,10 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 | metric | official `4ab081fd` | PCR 0136 (this run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | pending | pending | living suite; official table stays 549 |
-| `npm test` TAP `# pass` | pending | pending | fill from this HEAD |
-| `npm test` TAP `# fail` | pending | pending | fill from this HEAD |
-| `npm test` TAP `# skipped` | pending | pending | fill from this HEAD |
+| `npm test` TAP `# tests` | 574 | **583** | **+9** living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 532 | **540** | **+8** (9 new pass; living-docs public-count fails) |
+| `npm test` TAP `# fail` | 42 | **43** | **+1** `living-docs` PCR count 132 vs frozen README 131; 42 remain `isolated-semantic-engine-missing` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | evaluate | n/a on official table | not rerun | paper trail only |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
