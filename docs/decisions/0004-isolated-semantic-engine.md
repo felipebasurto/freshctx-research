@@ -1,4 +1,4 @@
-# ADR 0004: Tree-sitter sidecar, not a native addon in `src/`
+# ADR 0004: Tree-sitter Isolated Semantic Engine, not a native addon in `src/`
 
 Status: **accepted**
 
@@ -10,19 +10,19 @@ provider hook. Putting a Tree-sitter native addon inside the Node process
 would break the stdlib-only rule for `src/` and couple CI to node-gyp.
 
 Hermes already spawns a process across a language boundary
-(`adapters/hermes/bridge.mjs`). A sidecar repeats that shape.
+(`adapters/hermes/bridge.mjs`). An Isolated Semantic Engine repeats that shape.
 
 Gold extractors must stay a second program. A candidate parser that writes
 gold would make sabotage invisible.
 
-PCR 0079 forbids caching prior request bodies. A sidecar that remembered the
+PCR 0079 forbids caching prior request bodies. An Isolated Semantic Engine that remembered the
 last payload would reintroduce that hole.
 
 LSP is out of scope for this phase.
 
 ## Decision
 
-Use a **sidecar process** at `sidecar/treesitter/`.
+Use an **Isolated Semantic Engine process** at `ise/treesitter/`.
 
 - Command boundary: JSON on stdin (`{ path, bytes }`) and JSON on stdout
   (`{ units, error }`).
@@ -44,7 +44,7 @@ Use a **sidecar process** at `sidecar/treesitter/`.
   functions in different parents or different blocks therefore resolve
   instead of colliding. Same-block same-name units still drop. Direct
   class methods stay `class Alpha::method render`.
-- The sidecar must not store prior request bodies. Each call is stateless.
+- The Isolated Semantic Engine must not store prior request bodies. Each call is stateless.
 - Selected units still carry current bytes. No `unchanged` or digest-only
   selected unit.
 - Gold extractors (`bench/gold-extract.mjs`) read generator offsets or
@@ -60,4 +60,7 @@ Use a **sidecar process** at `sidecar/treesitter/`.
 - A later tree-sitter WASM or native grammar pack may replace the extractor
   behind the same stdin/stdout contract without touching `src/`.
 - Root `package.json` stays free of runtime dependencies.
+- The private 0.1 package has no exported runner package or persisted runner
+  field, so the repository path, injected option, and resolution labels migrate
+  together without a durable-state compatibility alias.
 - This ADR does not authorize a Level 4 claim.

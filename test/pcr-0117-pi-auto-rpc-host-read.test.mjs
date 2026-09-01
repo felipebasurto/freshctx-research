@@ -194,5 +194,5 @@ test("PCR 0117 readToolMatchesHostArgs rejects offset reads", () => {
 });
 
 test("PCR 0117 envWithForceHostRead pins harness env for t1 host read", () => {
-  assert.equal(envWithForceHostRead({ FRESHCTX_SIDECAR: "off" })[FORCE_HOST_READ_ENV], "1");
+  assert.equal(envWithForceHostRead({ FRESHCTX_ISOLATED_SEMANTIC_ENGINE: "off" })[FORCE_HOST_READ_ENV], "1");
 });

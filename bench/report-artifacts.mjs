@@ -10,6 +10,8 @@ export const TRACKED_REPORT_PATHS = Object.freeze([
   "bench/reports/pi-holdout.md",
   "bench/reports/hermes-holdout.md",
   "bench/reports/holdout.md",
+  "bench/packs/symbol-scope-dev-v0.1/reports/nested-helper-showdown.jsonl",
+  "bench/packs/symbol-scope-dev-v0.1/reports/nested-helper-showdown.md",
   "autoresearch/results.tsv",
 ]);
 

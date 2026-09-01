@@ -1,5 +1,5 @@
 {
-  "name": "freshctx-treesitter-sidecar",
+  "name": "freshctx-isolated-semantic-engine",
   "version": "0.1.0",
   "private": true,
   "type": "module",

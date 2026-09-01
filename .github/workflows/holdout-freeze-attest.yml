@@ -2,6 +2,9 @@ name: holdout-freeze-attest
 
 on:
   push:
+    branches:
+      - main
+      - feat/freshctx-next
     paths:
       - "bench/splits/**"
   workflow_dispatch:

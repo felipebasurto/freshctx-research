@@ -7,7 +7,7 @@ Label: `live-host`. Not a paper result. Not CtxBench. Not SOTA.
 Does FreshCtx beat Pi-alone on TypeScript after a symbol-scope read of
 `settleDailyLedger` and interior flip on that symbol? Does Tree-sitter inside
 FreshCtx (host passes `scope=symbol` with selector `settleDailyLedger`) change
-the outcome vs the same adapter with the sidecar off?
+the outcome vs the same adapter with the Isolated Semantic Engine off?
 
 Measured on official Pi 0.84.3 with `auto-rpc.mjs` at `1a002ffa`.
 
@@ -40,7 +40,7 @@ nothing	2	no	yes	12044	—	no	none
 freshctx-no-ts	1	n/a	n/a	73208	—	n/a	n/a
 freshctx-no-ts	2	no	no	15291	—	no	none
 freshctx-ts	1	n/a	n/a	12806	—	n/a	n/a
-freshctx-ts	2	yes	no	7794	—	yes	sidecar
+freshctx-ts	2	yes	no	7794	—	yes	Isolated Semantic Engine
 ```
 
 Turn-2 last-request UTF-8 bytes (one provider payload, not the t1 sum):
@@ -49,7 +49,7 @@ Turn-2 last-request UTF-8 bytes (one provider payload, not the t1 sum):
 |---|---:|---|---|---|
 | `nothing` | 12044 | `SETTLE=ST0` (stale) | yes | none |
 | `freshctx-no-ts` | 15291 | unresolved, no marker | no | none |
-| `freshctx-ts` | 7794 | `SETTLE=ST1` | no | sidecar |
+| `freshctx-ts` | 7794 | `SETTLE=ST1` | no | Isolated Semantic Engine |
 
 `freshctx-ts` t2 is 4250 bytes below `nothing` t2 (7794 vs 12044). That is a
 35.3% drop on the last turn-2 request. Tree-sitter omitted sibling `SW0` and
@@ -64,15 +64,15 @@ after the disk flip. Turn-2 request still contains `SW0`.
 
 ### B `freshctx-no-ts`
 
-Sidecar off. Seven repeated symbol-scope reads on t1. FreshCtx fail-closed
-(`sidecar-error`). The model never received current bytes and answered
+Isolated Semantic Engine off. Seven repeated symbol-scope reads on t1. FreshCtx fail-closed
+(`isolated-semantic-engine-error`). The model never received current bytes and answered
 unresolved on t2. No sibling bytes. Larger than Pi-alone because the unresolved
 retry transcript stayed in the request.
 
 ### C `freshctx-ts`
 
 One forced symbol-scope read. `SETTLE=ST0` on t1. After the flip, `SETTLE=ST1`
-with `resolution=sidecar`, `t2_exact_new_bytes=yes`, and no sibling bytes.
+with `resolution=isolated-semantic-engine`, `t2_exact_new_bytes=yes`, and no sibling bytes.
 
 ## Adapter smokes (synthetic)
 

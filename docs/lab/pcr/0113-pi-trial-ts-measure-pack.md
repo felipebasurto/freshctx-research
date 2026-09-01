@@ -9,20 +9,20 @@
 - Decision: **review**
 
 **Status:** draft harness. Three arms. Waiting on clean three-arm rerun and on
-PCR 0114 for file-scope TS/JS/Python sidecar routing when runner is present.
+PCR 0114 for file-scope TS/JS/Python Isolated Semantic Engine routing when runner is present.
 
 ## Hypothesis or change
 
 Question for a later live run: does FreshCtx beat Pi-alone on TypeScript after a
 whole-file read and interior flip? Does Tree-sitter inside FreshCtx (not host
-`scope=symbol`) change the outcome vs the same adapter with sidecar off?
+`scope=symbol`) change the outcome vs the same adapter with Isolated Semantic Engine off?
 
 ## What we did
 
 1. Added `docs/lab/pi-trial-ts/` with fixture `src/settlement.ts` (lookalike
    exports, interior flip `ST0`→`ST1` scoped to `settleDailyLedger`).
 2. Three-arm harness: `nothing`, `freshctx-no-ts`, `freshctx-ts`.
-3. Sidecar off via `FRESHCTX_SIDECAR=off` in harness for arm B (minimal adapter
+3. Isolated Semantic Engine off via `FRESHCTX_ISOLATED_SEMANTIC_ENGINE=off` in harness for arm B (minimal adapter
    knob in `adapters/pi/extension.ts`).
 4. Same whole-file prompts on all arms; no host `scope=symbol`.
 5. `resolveRepoRoot()` walks to `adapters/pi/extension.ts`.
@@ -33,7 +33,7 @@ whole-file read and interior flip? Does Tree-sitter inside FreshCtx (not host
 
 ## Arms
 
-| arm | FreshCtx | sidecar | read |
+| arm | FreshCtx | Isolated Semantic Engine | read |
 |---|---|---|---|
 | `nothing` | no | n/a | whole file |
 | `freshctx-no-ts` | yes | off (harness env) | whole file |
@@ -63,7 +63,7 @@ No valid three-arm table yet. Do not invent `AUTORESEARCH_SCORE`.
 ## Comparison
 
 Harness-only. Three-arm rerun after arm correction. Tree-sitter on file-scope TS
-deferred until PCR 0114 lands sidecar routing for file-scope refresh.
+deferred until PCR 0114 lands Isolated Semantic Engine routing for file-scope refresh.
 
 ## Known limitations
 
@@ -74,5 +74,5 @@ deferred until PCR 0114 lands sidecar routing for file-scope refresh.
 ## Recommended next experiment
 
 1. Rerun three-arm battery on Mac with official Pi + DeepSeek v4 flash.
-2. After PCR 0114 lands file-scope sidecar for TS, rerun arm `freshctx-ts` and
+2. After PCR 0114 lands file-scope Isolated Semantic Engine for TS, rerun arm `freshctx-ts` and
    compare `resolution` vs `freshctx-no-ts`.

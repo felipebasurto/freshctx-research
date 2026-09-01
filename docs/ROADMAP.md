@@ -1,171 +1,151 @@
 # Roadmap and release gates
 
-Work is ordered by priority band, and each band is ordered by evidence rather
-than feature count. An item is done when its exit gate passes and its
-limitations are written down in a Public Change Record under `docs/lab/pcr/`.
+This roadmap is a living inventory of repository facts and remaining evidence.
+Completed work stays documented in the 126 Public Change Records under
+`docs/lab/pcr/`; it is not kept here as an open milestone.
 
-The claim today is "invariant prototype with adapter request capture on unsealed
-regression traces". It is not a state-of-the-art claim. The wording ladder lives
-in `docs/EVALUATION.md` §13 and this file does not widen it.
+## Current behavior
 
-Autoresearch is paused. The campaign stays paused until every P1 item closes,
-because a search loop over unsealed traces with an incomplete attestation path
-would produce numbers nobody can check.
+- The provider-independent core uses only the Node.js standard library and
+  implements stable unit identity, SHA-256 content identity, exact recovery,
+  deterministic selection, and separate render ordering.
+- Whole-file, line-region, and symbol scope are implemented.
+- The out-of-process Tree-sitter implementation supports Python, JavaScript,
+  TypeScript, Go, and Rust.
+- Every selected unit carries its current bytes in every provider request
+  ([PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md)).
+- A same-turn refresh of an already observed unit may exceed the selection cap
+  under the existing contract
+  ([PCR 0080](lab/pcr/0080-refresh-over-budget.md)).
+- Pi and Hermes transform request copies, preserve native tool pairing and
+  persisted history, and return the original host request on adapter failure.
+- MCP is available only as a possible inspection plane; host middleware remains
+  the data plane that can rewrite a provider request.
 
-## What is implemented today
+## What the tests prove
 
-- Dependency-free Node core with stable unit identity, SHA-256 content identity,
-  exact and anchor-based region relocation, and fail-closed ambiguity handling.
-- Deterministic budgeted selection with separate selection order and render
-  order, and explicit unresolved and budget-omitted counts.
-- Stateless projection. Every selected unit carries its current bytes in every
-  provider request. See P0 below.
-- Pi extension and replay harness, and a Hermes `ContextEngine` plugin with a
-  Node bridge. Both track whole files and line regions, track cat-class shell
-  reads, prune unserved read pairs, and fail open to the untouched host request.
-- Frozen public-repo locks (`bench/repos.lock.json`), pinned host commits
-  (`bench/hosts.lock.json`), a JSON trace runner over `bench/trace.schema.json`,
-  an independent byte oracle, and append-only, observation-mask, whole-file
-  CORVUS, FreshCtx-file, and FreshCtx-region baselines.
-- Loopback OpenAI-compatible capture provider that returns a fixed response and
-  makes zero inference calls.
-- Holdout freeze, generate, run, report, and verify commands with negative tests
-  for the protocol invariant.
-- 75 Public Change Records and an append-only metric ledger
-  (`ls docs/lab/pcr/*.md | wc -l`).
+The deterministic suite covers freshness, uniqueness, exact recovery,
+revision-free stable markers, ambiguity and deletion safety, budget behavior,
+selection/render-order separation, and stateless request bodies. Adapter replay
+tests exercise capture, request-only transformation, native
+assistant/tool/result pairing, and fail-open behavior without invoking a model.
 
-Holdout v0.1 is an unsealed regression pack that predates the freeze protocol.
-Treat it as regression evidence. It is not sealed and it is not a result.
+Tree-sitter tests cover all five implemented languages and pin the process
+boundary that keeps parser dependencies out of `src/`. Evaluate-routing tests
+verify that this checkout selects `holdout-v0.3-apex` as its default physical
+pack.
 
-## P0: stateless byte correctness
+## Recorded evaluation
 
-**Resolved by [PCR 0079](lab/pcr/0079-stateless-byte-exact-requests.md).**
+`holdout-v0.3-apex` is locally frozen, not production-GHA sealed. The recorded
+measurement is:
 
-A provider request is stateless, so the selected current bytes must be present
-in the request itself. PCR 0077 sent marker-only frames for units whose revision
-matched a prior inject, and changed `bench/metrics.mjs` to score the revision
-attribute as if it were the bytes. PCR 0079 removed the cross-turn state, made
-`renderUnit` always emit `unit.content`, and restored content-only comparison in
-the metric path.
+- Isolated Semantic Engine: **8504 payload bytes**.
+- Whole-file baseline: **36701 payload bytes**.
+- Required recall: **5/5**.
 
-Exit gate, held at the current branch head:
+`passAt1` is always `null` and out of scope. The measurement is evidence about
+the pinned deterministic payload and oracle, not model task performance or a
+broad production claim.
 
-- every selected unit carries current bytes, and `content-bytes` is the UTF-8
-  length of the rendered body;
-- Pi and Hermes projection bytes equal live core `freshctx-region`, asserted for
-  equality rather than an upper bound;
-- a marker-only frame scores zero recall and zero exact-current;
-- `EVALUATE_VERDICT=PASS` on the physical board, and the ctxbench payload hash is unchanged.
+## P1: production boundaries
 
-Nothing else is open at P0. A regression that puts a digest, a summary, or a
-prior request in place of selected current bytes returns here ahead of every
-other item.
+### Production freeze attestation
 
-## P1: research readiness
+Consume and verify a real GitHub Actions freeze attestation for a protocol
+fixture. The current apex pack remains locally frozen until this path succeeds
+in production CI.
 
-These gate the autoresearch campaign and the first sealed holdout.
+Exit gate: an authentic remote attestation verifies, while tampering and missing
+attestation data fail closed with distinct errors.
 
-**Remote freeze attestation and live verification.** `scripts/holdout-attest-stub.mjs`
-and `.github/workflows/holdout-freeze-attest.yml` exist, and production
-attestation consumption does not. Wire `holdout:verify` to consume a real remote
-attestation and exercise the whole path end to end on a protocol fixture rather
-than on holdout seeds. Exit gate: a fixture pack verifies from a remote
-attestation, and a tampered attestation fails closed with a distinct error.
+### Durable local state
 
-**Deterministic unit sampler for `docs/EVALUATION.md` §5.1.** Trace units are
-still authored per pack. Implement `sha256(commit + selector + scenario)`
-ordering, the exclusion rules, and the rejected-candidate record. Exit gate: two
-runs on the same commit produce identical candidate lists, and every rejection
-carries a reason.
+Move revision blobs and observation mappings from process memory to a
+repository-scoped, permissioned local store with retention and garbage
+collection.
 
-**Disposable canary pack.** Run freeze, generate, run, report, and verify over
-sampler output on a throwaway pack id. Exit gate: the canary completes and is
-deleted, and no holdout-v0.2 artifact is created by it.
+Exit gate: session restart preserves exact recovery and tracked identity without
+placing historical source bodies back in the provider request.
 
-**First sealed holdout v0.2.** Landed in PCR 0110 / PR-S. `classification` is
-`sealed` against production attest run `33201069400`. The pack is **not a
-tuning set**. Do not reopen this item as a hill-climb. One scheduled
-remeasure only.
+### Coherent workspace snapshots
 
-**Pinned host compatibility and request capture.** `bench/hosts.lock.json` pins
-Pi at `c49906ec` and a Hermes commit for the native bake-off, and neither
-adapter has a test pinned to a released host package. Add pinned-release
-integration tests and post-sanitizer request capture through the loopback
-provider for both hosts. Exit gate: the persisted host transcript is
-byte-identical with and without FreshCtx, forcing adapter failure sends the
-untouched native request, and the captured payload passes every satisfiable
-CtxBench gate.
+Add a root-confined source provider with a request snapshot barrier, bounded
+retry, no-follow symlink defaults, binary/size limits, and generation telemetry.
 
-**Full timing and memory evidence.** `npm run ctxbench` reports repeated
-transformation latency. Nothing reports peak resident memory or per-stage
-timing inside the adapters, so `docs/EVALUATION.md` §9.2 and §9.5 cannot be
-filled from this repository. Exit gate: refresh, resolve, select, render, and
-serialize timings plus peak memory land in the result rows for core and both
-adapters.
+Exit gate: concurrent writes cannot produce a mixed-generation projection, and
+unsafe paths contribute zero bytes.
 
-**Fail cleanly when a checkout is absent.** `npm run repos:verify` and
-`npm run hosts:verify` currently crash with an unhandled `spawnSync git ENOENT`
-when the vendored checkout directory does not exist, which is the normal state
-of a fresh clone. Exit gate: both commands report the missing checkout and the
-command to create it, and exit non-zero without a stack trace.
+### Released-host compatibility
 
-**Root-confined source provider in the core.** `FreshCtxEngine.refresh()` takes
-a caller-supplied provider, and every path guard lives in the adapters
-(`safeWorkspaceFile` and the shell-read parser). A core-side provider that takes
-one workspace root, canonicalizes paths, refuses escaping symlinks by default,
-and enforces the binary and size limits removes the chance that a future host
-integration forgets one guard. Exit gate: the core provider passes the escape,
-symlink, binary, and oversize cases, and both adapters use it instead of their
-own copy.
+Pin supported Pi and Hermes releases and capture the post-sanitizer request
+through the no-model provider.
 
-## P2: benchmark and product depth
+Exit gate: persisted host transcripts remain byte-identical, forced adapter
+failure returns the untouched native request, and every satisfiable capture
+passes the CtxBench correctness gates.
 
-**Structural unit providers.** Tree-sitter provider interface with Python,
-TypeScript and JavaScript, Rust, and Go, qualified structural selectors, and
-independent gold extractors. Exit gate: zero wrong-symbol resolution on the
-frozen validation suite, ambiguous cases fail closed, and exact required recall
-on budget-satisfiable traces.
+### Complete resource telemetry
 
-**Reviewed CORVUS reproduction.** `bench/corvus.mjs` is a documented
-whole-file baseline written from the paper, not a reviewed reproduction. Exit
-gate: a second maintainer signs off that the baseline is faithful on the same
-traces and budget, and the deviation table names every difference.
+Record refresh, resolve, select, rewrite, render, and serialization timing plus
+peak memory for the core and both adapters.
 
-**Broader corpus and the full matrix.** Six pinned public repositories across
-language families, and the complete mutation and read-pattern matrix from
-`docs/EVALUATION.md` §5.2 and §5.3 at the full sample target. Exit gate: repo,
-trace, policy, code, paper, and environment digests reproduce, and correctness
-metrics recompute from released raw data.
+Exit gate: raw rows include all stages under the performance procedure in
+`EVALUATION.md`, with local CI measurements labeled as regression telemetry.
 
-**Production packaging.** A Pi package pinned to a tested release range,
-durable `callToUnit` and registry persistence across restart and branch switch,
-a Hermes registry publish with per-session locking and archive lifecycle, a
-durable encrypted revision archive, and adapter telemetry with a status command.
-Exit gate: session resume keeps tracked units without a re-read, and the
-compatibility matrix is published.
+## P2: evaluation depth
 
-## P3: expansion
+### Broader structural corpus
 
-**Oh My Pi adapter.** An adapter or an upstream-compatible patch against its
-strongest native context seam, plus cross-host canonical trace mapping. Exit
-gate: Pi, Hermes, and OMP transform the same semantic trace into equivalent live
-unit sets, and host-specific payload differences are explained and captured.
+Extend deterministic symbol sampling and independent gold extraction across the
+full declared language and mutation matrix. Do not tune against locally frozen
+or held-out packs.
 
-**Inspection plane and reporting.** An MCP server for explicit track, refresh,
-recover, and status calls, and a technical report once a sealed result exists.
-MCP stays a compatibility and inspection plane. It cannot remove an earlier tool
-result from a host request, so it is never the data plane.
+Exit gate: released raw traces cover the declared matrix, reproduce from public
+repository commits and hashes, and retain exact required bytes in satisfiable
+cases.
 
-## Release gates
+### Independent whole-file baseline review
 
-A Level 4 statement that FreshCtx is a state-of-the-art context transformer
-requires everything in `docs/EVALUATION.md` §13. The short form: every
-correctness gate on development, validation, and sealed holdout traces, a
-reviewed CORVUS reproduction, a pre-registered material improvement with no
-material regression elsewhere, reproduction across all declared language
-families, request-capture reproduction through both Pi and Hermes, and public
-raw results with negative cases.
+Keep `bench/corvus.mjs` and the `corvus-file` result key. Have a second
+maintainer review the reproduction and its deviation table against the cited
+paper.
 
-Until then every result carries a label from `synthetic`, `replay`,
-`public-repo-smoke`, or `public-repo-holdout`, and agent task success is never a
-gate for the context-transformer claim.
+Exit gate: the review records every material deviation and confirms identical
+trace and budget treatment.
+
+### Production packaging
+
+Package the Pi and Hermes integrations with version ranges, session lifecycle,
+locking, archive cleanup, and operator telemetry.
+
+Exit gate: installation tests exercise the shipped layout and a compatibility
+matrix identifies the exact host versions covered.
+
+## P3: host and inspection expansion
+
+### Oh My Pi codec
+
+Build only after a stable request transformation seam is identified and can be
+tested with byte-exact capture. Translation belongs under `adapters/`; no
+host-specific message types enter `src/`.
+
+Exit gate: the same semantic trace produces an equivalent live unit set while
+preserving Oh My Pi's native protocol structure.
+
+### Inspection API
+
+Expose explicit track, refresh, recover, and status operations without routing
+normal context bytes through MCP.
+
+Exit gate: disabling the inspection API does not change request transformation,
+and MCP failure cannot corrupt or block the host request.
+
+## Evidence required for stronger public claims
+
+Any broader public performance statement needs all correctness gates on the
+declared development, validation, and remotely attested held-out traces; a
+reviewed whole-file reproduction; a preregistered material improvement with no
+material regression in other frozen metrics; coverage across the declared
+languages; request capture through both released-host adapters; and public raw
+results with negative cases.

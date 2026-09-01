@@ -7,8 +7,8 @@ import test from "node:test";
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
 test("ADR 0004 exists and forbids tree-sitter inside src/", async () => {
-  const adr = await readFile(join(ROOT, "docs/decisions/0004-treesitter-sidecar.md"), "utf8");
-  assert.match(adr, /sidecar/i);
+  const adr = await readFile(join(ROOT, "docs/decisions/0004-isolated-semantic-engine.md"), "utf8");
+  assert.match(adr, /Isolated Semantic Engine/i);
   assert.match(adr, /stdlib/i);
   assert.match(adr, /second program/i);
   assert.match(adr, /LSP/i);
@@ -20,5 +20,7 @@ test("ADR 0004 exists and forbids tree-sitter inside src/", async () => {
   for (const name of srcFiles.filter((item) => item.endsWith(".mjs"))) {
     const source = await readFile(join(ROOT, "src", name), "utf8");
     assert.equal(source.includes("tree-sitter"), false, name);
+    assert.equal(source.includes("../ise/"), false, name);
+    assert.equal(source.includes("ise/treesitter"), false, name);
   }
 });

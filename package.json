@@ -48,8 +48,8 @@
     "holdout:attest-stub": "node scripts/holdout-attest-stub.mjs",
     "hermes:install": "node adapters/hermes/install.mjs",
     "hermes:verify-layout": "node adapters/hermes/verify-layout.mjs",
-    "sidecar:install": "npm --prefix sidecar/treesitter ci --omit=dev",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && node --check adapters/hermes/install.mjs && node --check adapters/hermes/verify-layout.mjs && node --check sidecar/treesitter/*.mjs && python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py"
+    "ise:install": "npm --prefix ise/treesitter ci --omit=dev",
+    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && node --check adapters/hermes/install.mjs && node --check adapters/hermes/verify-layout.mjs && node --check ise/treesitter/*.mjs && python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py"
   },
   "keywords": [
     "agents",

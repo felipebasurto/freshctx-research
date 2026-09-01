@@ -14,7 +14,7 @@ PCR 0113/0114 wired Tree-sitter refresh for the `freshctx-ts` arm.
 The Pi trial dump helper still scanned for unescaped `resolution="…"` after
 `JSON.stringify`.
 Stringified provider payloads contain escaped projector tokens such as
-`resolution=\"sidecar\"` on the Tree-sitter arm and `resolution=\"whole-file\"`
+`resolution=\"isolated-semantic-engine\"` on the Tree-sitter arm and `resolution=\"whole-file\"`
 on the no-Tree-sitter arm.
 The old regex never matched.
 Both live arms printed `resolution=none` in `.scan.json` while raw captures
@@ -39,7 +39,7 @@ showed escaped projector tokens after stringify.
 
 | arm | stringified fragment in raw capture | prior `.scan.json` |
 |---|---|---|
-| `freshctx-ts` (Tree-sitter) | `resolution=\"sidecar\"` | `resolution`: `none` |
+| `freshctx-ts` (Tree-sitter) | `resolution=\"isolated-semantic-engine\"` | `resolution`: `none` |
 | `freshctx-no-ts` (no Tree-sitter) | `resolution=\"whole-file\"` | `resolution`: `none` |
 
 Both scans still had `hasFreshCtxUnit`: `true`.
@@ -47,7 +47,7 @@ Both scans still had `hasFreshCtxUnit`: `true`.
 ## Benchmarks run
 
 Canonical TAP from this run on branch HEAD after Tree-sitter WASM install
-(`npm run sidecar:install`, base `8e436e7`).
+(`npm run ise:install`, base `8e436e7`).
 
 ```
 1..424
@@ -84,7 +84,7 @@ Official accepted TAP remains **395 pass / 0 fail / 17 skipped / 412 total**.
 ## Comparison
 
 No Level 4 sentence.
-Measured: Tree-sitter arm fixture with printed token `resolution=\"sidecar\"`
+Measured: Tree-sitter arm fixture with printed token `resolution=\"isolated-semantic-engine\"`
 now records that token, not `none`.
 Measured: no-Tree-sitter arm fixture with `resolution=\"whole-file\"` now
 records `whole-file`.

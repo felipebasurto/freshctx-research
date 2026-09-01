@@ -192,7 +192,7 @@ function stdoutMatchesCurrent(reply) {
 function normalizeResolution(raw, arm) {
   if (arm === "nothing") return "none";
   const value = String(raw ?? "none");
-  if (value.includes("sidecar")) return "sidecar";
+  if (value.includes("isolated-semantic-engine")) return "isolated-semantic-engine";
   if (value.includes("file") || value.includes("whole")) return "file";
   return value === "none" || value.length === 0 ? "none" : value;
 }

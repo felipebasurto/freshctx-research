@@ -2,14 +2,14 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SIDECAR = join(dirname(fileURLToPath(import.meta.url)), "parse.mjs");
+const ISOLATED_SEMANTIC_ENGINE = join(dirname(fileURLToPath(import.meta.url)), "parse.mjs");
 
-export function createSidecarRunner({ command = process.execPath, args = [SIDECAR], spawnImpl = spawn } = {}) {
-  return async function sidecarRunner({ path, bytes }) {
+export function createIsolatedSemanticEngineRunner({ command = process.execPath, args = [ISOLATED_SEMANTIC_ENGINE], spawnImpl = spawn } = {}) {
+  return async function semanticEngineRunner({ path, bytes }) {
     return await new Promise((resolve, reject) => {
       const child = spawnImpl(command, args, { stdio: ["pipe", "pipe", "pipe"] });
       if (!child) {
-        reject(new Error("sidecar-missing"));
+        reject(new Error("isolated-semantic-engine-missing"));
         return;
       }
       const stdout = [];
@@ -19,7 +19,7 @@ export function createSidecarRunner({ command = process.execPath, args = [SIDECA
       child.on("error", (error) => reject(error));
       child.on("close", (code) => {
         if (code !== 0) {
-          reject(new Error(stderr.join("") || "sidecar-error"));
+          reject(new Error(stderr.join("") || "isolated-semantic-engine-error"));
           return;
         }
         try {
@@ -34,8 +34,8 @@ export function createSidecarRunner({ command = process.execPath, args = [SIDECA
   };
 }
 
-export function missingSidecarRunner() {
+export function missingIsolatedSemanticEngineRunner() {
   return async function missing() {
-    throw new Error("sidecar-missing");
+    throw new Error("isolated-semantic-engine-missing");
   };
 }

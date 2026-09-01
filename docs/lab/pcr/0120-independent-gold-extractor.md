@@ -20,10 +20,10 @@ evaluation oracle is a second program.
 Python, JavaScript, TypeScript, Go, and Rust. Python goes through
 `bench/python-ast-oracle.py` and the stdlib `ast` module. The other languages
 use a bench-only declaration scan that blanks comments and strings first. The
-module does not import `sidecar/treesitter` or `resolveRegion`.
+module does not import `ise/treesitter` or `resolveRegion`.
 
 `bench/gold-extract.mjs` still hashes the slice after a `replace-exact`
-mutation. `engineUnits` and the older `sidecarUnits` argument are ignored.
+mutation. `engineUnits` and the older `semanticEngineUnits` argument are ignored.
 `unitScope: "symbol"` is opt-in on `sampleUnits`. The default file enumerator
 is unchanged, so sealed holdout generation and the synthetic score path stay
 on whole-file units.

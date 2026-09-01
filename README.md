@@ -1,211 +1,136 @@
 # FreshCtx
 
-**Never send stale code to an agent.**
+FreshCtx is a local-first context substrate for coding agents. It treats source
+code as mutable workspace state rather than permanent conversation history.
+Historical reads become stable references; immediately before a provider
+request, FreshCtx resolves the selected units and injects one current, bounded
+projection.
 
-FreshCtx is an experimental, local-first context engine for coding agents. It
-replaces immutable file snapshots in an append-only transcript with stable
-markers, then injects one current, bounded view of the code that matters before
-each model call.
+If a unit cannot be resolved safely, FreshCtx omits it and reports the
+uncertainty. It never substitutes last-known bytes.
 
-The project starts from a simple observation: source code is mutable state, not
-conversation history. An agent that read `auth.ts` ten turns ago should not keep
-reasoning over that old snapshot after the file has changed.
+## Current behavior
 
-FreshCtx aims to be a reusable context layer for open agent harnesses. Pi and
-Hermes Agent have working adapters in this repository. Oh My Pi does not yet.
-FreshCtx is not another coding agent, another vector database, or another set of
-prompting rules.
+- Whole-file, line-region, and symbol scope are implemented.
+- Whole files and line regions use deterministic exact and anchor-based
+  relocation.
+- Symbol refresh uses an out-of-process Tree-sitter implementation for Python,
+  JavaScript, TypeScript, Go, and Rust.
+- `src/` remains Node.js standard library only. Parser dependencies stay outside
+  the core process.
+- Pi and Hermes adapters capture supported reads, transform only a request copy,
+  preserve the stored host transcript, and fail open to the original request.
+- Revisions use SHA-256 identity, historical markers stay stable across content
+  changes, and prior observations remain exactly recoverable in the in-memory
+  archive.
 
-> Status: research prototype. The included MVP is dependency-free and
-> demonstrates the central invariant on deterministic fixtures. It does not yet
-> claim state of the art.
+Every provider request is stateless. If a unit is selected, its current bytes
+must be present in that request even when the same revision appeared in an
+earlier request. A digest or an `unchanged` marker names bytes; it does not
+supply them. [PCR 0079](docs/lab/pcr/0079-stateless-byte-exact-requests.md)
+records this contract.
 
-## The invariant
+## What the tests prove
 
-For every tracked code region in a model request:
+The deterministic suite exercises current-byte refresh, one-copy projection,
+stable markers, exact recovery, conservative ambiguity and deletion handling,
+budget selection, separate selection and render ordering, and root-confined
+adapter reads. It also replays Pi and Hermes request transformations without a
+model and checks native assistant/tool/result structure, request-only rewriting,
+and adapter fail-open behavior.
 
-1. At most one full version of that region is present.
-2. The version is derived from the current workspace state.
-3. Historical read results are represented by stable, cache-friendly markers.
-4. If a region cannot be resolved safely, FreshCtx omits it and reports the
-   uncertainty instead of injecting stale code.
+The suite covers all five Tree-sitter languages and checks that `src/` does not
+import parser packages. It verifies that this checkout routes an unqualified
+`npm run evaluate` to the physical `holdout-v0.3-apex` pack.
 
-## The stateless rule
+These tests establish deterministic repository invariants. They do not establish
+production host compatibility across released versions or improved model task
+performance.
 
-A provider request is stateless. If FreshCtx selects a unit, that unit's current
-bytes must be present in the request that selects it, on every request, whether
-or not the file changed since the last one. A revision digest, an
-`unchanged` marker, or an earlier request is a reference to the bytes and not the
-bytes themselves. Selecting a unit and then sending zero bytes for it is a
-correctness failure, and no byte saving redeems it.
+## Recorded evaluation
 
-FreshCtx broke this rule in PCR 0077 and repaired it in
-[PCR 0079](docs/lab/pcr/0079-stateless-byte-exact-requests.md). The repair makes
-repeated requests larger on purpose.
+This checkout's default physical evaluate pack is `holdout-v0.3-apex`. It is
+locally frozen, not production-GHA sealed.
 
-## Why this project
+The CORVUS whole-file comparison keeps its implementation in
+`bench/corvus.mjs` and its result key as `corvus-file`, following
+[Zheng et al., arXiv:2607.22711](https://arxiv.org/abs/2607.22711). It is the
+whole-file baseline for this measurement, not a claim that the systems are
+equivalent beyond the pinned trace and budget.
 
-Modern harnesses already have excellent search, editing, verification, and
-compaction primitives:
+The recorded apex measurement is:
 
-- Cursor has indexed search, Instant Grep, and an Explore subagent.
-- Claude Code has ripgrep, optional LSP intelligence, subagents, and guarded
-  exact edits.
-- Pi exposes a minimal toolset and a per-request context transformation hook.
-- Hermes has fuzzy patching, verification, lossless-context plugins, and a
-  pluggable context engine.
-- Oh My Pi adds hash-anchored edits, summarized reads, LSP, debugging, and a
-  metaharness.
+| System | Payload |
+|---|---:|
+| Isolated Semantic Engine | 8504 payload bytes |
+| Whole-file baseline (`corvus-file`) | 36701 payload bytes |
 
-Yet file contents usually enter the trajectory as immutable observations. When
-the workspace changes, those observations do not. FreshCtx targets this layer.
+Required recall was **5/5**. These are measured payload and oracle-retention
+results for the pinned local pack, not a general performance claim. `passAt1` is
+always `null` and out of scope because CtxBench does not sample a model or judge
+patches.
 
-The closest published baseline is
-[CORVUS](https://arxiv.org/abs/2607.22711), which synchronizes whole files and
-reports 9-50% lower input-token use and up to 37% fewer reasoning cycles while
-preserving comparable task success. FreshCtx's research target is to outperform
-that file-level design through symbol-level synchronization, automatic working
-set eviction, and cache-aware layout.
+## Production gaps
 
-FreshCtx does **not** use “the agent programs better” as its primary outcome.
-Model behavior is stochastic and would confound a systems benchmark. The core
-claim is narrower and directly measurable: given a versioned workspace and a
-fixed trace, does FreshCtx produce the correct request context, how many bytes
-does it move, and how long does the transformation take? `CtxBench` evaluates
-that function without making a model call. An autoresearch coding agent may
-still consume its own harness tokens while proposing changes; those tokens are
-controller cost, never benchmark input.
+FreshCtx still lacks a durable permissioned revision archive, a coherent
+filesystem snapshot barrier, release-pinned Pi and Hermes compatibility tests,
+full stage-level adapter timing and memory evidence, and production GitHub
+Actions freeze attestation for the apex pack. The current whole-file baseline
+also awaits independent reproduction review. Oh My Pi has no complete adapter.
+
+MCP can expose inspection and recovery operations, but it cannot remove old
+observations from an arbitrary host request. It is therefore an inspection
+plane, not the FreshCtx data plane.
 
 ## Quick start
 
-Requirements: Node.js 22 or newer. The prototype has no runtime dependencies.
+Requirements: Node.js 22 or newer. Install the isolated parser dependencies,
+then run the deterministic suite:
 
 ```bash
+npm run ise:install
 npm test
 npm run bench
 npm run ctxbench
 npm run evaluate
-npm run demo
 ```
 
-Before research work, download and verify the required reading corpus:
+Before research work, fetch and verify the required reading corpus:
 
 ```bash
 npm run papers:fetch
 npm run papers:verify
 ```
 
-Public repository fixtures are declared separately and become immutable through
-a generated commit lock before a benchmark freeze:
-
-```bash
-npm run repos:fetch
-```
-
-`npm run bench` runs a labeled synthetic stale-context fixture. It is a
-regression probe, not the thesis metric. `npm run evaluate` replays the
-highest available physical pack, or `public-repo-smoke` when no Level 4
-pack is present, and prints `EVALUATE_VERDICT` plus Isolated Semantic
-Engine versus CORVUS payload bytes, oracle retention, peak RSS, latency,
-and forensic gates.
-
-## What already works
-
-These behaviors are in the core:
-
-- Stable IDs for observed code regions.
-- Content-addressed revisions using SHA-256.
-- Exact and anchor-based region relocation after a file changes.
-- Conservative failure when relocation is ambiguous.
-- Deterministic working-set selection under a character budget.
-- Stable historical markers that do not change with file revisions.
-- Cache-aware ordering of selected units.
-- Exact local recovery of previously observed revisions.
-
-These behaviors are in both the Pi extension and the Hermes context engine:
-
-- Whole-file and line-region units, including pagination that promotes to file
-  scope under shared end-of-file rules.
-- Cat-class shell reads (`cat`, `head`, `tail`, `sed -n`, `nl`) tracked through
-  the same workspace guard as official read tools.
-- Request-only rewriting. The persisted host transcript is not modified.
-- Unserved read pairs pruned from the request instead of left as stale bodies.
-- Fail open. Adapter failure sends the untouched host request.
-- Projection bytes equal to the core `freshctx-region` baseline, asserted for
-  equality in the test suite.
-
-These evaluation tools exist:
-
-- Synthetic ctxbench, regression tests, and an EmpiricalVerdict evaluate contract.
-- Loopback OpenAI-compatible request recorder that returns a fixed, zero-model
-  response for adapter tests.
-- Frozen public-repo and host commit locks, a JSON trace runner, an independent
-  byte oracle, and five comparison baselines.
-
-## Product shape
-
-```text
-Pi extension          ┐
-Hermes context engine ├──> FreshCtx core ──> synchronized request projection
-OMP extension         ┘
-```
-
-The Pi extension and the Hermes context engine exist. The OMP extension does
-not. The core stays harness-agnostic, and adapters translate native read events
-and per-request message arrays into the FreshCtx contract.
-
-An MCP server may be offered for explicit retrieval, but MCP alone cannot
-deliver the full product: a tool server can return new observations, while the
-host's context middleware must replace or mask old observations.
+`npm run bench` and `npm run evaluate` use deterministic request capture and
+make no model call. Public repository fixtures are declared separately and are
+locked to immutable commits before a benchmark freeze.
 
 ## Repository map
 
 ```text
-THESIS.md                 Research thesis and falsifiable claims
-SOUL.md                   Operating contract for the autoresearch agent
-AGENTS.md                 Instructions for coding agents working in this repo
-src/                      Dependency-free prototype core
-test/                     Invariant and policy tests
-bench/                    Deterministic replay benchmark
-capture/                  No-model provider payload recorder
-autoresearch/             Search contract, EmpiricalVerdict, and experiment ledger
-adapters/pi/              Pi extension, replay harness, and adapter notes
-adapters/hermes/          Hermes ContextEngine plugin, Node bridge, and installer
-docs/ARCHITECTURE.md      Runtime architecture and data model
-docs/BENCHMARK.md         Evaluation methodology
-docs/EVALUATION.md        Normative CtxBench protocol and metric definitions
-papers/manifest.json      Required and adjacent research corpus
-bench/repos.manifest.json Public repository corpus and frozen refs
-docs/ROADMAP.md           Priority bands and release gates
-docs/LAUNCH.md            GitHub, paper, and LinkedIn launch plan
-docs/RESUMEN_ES.md        Short Spanish project brief
-docs/explainer/           Interactive Spanish explainer, single file, unpublished
-docs/lab/                 Public Change Records and per-iteration metric ledger
+src/                      Provider-independent Node.js standard-library core
+adapters/                 Host codecs, request translation, and replay harnesses
+ise/treesitter/       Out-of-process Tree-sitter implementation
+test/                     Deterministic invariant tests
+bench/                    Replay benchmark and whole-file baseline
+capture/                  No-model provider request recorder
+autoresearch/             Evaluation entrypoint and experiment ledger
+docs/                     Architecture, evaluation contract, decisions, and PCRs
+papers/                   Research manifest and reproducibility lock
 ```
 
-## Research gates
-
-FreshCtx will only claim an improvement over the state of the art if it meets
-all of these conditions on held-out, deterministic repository traces:
-
-1. Zero stale injected units and zero duplicate current units.
-2. Byte-exact recovery of every masked observation.
-3. Required-set recall at or above the frozen floor.
-4. Lower projection bytes or transformation latency than a faithful CORVUS
-   reproduction, with the full Pareto frontier reported.
-5. Deterministic, byte-identical output across repeated runs.
-6. Reproduction on pinned commits from multiple public repositories and through
-   request-capture adapters for at least Pi and Hermes.
-
-Until then, every result is labeled either `synthetic`, `replay`, or
-`public-repo`. Agent task success may be studied separately, but it is never a
-gate for the context-transformer claim.
+There are 126 Public Change Records in `docs/lab/pcr/`.
+See [docs/LAYOUT.md](docs/LAYOUT.md) for the installed Hermes shape and cleanup
+boundary.
 
 ## Contributing
 
-Read [THESIS.md](THESIS.md), [SOUL.md](SOUL.md), and the normative
-[docs/EVALUATION.md](docs/EVALUATION.md) before changing selection or rendering
-behavior. Contributions must include an invariant test and a benchmark result.
+Read [AGENTS.md](AGENTS.md), [THESIS.md](THESIS.md), [SOUL.md](SOUL.md),
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and
+[docs/EVALUATION.md](docs/EVALUATION.md) before changing core behavior.
+Behavioral changes need an invariant test, and policy, anchoring, or rendering
+changes need an evaluation result.
 
 ## License
 
