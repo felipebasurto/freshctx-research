@@ -1,5 +1,3 @@
-import { applyForceHostReadToTools } from "./auto-rpc-host-read.mjs";
-import { forceHostReadEnabled } from "./force-host-read.mjs";
 import { launchChild } from "./launch-child.mjs";
 import { hermesBin } from "./launch-hermes.mjs";
 import { MODEL, promptForCell } from "./pack.mjs";
@@ -63,7 +61,7 @@ export function toolArgsFromEvent(event) {
   );
 }
 
-export function toolsFromHermesEvents(events, { forceHostRead = forceHostReadEnabled() } = {}) {
+export function toolsFromHermesEvents(events) {
   const tools = [];
   for (const event of events) {
     const method = event.method ?? event.type;
@@ -80,7 +78,7 @@ export function toolsFromHermesEvents(events, { forceHostRead = forceHostReadEna
       args: toolArgsFromEvent(event),
     });
   }
-  return forceHostRead ? applyForceHostReadToTools(tools) : tools;
+  return tools;
 }
 
 export function stdoutMatchesCurrent(reply) {

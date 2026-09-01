@@ -52,7 +52,7 @@ export async function readRecordedHostReadTools(dumpDir) {
 }
 
 export function t1ToolsForAssert({ eventTools = [], recordedTools = [] } = {}) {
-  return eventTools.length > 0 ? eventTools : recordedTools;
+  return recordedTools.length > 0 ? recordedTools : eventTools;
 }
 
 export function readToolMatchesHostArgs(tool) {

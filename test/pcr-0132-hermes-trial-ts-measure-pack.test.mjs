@@ -132,10 +132,12 @@ test("PCR 0132 hermes-queries speak TUI gateway and ACP without inventing --mode
   assert.equal(acp.method, "session/prompt");
   assert.equal(acp.params.sessionId, "s1");
   const events = parseNdjsonMessages('ignore\n{"method":"tool.start","name":"read_file","args":{"path":"src/settlement.ts"}}\n');
-  const tools = toolsFromHermesEvents(events, { forceHostRead: true });
+  const tools = toolsFromHermesEvents(events);
   assert.equal(tools[0].toolName, "read_file");
-  assert.equal(tools[0].args.scope, "symbol");
-  assert.equal(tools[0].args.selector, TARGET_SYMBOL);
+  assert.equal(tools[0].args.scope, undefined);
+  assert.equal(tools[0].args.selector, undefined);
+  assert.match(t1HostReadToolsInvalidReason(tools), /scope=symbol/u);
+  assert.throws(() => assertT1HostReadTools(tools, { arm: "nothing" }), /scope=symbol/u);
   assert.equal(stdoutMatchesCurrent("SETTLE=ST1"), true);
   assert.equal(stdoutMatchesCurrent("SETTLE=ST0"), false);
   assert.deepEqual(cliQueryArgs({ message: "x", continueSession: true }).slice(0, 3), ["--continue", "chat", "-q"]);
@@ -254,8 +256,11 @@ test("PCR 0132 prepareHermesHome installs force-host-read plugin on nothing arm"
 
 test("PCR 0132 auto-rpc always asserts t1 host read when tools are empty", async () => {
   const src = await readFile(join(here, "../docs/lab/hermes-trial-ts/auto-rpc.mjs"), "utf8");
+  const queries = await readFile(join(here, "../docs/lab/hermes-trial-ts/hermes-queries.mjs"), "utf8");
   assert.doesNotMatch(src, /t1-read" && tools\.length > 0/u);
   assert.match(src, /if \(cell\.id === "t1-read"\) \{\s*assertT1HostReadTools\(tools/u);
+  assert.doesNotMatch(src, /applyForceHostReadToTools/u);
+  assert.doesNotMatch(queries, /applyForceHostReadToTools/u);
   assert.equal(t1ToolsForAssert({ eventTools: [], recordedTools: [] }).length, 0);
   assert.equal(t1HostReadToolsInvalidReason(t1ToolsForAssert({ eventTools: [], recordedTools: [] })), "t1-read recorded no host tools");
   assert.throws(
@@ -263,7 +268,11 @@ test("PCR 0132 auto-rpc always asserts t1 host read when tools are empty", async
     /t1-read recorded no host tools/u,
   );
   const recorded = [{ toolName: "read_file", args: hostReadToolArgs() }];
+  const rawEvents = [{ toolName: "read_file", args: { path: TARGET_FILE } }];
   assert.deepEqual(t1ToolsForAssert({ eventTools: [], recordedTools: recorded }), recorded);
+  assert.deepEqual(t1ToolsForAssert({ eventTools: rawEvents, recordedTools: recorded }), recorded);
+  assert.deepEqual(t1ToolsForAssert({ eventTools: rawEvents, recordedTools: [] }), rawEvents);
+  assert.match(t1HostReadToolsInvalidReason(rawEvents), /scope=symbol/u);
   assert.equal(t1HostReadToolsValid(recorded), true);
 });
 
