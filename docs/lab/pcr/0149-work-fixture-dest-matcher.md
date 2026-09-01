@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0149-work-fixture-matcher-3383` (draft)
+- Branch / PR: `cursor/pcr-0149-work-fixture-matcher-3383` / [152](https://github.com/felipebasurto/freshctx/pull/152) (draft)
 - Base SHA: `8dc28af7c4b5eb129b01cfb942ad2f1ba44a127e` (PCR 0148 on main; public count 144)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -98,13 +98,28 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 # skipped 0
 ```
 
-This-run Cloud Agent TAP is filled after `npm test` on this leftover.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..647
+# tests 647
+# pass 605
+# fail 42
+# skipped 0
+```
+
+This-run Cloud Agent TAP is **647 / 605 / 42 / 0**. That print is **not GHA**.
+Isolated Semantic Engine WASM is missing on this checkout, so 42 fails print
+`isolated-semantic-engine-missing` (or equivalent Isolated Semantic Engine /
+Tree-sitter runner absence). Official table is not replaced.
+
+All 5 PCR 0149 tests passed.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `node --test test/pcr-0149-work-fixture-dest-matcher.test.mjs` | yes | 0 | TAP above |
-| `npm test` | pending this revision | n/a | this-run Cloud Agent TAP after commit |
-| `npm run evaluate` | pending this revision | n/a | after `npm test` |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live host | no | n/a | product leftover; dest dump is the named hole |
 
@@ -114,7 +129,11 @@ This-run Cloud Agent TAP is filled after `npm test` on this leftover.
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
 | PCR 0149 tests | n/a | **5 / 5 / 0 / 0** | dest-copy `.work` fixture matcher |
-| `npm test` TAP | 549 | this-run after commit | official table stays 549 |
+| `npm test` TAP `# tests` | 549 | **647** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **605** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **42** | `isolated-semantic-engine-missing` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | PCR 0142 dest `d8cdd3d5` | unchanged | not this file | paper trail stays there |
 | live `$` invented here | n/a | **none** | no live remesure |
 | Pass@1 invented here | n/a | **none** | not a SWE dump |
@@ -143,6 +162,8 @@ none observed.
 
 This leftover does not re-run live Hermes or Pi.
 t2/t3/t4 were not produced on the dest one-retry because `auto-rpc` exited at t1.
+Isolated Semantic Engine WASM is missing on this Cloud Agent checkout for the
+living suite that needs the real parser.
 Official table is not replaced.
 PCR 0143 dest-root fail-close is unchanged for relative and abs dest-root paths.
 
