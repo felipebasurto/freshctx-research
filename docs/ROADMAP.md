@@ -1,7 +1,7 @@
 # Roadmap and release gates
 
 This roadmap is a living inventory of repository facts and remaining evidence.
-Completed work stays documented in the 135 Public Change Records under
+Completed work stays documented in the 136 Public Change Records under
 `docs/lab/pcr/`; it is not kept here as an open milestone.
 
 ## Current behavior

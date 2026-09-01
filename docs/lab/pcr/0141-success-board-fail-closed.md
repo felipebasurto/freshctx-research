@@ -27,10 +27,11 @@ skip-as-pass. Official table stays **549/0/0/549**.
 3. Pass requires later-turn `exact_current_bytes=yes` and `stdout_current=yes`.
 4. Missing dump fail-closes. Turn-1 `n/a` alone is not a pass.
 5. Added `test/pcr-0141-success-board.test.mjs`.
-6. Did not edit `docs/lab/INDEX.md` (avoid colliding with PCR 0140),
-   `docs/lab/METRICS.md`, README PCR counts, cost-ledger, `src/`, door, or lock.
-7. Did not `--relock`. No apex or GHA work.
-8. Did not include cost, provider token counts, or dollar figures.
+6. Appended INDEX and METRICS 0141 rows after PCR 0139 only. Did not rewrite
+   0139. Did not add PCR 0140. Did not touch cost-ledger, `src/`, door, or lock.
+7. Bumped public PCR count to 136 so living-docs matches on-disk PCR files.
+8. Did not `--relock`. No apex or GHA work.
+9. Did not include cost, provider token counts, or dollar figures.
 
 ## Arms
 
@@ -66,15 +67,17 @@ Canonical TAP from this HEAD after `npm test`.
 ```
 
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
-This-run living suite is **617 / 574 / 43 / 0**. Official table is not replaced.
+This-run living suite on `f99950e` is **617 / 574 / 43 / 0**. That print is
+this Cloud Agent checkout, **not GHA**. Isolated Semantic Engine WASM is
+missing here, so 42 fails print `isolated-semantic-engine-missing`.
+The 43rd fail on `f99950e` was living-docs `136 !== 135` before INDEX/METRICS
+and the public PCR count were appended. Official table is not replaced.
 
-All 10 PCR 0141 tests passed. The extra living-suite fail versus PCR 0139
-is `living-docs` PCR count `136 !== 135`. This leftover does not edit
-INDEX, METRICS, or README PCR counts.
+All 10 PCR 0141 tests passed.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 1 | TAP above; 42 `isolated-semantic-engine-missing` + 1 living-docs count hold |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; not GHA |
 | `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
@@ -85,7 +88,7 @@ INDEX, METRICS, or README PCR counts.
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
 | `npm test` TAP `# tests` | 549 | **617** | living suite; official table stays 549 |
 | `npm test` TAP `# pass` | 549 | **574** | this checkout Isolated Semantic Engine WASM missing |
-| `npm test` TAP `# fail` | 0 | **43** | 42 `isolated-semantic-engine-missing`; 1 living-docs PCR count hold |
+| `npm test` TAP `# fail` | 0 | **43** | this-run Cloud Agent; 42 `isolated-semantic-engine-missing` (WASM missing); 1 living-docs hold on `f99950e`; not GHA |
 | `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | SWE scores | n/a | `null` | do not invent |
@@ -121,10 +124,11 @@ none observed.
 The synthetic pack is labeled `synthetic` / `liveHost: false`.
 A later live dump can feed the same asserts. Until that dump exists, missing
 cells fail-close.
-This Cloud Agent checkout has no Tree-sitter WASM.
-`npm test` therefore printed `# pass 574` `# fail 43`.
-The 43rd fail is the frozen README PCR count (135) versus 136 PCR files.
-INDEX, METRICS, and README were not edited.
+This Cloud Agent checkout has no Isolated Semantic Engine WASM (Tree-sitter).
+`npm test` on `f99950e` therefore printed `# pass 574` `# fail 43`.
+That TAP is this-run Cloud Agent, not GHA.
+INDEX and METRICS now have 0141 rows after 0139. Public PCR count is 136.
+0139 rows were not rewritten. Cost-ledger was not touched.
 Official table is not replaced.
 Not a paper result.
 
