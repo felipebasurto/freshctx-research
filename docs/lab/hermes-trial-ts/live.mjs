@@ -192,4 +192,11 @@ if (invoked) {
   });
 }
 
-export { MARKERS, markerState, mutate, reset, workDir };
+export {
+  MARKERS,
+  markerState,
+  markerValueInTargetBlock,
+  mutate,
+  reset,
+  workDir,
+};
