@@ -88,3 +88,24 @@ Columnas: `arm`, `turn`, `request_bytes`, `prompt_tokens`, `completion_tokens`,
 
 Rellena `REPORT.md` solo con números reales. No inventes un live long-session
 table. No toques el official table 549/0/0/549.
+
+---
+
+## PCR 0140. Ingest y CI
+
+Dos turnos del pack de medida (`t1-read` + `t2-settle`) son **INVALID** como
+coste de sesión larga. No copies `request_bytes` de PCR 0135 y los trates
+como un total de ocho turnos.
+
+CI no llama al host. Reimprime dumps de fixture:
+
+```bash
+node docs/lab/cost-ledger/print-ledger.mjs --fixture
+```
+
+`usage` sale del JSON de **respuesta** del proveedor (`prompt_tokens`,
+`completion_tokens`). Un proxy dump-only no convierte el dummy
+`usage.prompt_tokens: 0` en tokens reales.
+
+Nunca pegues `DEEPSEEK_API_KEY`. Isolated Semantic Engine / Tree-sitter
+siguen el harness. El host no expone un toggle de Tree-sitter.

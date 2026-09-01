@@ -33,7 +33,22 @@ eight-turn total.
 
 `deepseek-v4-flash` only.
 
+## PCR 0140
+
+Two-turn ingest is INVALID for long-session cost. PCR 0135 Hermes
+`request_bytes` stay a two-turn table. They are not summed here.
+
+CI reprints `fixture/long-session-ci.json` (label `fixture`, `liveHost: false`)
+for `pi` and `hermes`, arms `nothing` vs `freshctx-ts`. Those token and `$`
+columns are the PCR 0137 unit-test provider pairs plus the cited flash
+cost-proxy table. They are not a live host score.
+
+No live long-session table. This checkout has no `DEEPSEEK_API_KEY`, no `pi`,
+and no `hermes`. Missing live `prompt_tokens` stay `—`. Door and lock stay
+frozen. Official table stays 549/0/0/549.
+
 ## Next
 
-A later agent may fill `.work/capture/` from official Hermes or Pi and reprint
-the ledger. Door and lock stay frozen. No `--relock`.
+A later agent may fill `.work/capture/` from official Hermes or Pi with the
+cost-ledger dump proxy (response `usage`) and reprint the ledger. Door and
+lock stay frozen. No `--relock`.

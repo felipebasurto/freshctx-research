@@ -1,0 +1,13 @@
+{
+  "n": 6,
+  "cellId": "t6-reread",
+  "utf8Bytes": 40000,
+  "promptTokens": 11000,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "hermes",
+  "arm": "nothing",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

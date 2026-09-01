@@ -1,0 +1,13 @@
+{
+  "n": 2,
+  "cellId": "t2-settle",
+  "utf8Bytes": 32999,
+  "promptTokens": null,
+  "completionTokens": null,
+  "usageFrom": "none",
+  "dumpOnly": false,
+  "host": "pi",
+  "arm": "nothing",
+  "model": "deepseek-v4-flash",
+  "source": "two-turn-ingest"
+}

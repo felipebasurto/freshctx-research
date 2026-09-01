@@ -1,0 +1,13 @@
+{
+  "n": 2,
+  "cellId": "t2-settle",
+  "utf8Bytes": 27000,
+  "promptTokens": 6800,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "hermes",
+  "arm": "freshctx-ts",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

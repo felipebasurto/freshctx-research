@@ -54,6 +54,20 @@ Cost-proxy table version 1 cites
 on 2026-09-01. Default schedule is off-peak cache-miss. Peak and cache-hit are
 explicit options. Byte estimates are not live host tokens.
 
+## PCR 0140 — long-session vs two-turn ingest
+
+A two-turn measure-pack dump (`t1-read` + `t2-settle`, including PCR 0135
+Hermes bytes) is **INVALID** as a long-session cost table. Eight provider
+turns are required. `prompt_tokens` and `$` come from provider **response**
+`usage`, not from request-body scans and not from dump-only dummy `0`.
+
+CI uses fixture dumps (`fixture/long-session-ci.json`, `fixture/dumps/`).
+Those dumps replay the PCR 0137 unit-test provider pairs. They are labeled
+`fixture` / `liveHost: false`. They are not a live Pi or Hermes capture.
+
+Hosts in the 0140 reprint: `pi` and `hermes`. Compared arms: `nothing` vs
+`freshctx-ts` (FreshCtx off vs Tree-sitter Isolated Semantic Engine on).
+
 ## Out of scope
 
 - Live host scores in this leftover
@@ -61,3 +75,4 @@ explicit options. Byte estimates are not live host tokens.
 - INDEX / METRICS / README PCR counts
 - `src/`, door, lock, `--relock`
 - DeepSeek v4 pro
+- Success board / SWE / multi-turn-trial edits

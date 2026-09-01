@@ -1,0 +1,13 @@
+{
+  "n": 1,
+  "cellId": "t1-read",
+  "utf8Bytes": 77372,
+  "promptTokens": null,
+  "completionTokens": null,
+  "usageFrom": "none",
+  "dumpOnly": false,
+  "host": "pi",
+  "arm": "freshctx-ts",
+  "model": "deepseek-v4-flash",
+  "source": "two-turn-ingest"
+}
