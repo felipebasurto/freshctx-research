@@ -40,8 +40,7 @@ No success board.
 5. `print-ledger.mjs --fixture` reprints those dumps for CI.
    Live reset/mutate accepts only those two arms.
 6. Added `test/pcr-0140-long-session-cost.test.mjs`.
-7. Did not edit INDEX, METRICS, README PCR counts, `src/`, door, lock,
-   adapters, sidecar, success-board, SWE, or multi-turn-trial.
+7. Did not edit INDEX, METRICS, README PCR counts, `src/`, door, or lock.
 8. Did not `--relock`.
 9. Same Cloud Agent wrote PCR and tests.
 
@@ -71,23 +70,48 @@ Fixture `$` is that formula on fixture tokens, not a billed invoice.
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test`.
+GHA on Reviewer SHA `671b38bb` (before this vocabulary fix):
 
 ```
 1..619
 # tests 619
-# pass 575
-# fail 44
+# pass 617
+# fail 2
 # skipped 0
 ```
 
+Those two fails are Isolated Semantic Engine vocabulary (retired wording in
+this PCR) and living-docs PCR count `136 !== 135`.
+Living-docs is the next pack. This leftover does not chase README / INDEX
+PCR counts. That GHA row is **not** a Cloud Agent Isolated Semantic Engine
+WASM-missing suite.
+
+This Cloud Agent checkout has **no Isolated Semantic Engine WASM**.
+`npm test` here is a different row. Do not treat it as GHA.
+
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..619
+# tests 619
+# pass 576
+# fail 43
+# skipped 0
+```
+
+Isolated Semantic Engine vocabulary now passes on this leftover.
+Living-docs PCR count remains the next pack (`136 !== 135`).
+The other this-run fails print `isolated-semantic-engine-missing` because WASM
+is absent here.
+
 `node --test test/pcr-0140-long-session-cost.test.mjs` is **12 pass / 0 fail**.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
-This-run living suite is **619 / 575 / 44 / 0**. Official table is not replaced.
+Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | yes | 1 | TAP above; 42 Isolated Semantic Engine misses on this checkout plus living-docs `136 !== 135` plus pre-existing evaluate/empirical fails; PCR 0140 is 12/12 |
+| GHA `npm test` @ `671b38bb` | yes | 1 | 619/617/2; Isolated Semantic Engine vocabulary + living-docs next pack |
+| this-run `npm test` | yes | 1 | 619/576/43; Isolated Semantic Engine WASM missing; not GHA |
 | `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | no | n/a | no provider key; no `pi`; no `hermes` |
@@ -97,10 +121,8 @@ This-run living suite is **619 / 575 / 44 / 0**. Official table is not replaced.
 | metric | official `79958de` | PCR 0140 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | 549 | **619** | living suite; official table stays 549 |
-| `npm test` TAP `# pass` | 549 | **575** | +12 PCR 0140; ISE-missing and living-docs remain |
-| `npm test` TAP `# fail` | 0 | **44** | living-docs `136 !== 135` plus pre-existing ISE misses |
-| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| GHA TAP @ `671b38bb` | 549/0/0/549 | **619/617/2** | Isolated Semantic Engine vocabulary + living-docs next pack |
+| this-run Cloud Agent TAP | n/a | **619/576/43** | Isolated Semantic Engine WASM missing; not GHA |
 | live long-session `prompt_tokens` | n/a | **none** | not invented |
 | live long-session `$` | n/a | **none** | not invented |
 | two-turn ingest as long-session | PCR 0139 leftover note | **INVALID** | fail-closed |
@@ -125,8 +147,9 @@ No live Hermes or Pi eight-turn capture on this leftover.
 This checkout has no `DEEPSEEK_API_KEY`, no `pi`, and no `hermes`.
 Dump-only sessions still omit `prompt_tokens`.
 Cost proxy is cited list price, cache-unaware by default, not a billed invoice.
-Living-docs still pins public PCR count at 135. Adding `0140-*.md` makes the
-on-disk count 136. README / INDEX / METRICS were out of path.
+Living-docs PCR count (136 vs 135) is the next pack. Not a merge hole.
+This leftover does not append INDEX / METRICS or bump README PCR counts.
+Isolated Semantic Engine WASM is missing on this Cloud Agent checkout.
 
 ## Recommended next experiment
 

@@ -5,9 +5,15 @@ Status: **harness-only**. No live long-session table.
 Official accepted TAP stays **549/0/0/549**. This leftover does not replace
 that table. INDEX.md and METRICS.md were not edited.
 
-This HEAD `npm test`: `# tests 619` `# pass 575` `# fail 44` `# skipped 0`.
+GHA on `671b38bb`: `# tests 619` `# pass 617` `# fail 2` `# skipped 0`.
+That pair is Isolated Semantic Engine vocabulary plus living-docs (next pack).
+It is not a Cloud Agent Isolated Semantic Engine WASM-missing suite.
+
+This Cloud Agent checkout has no Isolated Semantic Engine WASM.
+This-run TAP: `# tests 619` `# pass 576` `# fail 43` `# skipped 0`.
+That row is not GHA.
 PCR 0137 tests are 13/13. PCR 0140 tests are 12/12.
-The new living-docs fail is PCR count `136 !== 135` after adding `0140-*.md`.
+Living-docs PCR count is the next pack. This leftover does not chase it.
 
 ## What this leftover measured
 
