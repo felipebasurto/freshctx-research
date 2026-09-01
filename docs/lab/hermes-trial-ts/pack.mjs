@@ -7,11 +7,14 @@ import { fileURLToPath } from "node:url";
 import {
   ARMS,
   CELLS,
+  FRESHCTX_CWD_ENV,
+  HERMES_TRIAL_WORKSPACE_ENV,
   HOST_READ_SCOPE,
   LOOKALIKE_MARKER,
   LOOKALIKE_SYMBOL,
   MARKER_V0,
   MARKER_V1,
+  PI_TRIAL_WORKSPACE_ENV,
   PROMPT_T1,
   PROMPT_T2,
   SIBLING_MARKER,
@@ -22,6 +25,7 @@ import {
   freshCtxEnvForArm,
   hostReadToolArgs,
   promptForCell,
+  resolveHostReadWorkspace,
   validateArm,
 } from "../pi-trial-ts/pack.mjs";
 
@@ -34,11 +38,14 @@ export const PI_PACK_FIXTURE = new URL("../pi-trial-ts/fixture/", import.meta.ur
 export {
   ARMS,
   CELLS,
+  FRESHCTX_CWD_ENV,
+  HERMES_TRIAL_WORKSPACE_ENV,
   HOST_READ_SCOPE,
   LOOKALIKE_MARKER,
   LOOKALIKE_SYMBOL,
   MARKER_V0,
   MARKER_V1,
+  PI_TRIAL_WORKSPACE_ENV,
   PROMPT_T1,
   PROMPT_T2,
   SIBLING_MARKER,
@@ -49,6 +56,7 @@ export {
   freshCtxEnvForArm,
   hostReadToolArgs,
   promptForCell,
+  resolveHostReadWorkspace,
   validateArm,
 };
 

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { hostReadToolArgs } from "./pack.mjs";
+import { FRESHCTX_CWD_ENV, PI_TRIAL_WORKSPACE_ENV, hostReadToolArgs } from "./pack.mjs";
 
 const packDir = fileURLToPath(new URL(".", import.meta.url));
 
@@ -23,14 +23,19 @@ export function toolsFromExecutionStartEvents(events) {
     }));
 }
 
-export function envWithForceHostRead(baseEnv = {}) {
-  return { ...baseEnv, [FORCE_HOST_READ_ENV]: "1" };
+export function envWithForceHostRead(baseEnv = {}, { workspace } = {}) {
+  const env = { ...baseEnv, [FORCE_HOST_READ_ENV]: "1" };
+  if (workspace) {
+    env[FRESHCTX_CWD_ENV] = workspace;
+    env[PI_TRIAL_WORKSPACE_ENV] = workspace;
+  }
+  return env;
 }
 
-export function readToolMatchesHostArgs(tool) {
+export function readToolMatchesHostArgs(tool, { workspace } = {}) {
   if (!tool || tool.toolName !== "read") return false;
   const args = tool.args ?? {};
-  const expected = hostReadToolArgs();
+  const expected = hostReadToolArgs({ workspace });
   return (
     args.path === expected.path &&
     args.scope === expected.scope &&
@@ -40,7 +45,7 @@ export function readToolMatchesHostArgs(tool) {
   );
 }
 
-export function t1HostReadToolsInvalidReason(tools) {
+export function t1HostReadToolsInvalidReason(tools, { workspace } = {}) {
   if (!Array.isArray(tools) || tools.length === 0) {
     return "t1-read recorded no host tools";
   }
@@ -51,19 +56,19 @@ export function t1HostReadToolsInvalidReason(tools) {
     if (tool.toolName !== "read") {
       return `t1-read unexpected tool ${tool.toolName}`;
     }
-    if (!readToolMatchesHostArgs(tool)) {
+    if (!readToolMatchesHostArgs(tool, { workspace })) {
       return "t1-read read tool must use scope=symbol selector settleDailyLedger with no offset/limit";
     }
   }
   return null;
 }
 
-export function t1HostReadToolsValid(tools) {
-  return t1HostReadToolsInvalidReason(tools) === null;
+export function t1HostReadToolsValid(tools, { workspace } = {}) {
+  return t1HostReadToolsInvalidReason(tools, { workspace }) === null;
 }
 
-export function assertT1HostReadTools(tools, { arm = "unknown" } = {}) {
-  const reason = t1HostReadToolsInvalidReason(tools);
+export function assertT1HostReadTools(tools, { arm = "unknown", workspace } = {}) {
+  const reason = t1HostReadToolsInvalidReason(tools, { workspace });
   if (reason) {
     throw new Error(`${reason} (arm=${arm}): ${JSON.stringify(tools)}`);
   }

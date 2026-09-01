@@ -208,7 +208,7 @@ async function runArm(arm) {
     freshCtxExtension: extension,
     forceHostRead: true,
   });
-  const env = envWithForceHostRead({ ...freshCtxEnvForArm(arm), PI_TRIAL_DUMP_DIR: dumpDir });
+  const env = envWithForceHostRead({ ...freshCtxEnvForArm(arm), PI_TRIAL_DUMP_DIR: dumpDir }, { workspace: cwd });
   process.stdout.write(`start arm=${arm} cwd=${cwd} model=${MODEL}\n`);
   const client = new PiRpc({
     cwd,
@@ -241,7 +241,7 @@ async function runArm(arm) {
       const lastRequest = requests.at(-1) ?? null;
       const tools = toolsFromExecutionStartEvents(events);
       if (cell.id === "t1-read") {
-        assertT1HostReadTools(tools, { arm });
+        assertT1HostReadTools(tools, { arm, workspace: cwd });
       }
       const row = {
         id: cell.id,
@@ -249,7 +249,7 @@ async function runArm(arm) {
         mutate: cell.mutate,
         disk: disk.markers,
         tools,
-        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools, { workspace: cwd }) : null,
         reply,
         stdoutMatchesCurrent: stdoutMatchesCurrent(reply),
         requests,

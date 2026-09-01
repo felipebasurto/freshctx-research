@@ -55,6 +55,7 @@ export function hermesEnvForArm({
   proxyBaseUrl,
   dumpDir,
   hermesHome,
+  workspace,
   extra = {},
 } = {}) {
   validateArm(arm);
@@ -67,7 +68,7 @@ export function hermesEnvForArm({
     HERMES_TRIAL_DUMP_DIR: dumpDir,
     [FORCE_HOST_READ_HOOK_ENV]: forceHostReadHookPath(),
     ...extra,
-  });
+  }, { workspace });
   delete env.FRESHCTX_BUDGET_CHARS;
   return env;
 }
@@ -165,6 +166,7 @@ export async function launchHermes({
     proxyBaseUrl,
     dumpDir,
     hermesHome: prepared.hermesHome,
+    workspace: cwd,
     extra: { PATH: `${dirname(bin)}:${process.env.PATH ?? ""}` },
   });
   const args = hermesLaunchArgs(detected);

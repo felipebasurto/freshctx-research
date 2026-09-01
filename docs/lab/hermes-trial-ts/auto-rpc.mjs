@@ -125,7 +125,7 @@ async function runArm(arm) {
         recordedTools,
       });
       if (cell.id === "t1-read") {
-        assertT1HostReadTools(tools, { arm });
+        assertT1HostReadTools(tools, { arm, workspace: cwd });
       }
       const row = {
         id: cell.id,
@@ -133,7 +133,7 @@ async function runArm(arm) {
         mutate: cell.mutate,
         disk: disk.markers,
         tools,
-        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools) : null,
+        hostReadArgsMatched: cell.id === "t1-read" ? t1HostReadToolsValid(tools, { workspace: cwd }) : null,
         reply,
         stdoutMatchesCurrent: stdoutMatchesCurrent(reply),
         requests,
