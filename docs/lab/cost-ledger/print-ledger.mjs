@@ -5,7 +5,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { accumulateTurns, formatMissing } from "./ledger.mjs";
-import { ARMS } from "./pack.mjs";
+import { ARMS, COST_COMPARE_ARMS, HOSTS } from "./pack.mjs";
+import { assertLongSessionCost } from "./session-kind.mjs";
 
 export const TURN_COLUMNS = [
   "arm",
@@ -86,6 +87,73 @@ export function formatLedgerTsv(ledgers) {
   return `${lines.join("\n")}\n`;
 }
 
+export const HOST_TURN_COLUMNS = ["host", ...TURN_COLUMNS];
+export const HOST_TOTAL_COLUMNS = ["host", ...TOTAL_COLUMNS];
+
+export function hostLedgerTsvHeader() {
+  return HOST_TURN_COLUMNS.join("\t");
+}
+
+export function hostTotalsTsvHeader() {
+  return HOST_TOTAL_COLUMNS.join("\t");
+}
+
+function hostTurnRow(host, ledger, row) {
+  return [host, turnRow(ledger, row)].join("\t");
+}
+
+function hostTotalRow(host, ledger) {
+  return [host, totalRow(ledger)].join("\t");
+}
+
+export function formatHostLedgerTsv(hostLedgers, { hosts = HOSTS, arms = COST_COMPARE_ARMS } = {}) {
+  const lines = [hostLedgerTsvHeader()];
+  for (const host of hosts) {
+    const byArm = hostLedgers[host] ?? {};
+    for (const arm of arms) {
+      const ledger = byArm[arm];
+      if (!ledger) continue;
+      for (const row of ledger.rows) lines.push(hostTurnRow(host, ledger, row));
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatHostArmTotalsTsv(hostLedgers, { hosts = HOSTS, arms = COST_COMPARE_ARMS } = {}) {
+  const lines = [hostTotalsTsvHeader()];
+  for (const host of hosts) {
+    const byArm = hostLedgers[host] ?? {};
+    for (const arm of arms) {
+      const ledger = byArm[arm];
+      if (!ledger) continue;
+      lines.push(hostTotalRow(host, ledger));
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function ledgersFromFixture(fixture, { hosts = HOSTS, arms = COST_COMPARE_ARMS } = {}) {
+  if (fixture?.liveHost === true) {
+    throw new Error("print-ledger --fixture refuses liveHost=true");
+  }
+  const hostLedgers = {};
+  for (const host of hosts) {
+    hostLedgers[host] = {};
+    for (const arm of arms) {
+      const turns = fixture?.hosts?.[host]?.arms?.[arm]?.turns;
+      if (!Array.isArray(turns) || turns.length === 0) continue;
+      assertLongSessionCost(turns, { host, arm, source: fixture.label ?? "fixture" });
+      hostLedgers[host][arm] = accumulateTurns(turns);
+    }
+  }
+  return {
+    label: fixture.label ?? "fixture",
+    liveHost: fixture.liveHost === true,
+    sessionKind: fixture.sessionKind ?? "long-session",
+    hostLedgers,
+  };
+}
+
 export function formatArmTotalsTsv(ledgers) {
   const lines = [totalsTsvHeader()];
   for (const arm of ARMS) {
@@ -113,8 +181,27 @@ async function loadCapture(captureDir) {
   return ledgers;
 }
 
-async function main() {
-  const captureDir = process.env.COST_LEDGER_CAPTURE ?? join(fileURLToPath(new URL(".", import.meta.url)), ".work/capture");
+function packDir() {
+  return fileURLToPath(new URL(".", import.meta.url));
+}
+
+async function printFixture(argv) {
+  const jsonArg = argv.find((arg) => arg.endsWith(".json") && arg !== "--fixture");
+  const fixturePath = process.env.COST_LEDGER_FIXTURE_PATH ?? jsonArg ?? join(packDir(), "fixture/long-session-ci.json");
+  const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+  const loaded = ledgersFromFixture(fixture);
+  process.stdout.write(`# label=${loaded.label} liveHost=${loaded.liveHost} sessionKind=${loaded.sessionKind}\n`);
+  process.stdout.write(formatHostLedgerTsv(loaded.hostLedgers));
+  process.stdout.write("\n");
+  process.stdout.write(formatHostArmTotalsTsv(loaded.hostLedgers));
+}
+
+async function main(argv = process.argv.slice(2)) {
+  if (argv.includes("--fixture") || process.env.COST_LEDGER_FIXTURE === "1") {
+    await printFixture(argv);
+    return;
+  }
+  const captureDir = process.env.COST_LEDGER_CAPTURE ?? join(packDir(), ".work/capture");
   try {
     await readdir(captureDir);
     const ledgers = await loadCapture(captureDir);

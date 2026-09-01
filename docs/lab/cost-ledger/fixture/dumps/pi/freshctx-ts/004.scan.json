@@ -1,0 +1,13 @@
+{
+  "n": 4,
+  "cellId": "t4-settle",
+  "utf8Bytes": 27400,
+  "promptTokens": 6880,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "pi",
+  "arm": "freshctx-ts",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

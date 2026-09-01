@@ -1,0 +1,13 @@
+{
+  "n": 1,
+  "cellId": "t1-read",
+  "utf8Bytes": 28000,
+  "promptTokens": 7000,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "hermes",
+  "arm": "freshctx-ts",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

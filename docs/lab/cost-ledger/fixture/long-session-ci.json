@@ -1,0 +1,417 @@
+{
+  "label": "fixture",
+  "liveHost": false,
+  "sessionKind": "long-session",
+  "model": "deepseek-v4-flash",
+  "note": "CI replay of PCR 0137 unit-test provider pairs as dump-shaped turns. Not a live host score. Do not cite as dollars saved.",
+  "hosts": {
+    "pi": {
+      "arms": {
+        "nothing": {
+          "turns": [
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 1,
+              "cellId": "t1-read",
+              "requestBytes": 32000,
+              "promptTokens": 8000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 2,
+              "cellId": "t2-settle",
+              "requestBytes": 33000,
+              "promptTokens": 8200,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 3,
+              "cellId": "t3-reread",
+              "requestBytes": 35000,
+              "promptTokens": 9000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 4,
+              "cellId": "t4-settle",
+              "requestBytes": 36000,
+              "promptTokens": 9400,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 5,
+              "cellId": "t5-ask-again",
+              "requestBytes": 38000,
+              "promptTokens": 10000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 6,
+              "cellId": "t6-reread",
+              "requestBytes": 40000,
+              "promptTokens": 11000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 7,
+              "cellId": "t7-settle",
+              "requestBytes": 42000,
+              "promptTokens": 12000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "pi",
+              "turn": 8,
+              "cellId": "t8-ask-again",
+              "requestBytes": 45000,
+              "promptTokens": 13000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            }
+          ]
+        },
+        "freshctx-ts": {
+          "turns": [
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 1,
+              "cellId": "t1-read",
+              "requestBytes": 28000,
+              "promptTokens": 7000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 2,
+              "cellId": "t2-settle",
+              "requestBytes": 27000,
+              "promptTokens": 6800,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 3,
+              "cellId": "t3-reread",
+              "requestBytes": 27500,
+              "promptTokens": 6900,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 4,
+              "cellId": "t4-settle",
+              "requestBytes": 27400,
+              "promptTokens": 6880,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 5,
+              "cellId": "t5-ask-again",
+              "requestBytes": 27300,
+              "promptTokens": 6860,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 6,
+              "cellId": "t6-reread",
+              "requestBytes": 27200,
+              "promptTokens": 6840,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 7,
+              "cellId": "t7-settle",
+              "requestBytes": 27100,
+              "promptTokens": 6820,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "pi",
+              "turn": 8,
+              "cellId": "t8-ask-again",
+              "requestBytes": 27000,
+              "promptTokens": 6800,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            }
+          ]
+        }
+      }
+    },
+    "hermes": {
+      "arms": {
+        "nothing": {
+          "turns": [
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 1,
+              "cellId": "t1-read",
+              "requestBytes": 32000,
+              "promptTokens": 8000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 2,
+              "cellId": "t2-settle",
+              "requestBytes": 33000,
+              "promptTokens": 8200,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 3,
+              "cellId": "t3-reread",
+              "requestBytes": 35000,
+              "promptTokens": 9000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 4,
+              "cellId": "t4-settle",
+              "requestBytes": 36000,
+              "promptTokens": 9400,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 5,
+              "cellId": "t5-ask-again",
+              "requestBytes": 38000,
+              "promptTokens": 10000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 6,
+              "cellId": "t6-reread",
+              "requestBytes": 40000,
+              "promptTokens": 11000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 7,
+              "cellId": "t7-settle",
+              "requestBytes": 42000,
+              "promptTokens": 12000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "nothing",
+              "host": "hermes",
+              "turn": 8,
+              "cellId": "t8-ask-again",
+              "requestBytes": 45000,
+              "promptTokens": 13000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            }
+          ]
+        },
+        "freshctx-ts": {
+          "turns": [
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 1,
+              "cellId": "t1-read",
+              "requestBytes": 28000,
+              "promptTokens": 7000,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 2,
+              "cellId": "t2-settle",
+              "requestBytes": 27000,
+              "promptTokens": 6800,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 3,
+              "cellId": "t3-reread",
+              "requestBytes": 27500,
+              "promptTokens": 6900,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 4,
+              "cellId": "t4-settle",
+              "requestBytes": 27400,
+              "promptTokens": 6880,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 5,
+              "cellId": "t5-ask-again",
+              "requestBytes": 27300,
+              "promptTokens": 6860,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 6,
+              "cellId": "t6-reread",
+              "requestBytes": 27200,
+              "promptTokens": 6840,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 7,
+              "cellId": "t7-settle",
+              "requestBytes": 27100,
+              "promptTokens": 6820,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            },
+            {
+              "arm": "freshctx-ts",
+              "host": "hermes",
+              "turn": 8,
+              "cellId": "t8-ask-again",
+              "requestBytes": 27000,
+              "promptTokens": 6800,
+              "completionTokens": 40,
+              "model": "deepseek-v4-flash",
+              "source": "fixture",
+              "usageFrom": "provider-response"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

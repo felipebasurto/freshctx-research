@@ -1,0 +1,13 @@
+{
+  "n": 3,
+  "cellId": "t3-reread",
+  "utf8Bytes": 27500,
+  "promptTokens": 6900,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "pi",
+  "arm": "freshctx-ts",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

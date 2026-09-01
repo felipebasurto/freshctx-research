@@ -1,0 +1,13 @@
+{
+  "n": 8,
+  "cellId": "t8-ask-again",
+  "utf8Bytes": 45000,
+  "promptTokens": 13000,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "pi",
+  "arm": "nothing",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}

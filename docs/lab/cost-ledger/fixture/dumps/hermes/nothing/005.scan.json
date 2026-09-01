@@ -1,0 +1,13 @@
+{
+  "n": 5,
+  "cellId": "t5-ask-again",
+  "utf8Bytes": 38000,
+  "promptTokens": 10000,
+  "completionTokens": 40,
+  "usageFrom": "provider-response",
+  "dumpOnly": false,
+  "host": "hermes",
+  "arm": "nothing",
+  "model": "deepseek-v4-flash",
+  "source": "fixture"
+}
