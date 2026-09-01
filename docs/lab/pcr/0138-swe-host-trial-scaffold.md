@@ -42,12 +42,26 @@ Model remains `deepseek-v4-flash` only.
 
 ## Benchmarks run
 
-Canonical TAP from this HEAD after `npm test` is pending the official run
-on this branch. Official accepted TAP remains **549/0/0/549**.
+Canonical TAP from this HEAD after `npm test`.
+
+```
+1..585
+# tests 585
+# pass 542
+# fail 43
+# skipped 0
+```
+
+Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
+
+All 11 PCR 0138 tests passed. The extra living-suite fail versus PCR 0135
+is `living-docs` PCR count `132 !== 131`. This leftover does not edit
+INDEX, METRICS, or README PCR counts. 42 fails still print
+`isolated-semantic-engine-missing`.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending | n/a | fill after official run on this HEAD |
+| `npm test` | yes | 1 | TAP above; 42 `isolated-semantic-engine-missing` + 1 living-docs count hold |
 | `npm run evaluate` | no | n/a | harness-only; no policy, door, or lock edit |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 
@@ -56,10 +70,10 @@ on this branch. Official accepted TAP remains **549/0/0/549**.
 | metric | official `79958de` | PCR 0138 (this run) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
-| `npm test` TAP `# tests` | 549 | pending this HEAD | living suite; official table stays 549 |
-| `npm test` TAP `# pass` | 549 | pending this HEAD | fill after official run |
-| `npm test` TAP `# fail` | 0 | pending this HEAD | fill after official run |
-| `npm test` TAP `# skipped` | 0 | pending this HEAD | fill after official run |
+| `npm test` TAP `# tests` | 549 | **585** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **542** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **43** | 42 `isolated-semantic-engine-missing`; 1 living-docs PCR count hold |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
 | SWE scores | n/a | `null` | do not invent |
 | door blob | `f8771c93…` | `f8771c93…` | `0` |
 | lock blob | `4a953591…` | `4a953591…` | `0` |
@@ -83,7 +97,12 @@ none observed.
 `run.mjs` does not call a model.
 Official `pi` or `hermes` plus a key are required for a later live run.
 This leftover does not ship that capture.
-Isolated Semantic Engine (Tree-sitter) WASM is not reinstalled here.
+This Cloud Agent checkout has no Tree-sitter WASM.
+`npm test` therefore printed `# pass 542` `# fail 43`.
+The 43rd fail is the frozen README PCR count (131) versus 132 PCR files.
+INDEX, METRICS, and README were not edited.
+Not a paper result.
+Official table is not replaced.
 
 ## Recommended next experiment
 
