@@ -7,7 +7,6 @@ import test from "node:test";
 import { t1ToolsForAssert } from "../docs/lab/hermes-trial-ts/auto-rpc-host-read.mjs";
 import {
   HERMES_CLI_STDERR_LOG_MISSING,
-  cliQueryArgs,
   cliStderrLogMissingReason,
   runCliQuery,
 } from "../docs/lab/hermes-trial-ts/hermes-queries.mjs";
@@ -18,8 +17,8 @@ import { MODEL, PROMPT_T1 } from "../docs/lab/multi-turn-trial/pack.mjs";
 /** Dest 1caaab4d hermes-home/logs: SQLite warning only. No argparse. No EmptyStreamError. */
 const DEST_HERMES_HOME_STDERR = "SQLite WAL-reset\n";
 
-/** Dest reconstructed t1 spawn from dest cliQueryArgs + PROMPT_T1. */
-const DEST_T1_QUERY_ARGV = cliQueryArgs({ message: PROMPT_T1 });
+/** Dest 1caaab4d reconstructed t1 spawn (frozen dest leftover, not live cliQueryArgs). */
+const DEST_T1_QUERY_ARGV = ["chat", "-q", PROMPT_T1, "--provider", "openai", "--model", MODEL];
 
 async function withFakeHermes(stderrText, fn) {
   const dir = await mkdtemp(join(tmpdir(), "pcr-0151-"));

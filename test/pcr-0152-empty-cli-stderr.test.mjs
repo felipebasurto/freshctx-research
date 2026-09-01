@@ -9,7 +9,6 @@ import {
   HERMES_CLI_STDERR_LOG_EMPTY,
   HERMES_CLI_STDERR_LOG_MISSING,
   HERMES_Q_EXPECTED_ONE_ARGUMENT,
-  cliQueryArgs,
   cliStderrLogMissingReason,
   hermesCliQueryFailedReason,
   runCliQuery,
@@ -17,8 +16,8 @@ import {
 import { launchChild } from "../docs/lab/hermes-trial-ts/launch-child.mjs";
 import { MODEL, PROMPT_T1 } from "../docs/lab/multi-turn-trial/pack.mjs";
 
-/** Dest 91b97f80 reconstructed t1 spawn from dest cliQueryArgs + PROMPT_T1. */
-const DEST_T1_QUERY_ARGV = cliQueryArgs({ message: PROMPT_T1 });
+/** Dest 91b97f80 reconstructed t1 spawn (frozen dest leftover, not live cliQueryArgs). */
+const DEST_T1_QUERY_ARGV = ["chat", "-q", PROMPT_T1, "--provider", "openai", "--model", MODEL];
 
 async function withFakeHermes(scriptBody, fn) {
   const dir = await mkdtemp(join(tmpdir(), "pcr-0152-"));
