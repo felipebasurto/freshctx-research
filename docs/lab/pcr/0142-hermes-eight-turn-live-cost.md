@@ -153,13 +153,26 @@ No API key is recorded. This leftover never pastes a key.
 This leftover does not replace the official accepted table.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
-This-run TAP is pasted only after `npm test` on this leftover. The first
-revision of this PCR does not invent a TAP row.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..629
+# tests 629
+# pass 586
+# fail 43
+# skipped 0
+```
+
+This-run Cloud Agent TAP is **629 / 586 / 43 / 0**. That print is **not GHA**.
+Isolated Semantic Engine WASM is missing on this checkout, so 42 fails print
+`isolated-semantic-engine-missing` (or equivalent Isolated Semantic Engine /
+Tree-sitter runner absence). The 43rd fail is living-docs `138 !== 135`.
+That count leftover is not fixed on this PR. Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this leftover | n/a | real TAP will be pasted; not invented |
-| `npm run evaluate` | pending this leftover | n/a | paper trail only; no policy, door, or lock edit |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; living-docs next pack; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | already captured | n/a | table above is the remesure; this leftover does not re-run hosts |
 
@@ -168,6 +181,11 @@ revision of this PCR does not invent a TAP row.
 | metric | official `79958de` | PCR 0142 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
+| `npm test` TAP `# tests` | 549 | **629** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **586** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **43** | 42 Isolated Semantic Engine WASM missing; 1 living-docs `138 !== 135`; not GHA |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | live Hermes `nothing` `$` | n/a | **0.02398968** | live eight-turn; not invented |
 | live Hermes `freshctx-ts` `$` | n/a | **0.02538536** | live eight-turn; not cheaper overall |
 | live Hermes session `$` delta | n/a | **+0.00139568** | FreshCtx minus `nothing` |
