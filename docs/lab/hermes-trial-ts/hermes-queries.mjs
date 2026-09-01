@@ -178,6 +178,18 @@ export const HERMES_CLI_STDERR_LOG_MISSING =
 export const HERMES_CLI_STDERR_LOG_EMPTY =
   "t1-read.cli.stderr.log empty: CLI child persisted 0 bytes (not a query log)";
 
+/** Dest 51fab717 CLI rejected this name. Hermes registry has no `openai`. */
+export const HERMES_CLI_REJECTED_PROVIDER = "openai";
+
+/**
+ * Hermes Agent dump-proxy path. `OPENAI_BASE_URL` is honored only for
+ * `openai-api` (NousResearch/hermes-agent PROVIDER_REGISTRY / providers.md).
+ */
+export const HERMES_CLI_PROVIDER = "openai-api";
+
+export const HERMES_CLI_UNKNOWN_PROVIDER =
+  "Unknown provider 'openai'. Check 'hermes model' for available providers, or run 'hermes doctor' to diagnose config issues.";
+
 export function cliQueryCompanionPaths(logPath) {
   const stderrLog = String(logPath ?? "");
   if (stderrLog.endsWith(".cli.stderr.log")) {
@@ -264,13 +276,33 @@ export function cliQueryArgvInvalidReason(args) {
   return null;
 }
 
-export function hermesCliQueryFailedReason({ code, stderr } = {}) {
-  const text = String(stderr ?? "");
+export function hermesUnknownProviderReason(text) {
+  const raw = String(text ?? "");
+  const match = raw.match(/Unknown provider '([^']+)'/u);
+  if (!match) return null;
+  if (match[1] === HERMES_CLI_REJECTED_PROVIDER) return HERMES_CLI_UNKNOWN_PROVIDER;
+  return `Unknown provider '${match[1]}'. Check 'hermes model' for available providers, or run 'hermes doctor' to diagnose config issues.`;
+}
+
+export function cliQueryProviderInvalidReason(args) {
+  const list = Array.isArray(args) ? args : [];
+  for (let i = 0; i < list.length; i += 1) {
+    if (list[i] !== "--provider") continue;
+    const value = list[i + 1];
+    if (value === HERMES_CLI_REJECTED_PROVIDER) return HERMES_CLI_UNKNOWN_PROVIDER;
+  }
+  return null;
+}
+
+export function hermesCliQueryFailedReason({ code, stderr, stdout } = {}) {
+  const text = `${String(stderr ?? "")}\n${String(stdout ?? "")}`;
+  const unknown = hermesUnknownProviderReason(text);
+  if (unknown) return unknown;
   if (text.includes("argument -q/--query: expected one argument")) {
     return HERMES_Q_EXPECTED_ONE_ARGUMENT;
   }
   if (code != null && code !== 0) {
-    return `hermes cli query failed (${code}): ${text.trim() || "no stderr"}`;
+    return `hermes cli query failed (${code}): ${String(stderr ?? "").trim() || "no stderr"}`;
   }
   return null;
 }
@@ -279,8 +311,8 @@ export function cliQueryArgs({ continueSession = false, message } = {}) {
   const query = message == null ? "" : String(message);
   const args = [];
   if (continueSession) args.push("--continue");
-  args.push("chat", "-q", query, "--provider", "openai", "--model", MODEL);
-  const reason = cliQueryArgvInvalidReason(args);
+  args.push("chat", "-q", query, "--provider", HERMES_CLI_PROVIDER, "--model", MODEL);
+  const reason = cliQueryArgvInvalidReason(args) ?? cliQueryProviderInvalidReason(args);
   if (reason) throw new Error(reason);
   return args;
 }

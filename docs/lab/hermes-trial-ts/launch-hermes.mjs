@@ -14,7 +14,7 @@ import {
   forceHostReadPluginDir,
 } from "./auto-rpc-host-read.mjs";
 import { launchChild } from "./launch-child.mjs";
-import { cliQueryArgvInvalidReason } from "./hermes-queries.mjs";
+import { HERMES_CLI_PROVIDER, cliQueryArgvInvalidReason } from "./hermes-queries.mjs";
 import {
   MODEL,
   freshCtxEnvForArm,
@@ -36,7 +36,7 @@ export function hermesConfigYaml({ engine } = {}) {
   const lines = [
     "model:",
     `  default: ${MODEL}`,
-    "provider: openai",
+    `provider: ${HERMES_CLI_PROVIDER}`,
     "plugins:",
     "  enabled:",
     ...enabled.map((name) => `    - ${name}`),

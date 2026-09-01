@@ -9,7 +9,6 @@ import {
   HERMES_CLI_STDERR_LOG_EMPTY,
   HERMES_CLI_STDERR_LOG_MISSING,
   HERMES_Q_EXPECTED_ONE_ARGUMENT,
-  cliQueryArgs,
   cliQueryChannelReason,
   cliQueryCompanionPaths,
   cliStderrLogMissingReason,
@@ -24,8 +23,8 @@ import {
 import { CHILD_STDIO } from "../docs/lab/hermes-trial-ts/launch-child.mjs";
 import { MODEL, PROMPT_T1 } from "../docs/lab/multi-turn-trial/pack.mjs";
 
-/** Dest f3f56e8e reconstructed t1 spawn from dest cliQueryArgs + PROMPT_T1. */
-const DEST_T1_QUERY_ARGV = cliQueryArgs({ message: PROMPT_T1 });
+/** Dest f3f56e8e / 51fab717 t1 spawn argv (frozen dest leftover, not live cliQueryArgs). */
+const DEST_T1_QUERY_ARGV = ["chat", "-q", PROMPT_T1, "--provider", "openai", "--model", MODEL];
 
 /**
  * Hermes Agent `chat -q` help on NousResearch/hermes-agent (parser, not dest
