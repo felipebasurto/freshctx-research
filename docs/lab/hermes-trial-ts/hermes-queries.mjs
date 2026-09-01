@@ -166,10 +166,39 @@ export class HermesRpc {
   }
 }
 
-export function cliQueryArgs({ continueSession = false, message }) {
+export const HERMES_Q_EXPECTED_ONE_ARGUMENT =
+  "hermes chat: error: argument -q/--query: expected one argument";
+
+export function cliQueryArgvInvalidReason(args) {
+  const list = Array.isArray(args) ? args : [];
+  for (let i = 0; i < list.length; i += 1) {
+    if (list[i] !== "-q" && list[i] !== "--query") continue;
+    const value = list[i + 1];
+    if (value == null || value === "" || String(value).startsWith("-")) {
+      return HERMES_Q_EXPECTED_ONE_ARGUMENT;
+    }
+  }
+  return null;
+}
+
+export function hermesCliQueryFailedReason({ code, stderr } = {}) {
+  const text = String(stderr ?? "");
+  if (text.includes("argument -q/--query: expected one argument")) {
+    return HERMES_Q_EXPECTED_ONE_ARGUMENT;
+  }
+  if (code != null && code !== 0) {
+    return `hermes cli query failed (${code}): ${text.trim() || "no stderr"}`;
+  }
+  return null;
+}
+
+export function cliQueryArgs({ continueSession = false, message } = {}) {
+  const query = message == null ? "" : String(message);
   const args = [];
   if (continueSession) args.push("--continue");
-  args.push("chat", "-q", "--provider", "openai", "--model", MODEL, message);
+  args.push("chat", "-q", query, "--provider", "openai", "--model", MODEL);
+  const reason = cliQueryArgvInvalidReason(args);
+  if (reason) throw new Error(reason);
   return args;
 }
 
@@ -182,6 +211,8 @@ export async function runCliQuery({ cwd, env, message, continueSession = false, 
     logPath,
   });
   const result = await child.exit;
+  const reason = hermesCliQueryFailedReason(result);
+  if (reason) throw new Error(reason);
   return {
     ...result,
     reply: result.stdout,
