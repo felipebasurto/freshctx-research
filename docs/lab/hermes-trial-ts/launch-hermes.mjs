@@ -30,13 +30,15 @@ export function hermesBin() {
 }
 
 export function hermesConfigYaml({ engine } = {}) {
+  const enabled = [FORCE_HOST_READ_PLUGIN_NAME];
+  if (engine === "freshctx") enabled.push("freshctx");
   const lines = [
     "model:",
     `  default: ${MODEL}`,
     "provider: openai",
     "plugins:",
     "  enabled:",
-    `    - ${FORCE_HOST_READ_PLUGIN_NAME}`,
+    ...enabled.map((name) => `    - ${name}`),
   ];
   if (engine === "freshctx") {
     lines.push("context:", "  engine: freshctx");

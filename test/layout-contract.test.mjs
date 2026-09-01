@@ -55,6 +55,7 @@ test("Hermes installed layout reaches request pruning and core source", async ()
     );
     assert.equal(await realpath(layout.srcDir), await realpath(join(ROOT, "src")));
     assert.equal(await realpath(layout.iseDir), await realpath(join(ROOT, "ise")));
+    assert.equal(await realpath(layout.userPluginDir), await realpath(join(ROOT, "adapters", "hermes")));
     await access(join(layout.srcDir, "index.mjs"));
     await access(join(layout.iseDir, "treesitter", "client.mjs"));
   } finally {

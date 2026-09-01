@@ -26,6 +26,7 @@ export async function missingLayoutPaths(pluginsDir) {
   const layout = resolveLayoutPaths(pluginsDir);
   const required = [
     ["bridge", layout.bridge],
+    ["user-plugin", layout.userPluginDir],
     ["request-prune.mjs", layout.requestPrune],
     ["engine-factory.mjs", layout.engineFactory],
     ["shell-read.mjs", layout.shellRead],
