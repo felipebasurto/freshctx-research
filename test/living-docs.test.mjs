@@ -18,7 +18,7 @@ test("public status documents report living repository facts", async () => {
   ]);
   const publicStatus = `${readme}\n${architecture}\n${roadmap}`;
 
-  assert.match(publicStatus, /131 Public Change Records/);
+  assert.match(publicStatus, /134 Public Change Records/);
   assert.match(publicStatus, /whole-file, line-region, and symbol scope/i);
   assert.match(publicStatus, /Python, JavaScript, TypeScript, Go, and Rust/);
   assert.match(publicStatus, /src\/.*Node\.js standard library/i);
@@ -74,5 +74,5 @@ test("PCR count in public status matches Markdown files on disk", async () => {
   const entries = await readdir(join(ROOT, "docs", "lab", "pcr"));
   const count = entries.filter((name) => name.endsWith(".md")).length;
 
-  assert.equal(count, 131);
+  assert.equal(count, 134);
 });
