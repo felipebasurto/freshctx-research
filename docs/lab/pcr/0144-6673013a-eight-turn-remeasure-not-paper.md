@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-01
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0144-6673013a-not-paper-d0da` (draft)
+- Branch / PR: `cursor/pcr-0144-6673013a-not-paper-d0da` / [147](https://github.com/felipebasurto/freshctx/pull/147) (draft)
 - Base SHA: `6673013ab983686b0a32df94b4fcad4fcf02a616` (PCR 0143 on main; live tip)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -198,13 +198,26 @@ t8 present does not make this dest a paper result.
 This leftover does not replace the official accepted table.
 Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 
-This-run Cloud Agent TAP is pasted after `npm test` on this leftover.
-Not invented. Not GHA.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..634
+# tests 634
+# pass 591
+# fail 43
+# skipped 0
+```
+
+This-run Cloud Agent TAP is **634 / 591 / 43 / 0**. That print is **not GHA**.
+Isolated Semantic Engine WASM is missing on this checkout, so 42 fails print
+`isolated-semantic-engine-missing` (or equivalent Isolated Semantic Engine /
+Tree-sitter runner absence). The 43rd fail is living-docs `140 !== 135`.
+That count leftover is not fixed on this PR. Official table is not replaced.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
-| `npm test` | pending this leftover | — | real TAP pasted after the run |
-| `npm run evaluate` | pending this leftover | — | hard gate follows this-run TAP |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; living-docs `140 !== 135`; next pack; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live long-session host | already captured | n/a | two dest tables above; this leftover does not re-run hosts |
 
@@ -213,6 +226,11 @@ Not invented. Not GHA.
 | metric | official `79958de` | PCR 0144 (this leftover) | delta |
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
+| `npm test` TAP `# tests` | 549 | **634** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **591** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **43** | 42 Isolated Semantic Engine WASM missing; 1 living-docs `140 !== 135`; not GHA |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | paper label | n/a | **NOT-PAPER** | t8 missing on Table 1; `search_files` dest-root; t1 7 vs 5 / 6 vs 7 |
 | dest | n/a | two dests on tip `6673013a` | first live overwritten by second auto-live |
 | Table 1 `nothing` tok | n/a | **157813** | `$` unknown; do not invent |
