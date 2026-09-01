@@ -90,5 +90,5 @@ requerido 5/5. `passAt1` siempre es `null` y queda fuera de alcance.
 Siguen faltando un archivo de revisiones durable y con permisos, una barrera de
 snapshot coherente, compatibilidad fijada contra releases de Pi y Hermes,
 telemetría completa por etapa y memoria, revisión independiente del baseline y
-atestación de congelación en CI de producción. Los 135 Public Change Records en
+atestación de congelación en CI de producción. Los 143 Public Change Records en
 `docs/lab/pcr/` conservan el historial de evidencia.
