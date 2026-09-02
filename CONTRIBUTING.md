@@ -40,9 +40,9 @@ Before opening a pull request:
    `docs/ARCHITECTURE.md`, and `docs/ROADMAP.md` together with the literal in
    `test/living-docs.test.mjs`, and cite the PCR that measured them.
 
-Docs-only pull requests: CI currently skips `**.md` and `docs/**` paths, so run
-`node --test test/living-docs.test.mjs test/layout-contract.test.mjs test/gotchas-contract.test.mjs`
-locally before pushing. `plans/001` proposes running those on every pull request.
+Docs-only pull requests run the documentation-contract tests in CI
+(`.github/workflows/docs-contract.yml`); run `npm run test:docs` locally before
+pushing.
 
 Pull requests that alter benchmark weights and implementation behavior together
 will not be accepted. Architectural changes should include an ADR under

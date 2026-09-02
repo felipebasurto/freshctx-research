@@ -84,9 +84,8 @@ npm run holdout:verify -- --pack=holdout-v0.1
 git fetch origin main && npm run holdout:ci-guard -- --base=origin/main
 ```
 
-Docs-only changes are skipped by CI (`paths-ignore`), so also run
-`node --test test/living-docs.test.mjs test/layout-contract.test.mjs test/gotchas-contract.test.mjs`
-when you touched Markdown. A behaviour change needs a Public Change Record
+Docs-only changes still run `npm run test:docs` in CI; run it locally when you
+touched Markdown. A behaviour change needs a Public Change Record
 under `docs/lab/pcr/`, rows in `docs/lab/INDEX.md` and `docs/lab/METRICS.md`,
 and the PCR count bumped in `README.md` and `docs/ARCHITECTURE.md`
 (`CONTRIBUTING.md` has the full checklist).

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
+    "test:docs": "node --test test/living-docs.test.mjs test/ise-vocabulary.test.mjs test/layout-contract.test.mjs test/gotchas-contract.test.mjs test/manifests.test.mjs",
     "bench": "node bench/run.mjs",
     "ctxbench": "node bench/ctxbench.mjs",
     "ctxbench:smoke": "node bench/smoke.mjs",
