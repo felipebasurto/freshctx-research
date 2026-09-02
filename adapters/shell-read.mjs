@@ -272,8 +272,10 @@ function splitNormalizedLines(text) {
 /**
  * Derive the 1-based inclusive span a head/tail shell read actually showed the
  * model, from the observed tool output, and verify it against the file.
- * Returns null when the observation is not a contiguous slice at the expected
- * end of the file (fail closed: no unit is tracked).
+ * Returns null (fail closed: no unit is tracked) when the observation does not
+ * have exactly the number of lines the command must have printed
+ * (min(requested, body lines) — PCR 0088 sealed this for Hermes tail reads) or
+ * is not the matching slice at the expected end of the file.
  */
 export function observedSpanForShellRead(parsed, fileContent, observedContent) {
   if (!parsed || parsed.scope !== "region") return null;
@@ -285,17 +287,26 @@ export function observedSpanForShellRead(parsed, fileContent, observedContent) {
   const fileBody = fileLines.at(-1) === "" ? fileLines.slice(0, -1) : fileLines;
   const fileLineCount = fileLines.length;
 
+  let requested;
+  if (Number.isInteger(parsed.tailLines) && parsed.tailLines > 0) {
+    requested = parsed.tailLines;
+  } else if (parsed.startLine === 1 && Number.isInteger(parsed.endLine) && parsed.endLine > 0) {
+    requested = parsed.endLine;
+  } else {
+    return null;
+  }
+  // Size before content: a truncated or over-long observation must never match
+  // "by accident" as a shorter or longer slice of the file.
+  if (observedLines.length !== Math.min(requested, fileBody.length)) return null;
+
   let startLine;
   let endLine;
   if (parsed.tailLines != null) {
-    startLine = Math.max(1, fileBody.length - observedLines.length + 1);
+    startLine = fileBody.length - observedLines.length + 1;
     endLine = fileLineCount;
-  } else if (parsed.startLine === 1) {
-    startLine = 1;
-    endLine = Math.min(observedLines.length, fileLineCount);
-    if (endLine === fileBody.length && fileLineCount > fileBody.length) endLine = fileLineCount;
   } else {
-    return null;
+    startLine = 1;
+    endLine = observedLines.length === fileBody.length ? fileLineCount : observedLines.length;
   }
   const expected = fileBody.slice(startLine - 1, startLine - 1 + observedLines.length).join("\n");
   if (expected !== observedLines.join("\n")) return null;

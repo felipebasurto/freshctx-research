@@ -69,3 +69,17 @@ test("tryTrackShellRead tracks tail with the observed span and refuses a mismatc
   assert.equal(bad.ok, false);
   assert.equal(bad.tracked.length, 0);
 });
+
+test("observedSpanForShellRead fails closed when the observation has the wrong line count", () => {
+  // Undersized: tail -n 2 but the tool result shows one line (truncated output).
+  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "c\n"), null);
+  // Oversized: tail -n 2 but the tool result shows three lines (a middle slice is not a tail).
+  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "a\nb\nc\n"), null);
+  // Extra blank line after the tail.
+  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "b\nc\n\n"), null);
+  // head -n 2 that shows three lines.
+  assert.equal(observedSpanForShellRead({ scope: "region", startLine: 1, endLine: 2 }, FILE_NL, "a\nb\nc\n"), null);
+  // Requested more than the file has: the whole body is the only valid observation.
+  assert.deepEqual(observedSpanForShellRead({ scope: "region", tailLines: 10 }, FILE_NL, "a\nb\nc\n"), { startLine: 1, endLine: 4 });
+  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 10 }, FILE_NL, "b\nc\n"), null);
+});
