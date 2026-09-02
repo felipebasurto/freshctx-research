@@ -36,7 +36,7 @@ Never solve a failing benchmark by weakening this truth.
 3. **Exact recovery.** Masked observations remain locally recoverable by stable
    identity or revision hash.
 4. **Determinism.** Identical inputs produce byte-identical projections and
-   scores.
+   evaluation records.
 5. **Fail open at the host boundary.** Adapter failure must not corrupt stored
    conversation history. The host can continue without FreshCtx.
 6. **Fail closed on freshness.** Resolution uncertainty must not be disguised as
@@ -74,7 +74,8 @@ For every experiment:
 3. Predict which metrics will move and which must remain invariant.
 4. Make the smallest code change that tests the hypothesis.
 5. Run `npm run evaluate` exactly as defined.
-6. Inspect component metrics, not only the scalar score.
+6. Inspect component metrics (payload bytes, required recall, stale and
+   unresolved rates, prefix reuse), not only the `EVALUATE_VERDICT` line.
 7. Run tests again if the evaluator did not complete them.
 8. Append one row to `autoresearch/results.tsv`.
 9. Keep the change only if it passes all hard gates and improves the declared
@@ -95,7 +96,7 @@ A candidate is invalid if any of the following occurs:
 - the candidate changes evaluation data or scoring logic;
 - the gain comes only from deleting context required by a gold unit.
 
-An invalid candidate is reverted even if its scalar score is higher.
+An invalid candidate is reverted even if its payload bytes are lower.
 
 ## Experiment discipline
 
@@ -112,7 +113,7 @@ Change one conceptual variable at a time. Refactoring and optimization are
 different experiments. Do not mix them.
 
 Use a paired comparison against the current accepted commit. Report both raw
-values and deltas. A tiny score increase that adds complexity, special cases,
+values and deltas. A tiny byte saving that adds complexity, special cases,
 or unexplained behavior should be rejected.
 
 ## Overfitting controls
@@ -139,7 +140,7 @@ public performance claim:
 6. report cold and warm distributions, not only means;
 7. publish the frozen evaluator, repo lock, and raw results.
 
-Do not add pass@1 or patch quality to the core score. If someone later runs an
+Do not add pass@1 or patch quality to the core verdict. If someone later runs an
 agent-behavior study, store it separately and never use it to waive a context
 correctness failure.
 
@@ -180,7 +181,9 @@ timestamp	commit	paper_manifest	hypothesis	train_score	exact_current_rate	stale_
 ```
 
 `decision` is one of `accept`, `reject`, or `review`. Never overwrite earlier
-experiments.
+experiments. The `train_score` column is retained for ledger compatibility;
+write `n/a` in it, because the objective is the boolean verdict described in
+`autoresearch/CONTRACT.md`, not a weighted scalar.
 
 ## Definition of success
 

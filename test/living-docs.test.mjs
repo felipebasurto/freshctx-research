@@ -26,7 +26,7 @@ test("public status documents report living repository facts", async () => {
   assert.match(publicStatus, /passAt1.*null.*out of scope/i);
   assert.match(publicStatus, /locally frozen/i);
   assert.match(publicStatus, /not production-GHA sealed/i);
-  assert.match(publicStatus, /8504 payload bytes/i);
+  assert.match(publicStatus, /8589 payload bytes/i);
   assert.match(publicStatus, /36701 payload bytes/i);
   assert.match(publicStatus, /Required recall.*5\/5/i);
 
@@ -57,7 +57,7 @@ test("README presents FreshCtx before the exactly-once whole-file citation", asy
   assert.ok(citationOffset > readme.indexOf("FreshCtx is a local-first context substrate"));
   assert.match(readme, /bench\/corvus\.mjs/);
   assert.match(readme, /`corvus-file`/);
-  assert.match(readme, /Isolated Semantic Engine \| 8504 payload bytes/);
+  assert.match(readme, /Isolated Semantic Engine \| 8589 payload bytes/);
   assert.match(readme, /Whole-file baseline \(`corvus-file`\) \| 36701 payload bytes/);
   assert.match(readme, /Required recall was \*\*5\/5\*\*/);
 });

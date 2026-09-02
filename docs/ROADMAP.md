@@ -40,7 +40,9 @@ pack.
 `holdout-v0.3-apex` is locally frozen, not production-GHA sealed. The recorded
 measurement is:
 
-- Isolated Semantic Engine: **8504 payload bytes**.
+- Isolated Semantic Engine: **8589 payload bytes** (measured 2026-09-02; 8504
+  before the Isolated Semantic Engine vocabulary migration lengthened the
+  `resolution` label by 17 bytes per projected unit).
 - Whole-file baseline: **36701 payload bytes**.
 - Required recall: **5/5**.
 
