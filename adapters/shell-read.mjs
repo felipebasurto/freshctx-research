@@ -166,16 +166,16 @@ function lineCountFlag(tokens) {
   let lineCount = 10;
   for (let index = 1; index < tokens.length - 1; index += 1) {
     const token = tokens[index];
-    if (token === "-n") {
+    if (token === "-n" || token === "--lines") {
       const next = parsePositiveInt(tokens[index + 1]);
       if (next == null) return null;
       lineCount = next;
       index += 1;
       continue;
     }
-    const shortFlag = /^-(\d+)$/u.exec(token);
-    if (shortFlag) {
-      const next = parsePositiveInt(shortFlag[1]);
+    const attached = /^(?:-n|--lines=)(\d+)$/u.exec(token) ?? /^-(\d+)$/u.exec(token);
+    if (attached) {
+      const next = parsePositiveInt(attached[1]);
       if (next == null) return null;
       lineCount = next;
     }
@@ -265,16 +265,41 @@ export function parseShellFileRead(command) {
   return null;
 }
 
-function normalizeTailRegion(parsed, fileLineCount) {
-  if (parsed.scope !== "region" || parsed.tailLines == null) return parsed;
-  const tailLines = parsed.tailLines;
-  const startLine = Math.max(1, fileLineCount - tailLines + 1);
-  return {
-    path: parsed.path,
-    scope: "region",
-    startLine,
-    endLine: fileLineCount,
-  };
+function splitNormalizedLines(text) {
+  return String(text ?? "").replaceAll("\r\n", "\n").split("\n");
+}
+
+/**
+ * Derive the 1-based inclusive span a head/tail shell read actually showed the
+ * model, from the observed tool output, and verify it against the file.
+ * Returns null when the observation is not a contiguous slice at the expected
+ * end of the file (fail closed: no unit is tracked).
+ */
+export function observedSpanForShellRead(parsed, fileContent, observedContent) {
+  if (!parsed || parsed.scope !== "region") return null;
+  const fileLines = splitNormalizedLines(fileContent);
+  const observedLines = splitNormalizedLines(observedContent);
+  // Tool hosts may or may not keep the final newline; compare without it.
+  if (observedLines.at(-1) === "") observedLines.pop();
+  if (observedLines.length === 0) return null;
+  const fileBody = fileLines.at(-1) === "" ? fileLines.slice(0, -1) : fileLines;
+  const fileLineCount = fileLines.length;
+
+  let startLine;
+  let endLine;
+  if (parsed.tailLines != null) {
+    startLine = Math.max(1, fileBody.length - observedLines.length + 1);
+    endLine = fileLineCount;
+  } else if (parsed.startLine === 1) {
+    startLine = 1;
+    endLine = Math.min(observedLines.length, fileLineCount);
+    if (endLine === fileBody.length && fileLineCount > fileBody.length) endLine = fileLineCount;
+  } else {
+    return null;
+  }
+  const expected = fileBody.slice(startLine - 1, startLine - 1 + observedLines.length).join("\n");
+  if (expected !== observedLines.join("\n")) return null;
+  return { startLine, endLine };
 }
 
 /**
@@ -305,19 +330,18 @@ export async function tryTrackShellRead({
   try {
     const file = await safeWorkspaceFile(cwd, parsed.path);
     const observedFileLineCount = lineCount(file.content);
-    const scopeMeta = parsed.scope === "region"
-      ? normalizeTailRegion(parsed, observedFileLineCount)
-      : parsed;
 
-    if (scopeMeta.scope === "region") {
+    if (parsed.scope === "region") {
       const observed = observedToolContent(content);
       if (!observed) return false;
+      const span = observedSpanForShellRead(parsed, file.content, observed);
+      if (!span) return false;
       const unit = engine.trackRead({
         path: file.path,
         content: observed,
         scope: "region",
-        startLine: scopeMeta.startLine,
-        endLine: scopeMeta.endLine,
+        startLine: span.startLine,
+        endLine: span.endLine,
         observedFileLineCount,
       });
       callToUnit.set(toolCallId, unit.id);
