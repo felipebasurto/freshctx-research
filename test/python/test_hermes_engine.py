@@ -1,4 +1,6 @@
+import copy
 import importlib.util
+import json
 import sys
 import types
 import unittest
@@ -52,6 +54,69 @@ class SelectContextAppliedGate(unittest.TestCase):
     def test_bridge_failure_returns_none(self):
         with mock.patch.object(self.engine, "_call_bridge", return_value=None):
             self.assertIsNone(self.engine.select_context([{"role": "user", "content": "x"}]))
+
+
+class ExecutedReadArgsReachTheBridge(unittest.TestCase):
+    """Hermes `pre_tool_call` `modify` rewrites the executed args only; the
+    persisted `tool_calls` keep the model's path. `post_tool_call` is the one
+    place the executed args and the tool_call_id meet (PCR 0165). Hermes
+    deep-copies the registered engine per agent (agent_init), so the store
+    cannot live on the instance."""
+
+    def setUp(self):
+        self.module = load_engine_module()
+        self.engine = copy.deepcopy(self.module.FreshCtxContextEngine(model="stub"))
+        self.engine._freshctx_state_file = Path("/tmp/freshctx-test-state.json")
+
+    def _bridge_payloads(self):
+        payloads = []
+
+        def fake_run(argv, input, **kwargs):
+            payloads.append(json.loads(input))
+            return types.SimpleNamespace(returncode=0, stdout=json.dumps({"observedCalls": 1}))
+
+        return payloads, fake_run
+
+    def test_post_tool_call_records_read_args_by_call_id(self):
+        record = self.module.record_executed_read_args
+        record(
+            tool_name="read_file",
+            args={"path": "/work/src/settlement.ts", "scope": "symbol", "selector": "settleDailyLedger"},
+            tool_call_id="call_1",
+            result="{}",
+            task_id="",
+        )
+        record(tool_name="terminal", args={"command": "ls"}, tool_call_id="call_2")
+        record(tool_name="read_file", args={"path": "x"}, tool_call_id="")
+        payloads, fake_run = self._bridge_payloads()
+        with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+            self.engine.select_context([{"role": "user", "content": "x"}])
+        self.assertEqual(
+            payloads[0]["executedReadArgsByCallId"],
+            {"call_1": {"path": "/work/src/settlement.ts", "scope": "symbol", "selector": "settleDailyLedger"}},
+        )
+
+    def test_recorded_args_clear_after_a_successful_observe(self):
+        self.module.record_executed_read_args(tool_name="read_file", args={"path": "a.ts"}, tool_call_id="call_1")
+        payloads, fake_run = self._bridge_payloads()
+        with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
+            self.engine.on_turn_complete([{"role": "user", "content": "x"}])
+            self.engine.on_turn_complete([{"role": "user", "content": "y"}])
+        self.assertEqual(payloads[0]["executedReadArgsByCallId"], {"call_1": {"path": "a.ts"}})
+        self.assertEqual(payloads[1]["executedReadArgsByCallId"], {})
+
+    def test_register_wires_the_post_tool_call_hook(self):
+        registered = {}
+
+        class Ctx:
+            def register_context_engine(self, engine):
+                registered["engine"] = engine
+
+            def register_hook(self, name, callback):
+                registered[name] = callback
+
+        self.module.register(Ctx())
+        self.assertIs(registered["post_tool_call"], self.module.record_executed_read_args)
 
 
 if __name__ == "__main__":

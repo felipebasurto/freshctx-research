@@ -56,7 +56,8 @@ context:
 ```
 
 Requirements: Node.js 22+, a FreshCtx source checkout, and a Hermes version
-whose `ContextEngine` exposes `select_context()` and `on_turn_complete()`.
+whose `ContextEngine` exposes `select_context()` and `on_turn_complete()` and
+whose plugin context exposes `register_hook("post_tool_call", …)`.
 Packaging through Hermes' user-plugin registry is a v0.3 gate; this install
 script is the source-development path, not a registry publish.
 
@@ -82,6 +83,22 @@ the next ordinary write removes it.
 
 Projection bytes for an unchanged selection are the same on the second call as
 on the first, and they equal the core `freshctx-region` baseline exactly.
+
+## Executed read arguments
+
+A Hermes `pre_tool_call` hook may answer `modify` and change the arguments a
+read executes with. Hermes then persists the model's original
+`tool_calls[].function.arguments`, and the `read_file` result carries no path.
+The persisted call can therefore name a file the host never read. The plugin
+registers a `post_tool_call` observer (`record_executed_read_args`) that keeps
+the executed arguments of `read`, `read_file`, and `read_text_file` by
+`tool_call_id`, and every bridge payload carries them as
+`executedReadArgsByCallId`. The bridge prefers those arguments over the
+persisted call, stores them in the session state under the same key, and drops
+the in-process copy after a successful `observe`. Hermes deep-copies the
+registered engine per agent, so the store is module-level, not an instance
+attribute. Without executed arguments a path that does not resolve under the
+workspace stays unresolved; the bridge never guesses (PCR 0165).
 
 On later turns where the live tail collapses to the already-served stub or
 omits entirely (PCR 0099/0100), bounded current unit bytes are inlined at the
