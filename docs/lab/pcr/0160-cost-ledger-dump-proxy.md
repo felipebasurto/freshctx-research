@@ -156,8 +156,8 @@ All 7 PCR 0160 tests passed.
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `node --test test/pcr-0160-cost-ledger-dump-proxy.test.mjs` | yes | 0 | TAP above |
-| `npm test` | pending first official suite | n/a | this-run Cloud Agent TAP above is the expected living count; Isolated Semantic Engine WASM missing; not GHA |
-| `npm run evaluate` | pending first official suite | n/a | hard gate follows this-run TAP |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
 | door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live host | no | n/a | dest print reused; dest not mounted; no live remesure |
 
@@ -171,7 +171,7 @@ All 7 PCR 0160 tests passed.
 | `npm test` TAP `# pass` | 549 | **673** | this checkout Isolated Semantic Engine WASM missing |
 | `npm test` TAP `# fail` | 0 | **42** | `isolated-semantic-engine-missing` |
 | `npm test` TAP `# skipped` | 0 | **0** | `0` |
-| evaluate | n/a on official table | hard gate follows this-run TAP | official table not replaced |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | PCR 0142 dest `d8cdd3d5` | unchanged | not this file | paper trail stays there |
 | dest 71379f00 `$` invented here | n/a | **none** | scan `promptTokens` null; four-turn ingest `$` is `—` |
 | Pass@1 invented here | n/a | **none** | not a SWE dump |
