@@ -313,6 +313,8 @@ bounded defect and a red-green invariant test.
 | Hermes reads observed from persisted arguments only | FIX | A Hermes `pre_tool_call` `modify` directive changes what a read executes with but not the persisted `tool_calls`, so the bridge tracked a path the host never read (`source-error`, unit omitted, `resolution=none` in the dump scan). The plugin now records executed read arguments from `post_tool_call` and the bridge prefers them, persisting `executedReadArgsByCallId` in session state; `test/pcr-0165-hermes-executed-read-args.test.mjs` and `test/python/test_hermes_engine.py` pin both sides (PCR 0165). |
 | Hermes executed-read store per module | FIX | Hermes imports the plugin once through `plugins/context_engine/` (its collector's `register_hook` is a no-op) to select the engine and again through the general plugin loader, whose copy's `post_tool_call` fires. The PCR 0165 module-level store left the serving engine's dict empty, so the bridge fell back to the persisted path and the envelope carried no unit. The store is now one `sys.modules` entry per process; `test/pcr-0166-hermes-executed-reads-one-store.test.mjs` and `OneStorePerProcess` in `test/python/test_hermes_engine.py` are the red-green invariant (PCR 0166). |
 
+| Multi-turn rows read the proxy's 404 records | FIX | Hermes' `openai-api` overlay GETs `/api/v1/models` many times a turn, the trial proxy persists an `unmatched-NNN.json` metadata record per 404, and the turn's dump list globbed every non-scan `*.json`, so `cellRow` read `requests.at(-1)` off a record with no body and every `freshctx-ts` row printed `resolution=none` while the adapter had resolved. `isProviderDumpName` in `docs/lab/hermes-trial-ts/proxy.mjs` now owns the dump-name rule for both readers; `test/pcr-0167-provider-dump-names.test.mjs` and `test/pcr-0167-hermes-engine-registered.test.mjs` are the red-green invariant (PCR 0167). |
+
 ## Security boundary
 
 - Canonicalize paths and verify real paths remain under the active root.
@@ -340,4 +342,4 @@ bounded defect and a red-green invariant test.
 | Evaluate | `holdout-v0.3-apex` defaults on this checkout; recorded ISE 8589 payload bytes, whole-file 36701 payload bytes, required recall 5/5 (measured 2026-09-02; 8504 before the Isolated Semantic Engine vocabulary migration lengthened the `resolution` label) | Pack is locally frozen, not production-GHA sealed; timing and RSS remain local telemetry |
 
 `passAt1` is always `null` and out of scope for this deterministic context
-benchmark. There are 162 Public Change Records under `docs/lab/pcr/`.
+benchmark. There are 163 Public Change Records under `docs/lab/pcr/`.

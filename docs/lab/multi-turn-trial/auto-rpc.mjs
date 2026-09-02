@@ -17,11 +17,13 @@ import {
 } from "../hermes-trial-ts/auto-rpc-host-read.mjs";
 import {
   HermesRpc,
+  assertFreshCtxEngineRegistered,
   assistantTextFromEvents,
+  readHermesHomeQueryLog,
   runCliQuery,
   toolsFromHermesEvents,
 } from "../hermes-trial-ts/hermes-queries.mjs";
-import { createDumpProxy } from "../hermes-trial-ts/proxy.mjs";
+import { createDumpProxy, isProviderDumpName } from "../hermes-trial-ts/proxy.mjs";
 import {
   ARMS,
   CELLS,
@@ -69,9 +71,9 @@ function live(args) {
   });
 }
 
-async function listScans(dir) {
+async function listProviderDumps(dir) {
   try {
-    return (await readdir(dir)).filter((name) => name.endsWith(".json") && !name.endsWith(".scan.json")).sort();
+    return (await readdir(dir)).filter(isProviderDumpName).sort();
   } catch {
     return [];
   }
@@ -267,14 +269,14 @@ async function runPiArm(arm) {
     for (const cell of CELLS) {
       if (cell.mutate) await live(["mutate", "pi", arm, cell.mutate]);
       const disk = JSON.parse(await live(["status", "pi", arm]));
-      const dumpsBefore = await listScans(dumpDir);
+      const dumpsBefore = await listProviderDumps(dumpDir);
       const events = await client.prompt(
         promptForCell(cell),
         cell.id === "t1-read" ? 15 * 60 * 1000 : 6 * 60 * 1000,
       );
       const replyMsg = await client.send({ type: "get_last_assistant_text" });
       const reply = replyMsg.data?.text ?? "";
-      const dumpsAfter = await listScans(dumpDir);
+      const dumpsAfter = await listProviderDumps(dumpDir);
       const requests = await overlayRequests(dumpDir, dumpsBefore, dumpsAfter, cell);
       const tools = toolsFromExecutionStartEvents(events);
       if (cell.id === "t1-read") {
@@ -331,15 +333,17 @@ async function runHermesArm(arm) {
     for (const cell of CELLS) {
       if (cell.mutate) await live(["mutate", "hermes", arm, cell.mutate]);
       const disk = JSON.parse(await live(["status", "hermes", arm]));
-      const dumpsBefore = await listScans(dumpDir);
+      const dumpsBefore = await listProviderDumps(dumpDir);
       const recordedBefore = await readRecordedHostReadTools(dumpDir);
       const prompt = promptForCell(cell);
       let events = [];
       let reply = "";
       let cliTools = [];
+      let hermesHomeLog = "";
       if (rpc) {
         events = await rpc.prompt(prompt, cell.id === "t1-read" ? 15 * 60 * 1000 : 6 * 60 * 1000);
         reply = assistantTextFromEvents(events);
+        hermesHomeLog = await readHermesHomeQueryLog(hermesHome);
       } else {
         const query = await runCliQuery({
           cwd,
@@ -351,8 +355,12 @@ async function runHermesArm(arm) {
         });
         reply = query.reply;
         cliTools = query.tools ?? [];
+        hermesHomeLog = query.hermesHomeLog ?? "";
       }
-      const dumpsAfter = await listScans(dumpDir);
+      if (cell.id === "t1-read") {
+        assertFreshCtxEngineRegistered(hermesHomeLog, { arm });
+      }
+      const dumpsAfter = await listProviderDumps(dumpDir);
       const requests = await overlayRequests(dumpDir, dumpsBefore, dumpsAfter, cell);
       const recordedAfter = await readRecordedHostReadTools(dumpDir);
       const recordedTools = recordedAfter.slice(recordedBefore.length);
@@ -466,4 +474,4 @@ if (invoked) {
   });
 }
 
-export { cellRow, overlayRequests };
+export { cellRow, listProviderDumps, overlayRequests };

@@ -389,6 +389,15 @@ function redactHeaders(headers) {
   return out;
 }
 
+/**
+ * Provider payload dumps are `NNN.json`. `NNN.scan.json` is their scan and
+ * `unmatched-NNN.json` is a 404 record (method and url, no body), so scanning
+ * either as a payload reports an empty request.
+ */
+export function isProviderDumpName(name) {
+  return /^\d+\.json$/u.test(String(name ?? ""));
+}
+
 async function writeDump(dumpDir, n, bodyText) {
   await mkdir(dumpDir, { recursive: true });
   const id = String(n).padStart(3, "0");

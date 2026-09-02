@@ -31,6 +31,7 @@ export function scanProviderPayloadForCell(text, cell) {
     stalePriorBytes: staleMarkers.length > 0,
     staleMarkers,
     siblingBytesInRequest: text.includes(SIBLING_MARKER),
+    hasFreshCtxEnvelope: text.includes("<freshctx turn="),
     hasFreshCtxUnit: text.includes("<freshctx-unit"),
     resolution: resolutionFromStringifiedPayload(text),
     targetFileMention: text.includes(TARGET_FILE),
