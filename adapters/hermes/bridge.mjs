@@ -335,7 +335,29 @@ export function parseArguments(value) {
   }
 }
 
-export function discoveredCalls(messages) {
+/**
+ * Hermes `pre_tool_call` hooks may `modify` the arguments a read executes
+ * with; the transcript keeps the model's original arguments. The executed
+ * arguments (Hermes `post_tool_call`) name the bytes the model saw, so they
+ * win over the persisted call when a host reported them.
+ */
+export function executedReadArgsFromPayload(payload) {
+  const value = payload?.executedReadArgsByCallId;
+  if (!isPlainObject(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([callId, args]) => typeof callId === "string" && isPlainObject(args) && typeof args.path === "string",
+    ),
+  );
+}
+
+function mergeExecutedReadArgs(state, payload) {
+  const merged = { ...(state.executedReadArgsByCallId ?? {}), ...executedReadArgsFromPayload(payload) };
+  if (Object.keys(merged).length > 0) state.executedReadArgsByCallId = merged;
+  return merged;
+}
+
+export function discoveredCalls(messages, executedReadArgsByCallId = {}) {
   const candidates = new Map();
   const completed = new Set();
 
@@ -344,7 +366,8 @@ export function discoveredCalls(messages) {
       for (const call of message.tool_calls) {
         const name = call?.function?.name ?? call?.name;
         if (!READ_TOOLS.has(name) || typeof call?.id !== "string") continue;
-        const args = parseArguments(call?.function?.arguments ?? call?.arguments);
+        const args = executedReadArgsByCallId[call.id]
+          ?? parseArguments(call?.function?.arguments ?? call?.arguments);
         const path = args.path ?? args.file_path;
         if (typeof path !== "string") continue;
         const scopeMeta = readScopeFromHermesArgs(args);
@@ -410,8 +433,8 @@ export async function safeWorkspaceFile(rootInput, requestedPath) {
   };
 }
 
-export function trackedCallsFromMessages(messages) {
-  const calls = discoveredCalls(messages);
+export function trackedCallsFromMessages(messages, executedReadArgsByCallId = {}) {
+  const calls = discoveredCalls(messages, executedReadArgsByCallId);
   const tracked = {};
   for (const [callId, meta] of Object.entries(calls)) {
     const toolMessage = messages.find(
@@ -595,10 +618,11 @@ function mergeTrackedCalls(stored, incoming) {
 export async function observeTurn(payload) {
   const state = await loadState(payload.stateFile);
   promotePendingInjectedRevision(state, payload.messages);
-  const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) };
+  const executedReadArgs = mergeExecutedReadArgs(state, payload);
+  const calls = { ...(state.calls ?? {}), ...discoveredCalls(payload.messages, executedReadArgs) };
   const tracked = mergeTrackedCalls(
     state.tracked ?? {},
-    trackedCallsFromMessages(payload.messages),
+    trackedCallsFromMessages(payload.messages, executedReadArgs),
   );
   state.tracked = await enrichTrackedWithLineCounts(payload.cwd, tracked);
   state.calls = enrichCallsWithTracked(calls, state.tracked);
@@ -613,15 +637,16 @@ export async function selectContext(payload) {
     ? payload.conversationMessages
     : payload.messages;
   promotePendingInjectedRevision(state, conversationMessages);
+  const executedReadArgs = mergeExecutedReadArgs(state, payload);
   const tracked = await enrichTrackedWithLineCounts(
     payload.cwd,
     mergeTrackedCalls(
       state.tracked ?? {},
-      trackedCallsFromMessages(payload.messages),
+      trackedCallsFromMessages(payload.messages, executedReadArgs),
     ),
   );
   const calls = enrichCallsWithTracked(
-    { ...(state.calls ?? {}), ...discoveredCalls(payload.messages) },
+    { ...(state.calls ?? {}), ...discoveredCalls(payload.messages, executedReadArgs) },
     tracked,
   );
   const paths = [...new Set(Object.values(calls).map((call) => call.path ?? call))].sort();

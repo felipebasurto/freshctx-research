@@ -1,3 +1,4 @@
+import copy
 import importlib.util
 import json
 import sys
@@ -58,11 +59,13 @@ class SelectContextAppliedGate(unittest.TestCase):
 class ExecutedReadArgsReachTheBridge(unittest.TestCase):
     """Hermes `pre_tool_call` `modify` rewrites the executed args only; the
     persisted `tool_calls` keep the model's path. `post_tool_call` is the one
-    place the executed args and the tool_call_id meet (PCR 0165)."""
+    place the executed args and the tool_call_id meet (PCR 0165). Hermes
+    deep-copies the registered engine per agent (agent_init), so the store
+    cannot live on the instance."""
 
     def setUp(self):
         self.module = load_engine_module()
-        self.engine = self.module.FreshCtxContextEngine(model="stub")
+        self.engine = copy.deepcopy(self.module.FreshCtxContextEngine(model="stub"))
         self.engine._freshctx_state_file = Path("/tmp/freshctx-test-state.json")
 
     def _bridge_payloads(self):
@@ -75,25 +78,26 @@ class ExecutedReadArgsReachTheBridge(unittest.TestCase):
         return payloads, fake_run
 
     def test_post_tool_call_records_read_args_by_call_id(self):
-        self.engine.on_post_tool_call(
+        record = self.module.record_executed_read_args
+        record(
             tool_name="read_file",
             args={"path": "/work/src/settlement.ts", "scope": "symbol", "selector": "settleDailyLedger"},
             tool_call_id="call_1",
             result="{}",
             task_id="",
         )
-        self.engine.on_post_tool_call(tool_name="terminal", args={"command": "ls"}, tool_call_id="call_2")
-        self.engine.on_post_tool_call(tool_name="read_file", args={"path": "x"}, tool_call_id="")
+        record(tool_name="terminal", args={"command": "ls"}, tool_call_id="call_2")
+        record(tool_name="read_file", args={"path": "x"}, tool_call_id="")
         payloads, fake_run = self._bridge_payloads()
         with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
-            self.engine.on_turn_complete([{"role": "user", "content": "x"}])
+            self.engine.select_context([{"role": "user", "content": "x"}])
         self.assertEqual(
             payloads[0]["executedReadArgsByCallId"],
             {"call_1": {"path": "/work/src/settlement.ts", "scope": "symbol", "selector": "settleDailyLedger"}},
         )
 
     def test_recorded_args_clear_after_a_successful_observe(self):
-        self.engine.on_post_tool_call(tool_name="read_file", args={"path": "a.ts"}, tool_call_id="call_1")
+        self.module.record_executed_read_args(tool_name="read_file", args={"path": "a.ts"}, tool_call_id="call_1")
         payloads, fake_run = self._bridge_payloads()
         with mock.patch.object(self.module.subprocess, "run", side_effect=fake_run):
             self.engine.on_turn_complete([{"role": "user", "content": "x"}])
@@ -112,10 +116,7 @@ class ExecutedReadArgsReachTheBridge(unittest.TestCase):
                 registered[name] = callback
 
         self.module.register(Ctx())
-        self.assertIs(
-            registered["post_tool_call"].__self__, registered["engine"],
-            "the hook must feed the engine instance Hermes selected",
-        )
+        self.assertIs(registered["post_tool_call"], self.module.record_executed_read_args)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,28 @@ from typing import Any, Dict, List, Optional
 
 from agent.context_compressor import ContextCompressor
 
+# Mirrors READ_TOOLS in bridge.mjs.
+READ_TOOLS = frozenset({"read", "read_file", "read_text_file"})
+
+# Executed read arguments by tool_call_id. Hermes `pre_tool_call` `modify`
+# changes what a read executes with but not the persisted tool_calls, so the
+# transcript alone can name the wrong path. Module-level because Hermes
+# deep-copies the registered engine per agent; the copy must see the same store.
+_EXECUTED_READ_ARGS: Dict[str, Dict[str, Any]] = {}
+
+
+def record_executed_read_args(
+    tool_name: str = "",
+    args: Optional[Dict[str, Any]] = None,
+    tool_call_id: str = "",
+    **kwargs: Any,
+) -> None:
+    """Hermes `post_tool_call` observer."""
+    if tool_name not in READ_TOOLS or not tool_call_id or not isinstance(args, dict):
+        return None
+    _EXECUTED_READ_ARGS[tool_call_id] = dict(args)
+    return None
+
 
 class FreshCtxContextEngine(ContextCompressor):
     """Compose FreshCtx selection with Hermes' normal compressor."""
@@ -73,6 +95,7 @@ class FreshCtxContextEngine(ContextCompressor):
             "messages": messages,
             "cwd": self._workspace_cwd(),
             "stateFile": str(state_file),
+            "executedReadArgsByCallId": dict(_EXECUTED_READ_ARGS),
             **extra,
         }
         try:
@@ -134,10 +157,14 @@ class FreshCtxContextEngine(ContextCompressor):
         usage: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
-        self._call_bridge("observe", messages, usage=usage, turn=kwargs)
+        result = self._call_bridge("observe", messages, usage=usage, turn=kwargs)
+        if result is not None:
+            # The bridge persisted them in the session state file.
+            _EXECUTED_READ_ARGS.clear()
 
 
 def register(ctx):
     """Register the engine so isolated HERMES_HOME can load name `freshctx`."""
     ctx.register_context_engine(FreshCtxContextEngine())
+    ctx.register_hook("post_tool_call", record_executed_read_args)
 

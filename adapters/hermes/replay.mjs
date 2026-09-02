@@ -26,18 +26,25 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
     stateFile,
     semanticEngineRunner,
 
-    async onTurnComplete(messages, ctx) {
+    async onTurnComplete(messages, ctx, { executedReadArgsByCallId } = {}) {
       return observeTurn({
         stateFile,
         messages,
         cwd: ctx.cwd,
+        executedReadArgsByCallId,
       });
     },
 
     async onSelectContext(
       messages,
       ctx,
-      { budgetTokens = 0, budgetChars: eventBudgetChars, incomingMessage, conversationMessages } = {},
+      {
+        budgetTokens = 0,
+        budgetChars: eventBudgetChars,
+        incomingMessage,
+        conversationMessages,
+        executedReadArgsByCallId,
+      } = {},
     ) {
       const budget = resolveAdapterBudgetChars({
         budgetChars: eventBudgetChars,
@@ -53,6 +60,7 @@ export function createHermesAdapter({ stateFile, budgetChars = DEFAULT_BUDGET_CH
           budgetChars: budget,
           incomingMessage,
           conversationMessages,
+          executedReadArgsByCallId,
           semanticEngineRunner,
         });
       } catch {
