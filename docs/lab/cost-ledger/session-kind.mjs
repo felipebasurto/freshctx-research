@@ -5,6 +5,10 @@ import { CELLS, MIN_LONG_SESSION_TURNS, SESSION_TURNS } from "./pack.mjs";
 export const SESSION_KIND_LONG = "long-session";
 export const SESSION_KIND_TWO_TURN = "two-turn-ingest";
 export const SESSION_KIND_SHORT = "short-session";
+/** Dest 71379f00 four-turn print. Not a long-session paper $ table. */
+export const SESSION_KIND_FOUR_TURN = "four-turn-multiturn";
+export const FOUR_TURN_NOT_PAPER_REASON =
+  "four-turn multi-turn ingest is not a long-session paper $";
 
 const TWO_TURN_CELL_IDS = new Set(["t1-read", "t2-settle"]);
 
@@ -21,6 +25,13 @@ function cellIdsOf(turns) {
 function labeledTwoTurn(options = {}) {
   const source = String(options.source ?? options.pack ?? options.label ?? "");
   return /two-turn|2-turn|two_turn/iu.test(source);
+}
+
+function labeledFourTurn(options = {}) {
+  const source = String(
+    options.sessionKind ?? options.source ?? options.pack ?? options.label ?? "",
+  );
+  return /four-turn|4-turn|four_turn|multi-turn-trial|four-turn-multiturn/iu.test(source);
 }
 
 function looksLikeTwoTurnMeasurePack(turns, options = {}) {
@@ -42,7 +53,17 @@ export function classifySessionKind(turns, options = {}) {
       kind: SESSION_KIND_TWO_TURN,
       turns: count,
       validForLongSessionCost: false,
+      validForPaperDollars: false,
       reason: "two-turn ingest is INVALID for long-session cost",
+    };
+  }
+  if (labeledFourTurn(options)) {
+    return {
+      kind: SESSION_KIND_FOUR_TURN,
+      turns: count,
+      validForLongSessionCost: false,
+      validForPaperDollars: false,
+      reason: FOUR_TURN_NOT_PAPER_REASON,
     };
   }
   if (count < MIN_LONG_SESSION_TURNS) {
@@ -50,6 +71,7 @@ export function classifySessionKind(turns, options = {}) {
       kind: SESSION_KIND_SHORT,
       turns: count,
       validForLongSessionCost: false,
+      validForPaperDollars: false,
       reason: `long-session cost requires >= ${MIN_LONG_SESSION_TURNS} turns, got ${count}`,
     };
   }
@@ -57,6 +79,7 @@ export function classifySessionKind(turns, options = {}) {
     kind: SESSION_KIND_LONG,
     turns: count,
     validForLongSessionCost: true,
+    validForPaperDollars: false,
     reason: null,
   };
 }

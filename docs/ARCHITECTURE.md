@@ -326,4 +326,4 @@ bounded defect and a red-green invariant test.
 | Evaluate | `holdout-v0.3-apex` defaults on this checkout; recorded ISE 8504 payload bytes, whole-file 36701 payload bytes, required recall 5/5 | Pack is locally frozen, not production-GHA sealed; timing and RSS remain local telemetry |
 
 `passAt1` is always `null` and out of scope for this deterministic context
-benchmark. There are 155 Public Change Records under `docs/lab/pcr/`.
+benchmark. There are 156 Public Change Records under `docs/lab/pcr/`.

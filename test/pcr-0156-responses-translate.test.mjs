@@ -226,10 +226,11 @@ test("dump-only POST /v1/responses still returns the PCR 0155 dummy", async () =
   await proxy.close();
 });
 
-test("cost-ledger dump-proxy.mjs is a sibling leftover and is not this pack", async () => {
+test("PCR 0156 prose named cost-ledger dump-proxy as the next-pack sibling", async () => {
+  const pcr = await readFile(new URL("../docs/lab/pcr/0156-responses-translate.md", import.meta.url), "utf8");
+  assert.match(pcr, /Cost-ledger `dump-proxy\.mjs` is the next pack/u);
+  assert.match(pcr, /still only matches `\/chat\/completions`/u);
   const text = await readFile(COST_LEDGER_PROXY, "utf8");
   assert.match(text, /forwardChatCompletions/u);
-  assert.match(text, /"chat\/completions"/u);
-  assert.doesNotMatch(text, /isResponsesPath|responsesRequestToChatCompletions|DEEPSEEK_CHAT_COMPLETIONS_RELATIVE/u);
-  assert.doesNotMatch(text, /liveResponsesForwardBody/u);
+  assert.match(text, /isResponsesPath|liveResponsesForwardBody/u);
 });
