@@ -10,7 +10,7 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def load_engine_module():
+def load_engine_module(module_name="freshctx_hermes"):
     # Hermes is not installed in CI; provide the base class the plugin subclasses.
     agent = types.ModuleType("agent")
     compressor = types.ModuleType("agent.context_compressor")
@@ -24,7 +24,7 @@ def load_engine_module():
     sys.modules["agent"] = agent
     sys.modules["agent.context_compressor"] = compressor
     spec = importlib.util.spec_from_file_location(
-        "freshctx_hermes", ROOT / "adapters" / "hermes" / "__init__.py"
+        module_name, ROOT / "adapters" / "hermes" / "__init__.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -117,6 +117,36 @@ class ExecutedReadArgsReachTheBridge(unittest.TestCase):
 
         self.module.register(Ctx())
         self.assertIs(registered["post_tool_call"], self.module.record_executed_read_args)
+
+
+class OneStorePerProcess(unittest.TestCase):
+    """Hermes `plugins.context_engine` imports the plugin once to select the
+    engine (its `_EngineCollector.register_hook` is a no-op) and the general
+    plugin loader imports it again for the enabled user plugin, whose hook is
+    the one that fires. The store must not be per module (PCR 0166)."""
+
+    def test_hook_from_one_module_reaches_the_engine_from_another(self):
+        engine_module = load_engine_module("plugins.context_engine.freshctx")
+        hook_module = load_engine_module("hermes_plugins.freshctx")
+        engine = engine_module.FreshCtxContextEngine(model="stub")
+        engine._freshctx_state_file = Path("/tmp/freshctx-test-state.json")
+        hook_module.record_executed_read_args(
+            tool_name="read_file", args={"path": "/work/src/settlement.ts"}, tool_call_id="call_1"
+        )
+        payloads = []
+
+        def fake_run(argv, input, **kwargs):
+            payloads.append(json.loads(input))
+            return types.SimpleNamespace(returncode=0, stdout=json.dumps({"observedCalls": 1}))
+
+        with mock.patch.object(engine_module.subprocess, "run", side_effect=fake_run):
+            engine.on_turn_complete([{"role": "user", "content": "x"}])
+        self.assertEqual(payloads[0]["executedReadArgsByCallId"], {"call_1": {"path": "/work/src/settlement.ts"}})
+        other = hook_module.FreshCtxContextEngine(model="stub")
+        other._freshctx_state_file = Path("/tmp/freshctx-test-state.json")
+        with mock.patch.object(hook_module.subprocess, "run", side_effect=fake_run):
+            other._call_bridge("select", [])
+        self.assertEqual(payloads[1]["executedReadArgsByCallId"], {}, "one observe clears every module copy")
 
 
 if __name__ == "__main__":
