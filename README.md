@@ -133,7 +133,7 @@ docs/             Architecture, evaluation contract, decisions, glossary, PCRs
 papers/           Research manifest and reproducibility lock
 ```
 
-There are 161 Public Change Records in `docs/lab/pcr/`.
+There are 162 Public Change Records in `docs/lab/pcr/`.
 See [docs/LAYOUT.md](docs/LAYOUT.md) for the installed Hermes shape and cleanup
 boundary, and [docs/GLOSSARY.md](docs/GLOSSARY.md) for the terms used across
 the documents.
