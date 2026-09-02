@@ -10,6 +10,7 @@ import {
 } from "../pi-trial-ts/auto-rpc-host-read.mjs";
 import {
   assertT1HostReadTools as assertHermesT1HostReadTools,
+  readDumpFunctionCallTools,
   readRecordedHostReadTools,
   t1HostReadToolsValid as hermesT1HostReadToolsValid,
   t1ToolsForAssert,
@@ -335,6 +336,7 @@ async function runHermesArm(arm) {
       const prompt = promptForCell(cell);
       let events = [];
       let reply = "";
+      let cliTools = [];
       if (rpc) {
         events = await rpc.prompt(prompt, cell.id === "t1-read" ? 15 * 60 * 1000 : 6 * 60 * 1000);
         reply = assistantTextFromEvents(events);
@@ -348,14 +350,19 @@ async function runHermesArm(arm) {
           hermesHome,
         });
         reply = query.reply;
+        cliTools = query.tools ?? [];
       }
       const dumpsAfter = await listScans(dumpDir);
       const requests = await overlayRequests(dumpDir, dumpsBefore, dumpsAfter, cell);
       const recordedAfter = await readRecordedHostReadTools(dumpDir);
       const recordedTools = recordedAfter.slice(recordedBefore.length);
+      const newDumps = dumpsAfter.filter((name) => !dumpsBefore.includes(name));
+      const dumpTools = await readDumpFunctionCallTools(dumpDir, newDumps);
       const tools = t1ToolsForAssert({
         eventTools: toolsFromHermesEvents(events),
         recordedTools,
+        cliTools,
+        dumpTools,
       });
       if (cell.id === "t1-read") {
         assertHermesT1HostReadTools(tools, { arm, workspace: cwd });

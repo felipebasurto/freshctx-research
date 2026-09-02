@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { toolsFromHermesCliStdout } from "./auto-rpc-host-read.mjs";
 import { launchChild } from "./launch-child.mjs";
 import { hermesBin } from "./launch-hermes.mjs";
 import { MODEL, promptForCell } from "./pack.mjs";
@@ -352,7 +353,7 @@ export async function runCliQuery({ cwd, env, message, continueSession = false, 
   return {
     ...result,
     reply: result.stdout,
-    tools: [],
+    tools: toolsFromHermesCliStdout(result.stdout),
   };
 }
 
