@@ -11,21 +11,11 @@ Before opening a pull request:
    the terms those documents use.
 2. Open an issue describing the failure mode or metric you intend to improve.
 3. Add an invariant test that fails before your change.
-4. Run what CI runs, in the same order as the `deterministic-core` job in
-   `.github/workflows/ci.yml`:
-
-   ```bash
-   npm run check
-   npm test
-   npm run bench
-   npm run ctxbench
-   npm run evaluate
-   npm run papers:list
-   npm run holdout:verify -- --pack=holdout-v0.1
-   git fetch origin main && npm run holdout:ci-guard -- --base=origin/main
-   ```
-
-   Run `npm run demo`, `npm run ctxbench:pi-smoke`, and
+4. Run `git fetch origin main && npm run ci`. It mirrors the `deterministic-core`
+   CI job step for step (`check`, `test`, `test:docs`, `bench`, `ctxbench`,
+   `evaluate`, `evaluate:check-docs`, `papers:list`, `test:py`,
+   `holdout:verify`, `holdout:ci-guard`) and takes about ten minutes. Run
+   `npm run demo`, `npm run ctxbench:pi-smoke`, and
    `npm run ctxbench:hermes-smoke` as well when you touched an adapter.
 5. Include before/after context metrics and identify the result class:
    synthetic, replay, or public-repo. Do not use stochastic agent output as a
