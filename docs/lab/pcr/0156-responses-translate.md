@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-02
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0156-responses-translate-2475` / draft (PR number pending)
+- Branch / PR: `cursor/pcr-0156-responses-translate-2475` / [159](https://github.com/felipebasurto/freshctx/pull/159) (draft)
 - Base SHA: `281f9fd854c175ee1ba74155d310e4c6ba5dcebc` (PCR 0155 on main; public count 151)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
@@ -105,17 +105,29 @@ Official accepted TAP remains **549 pass / 0 fail / 0 skipped / 549 total**.
 # skipped 0
 ```
 
-This-run Cloud Agent TAP is pending the `npm test` print on this checkout.
-Official table is not replaced.
+This-run Cloud Agent TAP (Isolated Semantic Engine WASM missing):
+
+```
+1..690
+# tests 690
+# pass 648
+# fail 42
+# skipped 0
+```
+
+This-run Cloud Agent TAP is **690 / 648 / 42 / 0**. That print is **not GHA**.
+Isolated Semantic Engine WASM is missing on this checkout, so 42 fails print
+`isolated-semantic-engine-missing` (or equivalent Isolated Semantic Engine /
+Tree-sitter runner absence). Official table is not replaced.
 
 All 7 PCR 0156 tests passed.
 
 | Command | Ran? | Exit | Notes |
 |---|---|---|---|
 | `node --test test/pcr-0156-responses-translate.test.mjs` | yes | 0 | TAP above |
-| `npm test` | pending | n/a | fill after this-run print; Isolated Semantic Engine WASM may be missing |
-| `npm run evaluate` | pending | n/a | fill after this-run print |
-| door/lock `git hash-object` | pending | n/a | expected door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
+| `npm test` | yes | 1 | this-run Cloud Agent TAP above; Isolated Semantic Engine WASM missing; not GHA |
+| `npm run evaluate` | yes | 1 | hard gate: regression tests did not pass (status 1); benchmark body not reached |
+| door/lock `git hash-object` | yes | 0 | door=`f8771c93894095348185ef3453a3c2498355b3c6`; lock=`4a953591e4b175e9fd69f13d6012831b01116dce` |
 | live host | no | n/a | product leftover; no live remesure |
 
 ## Metric snapshot
@@ -124,11 +136,11 @@ All 7 PCR 0156 tests passed.
 |---|---|---|---|
 | official TAP | 549/0/0/549 | unchanged | official table not replaced |
 | PCR 0156 tests | n/a | **7 / 7 / 0 / 0** | live `/responses` untranslated |
-| `npm test` TAP `# tests` | 549 | pending this-run | living suite; official table stays 549 |
-| `npm test` TAP `# pass` | 549 | pending this-run | this checkout Isolated Semantic Engine WASM may be missing |
-| `npm test` TAP `# fail` | 0 | pending this-run | |
-| `npm test` TAP `# skipped` | 0 | pending this-run | |
-| evaluate | n/a on official table | pending this-run | official table not replaced |
+| `npm test` TAP `# tests` | 549 | **690** | living suite; official table stays 549 |
+| `npm test` TAP `# pass` | 549 | **648** | this checkout Isolated Semantic Engine WASM missing |
+| `npm test` TAP `# fail` | 0 | **42** | `isolated-semantic-engine-missing` |
+| `npm test` TAP `# skipped` | 0 | **0** | `0` |
+| evaluate | n/a on official table | hard gate failed on this-run TAP | official table not replaced |
 | PCR 0142 dest `d8cdd3d5` | unchanged | not this file | paper trail stays there |
 | live `$` invented here | n/a | **none** | no live remesure |
 | Pass@1 invented here | n/a | **none** | not a SWE dump |
