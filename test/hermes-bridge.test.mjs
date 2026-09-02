@@ -43,3 +43,37 @@ test("Hermes bridge replaces a captured read with one current file", async () =>
   assert.equal(serialized.split("current-revision").length - 1, 1);
   assert.match(serialized, /freshctx:/);
 });
+
+test("Hermes bridge returns the original request unchanged when no read could be tracked", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "freshctx-hermes-untracked-"));
+  // A cat-class shell read of a file that does not exist under cwd: the bridge
+  // calls safeWorkspaceFile inside the tracking loop, it throws, the read is
+  // skipped, and the registry stays empty. (Official `read_file` calls are
+  // tracked before the workspace check and become `unresolved` instead, so
+  // they do not exercise this path.)
+  const payload = {
+    operation: "select",
+    cwd: workspace,
+    stateFile: join(workspace, "state", "session.json"),
+    budgetTokens: 100_000,
+    messages: [
+      { role: "user", content: "inspect the file" },
+      {
+        role: "assistant",
+        tool_calls: [{
+          id: "call-missing",
+          type: "function",
+          function: { name: "bash", arguments: JSON.stringify({ command: "cat elsewhere/source.ts" }) },
+        }],
+      },
+      { role: "tool", tool_call_id: "call-missing", content: "export const value = 'observed';\n" },
+      { role: "user", content: "continue" },
+    ],
+  };
+  const bridge = fileURLToPath(new URL("../adapters/hermes/bridge.mjs", import.meta.url));
+  const run = spawnSync(process.execPath, [bridge], { input: JSON.stringify(payload), encoding: "utf8" });
+  assert.equal(run.status, 0, run.stderr);
+  const result = JSON.parse(run.stdout);
+  assert.equal(result.applied, false);
+  assert.deepEqual(result.messages, payload.messages);
+});
