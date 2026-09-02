@@ -36,8 +36,7 @@ pushing.
 
 Pull requests that alter benchmark weights and implementation behavior together
 will not be accepted. Architectural changes should include an ADR under
-`docs/decisions/`. Audit-derived implementation plans live under `plans/`; an
-executor following one should update its status row in `plans/README.md`.
+`docs/decisions/`.
 
 Use conventional commit prefixes where practical: `feat`, `fix`, `bench`,
 `docs`, `refactor`, `test`, or `chore`.

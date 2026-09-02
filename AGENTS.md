@@ -7,10 +7,6 @@ Isolated Semantic Engine; `npm test` fails without them), then
 `docs/ARCHITECTURE.md`, and `docs/EVALUATION.md` before modifying core behavior.
 `docs/GLOSSARY.md` defines the vocabulary those documents share.
 
-Implementation plans produced by repository audits live under `plans/`
-(index: `plans/README.md`). If you are executing one, follow it step by step
-and update its status row when done.
-
 ## Repository purpose
 
 FreshCtx is a context substrate, not a coding agent. Keep the core independent

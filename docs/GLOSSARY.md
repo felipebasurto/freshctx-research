@@ -149,6 +149,3 @@ is; open a PCR either way.
 - **ADR** — architectural decision record under `docs/decisions/`.
 - **Living docs** — the facts in `README.md`, `docs/ARCHITECTURE.md`, and
   `docs/ROADMAP.md` that `test/living-docs.test.mjs` checks against the tree.
-- **Plan** — an audit-derived implementation plan under `plans/`, with a
-  status index in `plans/README.md`. Plans are not source code and are not
-  behaviour until an executor lands them with tests.
