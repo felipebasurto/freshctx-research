@@ -14,7 +14,7 @@ import {
   forceHostReadPluginDir,
 } from "./auto-rpc-host-read.mjs";
 import { launchChild } from "./launch-child.mjs";
-import { HERMES_CLI_PROVIDER, cliQueryArgvInvalidReason } from "./hermes-queries.mjs";
+import { HERMES_CLI_PROVIDER, cliQueryArgvInvalidReason, hermesInDirArgs } from "./hermes-queries.mjs";
 import {
   MODEL,
   freshCtxEnvForArm,
@@ -30,7 +30,9 @@ export function hermesBin() {
   return process.env.HERMES_BIN ?? "hermes";
 }
 
-export function hermesConfigYaml({ engine } = {}) {
+export const HERMES_TERMINAL_CWD_ENV = "TERMINAL_CWD";
+
+export function hermesConfigYaml({ engine, cwd } = {}) {
   const enabled = [FORCE_HOST_READ_PLUGIN_NAME];
   if (engine === "freshctx") enabled.push("freshctx");
   const lines = [
@@ -43,6 +45,9 @@ export function hermesConfigYaml({ engine } = {}) {
   ];
   if (engine === "freshctx") {
     lines.push("context:", "  engine: freshctx");
+  }
+  if (typeof cwd === "string" && cwd.trim()) {
+    lines.push("terminal:", `  cwd: ${cwd.trim()}`);
   }
   return `${lines.join("\n")}\n`;
 }
@@ -70,6 +75,7 @@ export function hermesEnvForArm({
     [FORCE_HOST_READ_HOOK_ENV]: forceHostReadHookPath(),
     ...extra,
   }, { workspace });
+  if (workspace) env[HERMES_TERMINAL_CWD_ENV] = workspace;
   delete env.FRESHCTX_BUDGET_CHARS;
   return env;
 }
@@ -81,10 +87,11 @@ export function detectHermesProtocol(helpText) {
   return "cli";
 }
 
-export function hermesLaunchArgs(protocol) {
-  if (protocol === "acp") return ["acp"];
-  if (protocol === "tui-gateway") return ["--tui"];
-  return ["chat"];
+export function hermesLaunchArgs(protocol, { workspace } = {}) {
+  const prefix = hermesInDirArgs(workspace);
+  if (protocol === "acp") return [...prefix, "acp"];
+  if (protocol === "tui-gateway") return [...prefix, "--tui"];
+  return [...prefix, "chat"];
 }
 
 /** CLI prompts go through `runCliQuery`. A persistent `hermes chat` sibling shares HERMES_HOME. */
@@ -133,12 +140,12 @@ export async function installForceHostReadPlugin(pluginsDir) {
   return dest;
 }
 
-export async function prepareHermesHome({ arm, hermesHome, repoRoot = resolveRepoRoot() }) {
+export async function prepareHermesHome({ arm, hermesHome, repoRoot = resolveRepoRoot(), workspace } = {}) {
   validateArm(arm);
   await mkdir(hermesHome, { recursive: true });
   const engine = hermesContextEngineForArm(arm);
   const pluginsDir = pluginsDirForHome(hermesHome);
-  await writeFile(join(hermesHome, "config.yaml"), hermesConfigYaml({ engine }));
+  await writeFile(join(hermesHome, "config.yaml"), hermesConfigYaml({ engine, cwd: workspace }));
   await installForceHostReadPlugin(pluginsDir);
   if (engine === "freshctx") {
     await installHermesPlugin(pluginsDir);
@@ -155,6 +162,7 @@ export async function prepareHermesHome({ arm, hermesHome, repoRoot = resolveRep
 export async function launchHermes({
   arm,
   cwd,
+  workspace,
   hermesHome,
   proxyBaseUrl,
   dumpDir,
@@ -162,18 +170,19 @@ export async function launchHermes({
   protocol,
 } = {}) {
   validateArm(arm);
+  const work = workspace ?? cwd;
   const bin = hermesBin();
   const detected = protocol ?? detectHermesProtocol(await runHelp(bin));
-  const prepared = await prepareHermesHome({ arm, hermesHome });
+  const prepared = await prepareHermesHome({ arm, hermesHome, workspace: work });
   const env = hermesEnvForArm({
     arm,
     proxyBaseUrl,
     dumpDir,
     hermesHome: prepared.hermesHome,
-    workspace: cwd,
+    workspace: work,
     extra: { PATH: `${dirname(bin)}:${process.env.PATH ?? ""}` },
   });
-  const args = hermesLaunchArgs(detected);
+  const args = hermesLaunchArgs(detected, { workspace: work });
   const argvReason = cliQueryArgvInvalidReason(args);
   if (argvReason) throw new Error(argvReason);
   if (detected === "cli" && !CLI_PROTOCOL_SPAWNS_PERSISTENT_CHILD) {

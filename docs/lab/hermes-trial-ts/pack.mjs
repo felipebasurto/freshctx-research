@@ -31,6 +31,9 @@ import {
   resolveHostReadWorkspace,
   searchPathFromArgs,
   DEST_ROOT_SEARCH_TOOLS,
+  destRootFromWorkCwd,
+  isAllowedTrialTreePath,
+  wrongTreeHostReadReason,
   validateArm,
 } from "../pi-trial-ts/pack.mjs";
 
@@ -67,6 +70,9 @@ export {
   resolveHostReadWorkspace,
   searchPathFromArgs,
   DEST_ROOT_SEARCH_TOOLS,
+  destRootFromWorkCwd,
+  isAllowedTrialTreePath,
+  wrongTreeHostReadReason,
   validateArm,
 };
 

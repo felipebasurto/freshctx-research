@@ -8,6 +8,7 @@ import {
   hostReadToolArgs,
   isDestRootSettlementSearch,
   isWorkFixtureSettlementPath,
+  wrongTreeHostReadReason,
 } from "./pack.mjs";
 import {
   BLOCKED_T1_TOOLS,
@@ -210,6 +211,8 @@ export function t1HostReadToolsInvalidReason(tools, { workspace, destRoot } = {}
     if (isDestRootSettlementSearch(tool, { workspace, destRoot })) {
       continue;
     }
+    const wrongTree = wrongTreeHostReadReason(tool, { workspace, destRoot });
+    if (wrongTree) return wrongTree;
     if (BLOCKED_T1_TOOLS.has(tool.toolName)) {
       return `t1-read leftover ${tool.toolName} tool is invalid`;
     }

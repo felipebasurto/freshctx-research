@@ -89,6 +89,44 @@ export function isDestRootSettlementSearch(tool, { workspace, destRoot } = {}) {
   return isDestRootSettlementPath(searchPathFromArgs(args), { workspace, destRoot });
 }
 
+/** Dest checkout root above a trial `.work` fixture. */
+export function destRootFromWorkCwd(workspace) {
+  if (typeof workspace !== "string" || workspace.length === 0) return null;
+  const multi = workspace.match(/^(.*)\/docs\/lab\/multi-turn-trial\/\.work\//u);
+  if (multi?.[1]) return multi[1];
+  const two = workspace.match(/^(.*)\/docs\/lab\/(?:hermes-trial-ts|pi-trial-ts)\/\.work\//u);
+  if (two?.[1]) return two[1];
+  const idx = workspace.lastIndexOf("/.work/");
+  if (idx <= 0) return null;
+  return workspace.slice(0, idx);
+}
+
+function isUnderRoot(path, root) {
+  if (typeof path !== "string" || typeof root !== "string" || root.length === 0) return false;
+  return path === root || path.startsWith(`${root}/`);
+}
+
+/**
+ * Live t1 search/read must stay in dest work or dest-root.
+ * Host clone `/home/box/projects/freshctx/repos/hosts/hermes` is the wrong tree.
+ */
+export function isAllowedTrialTreePath(path, { workspace, destRoot } = {}) {
+  if (typeof path !== "string" || path.length === 0) return false;
+  if (isWorkFixtureSettlementPath(path)) return true;
+  const roots = [workspace, destRoot, destRootFromWorkCwd(workspace)].filter(Boolean);
+  for (const root of roots) {
+    if (isUnderRoot(path, root)) return true;
+  }
+  return isDestRootSettlementPath(path, { workspace, destRoot });
+}
+
+export function wrongTreeHostReadReason(tool, { workspace, destRoot } = {}) {
+  if (!tool || !(workspace || destRoot)) return null;
+  const path = searchPathFromArgs(tool.args ?? tool.input ?? {});
+  if (!path || isAllowedTrialTreePath(path, { workspace, destRoot })) return null;
+  return `t1-read leftover ${tool.toolName} of wrong tree ${path}`;
+}
+
 export const CELLS = [
   { id: "t1-read", turn: 1, mutate: null, prompt: PROMPT_T1 },
   { id: "t2-settle", turn: 2, mutate: "flip-settle", prompt: PROMPT_T2 },
