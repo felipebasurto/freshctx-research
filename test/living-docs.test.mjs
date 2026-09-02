@@ -10,6 +10,14 @@ async function read(relativePath) {
   return readFile(join(ROOT, relativePath), "utf8");
 }
 
+async function pcrIds() {
+  const entries = await readdir(join(ROOT, "docs", "lab", "pcr"));
+  return entries
+    .filter((name) => /^\d{4}-.*\.md$/u.test(name))
+    .map((name) => name.slice(0, 4))
+    .sort();
+}
+
 test("public status documents report living repository facts", async () => {
   const [readme, architecture, roadmap] = await Promise.all([
     read("README.md"),
@@ -18,7 +26,10 @@ test("public status documents report living repository facts", async () => {
   ]);
   const publicStatus = `${readme}\n${architecture}\n${roadmap}`;
 
-  assert.match(publicStatus, /156 Public Change Records/);
+  const ids = await pcrIds();
+  assert.ok(ids.length > 0, "no PCR files found");
+  assert.match(readme, new RegExp(`There are ${ids.length} Public Change Records`));
+  assert.match(architecture, new RegExp(`There are ${ids.length} Public Change Records`));
   assert.match(publicStatus, /whole-file, line-region, and symbol scope/i);
   assert.match(publicStatus, /Python, JavaScript, TypeScript, Go, and Rust/);
   assert.match(publicStatus, /src\/.*Node\.js standard library/i);
@@ -70,9 +81,14 @@ test("Pi documentation reports implemented symbol refresh", async () => {
   assert.doesNotMatch(piReadme, /Symbol \/ Tree-sitter providers/);
 });
 
-test("PCR count in public status matches Markdown files on disk", async () => {
-  const entries = await readdir(join(ROOT, "docs", "lab", "pcr"));
-  const count = entries.filter((name) => name.endsWith(".md")).length;
-
-  assert.equal(count, 156);
+test("PCR ledgers mention the newest PCR on disk", async () => {
+  const ids = await pcrIds();
+  const newest = ids.at(-1);
+  const [index, metrics] = await Promise.all([
+    read("docs/lab/INDEX.md"),
+    read("docs/lab/METRICS.md"),
+  ]);
+  assert.match(index, new RegExp(`\\[${newest}\\]\\(pcr/${newest}-`), "INDEX.md lacks newest PCR");
+  assert.match(metrics, new RegExp(`\\[${newest}\\]\\(pcr/${newest}-`), "METRICS.md lacks newest PCR");
+  assert.equal(new Set(ids).size, ids.length, "duplicate PCR ids on disk");
 });
