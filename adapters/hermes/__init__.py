@@ -121,7 +121,9 @@ class FreshCtxContextEngine(ContextCompressor):
             conversationMessages=conversation_messages,
             incomingMessage=incoming_message,
         )
-        selected = result.get("messages") if result else None
+        if not isinstance(result, dict) or result.get("applied") is not True:
+            return None
+        selected = result.get("messages")
         if not isinstance(selected, list) or not all(isinstance(item, dict) for item in selected):
             return None
         return selected

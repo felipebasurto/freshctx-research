@@ -726,6 +726,23 @@ export async function selectContext(payload) {
     (await safeWorkspaceFile(payload.cwd, filePath)).content,
   );
 
+  if (unitsByCall.size === 0) {
+    // Nothing was trackable (bad cwd, unsupported files). Pruning read pairs
+    // without a projection would delete evidence; hand Hermes its own request.
+    clearPendingInjectedRevision(state);
+    clearPendingReadDisposition(state);
+    state.updatedAt = new Date().toISOString();
+    await saveState(payload.stateFile, state);
+    return {
+      messages: payload.messages,
+      selected: 0,
+      unresolved: 0,
+      applied: false,
+      projectionText: "",
+      telemetry: { totalMs: 0, projectionBytes: 0, skipEligibleSelections: 0 },
+    };
+  }
+
   failClosedInvalidTailObservationUnits(tracked, unitsByCall);
   await failClosedTailLineShiftedUnits(payload.cwd, tracked, unitsByCall);
 

@@ -11,21 +11,11 @@ Before opening a pull request:
    the terms those documents use.
 2. Open an issue describing the failure mode or metric you intend to improve.
 3. Add an invariant test that fails before your change.
-4. Run what CI runs, in the same order as the `deterministic-core` job in
-   `.github/workflows/ci.yml`:
-
-   ```bash
-   npm run check
-   npm test
-   npm run bench
-   npm run ctxbench
-   npm run evaluate
-   npm run papers:list
-   npm run holdout:verify -- --pack=holdout-v0.1
-   git fetch origin main && npm run holdout:ci-guard -- --base=origin/main
-   ```
-
-   Run `npm run demo`, `npm run ctxbench:pi-smoke`, and
+4. Run `git fetch origin main && npm run ci`. It mirrors the `deterministic-core`
+   CI job step for step (`check`, `test`, `test:docs`, `bench`, `ctxbench`,
+   `evaluate`, `evaluate:check-docs`, `papers:list`, `test:py`,
+   `holdout:verify`, `holdout:ci-guard`) and takes about ten minutes. Run
+   `npm run demo`, `npm run ctxbench:pi-smoke`, and
    `npm run ctxbench:hermes-smoke` as well when you touched an adapter.
 5. Include before/after context metrics and identify the result class:
    synthetic, replay, or public-repo. Do not use stochastic agent output as a
@@ -40,9 +30,9 @@ Before opening a pull request:
    `docs/ARCHITECTURE.md`, and `docs/ROADMAP.md` together with the literal in
    `test/living-docs.test.mjs`, and cite the PCR that measured them.
 
-Docs-only pull requests: CI currently skips `**.md` and `docs/**` paths, so run
-`node --test test/living-docs.test.mjs test/layout-contract.test.mjs test/gotchas-contract.test.mjs`
-locally before pushing. `plans/001` proposes running those on every pull request.
+Docs-only pull requests run the documentation-contract tests in CI
+(`.github/workflows/docs-contract.yml`); run `npm run test:docs` locally before
+pushing.
 
 Pull requests that alter benchmark weights and implementation behavior together
 will not be accepted. Architectural changes should include an ADR under

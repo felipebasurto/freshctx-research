@@ -14,14 +14,14 @@ update your row in the status table when done.
 
 | Plan | Title | Priority | Effort | Risk | Category | Status |
 |---|---|---|---|---|---|---|
-| [001](001-ci-docs-contract-job.md) | CI runs the documentation-contract tests on docs-only changes | P1 | S | LOW | tests | planned |
-| [002](002-living-docs-single-source-of-truth.md) | Living-docs facts derived from the tree and from `npm run evaluate` | P1 | M | LOW | tests | planned |
-| [003](003-no-stale-inline-from-unresolved-unit.md) | A budget-omitted read is never back-filled from an unresolved unit | P1 | S | LOW | bug | planned |
-| [004](004-hermes-bridge-fail-open-when-nothing-tracked.md) | Hermes bridge fails open when it tracked nothing; Python honours `applied` | P1 | S | MED | bug | planned |
-| [005](005-ise-client-robustness.md) | ISE client cannot crash (EPIPE) or hang the host; bounded output | P1 | M | MED | security | planned |
-| [006](006-shell-read-tail-head-parity.md) | `head`/`tail` spans derive from observed bytes, identically in Pi and Hermes; `-nN` parses | P2 | M | MED | bug | planned |
-| [007](007-one-local-command-mirrors-ci.md) | `npm run ci` mirrors CI; `check` covers every loaded file; nvmrc/editorconfig | P2 | S | LOW | dx | planned |
-| [008](008-registry-ise-language-gate-explicit.md) | File/region ISE language gate made explicit (A), then measured for Go/Rust (B) | P3 | M | MED | bug / experiment | planned |
+| [001](001-ci-docs-contract-job.md) | CI runs the documentation-contract tests on docs-only changes | P1 | S | LOW | tests | done ([#166](https://github.com/felipebasurto/freshctx/pull/166)) |
+| [002](002-living-docs-single-source-of-truth.md) | Living-docs facts derived from the tree and from `npm run evaluate` | P1 | M | LOW | tests | done ([#167](https://github.com/felipebasurto/freshctx/pull/167)) |
+| [003](003-no-stale-inline-from-unresolved-unit.md) | A budget-omitted read is never back-filled from an unresolved unit | P1 | S | LOW | bug | done ([#168](https://github.com/felipebasurto/freshctx/pull/168), PCR 0161) |
+| [004](004-hermes-bridge-fail-open-when-nothing-tracked.md) | Hermes bridge fails open when it tracked nothing; Python honours `applied` | P1 | S | MED | bug | done ([#169](https://github.com/felipebasurto/freshctx/pull/169), PCR 0162) |
+| [005](005-ise-client-robustness.md) | ISE client cannot crash (EPIPE) or hang the host; bounded output | P1 | M | MED | security | done ([#170](https://github.com/felipebasurto/freshctx/pull/170), PCR 0163) |
+| [006](006-shell-read-tail-head-parity.md) | `head`/`tail` spans derive from observed bytes, identically in Pi and Hermes; `-nN` parses | P2 | M | MED | bug | blocked: Step 3 (Hermes delegation) fails the sealed PCR 0088 undersized/middle `tailLines` boards — the helper derives the span from observed line count and drops the requested-`tailLines` size check; steps 1–2 only on [#171](https://github.com/felipebasurto/freshctx/pull/171) |
+| [007](007-one-local-command-mirrors-ci.md) | `npm run ci` mirrors CI; `check` covers every loaded file; nvmrc/editorconfig | P2 | S | LOW | dx | done ([#172](https://github.com/felipebasurto/freshctx/pull/172); `node --check` only checks its first argument, so `check` loops per file) |
+| [008](008-registry-ise-language-gate-explicit.md) | File/region ISE language gate made explicit (A), then measured for Go/Rust (B) | P3 | M | MED | bug / experiment | Part A done ([#173](https://github.com/felipebasurto/freshctx/pull/173)); Part B not started (operator go-ahead required) |
 
 Suggested order: 001 → 002 (docs guard first, so every later plan's PCR bump
 is caught), then 003 → 004 → 005 (invariant fixes, independent of each other),
