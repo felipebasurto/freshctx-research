@@ -125,7 +125,7 @@ Cierra Hermes.
 node docs/lab/hermes-trial-ts/auto-rpc.mjs
 ```
 
-Requiere `hermes` en PATH. El dump proxy captura POSTs a `/v1/chat/completions`.
+Requiere `hermes` en PATH. El dump proxy captura POSTs a `/v1/chat/completions` y `/v1/responses`.
 `launch-hermes` crea `HERMES_HOME` aislado e instala FreshCtx en B/C.
 
 Tras capturar:
