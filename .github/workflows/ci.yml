@@ -55,8 +55,6 @@ jobs:
         run: npm run evaluate:check-docs -- --input=/tmp/evaluate.txt
       - name: Paper manifest is readable
         run: npm run papers:list
-      - name: Hermes Python scaffold compiles
-        run: python -m py_compile adapters/hermes/__init__.py
       - name: Hermes Python unit tests
         run: npm run test:py
       - name: Holdout verify (v0.1 + sealed fixtures)

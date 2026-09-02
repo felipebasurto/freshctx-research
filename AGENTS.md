@@ -74,14 +74,7 @@ and never uses stochastic model output as its primary metric.
 Run what the `deterministic-core` CI job runs, in this order:
 
 ```bash
-npm run check
-npm test
-npm run bench
-npm run ctxbench
-npm run evaluate
-npm run papers:list
-npm run holdout:verify -- --pack=holdout-v0.1
-git fetch origin main && npm run holdout:ci-guard -- --base=origin/main
+git fetch origin main && npm run ci
 ```
 
 Docs-only changes still run `npm run test:docs` in CI; run it locally when you
