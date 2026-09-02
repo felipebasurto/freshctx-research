@@ -96,9 +96,13 @@ the executed arguments of `read`, `read_file`, and `read_text_file` by
 `executedReadArgsByCallId`. The bridge prefers those arguments over the
 persisted call, stores them in the session state under the same key, and drops
 the in-process copy after a successful `observe`. Hermes deep-copies the
-registered engine per agent, so the store is module-level, not an instance
-attribute. Without executed arguments a path that does not resolve under the
-workspace stays unresolved; the bridge never guesses (PCR 0165).
+registered engine per agent and imports this plugin once per loader: the
+`plugins/context_engine/` loader selects the engine through a collector whose
+`register_hook` is a no-op, and the general plugin loader imports the enabled
+user plugin again, and that copy's hook is the one that fires. The store is
+therefore one per process (a `sys.modules` entry), not per instance or per
+module (PCR 0165, PCR 0166). Without executed arguments a path that does not
+resolve under the workspace stays unresolved; the bridge never guesses.
 
 On later turns where the live tail collapses to the already-served stub or
 omits entirely (PCR 0099/0100), bounded current unit bytes are inlined at the

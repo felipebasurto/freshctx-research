@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
+import types
 from typing import Any, Dict, List, Optional
 
 from agent.context_compressor import ContextCompressor
@@ -21,9 +23,21 @@ READ_TOOLS = frozenset({"read", "read_file", "read_text_file"})
 
 # Executed read arguments by tool_call_id. Hermes `pre_tool_call` `modify`
 # changes what a read executes with but not the persisted tool_calls, so the
-# transcript alone can name the wrong path. Module-level because Hermes
-# deep-copies the registered engine per agent; the copy must see the same store.
-_EXECUTED_READ_ARGS: Dict[str, Dict[str, Any]] = {}
+# transcript alone can name the wrong path. Hermes deep-copies the registered
+# engine per agent and imports this file once per loader (`plugins.context_engine`
+# selects the engine with a no-op `register_hook`; the general plugin loader's
+# copy is the one whose hook fires), so the store is per process, not per
+# instance or per module.
+_STORE_MODULE = "freshctx_hermes_executed_read_args"
+
+
+def _executed_read_args() -> Dict[str, Dict[str, Any]]:
+    store = sys.modules.get(_STORE_MODULE)
+    if store is None:
+        store = types.ModuleType(_STORE_MODULE)
+        store.by_call_id = {}
+        sys.modules[_STORE_MODULE] = store
+    return store.by_call_id
 
 
 def record_executed_read_args(
@@ -35,7 +49,7 @@ def record_executed_read_args(
     """Hermes `post_tool_call` observer."""
     if tool_name not in READ_TOOLS or not tool_call_id or not isinstance(args, dict):
         return None
-    _EXECUTED_READ_ARGS[tool_call_id] = dict(args)
+    _executed_read_args()[tool_call_id] = dict(args)
     return None
 
 
@@ -95,7 +109,7 @@ class FreshCtxContextEngine(ContextCompressor):
             "messages": messages,
             "cwd": self._workspace_cwd(),
             "stateFile": str(state_file),
-            "executedReadArgsByCallId": dict(_EXECUTED_READ_ARGS),
+            "executedReadArgsByCallId": dict(_executed_read_args()),
             **extra,
         }
         try:
@@ -160,7 +174,7 @@ class FreshCtxContextEngine(ContextCompressor):
         result = self._call_bridge("observe", messages, usage=usage, turn=kwargs)
         if result is not None:
             # The bridge persisted them in the session state file.
-            _EXECUTED_READ_ARGS.clear()
+            _executed_read_args().clear()
 
 
 def register(ctx):
