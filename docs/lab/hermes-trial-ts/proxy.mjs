@@ -42,8 +42,38 @@ export function isResponsesPath(url) {
  */
 export const DEEPSEEK_CHAT_COMPLETIONS_RELATIVE = "chat/completions";
 
+/**
+ * Hermes openai-api overlay is Codex Responses streaming
+ * (`NousResearch/hermes-agent` `agent/codex_runtime.py`
+ * `_consume_codex_event_stream`). `client.responses.create(stream=True)`
+ * iterates SSE frames. A single JSON `object:"response"` is not an event.
+ * Measured dest 371457c7 stdout: this exact throw.
+ */
+export const HERMES_CODEX_NO_TERMINAL = "Codex Responses stream did not emit a terminal response";
+
+/** Hermes `_TERMINAL_EVENT_TYPES`. Do not invent other names. */
+export const HERMES_CODEX_TERMINAL_EVENT_TYPES = new Set([
+  "response.completed",
+  "response.incomplete",
+  "response.failed",
+]);
+
+/** OpenAI Python SDK `_streaming.py` SSE decoder + official Responses wire. */
+export const RESPONSES_STREAM_CONTENT_TYPE = "text/event-stream";
+
 export function isResponsesRequestBody(value) {
   return Boolean(value && typeof value === "object" && !Array.isArray(value) && Object.hasOwn(value, "input"));
+}
+
+export function wantsResponsesStream(value) {
+  if (typeof value === "string") {
+    try {
+      return wantsResponsesStream(JSON.parse(value));
+    } catch {
+      return false;
+    }
+  }
+  return Boolean(value && typeof value === "object" && value.stream === true);
 }
 
 function textFromContent(content) {
@@ -204,6 +234,94 @@ export function chatCompletionToResponses(parsed, { requestModel } = {}) {
   };
 }
 
+export function responsesToStreamEvents(response) {
+  const events = [];
+  const output = Array.isArray(response?.output) ? response.output : [];
+  let sequence = 0;
+  for (const [outputIndex, item] of output.entries()) {
+    events.push({
+      type: "response.output_item.done",
+      output_index: outputIndex,
+      sequence_number: sequence,
+      item,
+    });
+    sequence += 1;
+  }
+  events.push({
+    type: "response.completed",
+    sequence_number: sequence,
+    response,
+  });
+  return events;
+}
+
+export function encodeResponsesSse(events) {
+  return events
+    .map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`)
+    .join("");
+}
+
+export function parseResponsesSse(text) {
+  const events = [];
+  const blocks = String(text ?? "").split(/\r?\n\r?\n/u);
+  for (const block of blocks) {
+    const dataLines = [];
+    for (const line of block.split(/\r?\n/u)) {
+      if (line.startsWith("data:")) {
+        const value = line.slice(5).startsWith(" ") ? line.slice(6) : line.slice(5);
+        dataLines.push(value);
+      }
+    }
+    if (dataLines.length === 0) continue;
+    const data = dataLines.join("\n");
+    if (data.startsWith("[DONE]")) continue;
+    try {
+      events.push(JSON.parse(data));
+    } catch {
+      // skip non-JSON chatter
+    }
+  }
+  return events;
+}
+
+/**
+ * Hermes-shaped consumer. Same terminal set and output_item.done rule as
+ * `_consume_codex_event_stream`. Terminal event is required when no items
+ * arrived. Content is never read from `response.completed.response.output`.
+ */
+export function consumeCodexResponsesStream(sseText) {
+  const events = parseResponsesSse(sseText);
+  const output = [];
+  let sawTerminal = false;
+  let status = "completed";
+  let id;
+  let usage;
+  for (const event of events) {
+    const eventType = typeof event?.type === "string" ? event.type : "";
+    if (eventType === "response.output_item.done" && event.item != null) {
+      output.push(event.item);
+      continue;
+    }
+    if (HERMES_CODEX_TERMINAL_EVENT_TYPES.has(eventType)) {
+      sawTerminal = true;
+      const resp = event.response;
+      if (resp && typeof resp === "object") {
+        if (typeof resp.status === "string") status = resp.status;
+        if (resp.id != null) id = resp.id;
+        if (resp.usage != null) usage = resp.usage;
+      }
+      if (eventType === "response.completed") status = status || "completed";
+      if (eventType === "response.incomplete") status = status || "incomplete";
+      if (eventType === "response.failed") status = status || "failed";
+      break;
+    }
+  }
+  if (!sawTerminal && output.length === 0) {
+    throw new Error(HERMES_CODEX_NO_TERMINAL);
+  }
+  return { output, sawTerminal, status, id, usage };
+}
+
 export function dummyChatCompletion({ content = "SETTLE=ST0" } = {}) {
   return {
     id: "freshctx-hermes-trial-dummy",
@@ -294,6 +412,20 @@ async function writeUnmatchedDump(dumpDir, n, { method, url }) {
   return record;
 }
 
+function writeResponsesOrChat(res, { responses, stream, payload, status = 200 }) {
+  if (responses && stream) {
+    res.writeHead(status, {
+      "content-type": RESPONSES_STREAM_CONTENT_TYPE,
+      "cache-control": "no-cache",
+      connection: "keep-alive",
+    });
+    res.end(encodeResponsesSse(responsesToStreamEvents(payload)));
+    return;
+  }
+  res.writeHead(status, { "content-type": "application/json" });
+  res.end(JSON.stringify(payload));
+}
+
 async function readRequestBody(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
@@ -350,8 +482,11 @@ export function createDumpProxy({
         const scan = await writeDump(dumpDir, n, bodyText);
         scans.push(scan);
         if (dumpOnly || !apiKey) {
-          res.writeHead(200, { "content-type": "application/json" });
-          res.end(JSON.stringify(responses ? dummyResponses() : dummyChatCompletion()));
+          writeResponsesOrChat(res, {
+            responses,
+            stream: wantsResponsesStream(bodyText),
+            payload: responses ? dummyResponses() : dummyChatCompletion(),
+          });
           return;
         }
         let forwardBody = bodyText;
@@ -373,16 +508,33 @@ export function createDumpProxy({
           headers: req.headers,
           relativePath: DEEPSEEK_CHAT_COMPLETIONS_RELATIVE,
         });
-        let responseText = forwarded.text;
+        let responsePayload = forwarded.text;
+        let parsedResponses = null;
         if (translateBack && forwarded.status >= 200 && forwarded.status < 300) {
           try {
-            responseText = JSON.stringify(chatCompletionToResponses(JSON.parse(forwarded.text)));
+            parsedResponses = chatCompletionToResponses(JSON.parse(forwarded.text));
+            responsePayload = JSON.stringify(parsedResponses);
           } catch {
             // keep upstream text
           }
         }
+        if (
+          responses &&
+          forwarded.status >= 200 &&
+          forwarded.status < 300 &&
+          wantsResponsesStream(bodyText) &&
+          parsedResponses
+        ) {
+          writeResponsesOrChat(res, {
+            responses: true,
+            stream: true,
+            payload: parsedResponses,
+            status: forwarded.status,
+          });
+          return;
+        }
         res.writeHead(forwarded.status, { "content-type": "application/json" });
-        res.end(responseText);
+        res.end(responsePayload);
         return;
       }
       if (req.method === "POST") {
