@@ -7,7 +7,7 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 4b3991a..HEAD -- adapters/shell-read.mjs adapters/hermes/bridge.mjs adapters/pi/replay.mjs adapters/pi/extension.ts test/pcr-0081-stale-shell-dump.test.mjs test/pcr-0085-hermes-taillines-fake-head.test.mjs`
+> **Drift check (run first)**: `git diff --stat fd523eb..HEAD -- adapters/shell-read.mjs adapters/hermes/bridge.mjs adapters/pi/replay.mjs adapters/pi/extension.ts test/pcr-0081-stale-shell-dump.test.mjs`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -20,35 +20,6 @@
 - **Depends on**: none
 - **Category**: bug
 - **Planned at**: commit `fd523eb`, 2026-09-02
-- **Revised**: 2026-09-02, after the first execution stopped at Step 3
-  ([PR #171](https://github.com/felipebasurto/freshctx/pull/171)). The
-  revision-1 helper derived the span from the *observed* line count and never
-  compared it with the *requested* count, so the sealed PCR 0088 Hermes boards
-  (undersized and middle `tailLines` payloads) started minting units instead of
-  failing closed. This revision adds the size check (section "Size check",
-  below). Steps 1–2 of revision 1 are already committed on
-  `grok/plan-006-head-tail-parity` (`848152b`, `119f977`); the executor
-  continues from there rather than starting over.
-
-## Size check (why revision 1 was blocked)
-
-PCR 0088 sealed this Hermes behaviour for `read_file` with `tailLines: N`: the
-observation must be exactly the last `min(N, bodyLines)` lines of the file;
-fewer lines (a truncated tool result), more lines (a middle slice), or an extra
-blank line all fail closed (`invalidTailObservation`, `unresolved="1"`, no EOF
-tail id minted). Deriving the span from the observed line count alone accepts
-the first two of those, because "the last 1 line of the file" is trivially a
-valid file slice. The helper must therefore require
-
-```
-observedLines.length === Math.min(requested, fileBody.length)
-```
-
-where `requested` is `parsed.tailLines` for `tail` and `parsed.endLine` for
-`head` (the parser encodes `head -n N` as `{ startLine: 1, endLine: N }`). Only
-after the size check does the content comparison run. This keeps every Pi test
-from revision 1 green (all six observations are exactly `min(N, body)` lines)
-and restores the PCR 0088 boards on the Hermes side.
 
 ## Why this matters
 
@@ -74,10 +45,9 @@ actually saw. Today they do not agree, and neither validates:
   endLine: 10`.
 
 After this plan, one exported helper derives the span from the observed
-content (`tail`: last *k* observed lines; `head`: first *k*), requires the
-observation to have exactly `min(requested, bodyLines)` lines, verifies the
-file slice matches, and fails closed otherwise; both adapters call it; `-nN`
-and `--lines=N` parse.
+content (`tail`: last *k* observed lines; `head`: first *k*), verifies the file
+slice matches, and fails closed otherwise; both adapters call it; `-nN` and
+`--lines=N` parse.
 
 ## Current state
 
@@ -204,11 +174,8 @@ function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
 **In scope** (the only files you should create or modify):
 - `adapters/shell-read.mjs`
 - `adapters/hermes/bridge.mjs` (only `tailRegionFromObservation` and its two helpers; keep the exported names and the `invalidTailObservation` flag)
-- `test/shell-read-head-tail.test.mjs` (exists; append one test)
-- PCR record + INDEX/METRICS + PCR count bump in `README.md` and
-  `docs/ARCHITECTURE.md` (procedure as in Plan 003 Step 4), plus the
-  `docs/ARCHITECTURE.md` sharp-edge row for this finding
-- `plans/README.md` (status row for 006 only)
+- `test/shell-read-head-tail.test.mjs` (create)
+- PCR record + INDEX/METRICS + PCR count bump (procedure as in Plan 003 Step 4)
 
 **Out of scope** (do NOT touch, even though they look related):
 - `adapters/pi/replay.mjs`, `adapters/pi/extension.ts` — call sites need no change.
@@ -218,46 +185,16 @@ function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
 
 ## Git workflow
 
-- Branch: `grok/plan-006-head-tail-parity` (exists; holds revision-1 Steps 1–2).
-  First `git rebase grok/plan-008a-ise-language-gate` so the PCR count and
-  `plans/README.md` row start from the top of the stack (159 PCRs), then
-  retarget PR #171's base to `grok/plan-008a-ise-language-gate`.
-- Commits on top of the rebased branch:
-  `test(shell-read): observed head/tail span must have the requested line count` (red),
-  `fix(adapters): size check in observedSpanForShellRead; Hermes tail delegates to it` (green),
-  `docs: PCR 0164 record`.
-- Do NOT force-push anything other than the rebase of this branch, and do not
-  touch the other `grok/plan-*` branches.
+- Branch: `cursor/shell-read-head-tail-parity`
+- Commits: `test(shell-read): head/tail spans derive from observed bytes; -nN parses` (red),
+  `fix(adapters): shared observed-span helper for head/tail in Pi and Hermes` (green), `docs: PCR NNNN`.
+- Do NOT push or open a PR unless the operator instructed it.
 
 ## Steps
 
 ### Step 1: Red tests
 
-`test/shell-read-head-tail.test.mjs` already exists on the branch with the six
-tests below. Append this seventh test, which is red against the revision-1
-helper (it returns `{ startLine: 3, endLine: 4 }` for the undersized case and
-`{ startLine: 1, endLine: 4 }` for the oversized one):
-
-```js
-test("observedSpanForShellRead fails closed when the observation has the wrong line count", () => {
-  // Undersized: tail -n 2 but the tool result shows one line (truncated output).
-  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "c\n"), null);
-  // Oversized: tail -n 2 but the tool result shows three lines (a middle slice is not a tail).
-  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "a\nb\nc\n"), null);
-  // Extra blank line after the tail.
-  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 2 }, FILE_NL, "b\nc\n\n"), null);
-  // head -n 2 that shows three lines.
-  assert.equal(observedSpanForShellRead({ scope: "region", startLine: 1, endLine: 2 }, FILE_NL, "a\nb\nc\n"), null);
-  // Requested more than the file has: the whole body is the only valid observation.
-  assert.deepEqual(observedSpanForShellRead({ scope: "region", tailLines: 10 }, FILE_NL, "a\nb\nc\n"), { startLine: 1, endLine: 4 });
-  assert.equal(observedSpanForShellRead({ scope: "region", tailLines: 10 }, FILE_NL, "b\nc\n"), null);
-});
-```
-
-**Verify**: `node --test test/shell-read-head-tail.test.mjs` → `# pass 6`,
-`# fail 1` (the new test). Do not proceed until you have seen it fail.
-
-For reference, the six revision-1 tests (already on the branch) are:
+Create `test/shell-read-head-tail.test.mjs`:
 
 ```js
 import assert from "node:assert/strict";
@@ -333,12 +270,11 @@ test("tryTrackShellRead tracks tail with the observed span and refuses a mismatc
 });
 ```
 
-### Step 2: Shared helper in `adapters/shell-read.mjs`
+**Verify**: `node --test test/shell-read-head-tail.test.mjs` → the import of
+`observedSpanForShellRead` fails (not yet exported) — the file is red. Do not
+proceed until you have seen it fail.
 
-Items 1 and 3 below are already committed on the branch (`119f977`); confirm
-with `rg -n "observedSpanForShellRead|--lines" adapters/shell-read.mjs` and
-skip them. Item 2 is the change this revision requires: replace the body of
-`observedSpanForShellRead` with the version that carries the size check.
+### Step 2: Shared helper in `adapters/shell-read.mjs`
 
 1. Replace `lineCountFlag` with:
 
@@ -375,10 +311,8 @@ function splitNormalizedLines(text) {
 /**
  * Derive the 1-based inclusive span a head/tail shell read actually showed the
  * model, from the observed tool output, and verify it against the file.
- * Returns null (fail closed: no unit is tracked) when the observation does not
- * have exactly the number of lines the command must have printed
- * (min(requested, body lines) — PCR 0088 sealed this for Hermes tail reads) or
- * is not the matching slice at the expected end of the file.
+ * Returns null when the observation is not a contiguous slice at the expected
+ * end of the file (fail closed: no unit is tracked).
  */
 export function observedSpanForShellRead(parsed, fileContent, observedContent) {
   if (!parsed || parsed.scope !== "region") return null;
@@ -390,24 +324,17 @@ export function observedSpanForShellRead(parsed, fileContent, observedContent) {
   const fileBody = fileLines.at(-1) === "" ? fileLines.slice(0, -1) : fileLines;
   const fileLineCount = fileLines.length;
 
-  let requested;
-  if (Number.isInteger(parsed.tailLines) && parsed.tailLines > 0) {
-    requested = parsed.tailLines;
-  } else if (parsed.startLine === 1 && Number.isInteger(parsed.endLine) && parsed.endLine > 0) {
-    requested = parsed.endLine;
-  } else {
-    return null;
-  }
-  if (observedLines.length !== Math.min(requested, fileBody.length)) return null;
-
   let startLine;
   let endLine;
   if (parsed.tailLines != null) {
-    startLine = fileBody.length - observedLines.length + 1;
+    startLine = Math.max(1, fileBody.length - observedLines.length + 1);
     endLine = fileLineCount;
-  } else {
+  } else if (parsed.startLine === 1) {
     startLine = 1;
-    endLine = observedLines.length === fileBody.length ? fileLineCount : observedLines.length;
+    endLine = Math.min(observedLines.length, fileLineCount);
+    if (endLine === fileBody.length && fileLineCount > fileBody.length) endLine = fileLineCount;
+  } else {
+    return null;
   }
   const expected = fileBody.slice(startLine - 1, startLine - 1 + observedLines.length).join("\n");
   if (expected !== observedLines.join("\n")) return null;
@@ -418,9 +345,7 @@ export function observedSpanForShellRead(parsed, fileContent, observedContent) {
    Semantics to preserve: `endLine` is `fileLineCount` (including the trailing
    empty line) for `tail`, so the existing Hermes tests that expect
    `endLine === lineCount(file)` keep passing; for `head` that reaches EOF the
-   span is likewise the whole file. The size check runs before the content
-   check so that a truncated or over-long observation never matches "by
-   accident" as a shorter or longer slice.
+   span is likewise the whole file.
 
 3. In `tryTrackShellRead`, replace the `normalizeTailRegion` use and the region
    branch:
@@ -478,40 +403,27 @@ Remove `tailSpanContent` if nothing else uses it (`rg -n tailSpanContent adapter
 
 **Verify**: `node --test $(rg -l invalidTailObservation test)` → `# fail 0`;
 `node --test test/hermes-*.test.mjs test/pcr-*hermes*.test.mjs` → `# fail 0`.
-The reviewer pre-ran exactly this Step 2 + Step 3 combination on a copy of
-`grok/plan-006-head-tail-parity` (`119f977`):
-`node --test test/shell-read-head-tail.test.mjs $(rg -l invalidTailObservation test) test/hermes-*.test.mjs test/pcr-*hermes*.test.mjs test/pcr-0081*.test.mjs test/pcr-0100*.test.mjs test/pcr-0102*.test.mjs`
-→ `# tests 127`, `# pass 127`, `# fail 0` — including the PCR 0088 undersized,
-middle, and extra-newline boards. A failure here now means real drift, not a
-known helper gap.
 
 ### Step 4: Full suite, evaluate, record
 
 `npm test` → `# fail 0`. `npm run evaluate` → `EVALUATE_VERDICT=PASS` with
 `payloadBytes.candidate` unchanged (the apex pack uses official reads, not
-shell reads). Write PCR 0164 (`docs/lab/pcr/0164-shell-read-head-tail-parity.md`;
-include the two reproductions from "Why this matters" and the PCR 0088 board
-table from the revision-1 STOP report as before/after tables), INDEX/METRICS
-rows, and bump the PCR count in `README.md` and `docs/ARCHITECTURE.md` from
-159 to 160. Also flip the `Shell \`head\`/\`tail\` span arithmetic` row in the
-`docs/ARCHITECTURE.md` "Sharp-edge audit" table from `FIX … Open` to
-`FIXED … PCR 0164`.
+shell reads). Write the PCR (include the two reproductions from "Why this
+matters" as before/after tables), INDEX/METRICS rows, PCR count bump.
 
 ## Test plan
 
-- `test/shell-read-head-tail.test.mjs` (seven tests): flag forms, tail with
-  and without trailing newline, head clamping, fail-closed content mismatch,
-  fail-closed line-count mismatch (undersized, oversized, extra blank line,
-  over-request), end-to-end `tryTrackShellRead`.
-- Existing: PCR 0081/0100/0102 (Pi shell reads), PCR 0085/0088 and every other
-  Hermes tail test (`invalidTailObservation`), whole suite.
+- New `test/shell-read-head-tail.test.mjs` (six tests): flag forms, tail with
+  and without trailing newline, head clamping, fail-closed mismatch, end-to-end
+  `tryTrackShellRead`.
+- Existing: PCR 0081/0100/0102 (Pi shell reads), all Hermes tail tests
+  (`invalidTailObservation`), whole suite.
 
 ## Done criteria
 
 Machine-checkable. ALL must hold:
 
-- [ ] `node --test test/shell-read-head-tail.test.mjs` → `# pass 7`, `# fail 0`
-- [ ] `node --test $(rg -l invalidTailObservation test)` → `# fail 0`
+- [ ] `node --test test/shell-read-head-tail.test.mjs` → `# pass 6`, `# fail 0`
 - [ ] `rg -n "normalizeTailRegion|tailSpanContent" adapters` → no matches
 - [ ] `rg -n "observedSpanForShellRead" adapters/shell-read.mjs adapters/hermes/bridge.mjs` → defined once, used in both files
 - [ ] `npm test` exits 0; `npm run evaluate` prints `EVALUATE_VERDICT=PASS` with unchanged `payloadBytes.candidate`
@@ -522,10 +434,8 @@ Machine-checkable. ALL must hold:
 
 Stop and report back (do not improvise) if:
 
-- Any PCR 0085/0088/0133/0136-class Hermes tail test fails after Step 3 —
-  those tests encode the sealed Hermes behaviour; report the exact assertion.
-  (Revision 1 stopped here on PCR 0088 `undersized`; the size check in this
-  revision is the fix, so a repeat means something else drifted.)
+- Any PCR 0133/0136-class Hermes tail test fails after Step 3 — those tests
+  encode the sealed Hermes behaviour; report the exact assertion.
 - A PCR 0100/0102 fixture fails because its observed `head` content is not a
   file prefix.
 - `npm run evaluate` payload bytes change.
