@@ -44,7 +44,7 @@ function toolResultText(message) {
 }
 
 test("PCR 0108: shouldInlineBudgetOmittedReadAtToolResult gates turn-1 and empty content", () => {
-  const unit = { id: "fc_over", path: REGION_PATH, content: OVERCAP_BODY };
+  const unit = { id: "fc_over", path: REGION_PATH, state: "resolved", content: OVERCAP_BODY };
   const envelopeOnly = `<freshctx turn="2" selected="0" unresolved="0" budget-omitted="1"></freshctx>`;
   assert.equal(projectionCarriesQuoteableUnits(envelopeOnly), false);
   assert.equal(
@@ -82,7 +82,7 @@ test("PCR 0108: shouldInlineBudgetOmittedReadAtToolResult gates turn-1 and empty
 });
 
 test("PCR 0108: replaceBudgetOmittedReadQuoteability requires prior delivered budget omit", () => {
-  const unit = { id: "fc_over", path: REGION_PATH, content: OVERCAP_BODY };
+  const unit = { id: "fc_over", path: REGION_PATH, state: "resolved", content: OVERCAP_BODY };
   const messages = [
     buildReadToolCall({ toolCallId: "call-over", path: REGION_PATH }),
     buildToolResultMessage({

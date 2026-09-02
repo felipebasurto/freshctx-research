@@ -184,6 +184,7 @@ export function shouldInlineBudgetOmittedReadAtToolResult({
   projectionText,
 }) {
   if (userMessageCount(userCountMessages) <= 1) return false;
+  if (unit?.state !== "resolved") return false;
   const current = String(unit?.content ?? "");
   if (current.length === 0) return false;
   return !projectionCarriesQuoteableUnits(projectionText);
