@@ -64,3 +64,10 @@ Use an **Isolated Semantic Engine process** at `ise/treesitter/`.
   field, so the repository path, injected option, and resolution labels migrate
   together without a durable-state compatibility alias.
 - This ADR does not authorize a Level 4 claim.
+- Known gap (2026-09-02): the spawn client in `ise/treesitter/client.mjs` has
+  no `stdin` error handler, no timeout, and no output cap. A child that exits
+  before draining its input raises an uncaught `EPIPE` in the host process,
+  and a wedged parser blocks `engine.refresh()` indefinitely. The registry
+  side of the contract (any rejection becomes
+  `resolutionMethod: "isolated-semantic-engine-error"`) already holds.
+  [plans/005](../../plans/005-ise-client-robustness.md) specifies the fix.

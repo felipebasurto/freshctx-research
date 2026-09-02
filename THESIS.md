@@ -278,23 +278,24 @@ For each candidate it computes:
 - context-delta amplification and cache-prefix reuse;
 - unresolved-unit rate, peak RSS, and throughput.
 
-An example normalized replay score is:
+The acceptance objective is a boolean empirical verdict, not a weighted
+scalar (`autoresearch/CONTRACT.md`). A candidate is `PASS` only when every
+forensic gate holds (`fail-open`, `missing-engine`, `gold-absent`,
+`required-recall`) and total candidate `payload_bytes` are below the
+whole-file baseline on the pinned pack. Recall is a gate, not a term: a smaller
+payload with `requiredRecall < 1` is `FAIL`. Peak RSS and latency ride along as
+telemetry and are not folded into the objective. Tokenizer-specific counts may
+be reported as a secondary view, but the core metric is deterministic and
+model-independent. Earlier drafts of this thesis described a weighted replay
+score; that formulation was retired when the boolean verdict shipped
+(`npm run evaluate` prints exactly one `EVALUATE_VERDICT=` line), and it must
+not be reintroduced without a new ADR.
 
-\[
-R = 100R_g - 100S - 30D - 10U - 5T - 5C
-\]
-
-where \(R_g\) is gold-unit recall, \(S\) stale-code rate, \(D\) duplicate-code
-rate, \(U\) unresolved rate, \(T\) normalized provider-payload bytes, and \(C\)
-normalized cache churn. Tokenizer-specific counts may be reported as a
-secondary view, but the core metric is deterministic and model-independent.
-Weights are fixed before a search run and reported with results.
-
-The scalar is only a search convenience. Correctness is lexicographic: any
-candidate that injects stale content, duplicates a current unit, corrupts
-recovery, violates the budget, or becomes nondeterministic is invalid regardless
-of its score. Valid candidates are compared as a Pareto frontier over bytes,
-latency, memory, required-set recall, and cache-prefix reuse.
+Correctness is lexicographic: any candidate that injects stale content,
+duplicates a current unit, corrupts recovery, violates the budget, or becomes
+nondeterministic is invalid regardless of any byte saving. Valid candidates are
+compared as a Pareto frontier over bytes, latency, memory, required-set recall,
+and cache-prefix reuse.
 
 No full agent run is required to accept a context-engine improvement. Adapter
 integration uses deterministic request-capture providers: a scripted trace

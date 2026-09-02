@@ -11,8 +11,11 @@ This is a map of the current checkout, not a proposed reorganization.
 | `bench/` | Replay runners, oracles, packs, and the whole-file baseline |
 | `capture/` | No-model request recorder |
 | `autoresearch/` | Evaluation entrypoint, search contract, and result ledger |
-| `docs/` | Architecture, evaluation protocol, decisions, and evidence records |
+| `scripts/` | Command-line entrypoints for papers, repositories, hosts, and the holdout protocol; protocol logic itself lives in `bench/` |
+| `examples/` | Runnable demo (`npm run demo`) |
+| `docs/` | Architecture, evaluation protocol, decisions, glossary, and evidence records |
 | `papers/` | Research manifest and reproducibility lock; fetched PDFs are ignored |
+| `plans/` | Audit-derived implementation plans with a status index; not source code |
 
 The root test command is exactly:
 

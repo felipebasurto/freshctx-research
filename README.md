@@ -62,11 +62,16 @@ The recorded apex measurement is:
 
 | System | Payload |
 |---|---:|
-| Isolated Semantic Engine | 8504 payload bytes |
+| Isolated Semantic Engine | 8589 payload bytes |
 | Whole-file baseline (`corvus-file`) | 36701 payload bytes |
 
 Required recall was **5/5**. These are measured payload and oracle-retention
-results for the pinned local pack, not a general performance claim. `passAt1` is
+results for the pinned local pack (measured by `npm run evaluate` on `main`,
+2026-09-02), not a general performance claim. The candidate figure was 8504
+bytes when the pack was frozen ([PCR 0130](docs/lab/pcr/0130-corvus-equivalents-skip-inventory.md));
+the vocabulary migration that renamed the projection attribute value to
+`resolution="isolated-semantic-engine"` (a 17-byte longer label) added 17
+bytes to each of the five projected units and nothing else changed. `passAt1` is
 always `null` and out of scope because CtxBench does not sample a model or judge
 patches.
 
@@ -89,11 +94,17 @@ then run the deterministic suite:
 
 ```bash
 npm run ise:install
+npm run check
 npm test
 npm run bench
 npm run ctxbench
 npm run evaluate
 ```
+
+This is the same order as the `deterministic-core` CI job in
+`.github/workflows/ci.yml`; CI additionally runs `npm run papers:list`,
+`npm run holdout:verify -- --pack=holdout-v0.1`, and
+`npm run holdout:ci-guard -- --base=origin/main`.
 
 Before research work, fetch and verify the required reading corpus:
 
@@ -109,20 +120,24 @@ locked to immutable commits before a benchmark freeze.
 ## Repository map
 
 ```text
-src/                      Provider-independent Node.js standard-library core
-adapters/                 Host codecs, request translation, and replay harnesses
-ise/treesitter/       Out-of-process Tree-sitter implementation
-test/                     Deterministic invariant tests
-bench/                    Replay benchmark and whole-file baseline
-capture/                  No-model provider request recorder
-autoresearch/             Evaluation entrypoint and experiment ledger
-docs/                     Architecture, evaluation contract, decisions, and PCRs
-papers/                   Research manifest and reproducibility lock
+src/              Provider-independent Node.js standard-library core
+adapters/         Host codecs, request translation, and replay harnesses
+ise/treesitter/   Out-of-process Tree-sitter implementation
+test/             Deterministic invariant tests
+bench/            Replay benchmark, packs, oracles, and whole-file baseline
+capture/          No-model provider request recorder
+autoresearch/     Evaluation entrypoint and experiment ledger
+scripts/          Paper, repository, host, and holdout-protocol CLIs
+examples/         Runnable demo
+docs/             Architecture, evaluation contract, decisions, glossary, PCRs
+papers/           Research manifest and reproducibility lock
+plans/            Reviewed implementation plans from repository audits
 ```
 
 There are 156 Public Change Records in `docs/lab/pcr/`.
 See [docs/LAYOUT.md](docs/LAYOUT.md) for the installed Hermes shape and cleanup
-boundary.
+boundary, and [docs/GLOSSARY.md](docs/GLOSSARY.md) for the terms used across
+the documents.
 
 ## Contributing
 
@@ -130,7 +145,8 @@ Read [AGENTS.md](AGENTS.md), [THESIS.md](THESIS.md), [SOUL.md](SOUL.md),
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and
 [docs/EVALUATION.md](docs/EVALUATION.md) before changing core behavior.
 Behavioral changes need an invariant test, and policy, anchoring, or rendering
-changes need an evaluation result.
+changes need an evaluation result. [CONTRIBUTING.md](CONTRIBUTING.md) lists the
+exact commands and the Public Change Record requirement.
 
 ## License
 
