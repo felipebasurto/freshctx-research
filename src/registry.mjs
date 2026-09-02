@@ -39,8 +39,8 @@ async function readSource(provider, filePath) {
 /**
  * File/region units on these extensions refresh through the Isolated Semantic
  * Engine when a runner is injected (PCR 0114). Go and Rust parse in the engine
- * but are intentionally excluded here until plans/008 Part B measures the
- * effect on the go-tools apex pack; they use anchor relocation meanwhile.
+ * but are intentionally excluded here until the file/region route is measured
+ * on the go-tools apex pack; they use anchor relocation meanwhile.
  * Symbol units are language-agnostic and do not consult this set.
  */
 export const FILE_REGION_ISE_EXTENSIONS = new Set([".py", ".js", ".mjs", ".cjs", ".ts", ".tsx"]);
