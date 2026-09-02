@@ -24,8 +24,8 @@ export function usageFromResponseText(text) {
   const usage = parsed && typeof parsed === "object" ? parsed.usage : null;
   if (usage && typeof usage === "object") {
     return {
-      promptTokens: finiteNumber(usage.prompt_tokens),
-      completionTokens: finiteNumber(usage.completion_tokens),
+      promptTokens: finiteNumber(usage.prompt_tokens ?? usage.input_tokens),
+      completionTokens: finiteNumber(usage.completion_tokens ?? usage.output_tokens),
       usageFrom: "provider-response",
     };
   }

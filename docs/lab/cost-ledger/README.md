@@ -7,6 +7,9 @@ FreshCtx without Tree-sitter does not exist.
 
 PCR 0140 adds Pi and Hermes dump ingest for `nothing` vs `freshctx-ts`.
 Two-turn measure-pack ingest is INVALID for a long-session cost claim.
+PCR 0160 serves Hermes `openai-api` `/v1/responses` on this dump-proxy.
+A dest 71379f00 four-turn print may be ingested with `notAPaperResult`
+and `promptTokens` null. That ingest refuses paper `$` and Pass@1.
 CI reprints `fixture/long-session-ci.json` / `fixture/dumps/` (label
 `fixture`, `liveHost: false`). Those rows are not a live host score.
 

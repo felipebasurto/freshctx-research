@@ -67,6 +67,14 @@ Hosts in the 0140 reprint: `pi` and `hermes`. Compared arms: `nothing` vs
 `freshctx-ts` (FreshCtx off vs FreshCtx: Isolated Semantic Engine / Tree-sitter).
 FreshCtx without Tree-sitter does not exist.
 
+## PCR 0160 — four-turn dest print is not paper $
+
+Dest `71379f00` printed Hermes t1–t4. Scan `promptTokens` is null.
+`docs/lab/hermes-trial-ts/proxy.mjs` wrote those dumps.
+This pack's dump-proxy now serves `/v1/responses` the same way.
+Four-turn ingest is not a long-session paper `$`. Pass@1 stays null.
+Tree-sitter stays the Isolated Semantic Engine default.
+
 ## Out of scope
 
 - Live host scores in this leftover

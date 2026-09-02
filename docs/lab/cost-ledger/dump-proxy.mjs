@@ -5,6 +5,18 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  DEEPSEEK_CHAT_COMPLETIONS_RELATIVE,
+  DUMP_PROXY_NOT_FOUND,
+  RESPONSES_STREAM_CONTENT_TYPE,
+  chatCompletionToResponses,
+  encodeResponsesSse,
+  isChatCompletionsPath,
+  isResponsesPath,
+  liveResponsesForwardBody,
+  responsesToStreamEvents,
+  wantsResponsesStream,
+} from "../hermes-trial-ts/proxy.mjs";
 import { MODEL } from "./pack.mjs";
 import { redactHeaders } from "./ingest.mjs";
 import { usageFromResponseText } from "./usage.mjs";
@@ -20,6 +32,24 @@ export function dummyChatCompletion({ content = "SETTLE=ST0" } = {}) {
   };
 }
 
+export function dummyResponses(options) {
+  return chatCompletionToResponses(dummyChatCompletion(options));
+}
+
+function writeResponsesOrChat(res, { responses, stream, payload, status = 200 }) {
+  if (responses && stream) {
+    res.writeHead(status, {
+      "content-type": RESPONSES_STREAM_CONTENT_TYPE,
+      "cache-control": "no-cache",
+      connection: "keep-alive",
+    });
+    res.end(encodeResponsesSse(responsesToStreamEvents(payload)));
+    return;
+  }
+  res.writeHead(status, { "content-type": "application/json" });
+  res.end(typeof payload === "string" ? payload : JSON.stringify(payload));
+}
+
 function headerValue(headers, name) {
   const key = Object.keys(headers).find((item) => item.toLowerCase() === name.toLowerCase());
   return key ? headers[key] : undefined;
@@ -32,7 +62,10 @@ async function readRequestBody(req) {
 }
 
 async function forwardChatCompletions({ upstream, apiKey, bodyText, headers }) {
-  const target = new URL("chat/completions", upstream.endsWith("/") ? upstream : `${upstream}/`);
+  const target = new URL(
+    DEEPSEEK_CHAT_COMPLETIONS_RELATIVE,
+    upstream.endsWith("/") ? upstream : `${upstream}/`,
+  );
   const outgoing = {
     "content-type": "application/json",
     authorization: `Bearer ${apiKey}`,
@@ -104,32 +137,76 @@ export function createCostLedgerDumpProxy({
         res.end(JSON.stringify({ data: [{ id: MODEL, object: "model" }] }));
         return;
       }
-      if (req.method === "POST" && /\/chat\/completions$/u.test(req.url ?? "")) {
+      const chat = req.method === "POST" && isChatCompletionsPath(req.url);
+      const responses = req.method === "POST" && isResponsesPath(req.url);
+      if (chat || responses) {
         const bodyText = await readRequestBody(req);
         n += 1;
         const skipUpstream = dumpOnly || !apiKey;
         let usage = { promptTokens: null, completionTokens: null, usageFrom: "none", dumpOnly: true };
-        let status = 200;
-        let responseText = JSON.stringify(dummyChatCompletion());
-        if (!skipUpstream) {
-          const forwarded = await forwardChatCompletions({
-            upstream,
-            apiKey,
-            bodyText,
-            headers: req.headers,
+        if (skipUpstream) {
+          const scan = await writeDump(dumpDir, n, bodyText, usage);
+          scans.push(scan);
+          writeResponsesOrChat(res, {
+            responses,
+            stream: wantsResponsesStream(bodyText),
+            payload: responses ? dummyResponses() : dummyChatCompletion(),
           });
-          status = forwarded.status;
-          responseText = forwarded.text;
-          usage = { ...usageFromResponseText(forwarded.text), dumpOnly: false };
+          return;
         }
+        let forwardBody = bodyText;
+        let translateBack = false;
+        if (responses) {
+          try {
+            forwardBody = liveResponsesForwardBody(bodyText);
+            translateBack = true;
+          } catch (error) {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+            return;
+          }
+        }
+        const forwarded = await forwardChatCompletions({
+          upstream,
+          apiKey,
+          bodyText: forwardBody,
+          headers: req.headers,
+        });
+        usage = { ...usageFromResponseText(forwarded.text), dumpOnly: false };
         const scan = await writeDump(dumpDir, n, bodyText, usage);
         scans.push(scan);
-        res.writeHead(status, { "content-type": "application/json" });
-        res.end(responseText);
+        let parsedResponses = null;
+        if (translateBack && forwarded.status >= 200 && forwarded.status < 300) {
+          try {
+            parsedResponses = chatCompletionToResponses(JSON.parse(forwarded.text));
+          } catch {
+            parsedResponses = null;
+          }
+        }
+        if (responses && parsedResponses && wantsResponsesStream(bodyText)) {
+          writeResponsesOrChat(res, {
+            responses: true,
+            stream: true,
+            payload: parsedResponses,
+            status: forwarded.status,
+          });
+          return;
+        }
+        if (responses && parsedResponses) {
+          writeResponsesOrChat(res, {
+            responses: true,
+            stream: false,
+            payload: parsedResponses,
+            status: forwarded.status,
+          });
+          return;
+        }
+        res.writeHead(forwarded.status, { "content-type": "application/json" });
+        res.end(forwarded.text);
         return;
       }
       res.writeHead(404, { "content-type": "application/json" });
-      res.end(JSON.stringify({ error: "not found" }));
+      res.end(JSON.stringify(DUMP_PROXY_NOT_FOUND));
     } catch (error) {
       res.writeHead(500, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));

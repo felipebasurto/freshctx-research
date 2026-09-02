@@ -1,0 +1,104 @@
+{
+  "label": "live-host",
+  "notAPaperResult": true,
+  "passAt1": null,
+  "sessionKind": "four-turn-multiturn",
+  "destSha": "71379f009d22d2487fb3396fb5de4b6cc3ab3bc9",
+  "destRoot": "/workspace/freshctx-measure-71379f00-multiturn",
+  "model": "deepseek-v4-flash",
+  "hosts": ["hermes"],
+  "arms": {
+    "hermes": {
+      "nothing": [
+        {
+          "id": "t1-read",
+          "turn": 1,
+          "toolCount": 1,
+          "tools": [
+            {
+              "toolName": "read_file",
+              "args": {
+                "path": "/workspace/freshctx-measure-71379f00-multiturn/docs/lab/multi-turn-trial/.work/hermes/nothing/src/settlement.ts",
+                "scope": "symbol",
+                "selector": "settleDailyLedger"
+              }
+            }
+          ],
+          "hostReadArgsMatched": true,
+          "reply": "SETTLE=ST0",
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t2-settle",
+          "turn": 2,
+          "toolCount": 4,
+          "tools": [],
+          "hostReadArgsMatched": null,
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t3-settle",
+          "turn": 3,
+          "toolCount": 4,
+          "tools": [],
+          "hostReadArgsMatched": null,
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t4-unchanged",
+          "turn": 4,
+          "toolCount": 4,
+          "tools": [],
+          "hostReadArgsMatched": null,
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        }
+      ],
+      "freshctx-ts": [
+        {
+          "id": "t1-read",
+          "turn": 1,
+          "toolCount": 1,
+          "tools": [],
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t2-settle",
+          "turn": 2,
+          "toolCount": 4,
+          "tools": [],
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t3-settle",
+          "turn": 3,
+          "toolCount": 4,
+          "tools": [],
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        },
+        {
+          "id": "t4-unchanged",
+          "turn": 4,
+          "toolCount": 4,
+          "tools": [],
+          "promptTokens": [null],
+          "requestBytes": [],
+          "resolution": "none"
+        }
+      ]
+    }
+  }
+}
