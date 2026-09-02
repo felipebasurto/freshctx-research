@@ -134,7 +134,7 @@ papers/           Research manifest and reproducibility lock
 plans/            Reviewed implementation plans from repository audits
 ```
 
-There are 156 Public Change Records in `docs/lab/pcr/`.
+There are 157 Public Change Records in `docs/lab/pcr/`.
 See [docs/LAYOUT.md](docs/LAYOUT.md) for the installed Hermes shape and cleanup
 boundary, and [docs/GLOSSARY.md](docs/GLOSSARY.md) for the terms used across
 the documents.
