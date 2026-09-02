@@ -16,6 +16,7 @@ import {
   applyForceHostReadInput,
   isHermesReadTool,
 } from "./force-host-read.mjs";
+import { isProviderDumpName } from "./proxy.mjs";
 
 const packDir = dirname(fileURLToPath(import.meta.url));
 
@@ -166,7 +167,7 @@ export async function readDumpFunctionCallTools(dumpDir, names) {
   if (!files) {
     try {
       files = (await readdir(dumpDir))
-        .filter((name) => /^\d+\.json$/u.test(name))
+        .filter(isProviderDumpName)
         .sort();
     } catch {
       return [];
@@ -177,7 +178,7 @@ export async function readDumpFunctionCallTools(dumpDir, names) {
     const file = String(name).endsWith(".scan.json")
       ? String(name).replace(/\.scan\.json$/u, ".json")
       : name;
-    if (!/^\d+\.json$/u.test(file)) continue;
+    if (!isProviderDumpName(file)) continue;
     try {
       const text = await readFile(join(dumpDir, file), "utf8");
       tools.push(...toolsFromResponsesFunctionCalls(text));

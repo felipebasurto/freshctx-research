@@ -87,6 +87,19 @@ export function detectHermesProtocol(helpText) {
   return "cli";
 }
 
+export const HERMES_TRIAL_PROTOCOL_ENV = "HERMES_TRIAL_PROTOCOL";
+const HERMES_PROTOCOLS = new Set(["cli", "acp", "tui-gateway"]);
+
+/** Locked host 999703f lists `acp` in `--help`; without ACP deps that launch never answers. */
+export function hermesProtocolFromEnv(env = process.env) {
+  const value = String(env[HERMES_TRIAL_PROTOCOL_ENV] ?? "").trim();
+  if (!value) return null;
+  if (!HERMES_PROTOCOLS.has(value)) {
+    throw new Error(`${HERMES_TRIAL_PROTOCOL_ENV} must be one of ${[...HERMES_PROTOCOLS].join("|")}, got ${value}`);
+  }
+  return value;
+}
+
 export function hermesLaunchArgs(protocol, { workspace } = {}) {
   const prefix = hermesInDirArgs(workspace);
   if (protocol === "acp") return [...prefix, "acp"];
@@ -172,7 +185,7 @@ export async function launchHermes({
   validateArm(arm);
   const work = workspace ?? cwd;
   const bin = hermesBin();
-  const detected = protocol ?? detectHermesProtocol(await runHelp(bin));
+  const detected = protocol ?? hermesProtocolFromEnv() ?? detectHermesProtocol(await runHelp(bin));
   const prepared = await prepareHermesHome({ arm, hermesHome, workspace: work });
   const env = hermesEnvForArm({
     arm,

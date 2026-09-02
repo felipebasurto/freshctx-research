@@ -230,6 +230,31 @@ export async function readHermesHomeQueryLog(hermesHome) {
   return chunks.join("");
 }
 
+/** Hermes `PluginContext.register_context_engine` info line (999703f). */
+export const FRESHCTX_ENGINE_REGISTERED_LINE = "registered context engine: freshctx";
+
+const FRESHCTX_ENGINE_DIAGNOSTIC_LINE =
+  /Context engine 'freshctx'|plugin discovery skipped|Failed to load plugin|Skipping 'freshctx'|Skipping 'context_engine\/freshctx'|could not be safely copied/u;
+
+/**
+ * `resolution=none` on a freshctx arm reads the same whether the unit was
+ * unresolved or Hermes never loaded the engine and served its own compressor.
+ * Only HERMES_HOME/logs/agent.log tells them apart.
+ */
+export function freshctxEngineMissingReason(hermesHomeLog) {
+  const text = String(hermesHomeLog ?? "");
+  if (text.includes(FRESHCTX_ENGINE_REGISTERED_LINE)) return null;
+  const diagnostic = text.split("\n").findLast((line) => FRESHCTX_ENGINE_DIAGNOSTIC_LINE.test(line));
+  const detail = diagnostic ? diagnostic.trim() : "no context engine line in HERMES_HOME logs";
+  return `FreshCtx context engine not registered in Hermes: ${detail}`;
+}
+
+export function assertFreshCtxEngineRegistered(hermesHomeLog, { arm = "unknown" } = {}) {
+  if (arm === "nothing") return;
+  const reason = freshctxEngineMissingReason(hermesHomeLog);
+  if (reason) throw new Error(`${reason} (arm=${arm})`);
+}
+
 export async function persistCliQueryCompanions({
   logPath,
   args,
@@ -366,6 +391,7 @@ export async function runCliQuery({ cwd, env, message, continueSession = false, 
     ...result,
     reply: result.stdout,
     tools: toolsFromHermesCliStdout(result.stdout),
+    hermesHomeLog,
   };
 }
 
