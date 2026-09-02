@@ -52,7 +52,9 @@
     "hermes:install": "node adapters/hermes/install.mjs",
     "hermes:verify-layout": "node adapters/hermes/verify-layout.mjs",
     "ise:install": "npm --prefix ise/treesitter ci --omit=dev",
-    "check": "node --check src/*.mjs && node --check bench/*.mjs && node --check autoresearch/*.mjs && node --check examples/*.mjs && node --check scripts/*.mjs && node --check capture/*.mjs && node --check adapters/*.mjs && node --check adapters/pi/replay.mjs && node --check adapters/hermes/bridge.mjs && node --check adapters/hermes/replay.mjs && node --check adapters/hermes/install.mjs && node --check adapters/hermes/verify-layout.mjs && node --check ise/treesitter/*.mjs && python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py adapters/hermes/__init__.py"
+    "check:py": "python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py adapters/hermes/__init__.py",
+    "check": "for f in src/*.mjs bench/*.mjs autoresearch/*.mjs examples/*.mjs scripts/*.mjs capture/*.mjs adapters/*.mjs adapters/pi/*.mjs adapters/hermes/*.mjs ise/treesitter/*.mjs test/*.mjs test/helpers/*.mjs $(find docs/lab -name '*.mjs'); do node --check \"$f\" || exit 1; done && npm run -s check:py",
+    "ci": "npm run -s check && npm test && npm run -s test:docs && npm run -s bench && npm run -s ctxbench && npm run -s evaluate > /tmp/evaluate.txt && cat /tmp/evaluate.txt && npm run -s evaluate:check-docs -- --input=/tmp/evaluate.txt && npm run -s papers:list && npm run -s test:py && npm run -s holdout:verify -- --pack=holdout-v0.1 && npm run -s holdout:ci-guard -- --base=origin/main"
   },
   "keywords": [
     "agents",
