@@ -34,6 +34,176 @@ export function isResponsesPath(url) {
   return /\/responses$/u.test(requestPathname(url));
 }
 
+/**
+ * DeepSeek Hermes overlay is `openai_chat` (NousResearch/hermes-agent
+ * providers.py). Official chat docs are POST `/chat/completions`.
+ * PCR 0155 live path forwarded Hermes Responses JSON to upstream
+ * `responses` untranslated. This leftover translates to that chat path.
+ */
+export const DEEPSEEK_CHAT_COMPLETIONS_RELATIVE = "chat/completions";
+
+export function isResponsesRequestBody(value) {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value) && Object.hasOwn(value, "input"));
+}
+
+function textFromContent(content) {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return content == null ? "" : String(content);
+  return content
+    .map((part) => {
+      if (typeof part === "string") return part;
+      if (!part || typeof part !== "object") return "";
+      if (typeof part.text === "string") return part.text;
+      return "";
+    })
+    .filter(Boolean)
+    .join("");
+}
+
+export function responsesToolsToChatCompletions(tools) {
+  if (!Array.isArray(tools)) return undefined;
+  return tools.map((tool) => {
+    if (!tool || typeof tool !== "object") return tool;
+    if (tool.function && typeof tool.function === "object") return tool;
+    if (tool.type === "function" && typeof tool.name === "string") {
+      return {
+        type: "function",
+        function: {
+          name: tool.name,
+          description: tool.description ?? "",
+          parameters: tool.parameters ?? { type: "object", properties: {} },
+        },
+      };
+    }
+    return tool;
+  });
+}
+
+export function responsesInputToMessages(input, instructions) {
+  const messages = [];
+  if (typeof instructions === "string" && instructions.trim()) {
+    messages.push({ role: "system", content: instructions });
+  }
+  if (typeof input === "string") {
+    messages.push({ role: "user", content: input });
+    return messages;
+  }
+  if (!Array.isArray(input)) return messages;
+
+  const pendingToolCalls = [];
+  function flushToolCalls() {
+    if (!pendingToolCalls.length) return;
+    messages.push({
+      role: "assistant",
+      content: null,
+      tool_calls: pendingToolCalls.splice(0, pendingToolCalls.length),
+    });
+  }
+
+  for (const item of input) {
+    if (typeof item === "string") {
+      flushToolCalls();
+      messages.push({ role: "user", content: item });
+      continue;
+    }
+    if (!item || typeof item !== "object") continue;
+    const type = item.type;
+    if (type === "function_call") {
+      pendingToolCalls.push({
+        id: item.call_id || item.id,
+        type: "function",
+        function: {
+          name: item.name,
+          arguments: typeof item.arguments === "string" ? item.arguments : JSON.stringify(item.arguments ?? {}),
+        },
+      });
+      continue;
+    }
+    if (type === "function_call_output") {
+      flushToolCalls();
+      messages.push({
+        role: "tool",
+        tool_call_id: item.call_id || item.id,
+        content: textFromContent(item.output),
+      });
+      continue;
+    }
+    const role = item.role;
+    if (role) {
+      flushToolCalls();
+      messages.push({ role, content: textFromContent(item.content) });
+    }
+  }
+  flushToolCalls();
+  return messages;
+}
+
+export function responsesRequestToChatCompletions(parsed) {
+  const body = {
+    model: parsed.model,
+    messages: responsesInputToMessages(parsed.input, parsed.instructions),
+  };
+  const tools = responsesToolsToChatCompletions(parsed.tools);
+  if (tools) body.tools = tools;
+  if (parsed.tool_choice !== undefined) body.tool_choice = parsed.tool_choice;
+  if (parsed.temperature !== undefined) body.temperature = parsed.temperature;
+  if (parsed.max_output_tokens !== undefined) body.max_tokens = parsed.max_output_tokens;
+  if (parsed.parallel_tool_calls !== undefined) body.parallel_tool_calls = parsed.parallel_tool_calls;
+  body.stream = false;
+  return body;
+}
+
+export function liveResponsesForwardBody(bodyText) {
+  const parsed = JSON.parse(bodyText);
+  if (Array.isArray(parsed?.messages) && !isResponsesRequestBody(parsed)) {
+    return bodyText;
+  }
+  return JSON.stringify(responsesRequestToChatCompletions(parsed));
+}
+
+export function chatCompletionToResponses(parsed, { requestModel } = {}) {
+  if (parsed && parsed.object === "response") return parsed;
+  const choice = parsed?.choices?.[0] ?? {};
+  const message = choice.message ?? {};
+  const content = typeof message.content === "string" ? message.content : "";
+  const output = [];
+  const toolCalls = Array.isArray(message.tool_calls) ? message.tool_calls : [];
+  for (const call of toolCalls) {
+    output.push({
+      id: call.id ? `fc_${call.id}` : "fc_freshctx",
+      type: "function_call",
+      call_id: call.id ?? "call_freshctx",
+      name: call.function?.name ?? "",
+      arguments: call.function?.arguments ?? "{}",
+      status: "completed",
+    });
+  }
+  if (content || output.length === 0) {
+    output.push({
+      id: "msg_freshctx_upstream",
+      type: "message",
+      status: "completed",
+      role: "assistant",
+      content: [{ type: "output_text", text: content }],
+    });
+  }
+  const usage = parsed?.usage ?? {};
+  return {
+    id: parsed?.id ? `resp_${parsed.id}` : "resp_freshctx_translated",
+    object: "response",
+    created_at: parsed?.created ?? 0,
+    status: "completed",
+    model: parsed?.model ?? requestModel ?? "deepseek-v4-flash",
+    output,
+    output_text: content,
+    usage: {
+      input_tokens: usage.prompt_tokens ?? 0,
+      output_tokens: usage.completion_tokens ?? 0,
+      total_tokens: usage.total_tokens ?? 0,
+    },
+  };
+}
+
 export function dummyChatCompletion({ content = "SETTLE=ST0" } = {}) {
   return {
     id: "freshctx-hermes-trial-dummy",
@@ -184,15 +354,35 @@ export function createDumpProxy({
           res.end(JSON.stringify(responses ? dummyResponses() : dummyChatCompletion()));
           return;
         }
+        let forwardBody = bodyText;
+        let translateBack = false;
+        if (responses) {
+          try {
+            forwardBody = liveResponsesForwardBody(bodyText);
+            translateBack = true;
+          } catch (error) {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+            return;
+          }
+        }
         const forwarded = await forwardProviderPost({
           upstream,
           apiKey,
-          bodyText,
+          bodyText: forwardBody,
           headers: req.headers,
-          relativePath: responses ? "responses" : "chat/completions",
+          relativePath: DEEPSEEK_CHAT_COMPLETIONS_RELATIVE,
         });
+        let responseText = forwarded.text;
+        if (translateBack && forwarded.status >= 200 && forwarded.status < 300) {
+          try {
+            responseText = JSON.stringify(chatCompletionToResponses(JSON.parse(forwarded.text)));
+          } catch {
+            // keep upstream text
+          }
+        }
         res.writeHead(forwarded.status, { "content-type": "application/json" });
-        res.end(forwarded.text);
+        res.end(responseText);
         return;
       }
       if (req.method === "POST") {
