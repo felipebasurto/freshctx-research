@@ -9,9 +9,7 @@ bench/hosts/
 capture/results/
 bench/reports/*.jsonl
 *.tmp
-.freshctx/
 *.log
-*.tmp
 .DS_Store
 autoresearch/runs/
 docs/lab/pi-trial/.work/

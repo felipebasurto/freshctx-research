@@ -103,8 +103,8 @@ When a runner is injected, whole-file and line-region units on `.py`, `.js`,
 `.mjs`, `.cjs`, `.ts`, and `.tsx` also refresh through the Isolated Semantic
 Engine (PCR 0114). Go and Rust file/region units use exact and anchor
 relocation only; the engine parses both languages, but the file/region route
-has not been measured on the go-tools apex pack
-([plans/008](../plans/008-registry-ise-language-gate-explicit.md)). Symbol
+has not been measured on the go-tools apex pack, so the gate stays as PCR 0114
+left it (`FILE_REGION_ISE_EXTENSIONS` in `src/registry.mjs`). Symbol
 units consult the engine in every supported language.
 
 Resolution fails closed:
@@ -306,10 +306,10 @@ bounded defect and a red-green invariant test.
 | Out-of-process parser availability | DOCUMENT | A missing or failed Isolated Semantic Engine makes structural units unresolved rather than falling back to stale bytes. |
 | Local apex classification | DOCUMENT | `holdout-v0.3-apex` is locally frozen; production GitHub Actions attestation is still absent. |
 | Programmatic benchmark report writes | FIX | `runNestedHelperShowdown()` rewrote tracked timing/RSS reports during `npm test`. Programmatic calls now default to no writes; CLI entrypoints opt in. `test/report-hygiene.test.mjs` is the red-green invariant. |
-| Budget-omit inlining ignores unit state | FIX | The PCR 0108 quoteability pass inlines `unit.content` for a previously budget-omitted read without checking that the unit is currently `resolved`; an unresolved unit would surface last-known bytes. Open; see [plans/003](../plans/003-no-stale-inline-from-unresolved-unit.md). |
-| Hermes bridge with zero tracked units | FIX | When every shell read fails workspace validation (wrong `cwd`), the bridge prunes all read pairs and returns them with `applied: false`; the Python plugin applies them anyway. Open; see [plans/004](../plans/004-hermes-bridge-fail-open-when-nothing-tracked.md). |
-| Isolated Semantic Engine client bounds | FIX | The spawn client has no stdin error handler, timeout, or output cap; a child that exits early raises an uncaught `EPIPE` in the host. Open; see [plans/005](../plans/005-ise-client-robustness.md). |
-| Shell `head`/`tail` span arithmetic | FIX | Pi and Hermes derive the region span from the flag count with different formulas and Pi does not verify it against the observed bytes; `-nN` is not parsed. Open; see [plans/006](../plans/006-shell-read-tail-head-parity.md). |
+| Budget-omit inlining ignores unit state | FIX | The PCR 0108 quoteability pass inlined `unit.content` for a previously budget-omitted read without checking that the unit was currently `resolved`. `shouldInlineBudgetOmittedReadAtToolResult` now returns false unless `unit.state === "resolved"`; `test/pcr-0161-unresolved-no-inline.test.mjs` is the red-green invariant (PCR 0161). |
+| Hermes bridge with zero tracked units | FIX | When every shell read failed workspace validation (wrong `cwd`), the bridge pruned all read pairs and returned them with `applied: false`, and the Python plugin applied them anyway. The bridge now returns the original messages when nothing was tracked and `select_context` honours `applied`; `test/hermes-bridge.test.mjs` and `test/python/test_hermes_engine.py` pin both sides (PCR 0162). |
+| Isolated Semantic Engine client bounds | FIX | The spawn client had no stdin error handler, timeout, or output cap; a child that exited early raised an uncaught `EPIPE` in the host. The client now rejects on stdin errors, kills and rejects after `timeoutMs` (10 s) and above `maxOutputBytes` (16 MiB); `test/treesitter-ise-client.test.mjs` is the invariant (PCR 0163). |
+| Shell `head`/`tail` span arithmetic | FIX | Pi and Hermes derived the region span from the flag count with different formulas, Pi did not verify it against the observed bytes, and `-nN` did not parse. Both now call `observedSpanForShellRead`, which requires exactly `min(requested, body)` observed lines matching the file slice and fails closed otherwise; `test/shell-read-head-tail.test.mjs` is the invariant (PCR 0164). |
 
 ## Security boundary
 
@@ -338,4 +338,4 @@ bounded defect and a red-green invariant test.
 | Evaluate | `holdout-v0.3-apex` defaults on this checkout; recorded ISE 8589 payload bytes, whole-file 36701 payload bytes, required recall 5/5 (measured 2026-09-02; 8504 before the Isolated Semantic Engine vocabulary migration lengthened the `resolution` label) | Pack is locally frozen, not production-GHA sealed; timing and RSS remain local telemetry |
 
 `passAt1` is always `null` and out of scope for this deterministic context
-benchmark. There are 156 Public Change Records under `docs/lab/pcr/`.
+benchmark. There are 160 Public Change Records under `docs/lab/pcr/`.

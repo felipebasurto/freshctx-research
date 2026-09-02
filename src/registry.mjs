@@ -36,13 +36,20 @@ async function readSource(provider, filePath) {
   throw new TypeError("source provider must be a function, Map, or object");
 }
 
-const ISOLATED_SEMANTIC_ENGINE_TREE_SITTER_EXTENSIONS = new Set([".py", ".js", ".mjs", ".cjs", ".ts", ".tsx"]);
+/**
+ * File/region units on these extensions refresh through the Isolated Semantic
+ * Engine when a runner is injected (PCR 0114). Go and Rust parse in the engine
+ * but are intentionally excluded here until the file/region route is measured
+ * on the go-tools apex pack; they use anchor relocation meanwhile.
+ * Symbol units are language-agnostic and do not consult this set.
+ */
+export const FILE_REGION_ISE_EXTENSIONS = new Set([".py", ".js", ".mjs", ".cjs", ".ts", ".tsx"]);
 
 function semanticEngineTreeSitterLanguage(path) {
   const base = String(path).split("/").at(-1) ?? "";
   const dot = base.lastIndexOf(".");
   const extension = dot === -1 ? "" : base.slice(dot).toLowerCase();
-  return ISOLATED_SEMANTIC_ENGINE_TREE_SITTER_EXTENSIONS.has(extension);
+  return FILE_REGION_ISE_EXTENSIONS.has(extension);
 }
 
 function sliceFileLines(normalizedFile, startLine, endLine) {

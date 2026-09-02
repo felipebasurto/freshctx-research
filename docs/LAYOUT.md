@@ -15,7 +15,6 @@ This is a map of the current checkout, not a proposed reorganization.
 | `examples/` | Runnable demo (`npm run demo`) |
 | `docs/` | Architecture, evaluation protocol, decisions, glossary, and evidence records |
 | `papers/` | Research manifest and reproducibility lock; fetched PDFs are ignored |
-| `plans/` | Audit-derived implementation plans with a status index; not source code |
 
 The root test command is exactly:
 

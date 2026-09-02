@@ -14,6 +14,7 @@ import {
   servedReadCallIdsFromUnitsByCall,
 } from "../request-prune.mjs";
 import {
+  observedSpanForShellRead,
   shellCallsFromMessages,
   trackedReadTools,
 } from "../shell-read.mjs";
@@ -41,10 +42,6 @@ const MAX_FILE_BYTES = 512 * 1024;
 
 function lineCount(content) {
   return String(content).replaceAll("\r\n", "\n").split("\n").length;
-}
-
-function splitLines(content) {
-  return String(content).replaceAll("\r\n", "\n").split("\n");
 }
 
 export function readScopeFromHermesArgs(args, fileLineCount) {
@@ -99,19 +96,16 @@ export function normalizeHermesReadScope(scopeMeta, fileLineCount) {
   return scopeMeta;
 }
 
-function tailSpanContent(fileContent, startLine, endLine) {
-  return splitLines(fileContent).slice(startLine - 1, endLine).join("\n");
-}
-
 function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
   if (!scopeMeta || scopeMeta.scope !== "region" || !Number.isInteger(scopeMeta.tailLines)) {
     return scopeMeta;
   }
-  const fileLineCount = lineCount(fileContent);
-  if (!Number.isInteger(fileLineCount) || fileLineCount < 1) return scopeMeta;
-  const observedText = typeof observedContent === "string" ? observedContent.replaceAll("\r\n", "\n") : "";
-  const startLine = Math.max(1, fileLineCount - scopeMeta.tailLines);
-  if (tailSpanContent(fileContent, startLine, fileLineCount) !== observedText) {
+  const span = observedSpanForShellRead(
+    { scope: "region", tailLines: scopeMeta.tailLines },
+    fileContent,
+    observedContent,
+  );
+  if (!span) {
     return {
       scope: "region",
       selector: scopeMeta.selector,
@@ -121,8 +115,7 @@ function tailRegionFromObservation(scopeMeta, fileContent, observedContent) {
   }
   return {
     scope: "region",
-    startLine,
-    endLine: fileLineCount,
+    ...span,
     selector: scopeMeta.selector,
     tailLines: scopeMeta.tailLines,
   };
@@ -725,6 +718,23 @@ export async function selectContext(payload) {
   await engine.refresh(async (filePath) =>
     (await safeWorkspaceFile(payload.cwd, filePath)).content,
   );
+
+  if (unitsByCall.size === 0) {
+    // Nothing was trackable (bad cwd, unsupported files). Pruning read pairs
+    // without a projection would delete evidence; hand Hermes its own request.
+    clearPendingInjectedRevision(state);
+    clearPendingReadDisposition(state);
+    state.updatedAt = new Date().toISOString();
+    await saveState(payload.stateFile, state);
+    return {
+      messages: payload.messages,
+      selected: 0,
+      unresolved: 0,
+      applied: false,
+      projectionText: "",
+      telemetry: { totalMs: 0, projectionBytes: 0, skipEligibleSelections: 0 },
+    };
+  }
 
   failClosedInvalidTailObservationUnits(tracked, unitsByCall);
   await failClosedTailLineShiftedUnits(payload.cwd, tracked, unitsByCall);
