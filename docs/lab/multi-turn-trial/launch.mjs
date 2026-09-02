@@ -74,8 +74,8 @@ export function hermesLaunchSpec(arm, { proxyBaseUrl, dumpDir, hermesHome, works
     arm,
     model: MODEL,
     env,
-    prepare: () => prepareHermesHome({ arm, hermesHome, repoRoot: resolveRepoRoot() }),
-    launch: (opts) => launchHermes({ arm, ...opts }),
+    prepare: () => prepareHermesHome({ arm, hermesHome, repoRoot: resolveRepoRoot(), workspace }),
+    launch: (opts) => launchHermes({ arm, workspace, ...opts }),
   };
 }
 

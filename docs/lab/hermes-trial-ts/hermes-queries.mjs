@@ -308,10 +308,22 @@ export function hermesCliQueryFailedReason({ code, stderr, stdout } = {}) {
   return null;
 }
 
-export function cliQueryArgs({ continueSession = false, message } = {}) {
+export const HERMES_CLI_IN_FLAG = "--in";
+
+export function hermesInDirArgs(workspace) {
+  const inDir = typeof workspace === "string" ? workspace.trim() : "";
+  if (!inDir) return [];
+  if (inDir.startsWith("-")) {
+    throw new Error(`hermes --in must be a dest work path, got ${inDir}`);
+  }
+  return [HERMES_CLI_IN_FLAG, inDir];
+}
+
+export function cliQueryArgs({ continueSession = false, message, workspace } = {}) {
   const query = message == null ? "" : String(message);
   const args = [];
   if (continueSession) args.push("--continue");
+  args.push(...hermesInDirArgs(workspace));
   args.push("chat", "-q", query, "--provider", HERMES_CLI_PROVIDER, "--model", MODEL);
   const reason = cliQueryArgvInvalidReason(args) ?? cliQueryProviderInvalidReason(args);
   if (reason) throw new Error(reason);
@@ -322,7 +334,7 @@ export async function runCliQuery({ cwd, env, message, continueSession = false, 
   if (!logPath) {
     throw new Error(HERMES_CLI_STDERR_LOG_MISSING);
   }
-  const args = cliQueryArgs({ continueSession, message });
+  const args = cliQueryArgs({ continueSession, message, workspace: cwd });
   const child = launchChild({
     command: hermesBin(),
     args,
