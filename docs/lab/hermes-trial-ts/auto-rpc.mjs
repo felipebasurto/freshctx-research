@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   assertT1HostReadTools,
+  readDumpFunctionCallTools,
   readRecordedHostReadTools,
   t1HostReadToolsValid,
   t1ToolsForAssert,
@@ -97,6 +98,7 @@ async function runArm(arm) {
       const prompt = promptForCell(cell);
       let events = [];
       let reply = "";
+      let cliTools = [];
       if (rpc) {
         events = await rpc.prompt(prompt, cell.id === "t1-read" ? 15 * 60 * 1000 : 6 * 60 * 1000);
         reply = assistantTextFromEvents(events);
@@ -110,6 +112,7 @@ async function runArm(arm) {
           hermesHome,
         });
         reply = query.reply;
+        cliTools = query.tools ?? [];
       }
       const dumpsAfter = await listScans(dumpDir);
       const newDumps = dumpsAfter.filter((name) => !dumpsBefore.includes(name));
@@ -121,9 +124,12 @@ async function runArm(arm) {
       const lastRequest = requests.at(-1) ?? null;
       const recordedAfter = await readRecordedHostReadTools(dumpDir);
       const recordedTools = recordedAfter.slice(recordedBefore.length);
+      const dumpTools = await readDumpFunctionCallTools(dumpDir, newDumps);
       const tools = t1ToolsForAssert({
         eventTools: toolsFromHermesEvents(events),
         recordedTools,
+        cliTools,
+        dumpTools,
       });
       if (cell.id === "t1-read") {
         assertT1HostReadTools(tools, { arm, workspace: cwd });

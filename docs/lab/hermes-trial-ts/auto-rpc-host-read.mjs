@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -62,8 +62,129 @@ export async function readRecordedHostReadTools(dumpDir) {
   }
 }
 
-export function t1ToolsForAssert({ eventTools = [], recordedTools = [] } = {}) {
-  return recordedTools.length > 0 ? recordedTools : eventTools;
+export function t1ToolsForAssert({
+  eventTools = [],
+  recordedTools = [],
+  cliTools = [],
+  dumpTools = [],
+} = {}) {
+  if (recordedTools.length > 0) return recordedTools;
+  if (eventTools.length > 0) return eventTools;
+  if (dumpTools.length > 0) return dumpTools;
+  return cliTools;
+}
+
+const CLI_TOOL_LINE = /^(?:\[tool\]|●)\s+([A-Za-z_][A-Za-z0-9_]*)\b/u;
+
+function argsFromCliToolLine(line) {
+  const rest = String(line ?? "")
+    .replace(/^(?:\[tool\]|●)\s+[A-Za-z_][A-Za-z0-9_]*\s*/u, "")
+    .trim();
+  if (!rest) return {};
+  if (rest.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rest);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : { raw: rest };
+    } catch {
+      return { raw: rest };
+    }
+  }
+  return { raw: rest };
+}
+
+/**
+ * Hermes CLI `-q` oneshot (non-quiet) prints `[tool] name` spinner lines.
+ * Measured on NousResearch/hermes-agent quiet-mode leak (`[tool]` / `[done]`).
+ * Dest leftover used `hermes chat -q` without `-Q`.
+ */
+export function toolsFromHermesCliStdout(stdout) {
+  const tools = [];
+  for (const line of String(stdout ?? "").split("\n")) {
+    const trimmed = line.replace(/\r$/u, "").trim();
+    const match = trimmed.match(CLI_TOOL_LINE);
+    if (!match) continue;
+    const toolName = match[1];
+    if (toolName === "done") continue;
+    tools.push({
+      toolCallId: null,
+      toolName,
+      args: argsFromCliToolLine(trimmed),
+    });
+  }
+  return tools;
+}
+
+function parseDumpBody(body) {
+  if (body && typeof body === "object" && !Array.isArray(body)) return body;
+  if (typeof body !== "string" || body.trim().length === 0) return null;
+  try {
+    const parsed = JSON.parse(body);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function argsFromFunctionCall(item) {
+  const raw = item?.arguments ?? item?.args ?? item?.input ?? {};
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) return raw;
+  if (typeof raw !== "string" || raw.trim().length === 0) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : { raw };
+  } catch {
+    return { raw };
+  }
+}
+
+/**
+ * Executed Responses `input` function_call items.
+ * The request `tools` array is the advertised schema, not a host-read list.
+ */
+export function toolsFromResponsesFunctionCalls(body) {
+  const parsed = parseDumpBody(body);
+  if (!parsed) return [];
+  const input = Array.isArray(parsed.input) ? parsed.input : [];
+  const tools = [];
+  for (const item of input) {
+    if (!item || typeof item !== "object") continue;
+    if (item.type !== "function_call") continue;
+    const toolName = item.name ?? item.toolName ?? null;
+    if (!toolName) continue;
+    tools.push({
+      toolCallId: item.call_id ?? item.id ?? null,
+      toolName,
+      args: argsFromFunctionCall(item),
+    });
+  }
+  return tools;
+}
+
+export async function readDumpFunctionCallTools(dumpDir, names) {
+  let files = names;
+  if (!files) {
+    try {
+      files = (await readdir(dumpDir))
+        .filter((name) => /^\d+\.json$/u.test(name))
+        .sort();
+    } catch {
+      return [];
+    }
+  }
+  const tools = [];
+  for (const name of files) {
+    const file = String(name).endsWith(".scan.json")
+      ? String(name).replace(/\.scan\.json$/u, ".json")
+      : name;
+    if (!/^\d+\.json$/u.test(file)) continue;
+    try {
+      const text = await readFile(join(dumpDir, file), "utf8");
+      tools.push(...toolsFromResponsesFunctionCalls(text));
+    } catch {
+      // dump body absent
+    }
+  }
+  return tools;
 }
 
 export function readToolMatchesHostArgs(tool, { workspace } = {}) {
