@@ -8,12 +8,59 @@ import { resolutionFromStringifiedPayload } from "./resolution-from-stringified.
 
 const DEFAULT_UPSTREAM = "https://api.deepseek.com/v1";
 
+/** Dest efeaef64 catch-all body. Do not invent a different 404 shape. */
+export const DUMP_PROXY_NOT_FOUND = { error: "not found" };
+
+/**
+ * Hermes Agent `openai-api` overlay is `codex_responses`.
+ * OPENAI_BASE_URL=`http://127.0.0.1:33457/v1` POSTs this path.
+ */
+export const HERMES_OPENAI_API_POST_PATH = "/v1/responses";
+
+export function requestPathname(url) {
+  const raw = String(url ?? "");
+  try {
+    return new URL(raw, "http://dump-proxy.invalid").pathname;
+  } catch {
+    return raw.split("?")[0] ?? "";
+  }
+}
+
+export function isChatCompletionsPath(url) {
+  return /\/chat\/completions$/u.test(requestPathname(url));
+}
+
+export function isResponsesPath(url) {
+  return /\/responses$/u.test(requestPathname(url));
+}
+
 export function dummyChatCompletion({ content = "SETTLE=ST0" } = {}) {
   return {
     id: "freshctx-hermes-trial-dummy",
     object: "chat.completion",
     choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }],
     usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+  };
+}
+
+export function dummyResponses({ content = "SETTLE=ST0" } = {}) {
+  return {
+    id: "freshctx-hermes-trial-dummy-response",
+    object: "response",
+    created_at: 0,
+    status: "completed",
+    model: "deepseek-v4-flash",
+    output: [
+      {
+        id: "msg_freshctx_hermes_trial",
+        type: "message",
+        status: "completed",
+        role: "assistant",
+        content: [{ type: "output_text", text: content }],
+      },
+    ],
+    output_text: content,
+    usage: { input_tokens: 0, output_tokens: 0, total_tokens: 0 },
   };
 }
 
@@ -63,14 +110,28 @@ async function writeDump(dumpDir, n, bodyText) {
   return scan;
 }
 
+async function writeUnmatchedDump(dumpDir, n, { method, url }) {
+  await mkdir(dumpDir, { recursive: true });
+  const id = String(n).padStart(3, "0");
+  const record = {
+    n,
+    method: method ?? "",
+    url: url ?? "",
+    unmatched: true,
+    at: new Date().toISOString(),
+  };
+  await writeFile(join(dumpDir, `unmatched-${id}.json`), `${JSON.stringify(record, null, 2)}\n`);
+  return record;
+}
+
 async function readRequestBody(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
   return Buffer.concat(chunks).toString("utf8");
 }
 
-async function forwardChatCompletions({ upstream, apiKey, bodyText, headers }) {
-  const target = new URL("chat/completions", upstream.endsWith("/") ? upstream : `${upstream}/`);
+async function forwardProviderPost({ upstream, apiKey, bodyText, headers, relativePath }) {
+  const target = new URL(relativePath, upstream.endsWith("/") ? upstream : `${upstream}/`);
   const outgoing = {
     "content-type": "application/json",
     authorization: `Bearer ${apiKey}`,
@@ -96,6 +157,7 @@ export function createDumpProxy({
 } = {}) {
   if (!dumpDir) throw new Error("createDumpProxy requires dumpDir");
   let n = 0;
+  let unmatchedN = 0;
   const scans = [];
 
   const server = createServer(async (req, res) => {
@@ -110,28 +172,36 @@ export function createDumpProxy({
         res.end(JSON.stringify({ data: [{ id: "deepseek-v4-flash", object: "model" }] }));
         return;
       }
-      if (req.method === "POST" && /\/chat\/completions$/u.test(req.url ?? "")) {
+      const chat = req.method === "POST" && isChatCompletionsPath(req.url);
+      const responses = req.method === "POST" && isResponsesPath(req.url);
+      if (chat || responses) {
         const bodyText = await readRequestBody(req);
         n += 1;
         const scan = await writeDump(dumpDir, n, bodyText);
         scans.push(scan);
         if (dumpOnly || !apiKey) {
           res.writeHead(200, { "content-type": "application/json" });
-          res.end(JSON.stringify(dummyChatCompletion()));
+          res.end(JSON.stringify(responses ? dummyResponses() : dummyChatCompletion()));
           return;
         }
-        const forwarded = await forwardChatCompletions({
+        const forwarded = await forwardProviderPost({
           upstream,
           apiKey,
           bodyText,
           headers: req.headers,
+          relativePath: responses ? "responses" : "chat/completions",
         });
         res.writeHead(forwarded.status, { "content-type": "application/json" });
         res.end(forwarded.text);
         return;
       }
+      if (req.method === "POST") {
+        await readRequestBody(req);
+      }
+      unmatchedN += 1;
+      await writeUnmatchedDump(dumpDir, unmatchedN, { method: req.method, url: req.url });
       res.writeHead(404, { "content-type": "application/json" });
-      res.end(JSON.stringify({ error: "not found" }));
+      res.end(JSON.stringify(DUMP_PROXY_NOT_FOUND));
     } catch (error) {
       res.writeHead(500, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
