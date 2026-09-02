@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-02
 - Author / agent: Cursor Cloud Agent
-- Branch / PR: `cursor/pcr-0159-hermes-dest-cwd-dba4` (draft)
+- Branch / PR: `cursor/pcr-0159-hermes-dest-cwd-dba4` / [162](https://github.com/felipebasurto/freshctx/pull/162) (draft)
 - Base SHA: `ee0e254f7168efb5b0558501a52f84fc60a945e9` (PR 161 squash; PCR 0158 on main; public count 154)
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
