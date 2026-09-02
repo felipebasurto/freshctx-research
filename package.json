@@ -22,6 +22,7 @@
     "ctxbench:adapters-holdout": "node bench/adapters-holdout.mjs",
     "capture-provider": "node capture/provider.mjs",
     "evaluate": "node autoresearch/evaluate.mjs",
+    "evaluate:check-docs": "node scripts/check-recorded-evaluation.mjs",
     "demo": "node examples/demo.mjs",
     "papers:list": "node scripts/papers.mjs list",
     "papers:fetch": "node scripts/papers.mjs fetch",
