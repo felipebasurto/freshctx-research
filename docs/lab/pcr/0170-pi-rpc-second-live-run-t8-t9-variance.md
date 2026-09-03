@@ -2,7 +2,7 @@
 
 - Date (UTC): 2026-09-03
 - Author / agent: Cursor Cloud Agent (record); operator ran the sessions
-- Branch / PR: `cursor/pcr-0170-pi-rpc-second-live-run-d3d5` / draft against `main`
+- Branch / PR: `cursor/pcr-0170-pi-rpc-second-live-run-d3d5` / [#180](https://github.com/felipebasurto/freshctx-research/pull/180), draft against `main`
 - Base SHA: `5e223489cb7f501266ee4ad2bc782408f98d1998` (PCR 0169; public count 165)
 - Commits: docs-only. No `src/`, no `adapters/`, no `official/`, no bench, no fixture change
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`, `sha256sum papers/manifest.json`)
@@ -166,7 +166,7 @@ same caveat as PCR 0169. Do not sell T10 as the headline.
 | `npm test` | yes | 0 | `# tests 756` `# pass 756` `# fail 0` `# skipped 0` (docs-only branch; same as PCR 0169) |
 | `npm run evaluate` | yes | 0 | `EVALUATE_VERDICT=PASS`; `payloadBytes.candidate` 8589, `baseline` 36701, `oracleRetention.recall` 1 |
 | `npm run test:docs` | yes | 0 | living-docs count 166 matches files on disk; INDEX and METRICS name 0170 |
-| `git fetch origin main && npm run ci` | yes | 0 | `check`, `test` 756 / 756, `test:docs`, `bench`, `ctxbench`, `evaluate` PASS, `evaluate:check-docs`, `papers:list`, `test:py`, `holdout:verify`, `holdout:ci-guard` against `origin/main` |
+| `git fetch origin main && npm run ci` | yes | 0 | `check`, `test` 756 / 756, `test:docs` 11 / 11, `bench`, `ctxbench`, `evaluate` PASS, `evaluate:check-docs`, `papers:list`, `test:py` `Ran 13 tests` OK, `holdout:verify`, `holdout:ci-guard` against `origin/main` (`5e223489`) |
 | `npm run ctxbench:pi-smoke` | no | n/a | no adapter change |
 | live Pi rerun on this Cloud Agent | no | n/a | operator machine only; sessions not mounted here |
 
