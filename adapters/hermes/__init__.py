@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import subprocess
@@ -17,6 +18,11 @@ import types
 from typing import Any, Dict, List, Optional
 
 from agent.context_compressor import ContextCompressor
+
+# Hermes routes plugin loggers into HERMES_HOME/logs/agent.log, the file the
+# trial harness reads per query. A bridge that fell open used to leave no
+# trace there (PCR 0168).
+logger = logging.getLogger("freshctx.hermes")
 
 # Mirrors READ_TOOLS in bridge.mjs.
 READ_TOOLS = frozenset({"read", "read_file", "read_text_file"})
@@ -102,6 +108,10 @@ class FreshCtxContextEngine(ContextCompressor):
     def _call_bridge(self, operation: str, messages: List[Dict[str, Any]], **extra: Any):
         state_file = getattr(self, "_freshctx_state_file", None)
         if state_file is None:
+            logger.warning(
+                "FreshCtx bridge %s fell open: no state file, on_session_start has not run",
+                operation,
+            )
             return None
 
         payload = {
@@ -122,10 +132,20 @@ class FreshCtxContextEngine(ContextCompressor):
                 check=False,
             )
             if completed.returncode != 0:
+                logger.warning(
+                    "FreshCtx bridge %s fell open (exit %s): %s",
+                    operation,
+                    completed.returncode,
+                    (completed.stderr or "").strip()[:400] or "no stderr",
+                )
                 return None
             result = json.loads(completed.stdout)
-            return result if isinstance(result, dict) else None
-        except (OSError, ValueError, subprocess.SubprocessError):
+            if not isinstance(result, dict):
+                logger.warning("FreshCtx bridge %s fell open: stdout is not a JSON object", operation)
+                return None
+            return result
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            logger.warning("FreshCtx bridge %s fell open: %r", operation, error)
             return None
 
     def on_session_start(self, session_id: str, **kwargs: Any) -> None:
@@ -158,7 +178,15 @@ class FreshCtxContextEngine(ContextCompressor):
             conversationMessages=conversation_messages,
             incomingMessage=incoming_message,
         )
-        if not isinstance(result, dict) or result.get("applied") is not True:
+        if not isinstance(result, dict):
+            return None
+        logger.info(
+            "FreshCtx bridge select: applied=%s selected=%s unresolved=%s",
+            result.get("applied"),
+            result.get("selected"),
+            result.get("unresolved"),
+        )
+        if result.get("applied") is not True:
             return None
         selected = result.get("messages")
         if not isinstance(selected, list) or not all(isinstance(item, dict) for item in selected):

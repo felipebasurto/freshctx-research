@@ -18,6 +18,7 @@ import {
 import {
   HermesRpc,
   assertFreshCtxEngineRegistered,
+  assertFreshCtxProjectionSeen,
   assistantTextFromEvents,
   readHermesHomeQueryLog,
   runCliQuery,
@@ -374,6 +375,7 @@ async function runHermesArm(arm) {
       });
       if (cell.id === "t1-read") {
         assertHermesT1HostReadTools(tools, { arm, workspace: cwd });
+        assertFreshCtxProjectionSeen(requests, hermesHomeLog, { arm, cell });
       }
       const row = cellRow({
         cell,

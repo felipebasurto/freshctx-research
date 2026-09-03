@@ -255,6 +255,43 @@ export function assertFreshCtxEngineRegistered(hermesHomeLog, { arm = "unknown" 
   if (reason) throw new Error(`${reason} (arm=${arm})`);
 }
 
+/**
+ * `adapters/hermes/__init__.py` logger `freshctx.hermes` lines in HERMES_HOME/logs.
+ * WARNING lines land in both agent.log and errors.log, which the query log joins.
+ */
+export function freshctxBridgeLogLines(hermesHomeLog) {
+  const lines = String(hermesHomeLog ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.includes("FreshCtx bridge"));
+  return [...new Set(lines)];
+}
+
+/**
+ * A registered engine can still serve nothing: the adapter returns None when
+ * the bridge exits non-zero, times out, or never got a state file, and Hermes
+ * sends its own request. Dest 5030c56d printed `resolution=none` on eight such
+ * dumps (PCR 0168). After the t1 host read, at least one provider dump of a
+ * freshctx arm must carry the FreshCtx envelope; otherwise the row is not a
+ * FreshCtx measurement and the bridge lines from the Hermes log say why.
+ */
+export function freshctxProjectionMissingReason(requests, hermesHomeLog) {
+  const list = Array.isArray(requests) ? requests : [];
+  const projected = list.some((item) => item?.hasFreshCtxEnvelope === true || item?.hasFreshCtxUnit === true);
+  if (projected) return null;
+  const bridgeLines = freshctxBridgeLogLines(hermesHomeLog);
+  const detail = bridgeLines.length > 0
+    ? bridgeLines.join("\n  ")
+    : "no FreshCtx bridge lines in HERMES_HOME logs";
+  return `no FreshCtx projection in any of ${list.length} t1 provider dumps; Hermes sent its own request:\n  ${detail}`;
+}
+
+export function assertFreshCtxProjectionSeen(requests, hermesHomeLog, { arm = "unknown", cell } = {}) {
+  if (arm === "nothing" || cell?.turn !== 1) return;
+  const reason = freshctxProjectionMissingReason(requests, hermesHomeLog);
+  if (reason) throw new Error(`${reason}\n(arm=${arm})`);
+}
+
 export async function persistCliQueryCompanions({
   logPath,
   args,
