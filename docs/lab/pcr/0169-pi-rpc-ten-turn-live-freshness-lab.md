@@ -165,7 +165,7 @@ T3/T6/T7 are.
 | `npm test` | yes | 0 | `# tests 756` `# pass 756` `# fail 0` `# skipped 0` (docs-only branch; same as PCR 0168) |
 | `npm run evaluate` | yes | 0 | `EVALUATE_VERDICT=PASS`; `payloadBytes.candidate` 8589, `baseline` 36701, `oracleRetention.recall` 1 |
 | `npm run test:docs` | yes | 0 | living-docs count 165 matches files on disk; INDEX and METRICS name 0169 |
-| `git fetch origin main && npm run ci` | yes | 0 | see METRICS row |
+| `git fetch origin main && npm run ci` | yes | 0 | `check`, `test` 756 / 756, `test:docs` 11 / 11, `bench`, `ctxbench`, `evaluate` PASS, `evaluate:check-docs`, `papers:list`, `test:py` `Ran 13 tests` OK, `holdout:verify`, `holdout:ci-guard` against `origin/main` |
 | `npm run ctxbench:pi-smoke` | no | n/a | no adapter change |
 | live Pi rerun on this Cloud Agent | no | n/a | operator machine only; sessions not mounted here |
 
