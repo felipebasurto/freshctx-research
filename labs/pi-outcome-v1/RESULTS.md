@@ -2,6 +2,14 @@
 
 No FreshCtx turn-saving headline yet.
 
+Isolation live N is now 5 frozen tasks (rate-constant-v1 plus the four
+remaining). Across the four new pairs alone: withoutFreshCtx passed 4/4;
+withFreshCtx passed 2/4. FreshCtx did not win pass rate or post-resume
+request count on those four. On every without arm, first-request bytes were
+still stale and the model passed after rereading. On every with arm,
+first-request bytes were current. Two with arms hit the 8-request cap and
+never submitted a checker-passing answer.
+
 On frozen `rate-constant-v1`, DeepSeek-V4-Flash passed 1/1 with FreshCtx and
 1/1 without. The without arm passed on the first submission in 2 post-resume
 requests after rereading both files. Its first request still contained stale
@@ -64,6 +72,99 @@ Spend at the lab's documented peak prices of $0.44/M input and $1.32/M output,
 ignoring cache discounts: **$0.004405**. With the runner's cache-read table of
 $0.014/M hit and $0.44/M miss: $0.002224. Cap this run: $5. Remaining headroom:
 about $4.995. Do not treat serialized request bytes as a cost claim.
+
+
+## Live pairs on four remaining frozen tasks (2026-09-05)
+
+Commands, each once, sequential, $5 spend cap, product read-only at
+`3e3c4489969fbe02b7313b666767651d1faf133c`. Research at measurement
+`b4f844d48540a649fc0da82415c23fb7eb0d1a29`. Pi `0.85.0`. Node `v22.22.3`.
+Requested model `deepseek-v4-flash`. Scoring and gold were not changed after
+seeing replies. Do not claim cost savings from bytes.
+
+```sh
+FRESHCTX_PRODUCT=/Users/felipe/Proyectos/freshctx/official FRESHCTX_APPROVED_USD=5 \
+  node labs/pi-outcome-v1/run.mjs --live --task=labs/pi-outcome-v1/tasks/<task>.json
+```
+
+N for this batch: 4 tasks × 2 arms. Pass: withoutFreshCtx 4/4, withFreshCtx
+2/4. FreshCtx did not win turns or pass on this batch. Aggregate peak spend
+for the four pairs: **$0.022016**. Aggregate cache-table spend: **$0.009857**.
+Cap headroom remains under $5 per command.
+
+### moved-symbol-v1
+
+Artifact: `labs/pi-outcome-v1/live-1788623217761.json`.
+Gold 104. Stale-observed-plus-current-unread 80.
+spendUsdPeak `$0.008442`. spendUsdCache `$0.003643`.
+
+| Arm | First submission | Within two submissions | Post-resume requests | Reads | Requests to pass | First-request code |
+| --- | --- | --- | --- | --- | --- | --- |
+| withoutFreshCtx | pass | pass | 2 | 2 | 2 | stale `quantity * 11`; no current `quantity * 19`; unread body not exposed |
+| withFreshCtx | fail | fail | 8 | 16 | null | current `quantity * 19`; no stale `quantity * 11`; unread body not exposed |
+
+withoutFreshCtx answer: fenced `{"answer": 104}` after rereads.
+withFreshCtx: all eight post-resume requests returned HTTP 200, then the
+runner stopped with `Post-resume request cap reached` / submission error
+`500 Harness request rejected` and an empty answer. No checker pass.
+
+### operator-shift-v1
+
+Artifact: `labs/pi-outcome-v1/live-1788623234679.json`.
+Gold 89. Stale-observed-plus-current-unread 82.
+spendUsdPeak `$0.004080`. spendUsdCache `$0.002117`.
+
+| Arm | First submission | Within two submissions | Post-resume requests | Reads | Requests to pass | First-request code |
+| --- | --- | --- | --- | --- | --- | --- |
+| withoutFreshCtx | pass | pass | 2 | 2 | 2 | stale `quantity * 7`; no current `quantity + 25`; unread body not exposed |
+| withFreshCtx | pass | pass | 4 | 6 | 4 | current `quantity + 25`; no stale `quantity * 7`; unread body not exposed |
+
+Both arms returned fenced `{"answer": 89}` on the first submission.
+withFreshCtx used more post-resume requests (4 vs 2).
+
+### tax-base-v1
+
+Artifact: `labs/pi-outcome-v1/live-1788623248484.json`.
+Gold 125. Stale-observed-plus-current-unread 113.
+spendUsdPeak `$0.007152`. spendUsdCache `$0.002735`.
+
+| Arm | First submission | Within two submissions | Post-resume requests | Reads | Requests to pass | First-request code |
+| --- | --- | --- | --- | --- | --- | --- |
+| withoutFreshCtx | pass | pass | 2 | 2 | 2 | stale `quantity * 14`; no current `quantity * 18`; unread body not exposed |
+| withFreshCtx | fail | fail | 8 | 16 | null | current `quantity * 18`; no stale `quantity * 14`; unread body not exposed |
+
+withoutFreshCtx answer: fenced `{"answer": 125}` after rereads.
+withFreshCtx: same 8-request cap failure pattern as moved-symbol-v1 (HTTP 200
+on every request, empty answer, `Post-resume request cap reached`).
+
+### quote-surcharge-v1
+
+Artifact: `labs/pi-outcome-v1/live-1788623270229.json`.
+Gold 100. Stale-observed-plus-current-unread 85.
+spendUsdPeak `$0.002343`. spendUsdCache `$0.001361`.
+
+| Arm | First submission | Within two submissions | Post-resume requests | Reads | Requests to pass | First-request code |
+| --- | --- | --- | --- | --- | --- | --- |
+| withoutFreshCtx | pass | pass | 2 | 2 | 2 | stale `quantity * 16`; no current `quantity * 21`; unread body not exposed |
+| withFreshCtx | pass | pass | 2 | 2 | 2 | current `quantity * 21`; no stale `quantity * 16`; unread body not exposed |
+
+withoutFreshCtx: fenced `{"answer": 100}`. withFreshCtx: exact
+`{"answer":100}`. Same request count on both arms.
+
+### Batch read on turns and pass
+
+| Task | without pass / reqs | with pass / reqs | FreshCtx turn win? |
+| --- | --- | --- | --- |
+| moved-symbol-v1 | pass / 2 | fail / null (cap 8) | no |
+| operator-shift-v1 | pass / 2 | pass / 4 | no |
+| tax-base-v1 | pass / 2 | fail / null (cap 8) | no |
+| quote-surcharge-v1 | pass / 2 | pass / 2 | tie on requests; no pass edge |
+
+Across the full isolation set of five live pairs including rate-constant-v1:
+withoutFreshCtx 5/5 pass; withFreshCtx 3/5 pass. Still no FreshCtx
+turn-saving or pass-rate headline. Models continue to reread observed files
+on the without arm, so stale first-request evidence did not force wrong
+answers. Do not treat serialized request bytes as a cost claim.
 
 ## Freeze before this paid call
 
