@@ -1,0 +1,37 @@
+{
+  "id": "quote-surcharge-v1",
+  "N": 1,
+  "model": "deepseek-v4-flash",
+  "modelVersionFromProviderDocs": "DeepSeek-V4-Flash-0731",
+  "api": "openai-completions",
+  "temperature": 0,
+  "maxTokens": 512,
+  "maxRequestsPerArm": 8,
+  "maxRequestBytes": 64000,
+  "maxSubmissions": 2,
+  "armOrder": ["withoutFreshCtx", "withFreshCtx"],
+  "expression": "quote(3) + surcharge()",
+  "gold": 100,
+  "staleObservedCurrentUnread": 85,
+  "before": {
+    "quote.js": "function quote(quantity) {\n  return quantity * 16;\n}\n",
+    "surcharge.js": "// applied after quote\nfunction surcharge() {\n  return 31;\n}\n"
+  },
+  "after": {
+    "quote.js": "function quote(quantity) {\n  return quantity * 21;\n}\n",
+    "surcharge.js": "// applied after quote\nfunction surcharge() {\n  return 37;\n}\n"
+  },
+  "seedReads": [{"path":"quote.js","offset":1,"limit":3},{"path":"surcharge.js","offset":1,"limit":1}],
+  "isolation": {
+    "observedPath": "quote.js",
+    "unreadPath": "surcharge.js",
+    "staleObserved": "quantity * 16",
+    "currentObserved": "quantity * 21",
+    "unreadBodies": ["return 31;", "return 37;"]
+  },
+  "prompt": "The workspace may have changed while this session was closed. Compute quote(3) from quote.js plus surcharge() from surcharge.js using the current files. You may read any required code. Return only a JSON object with the numeric field answer.",
+  "retryPrompt": "The external checker rejected your answer. Inspect the current workspace as needed and return only a JSON object with the numeric field answer.",
+  "scoring": "Execute current quote.js and surcharge.js in a separate VM as quote(3) + surcharge(). Accept exact numeric JSON, including a JSON object wrapped in markdown or code fences. Reject stale 85, header-only guesses, non-numeric answers, and wrong golds. First-submission success and success within two submissions are distinct. Header-only context is insufficient evidence of the surcharge body.",
+  "preparation": "Identical scripted provider forces the two real Pi seed reads, then replies Ready. Save and close the session; mutate files; reopen in a new Pi AgentSession. Only post-resume requests use the real model. Seed requests are excluded and separately counted. This is a controlled saved-history task, not a natural end-to-end coding session.",
+  "scope": "One synthetic development task, one pair, no repeated samples, no significance or general coding claim. Literal change inside the observed function. Native Pi read versus FreshCtx read is a bundled bridge comparison, not a pure request-rewriter ablation. No bash/edit tools; both arms have read."
+}
