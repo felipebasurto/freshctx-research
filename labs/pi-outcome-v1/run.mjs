@@ -6,15 +6,28 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { score } from './checker.mjs';
+import { expected, score } from './checker.mjs';
+
 const directory = new URL('./', import.meta.url);
-const taskBytes = await readFile(new URL('task.json', directory));
+const argTask = process.argv.find(a => a.startsWith('--task='))?.slice('--task='.length);
+const taskUrl = argTask || process.env.FRESHCTX_TASK
+  ? pathToFileURL(resolve(argTask ?? process.env.FRESHCTX_TASK))
+  : new URL('./tasks/rate-constant-v1.json', directory);
+const taskBytes = await readFile(taskUrl);
 const task = JSON.parse(taskBytes);
+const expression = task.expression ?? 'total(3) + fee(3)';
+const iso = task.isolation ?? {
+  observedPath: 'price.js',
+  unreadPath: 'fees.js',
+  staleObserved: 'quantity * 10',
+  currentObserved: 'quantity * 20',
+  unreadBodies: ['quantity + 11', 'quantity + 7'],
+};
 const product = resolve(process.env.FRESHCTX_PRODUCT ?? '../official');
 const piRoot = join(product, 'bridges/pi/node_modules/@earendil-works/pi-coding-agent');
 const { createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager } = await import(pathToFileURL(join(piRoot, 'dist/index.js')));
 const live = process.argv.includes('--live');
-if (live && process.env.FRESHCTX_APPROVED_USD !== '1') throw new Error('Live run requires explicit user authorization of up to $1 and FRESHCTX_APPROVED_USD=1');
+if (live && !(Number(process.env.FRESHCTX_APPROVED_USD) >= 5)) throw new Error('Live run requires explicit user authorization of up to $5 and FRESHCTX_APPROVED_USD=5');
 const output = resolve(process.env.FRESHCTX_RESULT ?? `labs/pi-outcome-v1/${live ? 'live' : 'fixture'}-${Date.now()}.json`);
 // Reserve the destination before any provider call. Never overwrite a previous attempt.
 await writeFile(output, '', { flag: 'wx' });
@@ -24,12 +37,13 @@ const report = {
   pi: JSON.parse(await readFile(join(piRoot, 'package.json'))).version,
   productSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: product, encoding: 'utf8' }).trim(),
   researchSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  taskPath: taskUrl.pathname,
   taskSha256: createHash('sha256').update(taskBytes).digest('hex'),
   checkerSha256: createHash('sha256').update(await readFile(new URL('checker.mjs', directory))).digest('hex'),
   runnerSha256: createHash('sha256').update(await readFile(new URL('run.mjs', directory))).digest('hex'),
-  limits: { requestsPerArm: task.maxRequestsPerArm, requestBytes: task.maxRequestBytes, outputTokens: task.maxTokens },
+  limits: { requestsPerArm: task.maxRequestsPerArm, requestBytes: task.maxRequestBytes, outputTokens: task.maxTokens, approvedUsd: live ? Number(process.env.FRESHCTX_APPROVED_USD) : 0 },
   pricingReference: 'https://api-docs.deepseek.com/quick_start/pricing/',
-  spendingGuard: 'At most 16 live requests, each <=64000 serialized UTF-8 bytes and <=512 output tokens. Conservative input reserve 128000 tokens/request at peak $0.44/M plus output $1.32/M: $0.9129344 total. No automatic retries. Pricing snapshot 2026-09-05. This is a preflight reserve, not measured billing.',
+  spendingGuard: 'At most 16 live requests, each <=64000 serialized UTF-8 bytes and <=512 output tokens. Conservative input reserve 128000 tokens/request at peak $0.44/M plus output $1.32/M: $0.9129344 total. Cap $5. No automatic retries. Pricing snapshot 2026-09-05. This is a preflight reserve, not measured billing.',
   arms: [],
 };
 let key;
@@ -42,6 +56,41 @@ function scripted(res, delta, finish) {
   res.writeHead(200, { 'content-type': 'text/event-stream' });
   for (const choice of [{ delta, finish_reason: null }, { delta: {}, finish_reason: finish }]) res.write('data: ' + JSON.stringify({ id: 'controlled-seed', object: 'chat.completion.chunk', created: 1, model: task.model, choices: [{ index: 0, ...choice }] }) + '\n\n');
   res.end('data: [DONE]\n\n');
+}
+function seedPrompt() {
+  const parts = task.seedReads.map(read => read.offset === 1 && read.limit === 1
+    ? `only line 1 of ${read.path}`
+    : `lines ${read.offset}-${read.offset + read.limit - 1} of ${read.path}`);
+  return `Read ${parts.join(' and ')}, then say Ready.`;
+}
+function evidenceText(payload) {
+  return payload.messages.filter(m => m.role === 'tool' || m.role === 'user').map(m => typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).join('\n');
+}
+function filesFromEvidence(evidence) {
+  const files = { ...task.after };
+  if (evidence.includes(iso.staleObserved) && !evidence.includes(iso.currentObserved)) files[iso.observedPath] = task.before[iso.observedPath];
+  return files;
+}
+function usageFromResponse(text) {
+  const empty = { prompt_tokens: 0, completion_tokens: 0, prompt_cache_hit_tokens: 0, prompt_cache_miss_tokens: 0 };
+  if (!text) return empty;
+  let usage = empty;
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('data: {')) continue;
+    try {
+      const chunk = JSON.parse(line.slice(6));
+      if (!chunk.usage) continue;
+      const hit = chunk.usage.prompt_cache_hit_tokens ?? chunk.usage.prompt_tokens_details?.cached_tokens ?? 0;
+      const prompt = chunk.usage.prompt_tokens ?? 0;
+      usage = {
+        prompt_tokens: prompt,
+        completion_tokens: chunk.usage.completion_tokens ?? 0,
+        prompt_cache_hit_tokens: hit,
+        prompt_cache_miss_tokens: chunk.usage.prompt_cache_miss_tokens ?? Math.max(0, prompt - hit),
+      };
+    } catch { /* skip malformed SSE */ }
+  }
+  return usage;
 }
 try {
   for (const arm of task.armOrder) {
@@ -85,13 +134,12 @@ try {
             return res.end(entry.response);
           }
           // Fixture policy tests checker feedback and permitted rereads, not intelligence.
-          const evidence = payload.messages.filter(m => m.role === 'tool' || m.role === 'user').map(m => typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).join('\n');
-          const fee = [...evidence.matchAll(/return quantity \+ (\d+);/g)].at(-1);
-          const total = [...evidence.matchAll(/return quantity \* (\d+);/g)].at(-1);
+          const evidence = evidenceText(payload);
           const retry = payload.messages.some(m => JSON.stringify(m.content).includes(task.retryPrompt));
-          const path = !fee ? 'fees.js' : retry && total?.[1] !== '20' ? 'price.js' : null;
+          const hasUnread = iso.unreadBodies.some(needle => evidence.includes(needle));
+          const path = !hasUnread ? iso.unreadPath : retry && evidence.includes(iso.staleObserved) && !evidence.includes(iso.currentObserved) ? iso.observedPath : null;
           if (path) return scripted(res, { role: 'assistant', tool_calls: [{ index: 0, id: `fixture_${entry.index}`, type: 'function', function: { name: 'read', arguments: JSON.stringify({ path }) } }] }, 'tool_calls');
-          return scripted(res, { role: 'assistant', content: JSON.stringify({ answer: Number(total?.[1]) * 3 + 3 + Number(fee?.[1]) }) }, 'stop');
+          return scripted(res, { role: 'assistant', content: JSON.stringify({ answer: expected(filesFromEvidence(evidence), expression) }) }, 'stop');
         } catch (error) {
           result.errors.push(error.message);
           res.writeHead(500); res.end('Harness request rejected');
@@ -111,12 +159,12 @@ try {
       };
       const manager = SessionManager.create(root, join(root, 'sessions'));
       session = await open(manager);
-      await session.prompt('Read lines 1-3 of price.js and only line 1 of fees.js, then say Ready.');
+      await session.prompt(seedPrompt());
       assert.equal(result.seedRequests, 2);
       await session.extensionRunner.emit({ type: 'session_shutdown', reason: 'exit' }); session.dispose(); session = null;
       const saved = await readFile(manager.getSessionFile(), 'utf8');
-      assert.ok(saved.includes('quantity * 10'));
-      assert.ok(!saved.includes('quantity + 7'), 'Header read must not seed unread function');
+      assert.ok(saved.includes(iso.staleObserved));
+      for (const needle of iso.unreadBodies) assert.ok(!saved.includes(needle), 'Header read must not seed unread function');
       for (const [path, body] of Object.entries(task.after)) await writeFile(join(root, path), body);
       phase = 'measurement';
       session = await open(SessionManager.open(manager.getSessionFile()));
@@ -125,19 +173,19 @@ try {
         const last = session.messages.at(-1);
         const answer = last.content?.filter(c => c.type === 'text').map(c => c.text).join('') ?? '';
         const files = Object.fromEntries(await Promise.all(Object.keys(task.after).map(async p => [p, await readFile(join(root, p), 'utf8')])));
-        const pass = last.stopReason === 'stop' && score(answer, files);
+        const pass = last.stopReason === 'stop' && score(answer, files, expression);
         result.submissions.push({ attempt: attempt + 1, answer, pass, stopReason: last.stopReason, error: last.errorMessage, requests: result.requests.length, toolCalls: result.toolCalls.length });
         if (pass || last.stopReason !== 'stop') break;
       }
       const firstEvidence = JSON.stringify(result.requests[0]?.payload.messages.filter(m => m.role === 'tool' || m.role === 'user'));
       result.initialEvidence = {
-        staleTotal: firstEvidence.includes('quantity * 10'),
-        currentTotal: firstEvidence.includes('quantity * 20'),
-        unreadFeeExposed: firstEvidence.includes('quantity + 11') || firstEvidence.includes('quantity + 7'),
+        staleObserved: firstEvidence.includes(iso.staleObserved),
+        currentObserved: firstEvidence.includes(iso.currentObserved),
+        unreadBodyExposed: iso.unreadBodies.some(needle => firstEvidence.includes(needle)),
       };
-      assert.equal(result.initialEvidence.unreadFeeExposed, false, 'Unread fee body leaked');
-      assert.equal(result.initialEvidence.currentTotal, arm === 'withFreshCtx');
-      assert.equal(result.initialEvidence.staleTotal, arm !== 'withFreshCtx');
+      assert.equal(result.initialEvidence.unreadBodyExposed, false, 'Unread body leaked');
+      assert.equal(result.initialEvidence.currentObserved, arm === 'withFreshCtx');
+      assert.equal(result.initialEvidence.staleObserved, arm !== 'withFreshCtx');
       result.historyPreserved = (await readFile(manager.getSessionFile(), 'utf8')).startsWith(saved);
       assert.ok(result.historyPreserved);
       result.pass = result.submissions.some(s => s.pass);
@@ -152,11 +200,28 @@ try {
     }
   }
 } finally {
+  const usage = { prompt_tokens: 0, completion_tokens: 0, prompt_cache_hit_tokens: 0, prompt_cache_miss_tokens: 0 };
+  for (const arm of report.arms) {
+    arm.usage = { prompt_tokens: 0, completion_tokens: 0, prompt_cache_hit_tokens: 0, prompt_cache_miss_tokens: 0 };
+    for (const request of arm.requests) {
+      const parsed = usageFromResponse(request.response);
+      for (const key of Object.keys(arm.usage)) arm.usage[key] += parsed[key];
+    }
+    for (const key of Object.keys(usage)) usage[key] += arm.usage[key];
+  }
+  report.usage = usage;
+  report.spendUsdPeak = (usage.prompt_tokens * 0.44 + usage.completion_tokens * 1.32) / 1e6;
+  report.spendUsdCache = (usage.prompt_cache_hit_tokens * 0.014 + usage.prompt_cache_miss_tokens * 0.44 + usage.completion_tokens * 1.32) / 1e6;
   report.finishedAt = new Date().toISOString();
   await writeFile(output, JSON.stringify(report, null, 2) + '\n');
 }
-console.log(JSON.stringify({ output, mode: report.mode, arms: report.arms.map(({ arm, pass, firstSubmissionPass, requestsToPass, errors }) => ({ arm, pass, firstSubmissionPass, requestsToPass, errors })) }, null, 2));
+console.log(JSON.stringify({
+  output, mode: report.mode, task: report.task,
+  spendUsdPeak: report.spendUsdPeak, spendUsdCache: report.spendUsdCache,
+  arms: report.arms.map(({ arm, pass, firstSubmissionPass, requestsToPass, initialEvidence, errors }) => ({ arm, pass, firstSubmissionPass, requestsToPass, initialEvidence, errors })),
+}, null, 2));
 if (report.arms.some(a => a.errors.length)) process.exitCode = 1;
+if (live && report.spendUsdPeak > 5) process.exitCode = 1;
 
 if (!live) {
   assert.deepEqual(report.arms.map(a => [a.pass, a.firstSubmissionPass, a.requestsToPass, a.toolCalls.length]), [[true, false, 4, 2], [true, true, 2, 1]], 'Scripted regression must exercise failure, reread, correction, and FreshCtx current bytes');

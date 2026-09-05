@@ -1,10 +1,31 @@
 import { runInNewContext } from 'node:vm';
-export function expected(files) {
-  return runInNewContext(files['price.js'] + '\n' + files['fees.js'] + '\ntotal(3) + fee(3)', {}, { timeout: 100 });
+
+export function expected(files, expression = 'total(3) + fee(3)') {
+  return runInNewContext(Object.values(files).join('\n') + '\n' + expression, {}, { timeout: 100 });
 }
-export function score(text, files) {
+
+export function parseAnswer(text) {
+  const raw = String(text ?? '');
+  const candidates = [raw.trim()];
+  for (const match of raw.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)) {
+    candidates.push(match[1].trim());
+  }
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed === 'object' && typeof parsed.answer === 'number' && Number.isFinite(parsed.answer)) {
+        return parsed;
+      }
+    } catch { /* try the next candidate */ }
+  }
+  return null;
+}
+
+export function score(text, files, expression) {
   try {
-    const parsed = JSON.parse(text);
-    return typeof parsed.answer === 'number' && parsed.answer === expected(files);
-  } catch { return false; }
+    const parsed = parseAnswer(text);
+    return parsed !== null && parsed.answer === expected(files, expression);
+  } catch {
+    return false;
+  }
 }

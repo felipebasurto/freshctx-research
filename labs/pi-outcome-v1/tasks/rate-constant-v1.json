@@ -1,0 +1,37 @@
+{
+  "id": "rate-constant-v1",
+  "N": 1,
+  "model": "deepseek-v4-flash",
+  "modelVersionFromProviderDocs": "DeepSeek-V4-Flash-0731",
+  "api": "openai-completions",
+  "temperature": 0,
+  "maxTokens": 512,
+  "maxRequestsPerArm": 8,
+  "maxRequestBytes": 64000,
+  "maxSubmissions": 2,
+  "armOrder": ["withoutFreshCtx", "withFreshCtx"],
+  "expression": "total(3) + fee()",
+  "gold": 80,
+  "staleObservedCurrentUnread": 68,
+  "before": {
+    "price.js": "function total(quantity) {\n  return quantity * 13;\n}\n",
+    "fees.js": "// billing policy\nfunction fee() {\n  return 23;\n}\n"
+  },
+  "after": {
+    "price.js": "function total(quantity) {\n  return quantity * 17;\n}\n",
+    "fees.js": "// billing policy\nfunction fee() {\n  return 29;\n}\n"
+  },
+  "seedReads": [{"path":"price.js","offset":1,"limit":3},{"path":"fees.js","offset":1,"limit":1}],
+  "isolation": {
+    "observedPath": "price.js",
+    "unreadPath": "fees.js",
+    "staleObserved": "quantity * 13",
+    "currentObserved": "quantity * 17",
+    "unreadBodies": ["return 23;", "return 29;"]
+  },
+  "prompt": "The workspace may have changed while this session was closed. Compute total(3) from price.js plus fee() from fees.js using the current files. You may read any required code. Return only a JSON object with the numeric field answer.",
+  "retryPrompt": "The external checker rejected your answer. Inspect the current workspace as needed and return only a JSON object with the numeric field answer.",
+  "scoring": "Execute current price.js and fees.js in a separate VM as total(3) + fee(). Accept exact numeric JSON, including a JSON object wrapped in markdown or code fences. Reject stale 68, header-only guesses, non-numeric answers, and wrong golds. First-submission success and success within two submissions are distinct. Header-only context is insufficient evidence of the fee body.",
+  "preparation": "Identical scripted provider forces the two real Pi seed reads, then replies Ready. Save and close the session; mutate files; reopen in a new Pi AgentSession. Only post-resume requests use the real model. Seed requests are excluded and separately counted. This is a controlled saved-history task, not a natural end-to-end coding session.",
+  "scope": "One synthetic development task, one pair, no repeated samples, no significance or general coding claim. Literal change inside the observed function. Native Pi read versus FreshCtx read is a bundled bridge comparison, not a pure request-rewriter ablation. No bash/edit tools; both arms have read."
+}

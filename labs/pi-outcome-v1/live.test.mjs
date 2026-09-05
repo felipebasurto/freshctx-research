@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { score } from './checker.mjs';
+import { expected, score } from './checker.mjs';
 
 const task = JSON.parse(await readFile(new URL('./task.json', import.meta.url)));
 const live = JSON.parse(await readFile(new URL('./live-1788612329848.json', import.meta.url)));
@@ -15,7 +15,7 @@ test('recorded DeepSeek pair stays a real-model N=1 on the frozen task', () => {
   assert.deepEqual(live.arms.map(a => a.arm), ['withoutFreshCtx', 'withFreshCtx']);
 });
 
-test('external checker scores the recorded answers; both arms fail', () => {
+test('recorded harness flags stay 0/1 both arms; gold 74 is unchanged', () => {
   const without = live.arms[0];
   const withFresh = live.arms[1];
   assert.equal(without.pass, false);
@@ -26,13 +26,20 @@ test('external checker scores the recorded answers; both arms fail', () => {
   assert.equal(withFresh.requests.length, 4);
   assert.equal(without.toolCalls.length, 4);
   assert.equal(withFresh.toolCalls.length, 4);
-  for (const arm of live.arms) {
-    for (const submission of arm.submissions) {
-      assert.equal(score(submission.answer, task.after), false);
-    }
-  }
+  assert.equal(expected(task.after), 74);
   assert.match(without.submissions[0].answer, /\{"answer": 74\}/);
   assert.equal(withFresh.submissions[0].answer, '{"answer": 71}');
+});
+
+test('fence-tolerant checker would accept the recorded 74 and still reject 71', () => {
+  const without = live.arms[0];
+  const withFresh = live.arms[1];
+  for (const submission of without.submissions) {
+    assert.equal(score(submission.answer, task.after), true);
+  }
+  for (const submission of withFresh.submissions) {
+    assert.equal(score(submission.answer, task.after), false);
+  }
 });
 
 test('first measured requests keep the frozen freshness facts', () => {

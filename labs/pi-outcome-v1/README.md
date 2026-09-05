@@ -4,10 +4,14 @@ This lab unblocks real-model outcome measurement through the product's Pi Chat
 Completions bridge. It is a single synthetic development task, not a benchmark
 of general coding ability. Frozen bench reports are untouched.
 
-`task.json` and `checker.mjs` were committed at
-`985b061` before running the harness. N=1 pair; fixed baseline-first order;
-model `deepseek-v4-flash`, temperature 0, thinking disabled, 512 output tokens.
-The provider documentation on 2026-09-05 maps the model alias to
+`task.json` and the first `checker.mjs` were committed at `985b061` before the
+first harness run. That frozen v1 task stays byte-identical. Gold remains 74.
+
+The fence-tolerant checker and five isolation tasks under `tasks/` are a later
+freeze, committed before any new paid call. N=1 pair per task; fixed
+baseline-first order; model `deepseek-v4-flash`, temperature 0, thinking
+disabled, 512 output tokens. The live primary is `rate-constant-v1`. The
+provider documentation on 2026-09-05 maps the model alias to
 DeepSeek-V4-Flash-0731. The alias is not an immutable model snapshot; raw SSE
 responses record the model string actually returned. Pi is pinned to 0.85.0.
 
@@ -21,18 +25,21 @@ restart. The baseline uses Pi's native reader; the treatment uses the complete
 FreshCtx bridge, including its reader description and formatting.
 
 The checker executes the current two files in a separate VM; exact numeric
-JSON equality is required. It supplies only pass/fail feedback. We count first
-submission success, success within two submissions, HTTP requests and read
-calls to pass. A failed run has null requests-to-pass, not zero. Protocol and
-transport errors remain recorded and invalidate a model-outcome interpretation.
+JSON equality is required. A correct numeric object wrapped in markdown or
+code fences counts. Wrong golds still fail even when fenced. It supplies only
+pass/fail feedback. We count first submission success, success within two
+submissions, HTTP requests and read calls to pass. A failed run has null
+requests-to-pass, not zero. Protocol and transport errors remain recorded and
+invalidate a model-outcome interpretation.
 The harness independently checks that the first measured request has current
-observed code with FreshCtx, stale observed code without it, and no unread fee
+observed code with FreshCtx, stale observed code without it, and no unread
 body in either arm. Saved history must retain the old read.
 
 Run from the research checkout, with an installed private product checkout:
 
 ```sh
 FRESHCTX_PRODUCT=/absolute/path/to/freshctx node labs/pi-outcome-v1/run.mjs
+FRESHCTX_PRODUCT=/absolute/path/to/freshctx node labs/pi-outcome-v1/run.mjs --task=labs/pi-outcome-v1/task.json
 node --test labs/pi-outcome-v1/checker.test.mjs labs/pi-outcome-v1/live.test.mjs
 ```
 
@@ -43,16 +50,16 @@ agent improvement. The script asserts these expectations. Results have unique
 filenames and include complete request payloads, hashes, pins, and failures.
 Only synthetic fixture content is sent upstream; credentials are never logged.
 
-After explicit approval of up to $1 API spend:
+After explicit approval of up to $5 API spend:
 
 ```sh
-FRESHCTX_PRODUCT=/absolute/path/to/freshctx FRESHCTX_APPROVED_USD=1 \
+FRESHCTX_PRODUCT=/absolute/path/to/freshctx FRESHCTX_APPROVED_USD=5 \
   node labs/pi-outcome-v1/run.mjs --live
 ```
 
 Do not rerun `--live` to replace a finished pair. The first real-model artifact
-is `live-1788612329848.json`. Numbers and the headline it supports are in
-[RESULTS.md](RESULTS.md).
+is `live-1788612329848.json` on v1. Later pairs have their own timestamps.
+Numbers and the headline they support are in [RESULTS.md](RESULTS.md).
 
 This reads the existing DeepSeek API key from Pi's auth file without changing
 it. Each arm allows at most eight post-resume requests, each <=64,000 serialized
@@ -71,5 +78,5 @@ cannot establish general success rates, Pass@1, SWE performance, or SOTA.
 
 Before broadening the claim: run the approved real pair, inspect all traces,
 then preregister more tasks with counterbalanced order and repetitions. Include
-cross-file moves/renames, coding edits, and adverse outcomes. Do not change this
-frozen task or silently replace failed runs.
+cross-file moves/renames, coding edits, and adverse outcomes. Do not change the frozen v1 task or silently replace failed runs. Do not
+loosen gold answers.

@@ -1,0 +1,13 @@
+{
+  "id": "pi-outcome-v1-isolation-set",
+  "frozenBeforePaidCalls": true,
+  "livePrimary": "rate-constant-v1",
+  "rule": "For every task, first-request stale observed bytes plus the current unread body imply the wrong external answer, and current observed bytes plus that same unread body imply the right one. The header-only unread body is absent from both first requests and from saved seed history.",
+  "tasks": [
+    "rate-constant-v1.json",
+    "moved-symbol-v1.json",
+    "operator-shift-v1.json",
+    "tax-base-v1.json",
+    "quote-surcharge-v1.json"
+  ]
+}

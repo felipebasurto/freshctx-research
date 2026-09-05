@@ -1,0 +1,37 @@
+{
+  "id": "tax-base-v1",
+  "N": 1,
+  "model": "deepseek-v4-flash",
+  "modelVersionFromProviderDocs": "DeepSeek-V4-Flash-0731",
+  "api": "openai-completions",
+  "temperature": 0,
+  "maxTokens": 512,
+  "maxRequestsPerArm": 8,
+  "maxRequestBytes": 64000,
+  "maxSubmissions": 2,
+  "armOrder": ["withoutFreshCtx", "withFreshCtx"],
+  "expression": "tax(3) + base()",
+  "gold": 125,
+  "staleObservedCurrentUnread": 113,
+  "before": {
+    "tax.js": "function tax(quantity) {\n  return quantity * 14;\n}\n",
+    "rules.js": "// taxable base\nfunction base() {\n  return 67;\n}\n"
+  },
+  "after": {
+    "tax.js": "function tax(quantity) {\n  return quantity * 18;\n}\n",
+    "rules.js": "// taxable base\nfunction base() {\n  return 71;\n}\n"
+  },
+  "seedReads": [{"path":"tax.js","offset":1,"limit":3},{"path":"rules.js","offset":1,"limit":1}],
+  "isolation": {
+    "observedPath": "tax.js",
+    "unreadPath": "rules.js",
+    "staleObserved": "quantity * 14",
+    "currentObserved": "quantity * 18",
+    "unreadBodies": ["return 67;", "return 71;"]
+  },
+  "prompt": "The workspace may have changed while this session was closed. Compute tax(3) from tax.js plus base() from rules.js using the current files. You may read any required code. Return only a JSON object with the numeric field answer.",
+  "retryPrompt": "The external checker rejected your answer. Inspect the current workspace as needed and return only a JSON object with the numeric field answer.",
+  "scoring": "Execute current tax.js and rules.js in a separate VM as tax(3) + base(). Accept exact numeric JSON, including a JSON object wrapped in markdown or code fences. Reject stale 113, header-only guesses, non-numeric answers, and wrong golds. First-submission success and success within two submissions are distinct. Header-only context is insufficient evidence of the base body.",
+  "preparation": "Identical scripted provider forces the two real Pi seed reads, then replies Ready. Save and close the session; mutate files; reopen in a new Pi AgentSession. Only post-resume requests use the real model. Seed requests are excluded and separately counted. This is a controlled saved-history task, not a natural end-to-end coding session.",
+  "scope": "One synthetic development task, one pair, no repeated samples, no significance or general coding claim. Literal change inside the observed function with distinct filenames. Native Pi read versus FreshCtx read is a bundled bridge comparison, not a pure request-rewriter ablation. No bash/edit tools; both arms have read."
+}

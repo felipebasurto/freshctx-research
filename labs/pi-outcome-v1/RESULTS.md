@@ -1,4 +1,12 @@
-# Status on 2026-09-05
+# Status
+
+Checker false-fail on fenced numeric JSON is fixed. Five isolation tasks are
+preregistered under `tasks/`. Gold 74 on the frozen v1 task is unchanged.
+Scripted 4-vs-2 fixtures pass on all five tasks with zero LLM samples. No new
+paid call has been recorded in this freeze. Live primary after this freeze:
+`rate-constant-v1`.
+
+## Prior live pair on 2026-09-05 (do not rewrite)
 
 Direction chosen: one externally scored, controlled saved-session task through
 the actual Pi Chat Completions HTTP path. The frozen pair has now run on
