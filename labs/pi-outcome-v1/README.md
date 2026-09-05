@@ -40,7 +40,7 @@ Run from the research checkout, with an installed private product checkout:
 ```sh
 FRESHCTX_PRODUCT=/absolute/path/to/freshctx node labs/pi-outcome-v1/run.mjs
 FRESHCTX_PRODUCT=/absolute/path/to/freshctx node labs/pi-outcome-v1/run.mjs --task=labs/pi-outcome-v1/task.json
-node --test labs/pi-outcome-v1/checker.test.mjs labs/pi-outcome-v1/live.test.mjs
+node --test labs/pi-outcome-v1/checker.test.mjs labs/pi-outcome-v1/live.test.mjs labs/pi-outcome-v1/live-rate-constant.test.mjs
 ```
 
 The default is a loopback-only scripted regression, with **zero LLM samples**.
@@ -58,8 +58,9 @@ FRESHCTX_PRODUCT=/absolute/path/to/freshctx FRESHCTX_APPROVED_USD=5 \
 ```
 
 Do not rerun `--live` to replace a finished pair. The first real-model artifact
-is `live-1788612329848.json` on v1. Later pairs have their own timestamps.
-Numbers and the headline they support are in [RESULTS.md](RESULTS.md).
+is `live-1788612329848.json` on v1. The rate-constant rerun is
+`live-1788614404231.json`. Numbers and the headline they support are in
+[RESULTS.md](RESULTS.md).
 
 This reads the existing DeepSeek API key from Pi's auth file without changing
 it. Each arm allows at most eight post-resume requests, each <=64,000 serialized

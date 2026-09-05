@@ -1,10 +1,85 @@
 # Status
 
-Checker false-fail on fenced numeric JSON is fixed. Five isolation tasks are
-preregistered under `tasks/`. Gold 74 on the frozen v1 task is unchanged.
-Scripted 4-vs-2 fixtures pass on all five tasks with zero LLM samples. No new
-paid call has been recorded in this freeze. Live primary after this freeze:
-`rate-constant-v1`.
+No FreshCtx turn-saving headline yet.
+
+On frozen `rate-constant-v1`, DeepSeek-V4-Flash passed 1/1 with FreshCtx and
+1/1 without. The without arm passed on the first submission in 2 post-resume
+requests after rereading both files. Its first request still contained stale
+`quantity * 13`. The with arm had current `quantity * 17` in the first
+request and still needed a retry. It computed 80, then wrapped the JSON in
+prose without fences, so the frozen checker rejected the first submission.
+Retry returned `{"answer": 80}` at 5 post-resume requests.
+
+The prior v1 pair remains 0/1 both arms and is not rewritten.
+
+## Live pair on rate-constant-v1
+
+Command, after the freeze commit and the $5 spend cap:
+
+```sh
+FRESHCTX_PRODUCT=/Users/felipe/Proyectos/freshctx/official FRESHCTX_APPROVED_USD=5 \
+  node labs/pi-outcome-v1/run.mjs --live
+```
+
+Artifact: `labs/pi-outcome-v1/live-1788614404231.json`.
+Product SHA `3e3c4489969fbe02b7313b666767651d1faf133c`.
+Research SHA at measurement `7c2d0ebec4155f7bdc973a8ed5110cbbd5f852ac`.
+Pi `0.85.0`. Node `v22.22.3`.
+Requested and returned model id `deepseek-v4-flash`.
+Provider `system_fingerprint` `a26a7955944dc5c60445bff77fac9c8e` on every chunk.
+HTTP status 200 on all seven post-resume requests.
+Harness errors: none.
+Saved history retained the stale `quantity * 13` read on both arms.
+Unread `return 29;` / `return 23;` bodies were absent from both first
+measured requests.
+
+| Arm | First submission | Within two submissions | Post-resume requests | Reads | Requests to pass | First-request code |
+| --- | --- | --- | --- | --- | --- | --- |
+| withoutFreshCtx | pass | pass | 2 | 2 | 2 | stale `quantity * 13`; no current `quantity * 17`; fee body unread |
+| withFreshCtx | fail | pass | 5 | 6 | 5 | current `quantity * 17`; no stale `quantity * 13`; fee body unread |
+
+withoutFreshCtx answer: computed `80` inside markdown fences. The fence-tolerant
+checker accepted it. The model reread `price.js` and `fees.js` before
+answering, so stale first-request bytes did not produce a stale answer.
+
+withFreshCtx first answer: the same `80` as unfenced JSON after prose. The
+frozen checker requires a JSON object or a fenced JSON object, so that
+submission failed. The retry was exact `{"answer": 80}` and passed. After
+rereads the model had current `fee` (`return 29;`) and current `total`
+(`quantity * 17`).
+
+Independently executed current answer is 80. Stale observed plus current
+unread is 68. The checker never reveals those values in its feedback.
+Scoring was not changed after seeing these live replies.
+
+Provider usage from the last SSE `usage` object on each request:
+
+| Arm | prompt_tokens | completion_tokens | cache_hit | cache_miss |
+| --- | ---: | ---: | ---: | ---: |
+| withoutFreshCtx | 2410 | 109 | 1152 | 1258 |
+| withFreshCtx | 6489 | 262 | 3968 | 2521 |
+| pair | 8899 | 371 | 5120 | 3779 |
+
+Spend at the lab's documented peak prices of $0.44/M input and $1.32/M output,
+ignoring cache discounts: **$0.004405**. With the runner's cache-read table of
+$0.014/M hit and $0.44/M miss: $0.002224. Cap this run: $5. Remaining headroom:
+about $4.995. Do not treat serialized request bytes as a cost claim.
+
+## Freeze before this paid call
+
+Checker false-fail on fenced numeric JSON was fixed first. Five isolation
+tasks were preregistered under `tasks/`. Gold 74 on the frozen v1 task stayed
+unchanged. Scripted 4-vs-2 fixtures passed on all five tasks with zero LLM
+samples. That freeze is `7c2d0ebec4155f7bdc973a8ed5110cbbd5f852ac`.
+
+## What still blocks N-scale
+
+N is still 1 live pair on the isolation set. Arm order is still baseline-first.
+The history is still seeded, not a natural coding session. The provider alias
+is still mutable. Live models reread observed files, so stale first-request
+bytes did not force a wrong answer. Unfenced JSON after prose still fails the
+frozen checker. The other four frozen tasks, coding edits, and cross-file
+moves were not run live. No cost-saving claim is supported.
 
 ## Prior live pair on 2026-09-05 (do not rewrite)
 
