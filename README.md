@@ -1,4 +1,9 @@
-# FreshCtx
+# FreshCtx research
+
+The maintained engine is [felipebasurto/freshctx](https://github.com/felipebasurto/freshctx).
+This repository keeps the measurements, frozen packs, and live-run records.
+It is not the package to install. Adapters here are the earlier lab, including
+fail-open request handling. The product Pi bridge fails closed.
 
 FreshCtx is a local-first context substrate for coding agents. It treats source
 code as mutable workspace state rather than permanent conversation history.
