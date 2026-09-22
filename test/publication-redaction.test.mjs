@@ -23,6 +23,7 @@ test("published lab records and docs do not embed workstation paths", async () =
   const paths = [
     ...(await filesUnder("labs/pi-outcome-v1")),
     ...(await filesUnder("labs/stale-view-prevalence-v1")),
+    ...(await filesUnder("labs/freshctx-replay-v1")),
     ...(await filesUnder("docs")),
     join(root, "docs/lab/pi-trial/auto-rpc.mjs"),
   ];

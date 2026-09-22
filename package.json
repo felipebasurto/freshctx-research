@@ -52,8 +52,8 @@
     "hermes:install": "node adapters/hermes/install.mjs",
     "hermes:verify-layout": "node adapters/hermes/verify-layout.mjs",
     "ise:install": "npm --prefix ise/treesitter ci --omit=dev",
-    "check:py": "python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py adapters/hermes/__init__.py labs/stale-view-prevalence-v1/measure.py labs/stale-view-prevalence-v1/test_measure.py",
-    "check": "for f in src/*.mjs bench/*.mjs autoresearch/*.mjs examples/*.mjs scripts/*.mjs capture/*.mjs adapters/*.mjs adapters/pi/*.mjs adapters/hermes/*.mjs ise/treesitter/*.mjs test/*.mjs test/helpers/*.mjs $(find docs/lab -name '*.mjs'); do node --check \"$f\" || exit 1; done && npm run -s check:py",
+    "check:py": "python3 -m py_compile bench/hermes-native-bridge.py bench/python-ast-oracle.py adapters/hermes/__init__.py labs/stale-view-prevalence-v1/measure.py labs/stale-view-prevalence-v1/test_measure.py labs/freshctx-replay-v1/extract.py labs/freshctx-replay-v1/fetch_repos.py labs/freshctx-replay-v1/test_extract.py",
+    "check": "for f in src/*.mjs bench/*.mjs autoresearch/*.mjs examples/*.mjs scripts/*.mjs capture/*.mjs adapters/*.mjs adapters/pi/*.mjs adapters/hermes/*.mjs ise/treesitter/*.mjs test/*.mjs test/helpers/*.mjs $(find docs/lab labs -name '*.mjs'); do node --check \"$f\" || exit 1; done && npm run -s check:py",
     "ci": "npm run -s check && npm test && npm run -s test:docs && npm run -s bench && npm run -s ctxbench && npm run -s evaluate > /tmp/evaluate.txt && cat /tmp/evaluate.txt && npm run -s evaluate:check-docs -- --input=/tmp/evaluate.txt && npm run -s papers:list && npm run -s test:py && npm run -s holdout:verify -- --pack=holdout-v0.1 && npm run -s holdout:ci-guard -- --base=origin/main"
   },
   "keywords": [

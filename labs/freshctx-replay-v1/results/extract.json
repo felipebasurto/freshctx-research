@@ -1,0 +1,13 @@
+{
+  "sampled": 1198,
+  "stride": 56,
+  "end_reasons": {
+    "shell_may_restore_files": 42,
+    "file_content_unknown": 457,
+    "shell_may_write_observed_file": 605,
+    "complete": 51,
+    "view_disagrees_with_rebuild": 41,
+    "str_replace_not_unique_in_rebuild": 1,
+    "tabs_editor_may_expand": 1
+  }
+}

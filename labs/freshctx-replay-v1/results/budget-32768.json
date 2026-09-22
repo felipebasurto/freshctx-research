@@ -1,0 +1,51 @@
+{
+  "budget_bytes": 32768,
+  "trajectories": 1198,
+  "trajectories_with_replayed_request": 1198,
+  "requests_total": 77089,
+  "requests_replayed": 26528,
+  "requests_with_views": 22058,
+  "cut_reasons": {
+    "shell_may_restore_files": 42,
+    "file_content_unknown": 457,
+    "shell_may_write_observed_file": 605,
+    "complete": 51,
+    "view_disagrees_with_rebuild": 41,
+    "str_replace_not_unique_in_rebuild": 1,
+    "tabs_editor_may_expand": 1
+  },
+  "errors": {},
+  "baseline_bytes": 1805322174,
+  "freshctx_bytes": 1682432228,
+  "baseline_view_bytes": 468834032,
+  "freshctx_marker_bytes": 3299264,
+  "freshctx_projection_bytes": 342644822,
+  "final_request": {
+    "count": 1198,
+    "baseline_sum": 102031684,
+    "freshctx_sum": 94842807,
+    "baseline_median": 74377,
+    "freshctx_median": 69447,
+    "freshctx_smaller": 924,
+    "freshctx_larger": 215
+  },
+  "stale_view_instances": 15110,
+  "stale_view_requests_baseline": 3845,
+  "stale_view_requests_freshctx": 0,
+  "stale_views_replaced": 15110,
+  "stale_views_unit_projected": 8175,
+  "stale_views_unit_not_projected": {
+    "overlap": 5634,
+    "budget": 1022,
+    "unresolved:referent_missing": 178,
+    "unresolved:ambiguous": 101
+  },
+  "stale_snippet_instances": 2997,
+  "stale_snippet_requests": 1237,
+  "stale_any_requests_baseline": 3891,
+  "stale_any_requests_freshctx": 1237,
+  "projection_frames": 81291,
+  "projection_frames_current": 81291,
+  "projection_over_budget": 0,
+  "commits_applied": 22058
+}
