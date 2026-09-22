@@ -67,7 +67,7 @@ cases where a reread happened.
 ## Engine replay (one case)
 
 `replay.mjs` runs trajectory `chatcmpl-a20439b9e2e539f90fe8653cc265fd82` through
-the product sidecar at `ecaaf137fad81bb8901300c7472cfe385ba84843`, Node
+the product engine at `ecaaf137fad81bb8901300c7472cfe385ba84843`, Node
 v22.14.0. The agent viewed all 231 lines of `canvasapi/module.py` (canvasapi,
 MIT), then its own `str_replace` changed lines 126 onward. [case.json](case.json)
 holds that view and edit from the dataset. The replay observes the view, applies

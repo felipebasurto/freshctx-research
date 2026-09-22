@@ -1,4 +1,4 @@
-// Replays one real SWE-rebench OpenHands case through the real FreshCtx sidecar:
+// Replays one real SWE-rebench OpenHands case through the real FreshCtx engine:
 // the agent views canvasapi/module.py, then its own str_replace changes lines the
 // view displayed. Without FreshCtx the next request still carries the old view.
 import assert from 'node:assert/strict';
