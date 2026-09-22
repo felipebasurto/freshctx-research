@@ -83,12 +83,15 @@ sin invocar un modelo.
 
 En este checkout, `npm run evaluate` elige por defecto
 `holdout-v0.3-apex`. El pack está congelado localmente, no sellado por GitHub
-Actions de producción. La medición registrada fue 8504 bytes de payload para
-Isolated Semantic Engine, 36701 para el baseline de archivo completo y recall
-requerido 5/5. `passAt1` siempre es `null` y queda fuera de alcance.
+Actions de producción (`remoteAttestation` es null). La medición actual en
+`main` es 8589 bytes de payload para Isolated Semantic Engine y 36701 para el
+baseline de archivo completo, con recall requerido 5/5. La cifra 8504 es el
+registro congelado del 2026-08-31, antes de que la etiqueta
+`resolution="isolated-semantic-engine"` añadiera 17 bytes en cada una de las
+cinco unidades. `passAt1` siempre es `null` y queda fuera de alcance.
 
 Siguen faltando un archivo de revisiones durable y con permisos, una barrera de
 snapshot coherente, compatibilidad fijada contra releases de Pi y Hermes,
 telemetría completa por etapa y memoria, revisión independiente del baseline y
-atestación de congelación en CI de producción. Los 156 Public Change Records en
+atestación de congelación en CI de producción. Los 166 Public Change Records en
 `docs/lab/pcr/` conservan el historial de evidencia.

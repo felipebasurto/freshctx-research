@@ -8,7 +8,7 @@
 - Paper-manifest digest: unchanged (`442cd9e29a6550b3d539baa8522fd7c2c27fe8f9fef00d344ddf0092e5762e89`, `sha256sum papers/manifest.json`)
 - Door blob (`src/anchors.mjs`): `f8771c93894095348185ef3453a3c2498355b3c6` (hold)
 - `repos.lock` blob: `4a953591e4b175e9fd69f13d6012831b01116dce` (hold; no `--relock`)
-- Hosts: official Pi binary on the operator's machine, `pi --mode rpc`, one long-lived child per arm. Pi version not recorded (see Limitations). Arm B loaded the research extension from this repo, `-e /Users/felipe/Proyectos/freshctx-research/adapters/pi/extension.ts`. `/Users/felipe/Proyectos/freshctx` now holds only `official/`; the official out-of-process serve was not wired into either arm
+- Hosts: official Pi binary on the operator's machine, `pi --mode rpc`, one long-lived child per arm. Pi version not recorded (see Limitations). Arm B loaded the research extension from this repo, `-e <research-checkout>/adapters/pi/extension.ts`. `<local-checkout>` now holds only `official/`; the official out-of-process serve was not wired into either arm
 - Model: `deepseek/deepseek-v4-flash`, both arms
 - Result labels used: `synthetic`; `live-host`; `lab-record`
 - Decision: **review** (PR stays draft)
@@ -51,7 +51,7 @@ lab harness, no session JSONL, no `flip.py`, no fixture copy.
    | arm | pid | argv (as recorded) |
    |---|---|---|
    | A (plain) | 90048 | `pi --mode rpc -a` (no `-e`, no `-p`) |
-   | B (extension) | 90049 | `pi --mode rpc -a -e /Users/felipe/Proyectos/freshctx-research/adapters/pi/extension.ts` (no `-p`) |
+   | B (extension) | 90049 | `pi --mode rpc -a -e <research-checkout>/adapters/pi/extension.ts` (no `-p`) |
 
    Both pids were unchanged across all ten turns. Model
    `deepseek-v4-flash` on both.
@@ -245,5 +245,5 @@ asking for `computeDailyLedgerTotal`, and record whether the model says "no
 such symbol" against a projection that holds only a region unit. If it does,
 the follow-up is an adapter change with a red-green test that renders a region
 unit as a slice of a larger file, not this record. Also record `pi --version`
-and `git -C /Users/felipe/Proyectos/freshctx-research rev-parse HEAD` in the
+and `git -C <research-checkout> rev-parse HEAD` in the
 notes so the next record can cite them.

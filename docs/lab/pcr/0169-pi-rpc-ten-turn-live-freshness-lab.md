@@ -40,7 +40,7 @@ Everything below happened outside git. Nothing from it is committed here: no
 lab harness, no session JSONL, no `flip.py`, no fixture copy.
 
 1. Operator built two working directories under
-   `/Users/felipe/Proyectos/freshctx-pi/`: `plain/` (arm A) and `freshctx/`
+   `<local-checkout>/`: `plain/` (arm A) and `freshctx/`
    (arm B). Both held a copy of the synthetic fixture
    `docs/lab/pi-trial-ts/fixture/` (`src/settlement.ts`; target
    `settleDailyLedger` marker `ST0` at line 40, sibling `settleWeeklyLedger`
@@ -48,7 +48,7 @@ lab harness, no session JSONL, no `flip.py`, no fixture copy.
    at line 122). Arm B's copy was rsynced fresh after arm A was killed.
 2. One Pi child per arm, `pi --mode rpc -a --session <file> --provider
    deepseek --model deepseek-v4-flash`. Arm B added
-   `-e /Users/felipe/Proyectos/freshctx/adapters/pi/extension.ts`. Serial: all
+   `-e <local-checkout>/adapters/pi/extension.ts`. Serial: all
    ten turns on A, kill A, rsync, all ten turns on B.
 3. Between turns the operator mutated the fixture on disk with `flip.py`
    (marker flips) and `rm` (delete the file before T10). Tools stayed enabled
@@ -89,8 +89,8 @@ make it do so.
 
 | arm | pid | session id | cwd | argv |
 |---|---|---|---|---|
-| A (plain) | 82034 | `01a06895-9dbc-7b4c-bc69-aa6879e08475` | `/Users/felipe/Proyectos/freshctx-pi/plain` | `pi --mode rpc -a --session .../sessions/plain.jsonl --provider deepseek --model deepseek-v4-flash` |
-| B (extension) | 82378 | `01a06898-9fe0-7ae0-bce7-fc881f7907f4` | `/Users/felipe/Proyectos/freshctx-pi/freshctx` | `pi --mode rpc -a -e /Users/felipe/Proyectos/freshctx/adapters/pi/extension.ts --session .../sessions/freshctx.jsonl --provider deepseek --model deepseek-v4-flash` |
+| A (plain) | 82034 | `01a06895-9dbc-7b4c-bc69-aa6879e08475` | `<local-checkout>/plain` | `pi --mode rpc -a --session .../sessions/plain.jsonl --provider deepseek --model deepseek-v4-flash` |
+| B (extension) | 82378 | `01a06898-9fe0-7ae0-bce7-fc881f7907f4` | `<local-checkout>/freshctx` | `pi --mode rpc -a -e <local-checkout>/adapters/pi/extension.ts --session .../sessions/freshctx.jsonl --provider deepseek --model deepseek-v4-flash` |
 
 A's first spawn (pid 81615) died on the Python pipe-buffer handshake before
 any turn and was not scored; the scored A child is 82034. stderr was empty on
@@ -240,7 +240,7 @@ the repo.
 Rerun the same ten turns with T8 rewritten to require a `read` of
 `src/settlement.ts` lines 120 through 126 (so `computeDailyLedgerTotal` enters
 the registry on both arms), record `pi --version` and `git -C
-/Users/felipe/Proyectos/freshctx rev-parse HEAD` in the notes, and score T9
+<local-checkout> rev-parse HEAD` in the notes, and score T9
 `CT1` only when T8 observed `CT0`. That makes T9 a real freshness turn on the
 lookalike instead of a coverage turn, and it gives the blog post a fourth
 current-bytes contrast next to T3/T6/T7.

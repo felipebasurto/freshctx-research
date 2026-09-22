@@ -4,10 +4,17 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const PI = "/Users/felipe/.hermes/node/bin/pi";
+
+function requiredEnv(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`Set ${name}`);
+  return value;
+}
+
+const PI = requiredEnv("FRESHCTX_PI_BIN");
 const LIVE = join(here, "live.mjs");
-const SOURCE = "/Users/felipe/Proyectos/viajante";
-const FRESHCTX = "/Users/felipe/Proyectos/freshctx/adapters/pi/extension.ts";
+const SOURCE = requiredEnv("FRESHCTX_TRIAL_SOURCE");
+const FRESHCTX = requiredEnv("FRESHCTX_TRIAL_EXTENSION");
 const DUMP_EXT = join(here, "dump-request.ts");
 const WORK = join(here, ".work");
 const CAPTURE = join(WORK, "capture");

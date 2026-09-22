@@ -55,6 +55,9 @@ jobs:
         run: npm run evaluate:check-docs -- --input=/tmp/evaluate.txt
       - name: Paper manifest is readable
         run: npm run papers:list
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Hermes Python unit tests
         run: npm run test:py
       - name: Holdout verify (v0.1 + sealed fixtures)

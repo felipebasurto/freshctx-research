@@ -12,10 +12,10 @@ refresco.
 | | |
 |---|---|
 | Fecha | 2026-08-25, sesión local |
-| Host | Pi 0.84.3 (`/Users/felipe/.hermes/node/bin/pi`) |
+| Host | Pi 0.84.3 (`<local-home>/.hermes/node/bin/pi`) |
 | Modelo en UI | `deepseek-v4-pro` · thinking `high` |
 | Extensión FreshCtx | no |
-| Workspace | `docs/lab/pi-trial/.work/without` (copia de `/Users/felipe/Proyectos/viajante`) |
+| Workspace | `docs/lab/pi-trial/.work/without` (copia de `<local-checkout>`) |
 | Repo original | no se tocó |
 | Driver | CLI real, prompts pegados a mano |
 | Oro de disco | `live.mjs mutate` / markers estampados al reset |

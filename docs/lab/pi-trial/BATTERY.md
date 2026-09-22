@@ -7,7 +7,7 @@ Dos ventanas. No mezcles comandos.
 
 Si Pi ya está abierto, ciérralo (`ctrl+c` hasta que desaparezca).
 
-El repo `/Users/felipe/Proyectos/viajante` no se toca. Trabajamos en copias.
+El repo `<local-checkout>` no se toca. Trabajamos en copias.
 
 Modelo: `deepseek-v4-pro` en los dos brazos.
 
@@ -20,9 +20,9 @@ Después de cada PROMPT anota en un papel: minutos:segundos, tokens in, tokens o
 ## A0. Ventana CMD. Pega esto entero
 
 ```bash
-export PATH="/Users/felipe/.hermes/node/bin:$PATH"
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs reset without --source /Users/felipe/Proyectos/viajante
-cd /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/.work/without
+export PATH="<local-home>/.hermes/node/bin:$PATH"
+node <local-checkout>/docs/lab/pi-trial/live.mjs reset without --source <local-checkout>
+cd <local-checkout>/docs/lab/pi-trial/.work/without
 pi
 ```
 
@@ -58,8 +58,8 @@ Si no, para y dímelo.
 No cierres Pi. Vuelve a la ventana CMD (otra pestaña). El `cd` de Pi no aplica aquí.
 
 ```bash
-export PATH="/Users/felipe/.hermes/node/bin:$PATH"
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate without flip-cli
+export PATH="<local-home>/.hermes/node/bin:$PATH"
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate without flip-cli
 ```
 
 Tiene que imprimir `"value": "CL1"` en MARKER_CLI.
@@ -98,7 +98,7 @@ Anota la respuesta, tiempo y tokens.
 ## A6. Ventana CMD. Pega esto
 
 ```bash
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate without flip-readme
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate without flip-readme
 ```
 
 Tiene que imprimir MARKER_README `"value": "RD1"`.
@@ -116,7 +116,7 @@ Anota las dos líneas, tiempo y tokens.
 ## A8. Ventana CMD. Pega esto
 
 ```bash
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate without delete-todo
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate without delete-todo
 ```
 
 ## A9. Ventana PI. Pega este PROMPT
@@ -154,10 +154,10 @@ Misma historia. Otro proceso. Otra carpeta.
 ## B0. Ventana CMD. Pega esto entero
 
 ```bash
-export PATH="/Users/felipe/.hermes/node/bin:$PATH"
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs reset with --source /Users/felipe/Proyectos/viajante
-cd /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/.work/with
-pi -e /Users/felipe/Proyectos/freshctx/adapters/pi/extension.ts
+export PATH="<local-home>/.hermes/node/bin:$PATH"
+node <local-checkout>/docs/lab/pi-trial/live.mjs reset with --source <local-checkout>
+cd <local-checkout>/docs/lab/pi-trial/.work/with
+pi -e <local-checkout>/adapters/pi/extension.ts
 ```
 
 Mismo modelo: `deepseek-v4-pro`.
@@ -186,8 +186,8 @@ Debe decir otra vez `RD0 CL0 MD0 FL0 TD0`.
 ## B2. Ventana CMD
 
 ```bash
-export PATH="/Users/felipe/.hermes/node/bin:$PATH"
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate with flip-cli
+export PATH="<local-home>/.hermes/node/bin:$PATH"
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate with flip-cli
 ```
 
 Fíjate: ahora dice `with`, no `without`.
@@ -220,7 +220,7 @@ Responde: MODELS=...
 ## B6. Ventana CMD
 
 ```bash
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate with flip-readme
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate with flip-readme
 ```
 
 ## B7. Ventana PI. El mismo PROMPT que A7
@@ -236,7 +236,7 @@ Lo esperado: `README=RD1` y `FLIGHTS=FL0`.
 ## B8. Ventana CMD
 
 ```bash
-node /Users/felipe/Proyectos/freshctx/docs/lab/pi-trial/live.mjs mutate with delete-todo
+node <local-checkout>/docs/lab/pi-trial/live.mjs mutate with delete-todo
 ```
 
 ## B9. Ventana PI. El mismo PROMPT que A9

@@ -17,7 +17,7 @@ Measured on official Pi 0.84.3 with `auto-rpc.mjs` at `1a002ffa`.
 |---|---|
 | Date (UTC) | 2026-08-29 |
 | Harness commit | `1a002ffac26625023edf6c08ccb1f946c0d13471` |
-| Pi version | `0.84.3` (`/Users/felipe/.hermes/node/bin/pi`) |
+| Pi version | `0.84.3` (`<local-home>/.hermes/node/bin/pi`) |
 | Model | `deepseek-v4-flash` |
 | Fixture | `docs/lab/pi-trial-ts/fixture/src/settlement.ts` |
 | Flip | interior `ST0` → `ST1` in `settleDailyLedger` |

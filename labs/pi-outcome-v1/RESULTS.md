@@ -25,7 +25,7 @@ The prior v1 pair remains 0/1 both arms and is not rewritten.
 Command, after the freeze commit and the $5 spend cap:
 
 ```sh
-FRESHCTX_PRODUCT=/Users/felipe/Proyectos/freshctx/official FRESHCTX_APPROVED_USD=5 \
+FRESHCTX_PRODUCT=<product-checkout> FRESHCTX_APPROVED_USD=5 \
   node labs/pi-outcome-v1/run.mjs --live
 ```
 
@@ -83,7 +83,7 @@ Requested model `deepseek-v4-flash`. Scoring and gold were not changed after
 seeing replies. Do not claim cost savings from bytes.
 
 ```sh
-FRESHCTX_PRODUCT=/Users/felipe/Proyectos/freshctx/official FRESHCTX_APPROVED_USD=5 \
+FRESHCTX_PRODUCT=<product-checkout> FRESHCTX_APPROVED_USD=5 \
   node labs/pi-outcome-v1/run.mjs --live --task=labs/pi-outcome-v1/tasks/<task>.json
 ```
 
@@ -194,7 +194,7 @@ success-rate or turn-saving headline.**
 Command, after this run's $5 spend cap and the existing runner gate:
 
 ```sh
-FRESHCTX_PRODUCT=/Users/felipe/Proyectos/freshctx/official FRESHCTX_APPROVED_USD=1 \
+FRESHCTX_PRODUCT=<product-checkout> FRESHCTX_APPROVED_USD=1 \
   node labs/pi-outcome-v1/run.mjs --live
 ```
 

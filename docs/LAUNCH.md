@@ -1,5 +1,8 @@
 # Launch Plan
 
+This is an unpublished planning draft. The link placeholders were never filled.
+It is not a result, a measurement, or the public article.
+
 ## Positioning
 
 One sentence:

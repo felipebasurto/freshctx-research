@@ -94,8 +94,9 @@ plane, not the FreshCtx data plane.
 
 ## Quick start
 
-Requirements: Node.js 22 or newer. Install the isolated parser dependencies,
-then run the deterministic suite:
+Requirements: Node.js 22 or newer, and Python 3.10 or newer. `npm run test:py`
+uses `assertNoLogs`, which Python 3.9 does not provide. Install the isolated
+parser dependencies, then run the deterministic suite:
 
 ```bash
 npm run ise:install
@@ -107,7 +108,8 @@ npm run evaluate
 ```
 
 This is the same order as the `deterministic-core` CI job in
-`.github/workflows/ci.yml`; CI additionally runs `npm run papers:list`,
+`.github/workflows/ci.yml`. That job pins Python 3.12 and additionally runs
+`npm run test:py`, `npm run papers:list`,
 `npm run holdout:verify -- --pack=holdout-v0.1`, and
 `npm run holdout:ci-guard -- --base=origin/main`.
 
@@ -154,4 +156,5 @@ exact commands and the Public Change Record requirement.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). Trace excerpts and pinned upstream checkouts keep
+their own licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

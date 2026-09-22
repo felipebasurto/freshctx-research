@@ -59,10 +59,14 @@ against the current workspace and projects the enclosing span that the
 independent gold enumerator named. The challenge is therefore:
 
 1. **Same traces, smaller \(C_t\).** Negative `payloadBytes` delta vs
-   `corvus-file` is the primary efficiency claim. Measured on
-   `holdout-v0.3-apex` (PCR 0129 / evaluate 2026-08-31, laptop): candidate
-   **8504**, baseline **36701**, delta **−28197**, recall **5/5**. Those
-   numbers are sealed-board telemetry. This pipeline **MUST NOT** change them.
+   `corvus-file` is the primary efficiency claim. The 2026-08-31 laptop freeze
+   (PCR 0129) recorded candidate **8504**, baseline **36701**, delta
+   **−28197**, recall **5/5**. `npm run evaluate` on current `main` reports
+   candidate **8589** against that same baseline and recall: the
+   `resolution="isolated-semantic-engine"` label is 17 bytes longer on each of
+   the five projected units. The pack is locally frozen and `remoteAttestation`
+   is null. These figures are not production-GHA sealed telemetry. Do not
+   rewrite the frozen 8504 record.
 2. **Nested enclosing-span targeting.** A nested helper (Flask
    `class View::method as_view::if@0::function view`) is one unit. CORVUS still
    injects `src/flask/views.py`. That is the duplicate-*content* mitigation:
@@ -359,8 +363,8 @@ that process. No rounding that can hide a byte.
 
 ### 5.3 Worked apex citation (read-only)
 
-These commits are already on the sealed pack (PCR 0129). The report reprints
-them; it does not resample them.
+These commits are already on the locally frozen pack (PCR 0129). The report
+reprints them; it does not resample them. `remoteAttestation` is null.
 
 | repo | commit | role on apex |
 |---|---|---|
@@ -369,10 +373,12 @@ them; it does not resample them.
 | go-tools | `ed9ed918a1e0aad1ed54642e4a8f1c90b34b6b49` | ranked symbol in `go/buildutil/util.go` |
 | ripgrep | `3fce3b5bb0236da2df6d99672afb8a719642eca7` | ranked symbol |
 
-Pack totals (measured, 2026-08-31, laptop evaluate): ISE **8504**,
+Historical pack totals (measured, 2026-08-31, laptop evaluate): ISE **8504**,
 `corvus-file` **36701**, delta **−28197**, recall **5/5**,
-`peakRssBytes` **51707904**. Do not treat the RSS figure as a paper
-latency claim.
+`peakRssBytes` **51707904**. Current `npm run evaluate` on `main` reports ISE
+**8589** against the same baseline and recall, after the 17-byte label
+lengthening on each of five units. Do not treat the RSS figure as a paper
+latency claim, and do not describe either total as production-GHA sealed.
 
 ## 6. Implementation order
 
