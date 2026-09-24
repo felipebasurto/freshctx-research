@@ -1,0 +1,41 @@
+{
+ "latency": {
+  "trivial_p50": 1.107,
+  "item_p50": 1.026,
+  "item_p90": 1.15
+ },
+ "input_tokens": 115611,
+ "models": [
+  "jev-1.13.0"
+ ],
+ "scores": [
+  {
+   "labels": "author",
+   "n": 133,
+   "pos": 78,
+   "auc_p": 0.946,
+   "auc_base": 0.534,
+   "th0.3": {
+    "tp": 75,
+    "fp": 16,
+    "fn": 3,
+    "precision": 0.824,
+    "recall": 0.962
+   },
+   "th0.5": {
+    "tp": 67,
+    "fp": 5,
+    "fn": 11,
+    "precision": 0.931,
+    "recall": 0.859
+   },
+   "th0.7": {
+    "tp": 48,
+    "fp": 3,
+    "fn": 30,
+    "precision": 0.941,
+    "recall": 0.615
+   }
+  }
+ ]
+}

@@ -69,8 +69,41 @@ a single labeller who also wrote the prompt. E3 is the replication.
 
 ## E3 — held-out replication
 
-See [`PROTOCOL.md`](PROTOCOL.md). The protocol, candidates and both label sets
-are committed before any Jev call on E3 data.
+See [`PROTOCOL.md`](PROTOCOL.md). The protocol, candidates and labels were
+committed before any Jev call on E3 data (`19ec73c`, `ff6856b`). The planned
+second labeller (`claude-opus-5`) failed with an invalid credential, so this is
+a **single-labeller** result; see the deviation note in the protocol.
+
+150 held-out pre-edit statements, 133 labelled (78 stale, 55 not), frozen E2
+prompt, `jev-1.13.0` (`e3_run.py`, raw output in `results/e3_results.json`).
+
+| Scorer | AUC |
+| --- | ---: |
+| **Jev Noul** | **0.946** |
+| removed-token overlap baseline | 0.534 |
+
+| Threshold | TP | FP | FN | Precision | Recall |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0.3 | 75 | 16 | 3 | 0.82 | 0.96 |
+| 0.5 | 67 | 5 | 11 | 0.93 | 0.86 |
+| 0.7 | 48 | 3 | 30 | 0.94 | 0.62 |
+
+The pre-registered criterion (AUC ≥ 0.85 and ≥ 0.10 above baseline) is met.
+Errors cluster at the rubric's grey zone: most false negatives are behaviour
+claims confirmed by a reproduction script (the prompt tells Jev runtime
+observations are "false"; the author counted them), and several false
+positives are proposals that imply the current code ("the fix should remove
+the `min()`"). The 17 excluded items all score 0.40–0.81, i.e. Jev is also
+uncertain where the author was.
+
+Latency: a trivial one-question request had p50 1.11 s from the author's
+machine; E3 items had p50 1.03 s and p90 1.15 s. The floor is network and
+service overhead, not state size. Input: 115,611 tokens (about $0.005).
+
+Open limits: one labeller who also wrote the prompt; one agent model
+(Qwen3-Coder) and one scaffold; statements are the nearest pre-edit message
+that mentions edited identifiers, not every message in the context; Jev is a
+closed service whose alias can move (`jev-1.13.0` is pinned here).
 
 ## Running
 
@@ -82,6 +115,8 @@ export TYPESAFE_API_KEY=...        # never commit it
 .venv/bin/python e1_triage.py .work/events.json results/e1_results.json
 .venv/bin/python e1_v2.py
 .venv/bin/python e2_run.py
+.venv/bin/python e3_build.py      # already frozen in results/
+.venv/bin/python e3_run.py
 ```
 
 `results/` holds the raw outputs, including dataset-derived code excerpts.
