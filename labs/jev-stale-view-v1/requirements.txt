@@ -1,0 +1,4 @@
+pyarrow
+fsspec
+aiohttp
+requests
