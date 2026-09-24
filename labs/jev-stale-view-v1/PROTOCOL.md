@@ -43,6 +43,17 @@ Primary: Jev AUC on items where both labellers agree and neither excludes.
 Secondary: AUC against each labeller; precision/recall at 0.5; latency p50/p90;
 input tokens.
 
+## Deviation (recorded before any Jev call on E3 data)
+
+`e3_judge.py` failed: the only Anthropic credential available in the lab
+environment returned `401 invalid x-api-key`, so `labels/opus.json` does not
+exist. The primary metric therefore falls back to **author labels only**
+(78 stale, 55 not stale, 17 excluded). This is a single-labeller result from
+the person who also wrote the Jev prompt; treat it as weaker than planned.
+The second labeller remains pending and can be added later without changing
+anything else in this protocol. The author read statements truncated to about
+600 characters; Jev and the judge receive up to 1,500.
+
 ## Success criterion (set in advance)
 
 Jev AUC ≥ 0.85 on the agreed set **and** at least 0.10 above the baseline.
