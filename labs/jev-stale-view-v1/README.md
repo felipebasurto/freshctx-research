@@ -105,6 +105,76 @@ Open limits: one labeller who also wrote the prompt; one agent model
 that mentions edited identifiers, not every message in the context; Jev is a
 closed service whose alias can move (`jev-1.13.0` is pinned here).
 
+## E4 — every earlier message, and fan-out (`PROTOCOL-E4.md`)
+
+25 held-out edits, every earlier assistant message (≥80 chars, nearest 30):
+338 statements. Blind author labels on everything flagged plus a random
+sample of the rest. Estimated prevalence: **18.1%** of earlier assistant
+messages carry a claim the edit invalidated.
+
+| Scorer | Threshold | Precision | Recall (est.) |
+| --- | ---: | ---: | ---: |
+| one call per statement | 0.5 | 0.87 | 0.74 |
+| one call per statement | 0.7 | 1.00 | 0.46 |
+| fan-out (one call per edit) | 0.5 | 0.90 | 0.72 |
+
+Fan-out agrees with single calls (Pearson 0.985) with 2.6× fewer input tokens
+and one ~1.3 s call per edit. False positives are mostly claims about the test
+file, another file, or git history.
+
+## E5–E8c — does acting on the flag change task outcomes?
+
+Harness: Pi 0.85 with a scripted provider that seeds a read and an assistant
+conclusion, then the file changes and `deepseek-v4-flash` (temperature 0)
+answers a question checked by code. Protocols `PROTOCOL-E5.md` …
+`PROTOCOL-E8c.md`, runners `e5_run.mjs` … `e8c_run.mjs`, reports in
+`results/e*_report.json`. First-submission accuracy:
+
+| Exp. | Setup | No intervention | Jev note next to claim | Claim withdrawn (Jev) | Never had the claim |
+| --- | --- | ---: | ---: | ---: | ---: |
+| E5+E6 | 5 synthetic tasks, FreshCtx bridge | 23/30 | 13/15 | 14/15 | 30/30 |
+| E7 | 19 real conclusions, current code in context | 38/38 | 38/38 | 38/38 | 38/38 |
+| E8 | same, code absent, prompt says "current code" | 38/38 | 38/38 | 38/38 | 38/38 |
+| E8b | neutral prompt × read cleared | 19/38 | — | 37/38 | 26/38 |
+| E8c | same cell, replication | 17/38 | 21/38 | 38/38 | 28/38 |
+
+- Every wrong answer across E5–E8c was given **without reading** the file:
+  the stale conclusion stood in for a read.
+- A note next to the claim barely helps. Withdrawing the claim with a pointer
+  that says the file changed turns the gap into a read.
+- The effect only appears when nothing else prompts a read. With the current
+  code visible (E7), or a prompt that says "current" (E8, three of the four
+  E8b cells), all arms hit the ceiling.
+- E8c separates the pointer: withdrawing silently (31/38) recovers the
+  no-claim level; saying the file changed adds on top (38/38).
+
+Limits: one model, 2 reps, small excerpts, author-written questions, one
+cell selected in E8b.
+
+## E9 — withdraw at the tail, keep the cache (`PROTOCOL-E9.md`)
+
+Rewriting the stale claim in place (E8c's E) changes a prefix the provider has
+already cached, so everything after it is billed again at the uncached price.
+E9 leaves the history byte-identical and appends the withdrawal to the new
+user turn instead. Same E8c cell; a warm-up request puts the pre-edit history
+in DeepSeek's cache first. 114 runs, $0.207 at list price, $0.079 with the
+cache discount (measured).
+
+| Arm | First-submission | Cached share, 1st request | Cost per correct first answer |
+| --- | ---: | ---: | ---: |
+| claim intact | 19/38 | 81.7% | $0.00076 |
+| withdrawn in place | 38/38 | 73.6% | $0.00034 |
+| **withdrawn at the tail** | **38/38** | **82.3%** | **$0.00032** |
+
+Tail > intact: one-sided Fisher p = 9e-8. On the 25 real E4 edits the earliest
+Jev-flagged message sits a median 16k tokens (61% of context) back, so an
+in-place rewrite would re-bill about $0.007 per edit at DeepSeek prices
+(estimated, `e9_cache_cost.py`). The tail notice costs ~40 tokens.
+
+Not yet shown: that Jev is needed. The notice names only the file, and FreshCtx
+already knows which files changed. E10 should compare against that
+deterministic rule, with control items whose claim is still true.
+
 ## Running
 
 ```sh
