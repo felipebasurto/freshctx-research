@@ -1,0 +1,502 @@
+{
+ "runs": 38,
+ "spendUsdPeak": 0.11049,
+ "arms": {
+  "B_fc": {
+   "n": 38,
+   "errors": 0,
+   "pass_first": 38,
+   "pass_within_two": 38,
+   "first_stale_derived": 0,
+   "first_unparseable": 0,
+   "first_without_reading": 31,
+   "requests_total": 45,
+   "reads_total": 7,
+   "prompt_tokens": 60492,
+   "marker_applied": 0,
+   "withdrawn": 0,
+   "current_code_in_first_request": 38,
+   "jev_p": [],
+   "first_fail_items": []
+  },
+  "C_fc_jev": {
+   "n": 38,
+   "errors": 0,
+   "pass_first": 38,
+   "pass_within_two": 38,
+   "first_stale_derived": 0,
+   "first_unparseable": 0,
+   "first_without_reading": 26,
+   "requests_total": 50,
+   "reads_total": 12,
+   "prompt_tokens": 67838,
+   "marker_applied": 35,
+   "withdrawn": 0,
+   "current_code_in_first_request": 38,
+   "jev_p": [
+    0.44,
+    0.46,
+    0.48,
+    0.52,
+    0.53,
+    0.55,
+    0.58,
+    0.58,
+    0.6,
+    0.6,
+    0.62,
+    0.63,
+    0.64,
+    0.65,
+    0.66,
+    0.67,
+    0.68,
+    0.71,
+    0.71,
+    0.73,
+    0.74,
+    0.75,
+    0.8,
+    0.83,
+    0.83,
+    0.83,
+    0.83,
+    0.84,
+    0.84,
+    0.85,
+    0.86,
+    0.86,
+    0.86,
+    0.86,
+    0.87,
+    0.87,
+    0.88,
+    0.88
+   ],
+   "first_fail_items": []
+  },
+  "D_fc_noclaim": {
+   "n": 38,
+   "errors": 0,
+   "pass_first": 38,
+   "pass_within_two": 38,
+   "first_stale_derived": 0,
+   "first_unparseable": 0,
+   "first_without_reading": 27,
+   "requests_total": 49,
+   "reads_total": 11,
+   "prompt_tokens": 58152,
+   "marker_applied": 0,
+   "withdrawn": 0,
+   "current_code_in_first_request": 38,
+   "jev_p": [],
+   "first_fail_items": []
+  },
+  "E_fc_jev_withdraw": {
+   "n": 38,
+   "errors": 0,
+   "pass_first": 38,
+   "pass_within_two": 38,
+   "first_stale_derived": 0,
+   "first_unparseable": 0,
+   "first_without_reading": 29,
+   "requests_total": 47,
+   "reads_total": 9,
+   "prompt_tokens": 57490,
+   "marker_applied": 0,
+   "withdrawn": 36,
+   "current_code_in_first_request": 38,
+   "jev_p": [
+    0.43,
+    0.46,
+    0.52,
+    0.52,
+    0.55,
+    0.55,
+    0.56,
+    0.58,
+    0.58,
+    0.59,
+    0.59,
+    0.63,
+    0.64,
+    0.65,
+    0.65,
+    0.65,
+    0.7,
+    0.71,
+    0.71,
+    0.72,
+    0.76,
+    0.76,
+    0.82,
+    0.82,
+    0.82,
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.85,
+    0.85,
+    0.86,
+    0.86,
+    0.86,
+    0.87,
+    0.87,
+    0.88
+   ],
+   "first_fail_items": []
+  }
+ },
+ "fisher_one_sided_first_pass": {
+  "D_fc_noclaim > B_fc": 1.0,
+  "C_fc_jev > B_fc": 1.0,
+  "E_fc_jev_withdraw > B_fc": 1.0,
+  "E_fc_jev_withdraw > C_fc_jev": 1.0
+ },
+ "by_item": {
+  "e7-00": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-01": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-02": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-03": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-04": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-05": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-06": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-07": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-08": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-09": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-10": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-15": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-17": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-18": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-20": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-21": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-22": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-23": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  },
+  "e7-24": {
+   "B_fc": [
+    true,
+    true
+   ],
+   "C_fc_jev": [
+    true,
+    true
+   ],
+   "D_fc_noclaim": [
+    true,
+    true
+   ],
+   "E_fc_jev_withdraw": [
+    true,
+    true
+   ]
+  }
+ }
+}

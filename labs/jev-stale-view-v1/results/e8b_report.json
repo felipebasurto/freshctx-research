@@ -1,0 +1,1288 @@
+{
+ "runs": 152,
+ "spendUsdPeak": 0.53972,
+ "cells": {
+  "current-cleared": {
+   "arms": {
+    "B_claim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 84,
+     "reads_total": 46,
+     "prompt_tokens": 112873,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [],
+     "no_read_items": []
+    },
+    "D_noclaim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 38,
+     "prompt_tokens": 88480,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [],
+     "no_read_items": []
+    },
+    "E_jev_withdraw": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 38,
+     "prompt_tokens": 91172,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 2,
+     "withdrawn": 36,
+     "history_preserved": 38,
+     "jev_p": [
+      0.44,
+      0.45,
+      0.5,
+      0.52,
+      0.54,
+      0.55,
+      0.58,
+      0.58,
+      0.59,
+      0.59,
+      0.61,
+      0.61,
+      0.61,
+      0.63,
+      0.64,
+      0.66,
+      0.7,
+      0.7,
+      0.72,
+      0.72,
+      0.73,
+      0.76,
+      0.82,
+      0.82,
+      0.82,
+      0.82,
+      0.83,
+      0.83,
+      0.84,
+      0.84,
+      0.85,
+      0.85,
+      0.86,
+      0.86,
+      0.86,
+      0.88,
+      0.88,
+      0.89
+     ],
+     "first_fail_items": [],
+     "no_read_items": []
+    }
+   },
+   "fisher_one_sided_first_pass": {
+    "D_noclaim > B_claim": 1.0,
+    "E_jev_withdraw > B_claim": 1.0
+   },
+   "by_item": {
+    "e7-00": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-01": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-02": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-03": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-04": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-05": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-06": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-07": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-08": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-09": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-10": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-15": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-17": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-18": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-20": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-21": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-22": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-23": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-24": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    }
+   }
+  },
+  "current-removed": {
+   "arms": {
+    "B_claim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 84,
+     "reads_total": 46,
+     "prompt_tokens": 108192,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [],
+     "no_read_items": []
+    },
+    "D_noclaim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 38,
+     "prompt_tokens": 84094,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [],
+     "no_read_items": []
+    },
+    "E_jev_withdraw": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 77,
+     "reads_total": 39,
+     "prompt_tokens": 88291,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 2,
+     "withdrawn": 36,
+     "history_preserved": 38,
+     "jev_p": [
+      0.44,
+      0.46,
+      0.5,
+      0.52,
+      0.53,
+      0.54,
+      0.56,
+      0.57,
+      0.58,
+      0.59,
+      0.6,
+      0.61,
+      0.63,
+      0.63,
+      0.65,
+      0.65,
+      0.69,
+      0.69,
+      0.7,
+      0.71,
+      0.72,
+      0.73,
+      0.82,
+      0.83,
+      0.83,
+      0.84,
+      0.85,
+      0.85,
+      0.86,
+      0.86,
+      0.86,
+      0.86,
+      0.86,
+      0.87,
+      0.87,
+      0.87,
+      0.87,
+      0.88
+     ],
+     "first_fail_items": [],
+     "no_read_items": []
+    }
+   },
+   "fisher_one_sided_first_pass": {
+    "D_noclaim > B_claim": 1.0,
+    "E_jev_withdraw > B_claim": 1.0
+   },
+   "by_item": {
+    "e7-00": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-01": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-02": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-03": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-04": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-05": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-06": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-07": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-08": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-09": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-10": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-15": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-17": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-18": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-20": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-21": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-22": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-23": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-24": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    }
+   }
+  },
+  "neutral-cleared": {
+   "arms": {
+    "B_claim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 19,
+     "pass_within_two": 38,
+     "first_stale_derived": 19,
+     "first_unparseable": 0,
+     "first_without_reading": 21,
+     "first_without_reading_failed": 19,
+     "first_after_reading_failed": 0,
+     "requests_total": 98,
+     "reads_total": 41,
+     "prompt_tokens": 128278,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-01",
+       0,
+       0
+      ],
+      [
+       "e7-01",
+       1,
+       0
+      ],
+      [
+       "e7-02",
+       0,
+       0
+      ],
+      [
+       "e7-02",
+       1,
+       0
+      ],
+      [
+       "e7-03",
+       0,
+       0
+      ],
+      [
+       "e7-03",
+       1,
+       0
+      ],
+      [
+       "e7-05",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-06",
+       0,
+       0
+      ],
+      [
+       "e7-06",
+       1,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       0,
+       0
+      ],
+      [
+       "e7-17",
+       1,
+       0
+      ],
+      [
+       "e7-20",
+       0,
+       0
+      ],
+      [
+       "e7-20",
+       1,
+       0
+      ],
+      [
+       "e7-23",
+       0,
+       0
+      ],
+      [
+       "e7-23",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-01",
+       0,
+       false
+      ],
+      [
+       "e7-01",
+       1,
+       false
+      ],
+      [
+       "e7-02",
+       0,
+       false
+      ],
+      [
+       "e7-02",
+       1,
+       false
+      ],
+      [
+       "e7-03",
+       0,
+       false
+      ],
+      [
+       "e7-03",
+       1,
+       false
+      ],
+      [
+       "e7-05",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-06",
+       0,
+       false
+      ],
+      [
+       "e7-06",
+       1,
+       false
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       1,
+       false
+      ],
+      [
+       "e7-09",
+       1,
+       true
+      ],
+      [
+       "e7-10",
+       1,
+       true
+      ],
+      [
+       "e7-17",
+       0,
+       false
+      ],
+      [
+       "e7-17",
+       1,
+       false
+      ],
+      [
+       "e7-20",
+       0,
+       false
+      ],
+      [
+       "e7-20",
+       1,
+       false
+      ],
+      [
+       "e7-23",
+       0,
+       false
+      ],
+      [
+       "e7-23",
+       1,
+       false
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    },
+    "D_noclaim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 26,
+     "pass_within_two": 38,
+     "first_stale_derived": 12,
+     "first_unparseable": 0,
+     "first_without_reading": 20,
+     "first_without_reading_failed": 12,
+     "first_after_reading_failed": 0,
+     "requests_total": 80,
+     "reads_total": 30,
+     "prompt_tokens": 90297,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-01",
+       1,
+       0
+      ],
+      [
+       "e7-04",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-06",
+       1,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       0,
+       0
+      ],
+      [
+       "e7-21",
+       0,
+       0
+      ],
+      [
+       "e7-21",
+       1,
+       0
+      ],
+      [
+       "e7-22",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-01",
+       0,
+       true
+      ],
+      [
+       "e7-01",
+       1,
+       false
+      ],
+      [
+       "e7-03",
+       1,
+       true
+      ],
+      [
+       "e7-04",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-06",
+       1,
+       false
+      ],
+      [
+       "e7-07",
+       1,
+       true
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       1,
+       false
+      ],
+      [
+       "e7-09",
+       1,
+       true
+      ],
+      [
+       "e7-10",
+       0,
+       true
+      ],
+      [
+       "e7-17",
+       0,
+       false
+      ],
+      [
+       "e7-18",
+       0,
+       true
+      ],
+      [
+       "e7-18",
+       1,
+       true
+      ],
+      [
+       "e7-21",
+       0,
+       false
+      ],
+      [
+       "e7-21",
+       1,
+       false
+      ],
+      [
+       "e7-22",
+       1,
+       false
+      ],
+      [
+       "e7-23",
+       0,
+       true
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    },
+    "E_jev_withdraw": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 37,
+     "pass_within_two": 38,
+     "first_stale_derived": 1,
+     "first_unparseable": 0,
+     "first_without_reading": 1,
+     "first_without_reading_failed": 1,
+     "first_after_reading_failed": 0,
+     "requests_total": 77,
+     "reads_total": 38,
+     "prompt_tokens": 91828,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 3,
+     "withdrawn": 35,
+     "history_preserved": 38,
+     "jev_p": [
+      0.42,
+      0.45,
+      0.49,
+      0.54,
+      0.54,
+      0.55,
+      0.57,
+      0.57,
+      0.58,
+      0.59,
+      0.6,
+      0.6,
+      0.63,
+      0.63,
+      0.64,
+      0.64,
+      0.71,
+      0.71,
+      0.72,
+      0.72,
+      0.75,
+      0.76,
+      0.81,
+      0.81,
+      0.82,
+      0.83,
+      0.83,
+      0.83,
+      0.84,
+      0.84,
+      0.85,
+      0.85,
+      0.86,
+      0.86,
+      0.87,
+      0.88,
+      0.88,
+      0.88
+     ],
+     "first_fail_items": [
+      [
+       "e7-22",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-22",
+       1,
+       false
+      ]
+     ]
+    }
+   },
+   "fisher_one_sided_first_pass": {
+    "D_noclaim > B_claim": 0.0805,
+    "E_jev_withdraw > B_claim": 0.0
+   },
+   "by_item": {
+    "e7-00": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-01": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✗",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-02": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-03": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-04": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✗✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-05": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✗✗",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-06": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✗",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-07": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-08": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✗✗",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-09": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-10": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-15": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-17": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✗✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-18": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-20": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-21": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✗✗",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-22": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✗",
+     "E_jev_withdraw": "✓✗"
+    },
+    "e7-23": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-24": {
+     "B_claim": "✓✗",
+     "D_noclaim": "✓✗",
+     "E_jev_withdraw": "✓✓"
+    }
+   }
+  },
+  "neutral-removed": {
+   "arms": {
+    "B_claim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 34,
+     "pass_within_two": 38,
+     "first_stale_derived": 4,
+     "first_unparseable": 0,
+     "first_without_reading": 4,
+     "first_without_reading_failed": 4,
+     "first_after_reading_failed": 0,
+     "requests_total": 84,
+     "reads_total": 42,
+     "prompt_tokens": 107242,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-01",
+       0,
+       0
+      ],
+      [
+       "e7-01",
+       1,
+       0
+      ],
+      [
+       "e7-06",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       0,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-01",
+       0,
+       false
+      ],
+      [
+       "e7-01",
+       1,
+       false
+      ],
+      [
+       "e7-06",
+       1,
+       false
+      ],
+      [
+       "e7-17",
+       0,
+       false
+      ]
+     ]
+    },
+    "D_noclaim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 38,
+     "prompt_tokens": 83162,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [],
+     "no_read_items": []
+    },
+    "E_jev_withdraw": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 0,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 38,
+     "prompt_tokens": 85919,
+     "seed_cleared": 0,
+     "seed_removed": 38,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 2,
+     "withdrawn": 36,
+     "history_preserved": 38,
+     "jev_p": [
+      0.42,
+      0.44,
+      0.51,
+      0.53,
+      0.53,
+      0.54,
+      0.54,
+      0.57,
+      0.62,
+      0.62,
+      0.63,
+      0.63,
+      0.64,
+      0.64,
+      0.66,
+      0.66,
+      0.68,
+      0.7,
+      0.71,
+      0.72,
+      0.73,
+      0.74,
+      0.81,
+      0.81,
+      0.83,
+      0.83,
+      0.84,
+      0.85,
+      0.85,
+      0.85,
+      0.85,
+      0.85,
+      0.85,
+      0.86,
+      0.87,
+      0.87,
+      0.88,
+      0.88
+     ],
+     "first_fail_items": [],
+     "no_read_items": []
+    }
+   },
+   "fisher_one_sided_first_pass": {
+    "D_noclaim > B_claim": 0.0575,
+    "E_jev_withdraw > B_claim": 0.0575
+   },
+   "by_item": {
+    "e7-00": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-01": {
+     "B_claim": "✗✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-02": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-03": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-04": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-05": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-06": {
+     "B_claim": "✓✗",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-07": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-08": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-09": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-10": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-15": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-17": {
+     "B_claim": "✗✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-18": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-20": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-21": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-22": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-23": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    },
+    "e7-24": {
+     "B_claim": "✓✓",
+     "D_noclaim": "✓✓",
+     "E_jev_withdraw": "✓✓"
+    }
+   }
+  }
+ }
+}

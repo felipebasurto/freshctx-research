@@ -1,0 +1,621 @@
+{
+ "runs": 15,
+ "spendUsdPeak": 0.08682,
+ "arms": {
+  "A_base": {
+   "n": 15,
+   "errors": 0,
+   "pass_first": 7,
+   "pass_within_two": 15,
+   "first_answer_stale_derived": 8,
+   "requests_to_pass_median": 4,
+   "requests_total": 46,
+   "reads_total": 31,
+   "zero_read_runs": 0,
+   "jev_claim_p": [],
+   "marker_applied": 0,
+   "prompt_tokens": 62232,
+   "first_answer_without_reading": 0,
+   "first_fail_without_reading": 0,
+   "first_answers": [
+    [
+     "moved-symbol-v1",
+     0,
+     "{\"answer\": 80}"
+    ],
+    [
+     "operator-shift-v1",
+     0,
+     "{\"answer\": 82}"
+    ],
+    [
+     "operator-shift-v1",
+     1,
+     "{\"answer\": 82}"
+    ],
+    [
+     "operator-shift-v1",
+     2,
+     "{\"answer\": 82}"
+    ],
+    [
+     "quote-surcharge-v1",
+     1,
+     "{\"answer\": 85}"
+    ],
+    [
+     "rate-constant-v1",
+     0,
+     "{\"answer\": 68}"
+    ],
+    [
+     "rate-constant-v1",
+     1,
+     "{\"answer\": 68}"
+    ],
+    [
+     "rate-constant-v1",
+     2,
+     "{\"answer\": 68}"
+    ]
+   ],
+   "by_task": {
+    "moved-symbol-v1": [
+     [
+      0,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "operator-shift-v1": [
+     [
+      0,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      1,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      2,
+      false,
+      true,
+      true,
+      2
+     ]
+    ],
+    "quote-surcharge-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      false,
+      true,
+      true,
+      3
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "rate-constant-v1": [
+     [
+      0,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      1,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      2,
+      false,
+      true,
+      true,
+      2
+     ]
+    ],
+    "tax-base-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ]
+   }
+  },
+  "B_fc": {
+   "n": 15,
+   "errors": 0,
+   "pass_first": 13,
+   "pass_within_two": 15,
+   "first_answer_stale_derived": 1,
+   "requests_to_pass_median": 2,
+   "requests_total": 32,
+   "reads_total": 28,
+   "zero_read_runs": 0,
+   "jev_claim_p": [],
+   "marker_applied": 0,
+   "prompt_tokens": 41134,
+   "first_answer_without_reading": 2,
+   "first_fail_without_reading": 2,
+   "first_answers": [
+    [
+     "rate-constant-v1",
+     0,
+     "{\"answer\":68}"
+    ],
+    [
+     "tax-base-v1",
+     1,
+     "{\"answer\": 69}"
+    ]
+   ],
+   "by_task": {
+    "moved-symbol-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "operator-shift-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "quote-surcharge-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      1
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      1
+     ]
+    ],
+    "rate-constant-v1": [
+     [
+      0,
+      false,
+      true,
+      true,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "tax-base-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      false,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ]
+   }
+  },
+  "C_fc_jev": {
+   "n": 15,
+   "errors": 0,
+   "pass_first": 13,
+   "pass_within_two": 15,
+   "first_answer_stale_derived": 0,
+   "requests_to_pass_median": 2,
+   "requests_total": 32,
+   "reads_total": 30,
+   "zero_read_runs": 0,
+   "jev_claim_p": [
+    0.93,
+    0.92,
+    0.92,
+    0.94,
+    0.94,
+    0.94,
+    0.92,
+    0.93,
+    0.93,
+    0.93,
+    0.93,
+    0.94,
+    0.93,
+    0.93,
+    0.93
+   ],
+   "marker_applied": 15,
+   "prompt_tokens": 42057,
+   "first_answer_without_reading": 2,
+   "first_fail_without_reading": 2,
+   "first_answers": [
+    [
+     "moved-symbol-v1",
+     2,
+     "{\"answer\": 33}"
+    ],
+    [
+     "tax-base-v1",
+     0,
+     "{\"answer\": 92}"
+    ]
+   ],
+   "by_task": {
+    "moved-symbol-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      false,
+      true,
+      false,
+      2
+     ]
+    ],
+    "operator-shift-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "quote-surcharge-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "rate-constant-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "tax-base-v1": [
+     [
+      0,
+      false,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ]
+   }
+  },
+  "D_fc_noclaim": {
+   "n": 15,
+   "errors": 0,
+   "pass_first": 15,
+   "pass_within_two": 15,
+   "first_answer_stale_derived": 0,
+   "requests_to_pass_median": 2,
+   "requests_total": 30,
+   "reads_total": 29,
+   "zero_read_runs": 0,
+   "jev_claim_p": [],
+   "marker_applied": 0,
+   "prompt_tokens": 37334,
+   "first_answer_without_reading": 0,
+   "first_fail_without_reading": 0,
+   "first_answers": [],
+   "by_task": {
+    "moved-symbol-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "operator-shift-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "quote-surcharge-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      1
+     ]
+    ],
+    "rate-constant-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ],
+    "tax-base-v1": [
+     [
+      0,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      1,
+      true,
+      true,
+      false,
+      2
+     ],
+     [
+      2,
+      true,
+      true,
+      false,
+      2
+     ]
+    ]
+   }
+  }
+ }
+}

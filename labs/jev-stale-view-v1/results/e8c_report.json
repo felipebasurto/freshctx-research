@@ -1,0 +1,1146 @@
+{
+ "runs": 38,
+ "spendUsdPeak": 0.28718,
+ "cells": {
+  "neutral-cleared": {
+   "arms": {
+    "B_claim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 17,
+     "pass_within_two": 38,
+     "first_stale_derived": 21,
+     "first_unparseable": 0,
+     "first_without_reading": 22,
+     "first_without_reading_failed": 21,
+     "first_after_reading_failed": 0,
+     "requests_total": 102,
+     "reads_total": 43,
+     "prompt_tokens": 134344,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "withdrawn_quiet": 0,
+     "marker_applied": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-01",
+       0,
+       0
+      ],
+      [
+       "e7-01",
+       1,
+       0
+      ],
+      [
+       "e7-02",
+       0,
+       0
+      ],
+      [
+       "e7-02",
+       1,
+       0
+      ],
+      [
+       "e7-03",
+       1,
+       0
+      ],
+      [
+       "e7-04",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-06",
+       0,
+       0
+      ],
+      [
+       "e7-06",
+       1,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       1,
+       0
+      ],
+      [
+       "e7-09",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       0,
+       0
+      ],
+      [
+       "e7-17",
+       1,
+       0
+      ],
+      [
+       "e7-18",
+       1,
+       0
+      ],
+      [
+       "e7-20",
+       0,
+       0
+      ],
+      [
+       "e7-20",
+       1,
+       0
+      ],
+      [
+       "e7-23",
+       0,
+       0
+      ],
+      [
+       "e7-23",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-01",
+       0,
+       false
+      ],
+      [
+       "e7-01",
+       1,
+       false
+      ],
+      [
+       "e7-02",
+       0,
+       false
+      ],
+      [
+       "e7-02",
+       1,
+       false
+      ],
+      [
+       "e7-03",
+       1,
+       false
+      ],
+      [
+       "e7-04",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-06",
+       0,
+       false
+      ],
+      [
+       "e7-06",
+       1,
+       false
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       1,
+       false
+      ],
+      [
+       "e7-09",
+       0,
+       true
+      ],
+      [
+       "e7-09",
+       1,
+       false
+      ],
+      [
+       "e7-17",
+       0,
+       false
+      ],
+      [
+       "e7-17",
+       1,
+       false
+      ],
+      [
+       "e7-18",
+       1,
+       false
+      ],
+      [
+       "e7-20",
+       0,
+       false
+      ],
+      [
+       "e7-20",
+       1,
+       false
+      ],
+      [
+       "e7-23",
+       0,
+       false
+      ],
+      [
+       "e7-23",
+       1,
+       false
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    },
+    "C_jev_mark": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 21,
+     "pass_within_two": 38,
+     "first_stale_derived": 17,
+     "first_unparseable": 0,
+     "first_without_reading": 18,
+     "first_without_reading_failed": 17,
+     "first_after_reading_failed": 0,
+     "requests_total": 96,
+     "reads_total": 41,
+     "prompt_tokens": 127866,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 38,
+     "withdrawn": 0,
+     "withdrawn_quiet": 0,
+     "marker_applied": 35,
+     "history_preserved": 38,
+     "jev_p": [
+      0.45,
+      0.47,
+      0.49,
+      0.51,
+      0.53,
+      0.56,
+      0.56,
+      0.58,
+      0.58,
+      0.58,
+      0.61,
+      0.63,
+      0.64,
+      0.64,
+      0.65,
+      0.67,
+      0.7,
+      0.7,
+      0.71,
+      0.74,
+      0.74,
+      0.76,
+      0.81,
+      0.82,
+      0.83,
+      0.83,
+      0.83,
+      0.84,
+      0.84,
+      0.84,
+      0.86,
+      0.86,
+      0.87,
+      0.87,
+      0.87,
+      0.87,
+      0.87,
+      0.87
+     ],
+     "first_fail_items": [
+      [
+       "e7-01",
+       0,
+       0
+      ],
+      [
+       "e7-01",
+       1,
+       0
+      ],
+      [
+       "e7-02",
+       0,
+       0
+      ],
+      [
+       "e7-02",
+       1,
+       0
+      ],
+      [
+       "e7-04",
+       1,
+       0
+      ],
+      [
+       "e7-05",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-06",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       0,
+       0
+      ],
+      [
+       "e7-17",
+       1,
+       0
+      ],
+      [
+       "e7-18",
+       0,
+       0
+      ],
+      [
+       "e7-18",
+       1,
+       0
+      ],
+      [
+       "e7-20",
+       0,
+       0
+      ],
+      [
+       "e7-20",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       0,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-01",
+       0,
+       false
+      ],
+      [
+       "e7-01",
+       1,
+       false
+      ],
+      [
+       "e7-02",
+       0,
+       false
+      ],
+      [
+       "e7-02",
+       1,
+       false
+      ],
+      [
+       "e7-04",
+       1,
+       false
+      ],
+      [
+       "e7-05",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-06",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       1,
+       false
+      ],
+      [
+       "e7-09",
+       1,
+       true
+      ],
+      [
+       "e7-17",
+       0,
+       false
+      ],
+      [
+       "e7-17",
+       1,
+       false
+      ],
+      [
+       "e7-18",
+       0,
+       false
+      ],
+      [
+       "e7-18",
+       1,
+       false
+      ],
+      [
+       "e7-20",
+       0,
+       false
+      ],
+      [
+       "e7-20",
+       1,
+       false
+      ],
+      [
+       "e7-24",
+       0,
+       false
+      ]
+     ]
+    },
+    "D_noclaim": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 28,
+     "pass_within_two": 38,
+     "first_stale_derived": 10,
+     "first_unparseable": 0,
+     "first_without_reading": 18,
+     "first_without_reading_failed": 10,
+     "first_after_reading_failed": 0,
+     "requests_total": 78,
+     "reads_total": 30,
+     "prompt_tokens": 88737,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "withdrawn_quiet": 0,
+     "marker_applied": 0,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-04",
+       0,
+       0
+      ],
+      [
+       "e7-04",
+       1,
+       0
+      ],
+      [
+       "e7-05",
+       0,
+       0
+      ],
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-08",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       1,
+       0
+      ],
+      [
+       "e7-23",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       0,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-04",
+       0,
+       false
+      ],
+      [
+       "e7-04",
+       1,
+       false
+      ],
+      [
+       "e7-05",
+       0,
+       false
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-07",
+       0,
+       true
+      ],
+      [
+       "e7-07",
+       1,
+       true
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-08",
+       1,
+       false
+      ],
+      [
+       "e7-15",
+       0,
+       true
+      ],
+      [
+       "e7-15",
+       1,
+       true
+      ],
+      [
+       "e7-17",
+       1,
+       false
+      ],
+      [
+       "e7-18",
+       0,
+       true
+      ],
+      [
+       "e7-18",
+       1,
+       true
+      ],
+      [
+       "e7-21",
+       0,
+       true
+      ],
+      [
+       "e7-22",
+       0,
+       true
+      ],
+      [
+       "e7-23",
+       1,
+       false
+      ],
+      [
+       "e7-24",
+       0,
+       false
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    },
+    "D_warn": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 33,
+     "pass_within_two": 38,
+     "first_stale_derived": 5,
+     "first_unparseable": 0,
+     "first_without_reading": 10,
+     "first_without_reading_failed": 5,
+     "first_after_reading_failed": 0,
+     "requests_total": 76,
+     "reads_total": 33,
+     "prompt_tokens": 87533,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 0,
+     "withdrawn": 0,
+     "withdrawn_quiet": 0,
+     "marker_applied": 38,
+     "history_preserved": 38,
+     "jev_p": [],
+     "first_fail_items": [
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-17",
+       1,
+       0
+      ],
+      [
+       "e7-18",
+       1,
+       0
+      ],
+      [
+       "e7-20",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-04",
+       1,
+       true
+      ],
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-10",
+       0,
+       true
+      ],
+      [
+       "e7-10",
+       1,
+       true
+      ],
+      [
+       "e7-15",
+       0,
+       true
+      ],
+      [
+       "e7-17",
+       1,
+       false
+      ],
+      [
+       "e7-18",
+       1,
+       false
+      ],
+      [
+       "e7-20",
+       1,
+       false
+      ],
+      [
+       "e7-21",
+       0,
+       true
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    },
+    "E_jev_withdraw": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 38,
+     "pass_within_two": 38,
+     "first_stale_derived": 0,
+     "first_unparseable": 0,
+     "first_without_reading": 1,
+     "first_without_reading_failed": 0,
+     "first_after_reading_failed": 0,
+     "requests_total": 75,
+     "reads_total": 37,
+     "prompt_tokens": 88583,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 4,
+     "withdrawn": 34,
+     "withdrawn_quiet": 0,
+     "marker_applied": 0,
+     "history_preserved": 38,
+     "jev_p": [
+      0.44,
+      0.45,
+      0.48,
+      0.49,
+      0.51,
+      0.56,
+      0.57,
+      0.57,
+      0.58,
+      0.59,
+      0.61,
+      0.61,
+      0.62,
+      0.63,
+      0.65,
+      0.68,
+      0.69,
+      0.7,
+      0.71,
+      0.71,
+      0.74,
+      0.75,
+      0.81,
+      0.82,
+      0.83,
+      0.83,
+      0.83,
+      0.84,
+      0.84,
+      0.85,
+      0.85,
+      0.86,
+      0.86,
+      0.86,
+      0.87,
+      0.87,
+      0.87,
+      0.88
+     ],
+     "first_fail_items": [],
+     "no_read_items": [
+      [
+       "e7-10",
+       1,
+       true
+      ]
+     ]
+    },
+    "E_quiet": {
+     "n": 38,
+     "errors": 0,
+     "pass_first": 31,
+     "pass_within_two": 38,
+     "first_stale_derived": 7,
+     "first_unparseable": 0,
+     "first_without_reading": 9,
+     "first_without_reading_failed": 7,
+     "first_after_reading_failed": 0,
+     "requests_total": 81,
+     "reads_total": 36,
+     "prompt_tokens": 94883,
+     "seed_cleared": 38,
+     "seed_removed": 0,
+     "file_lines_outside_claim": 0,
+     "current_code_in_first_request": 0,
+     "claim_present": 3,
+     "withdrawn": 0,
+     "withdrawn_quiet": 35,
+     "marker_applied": 0,
+     "history_preserved": 38,
+     "jev_p": [
+      0.46,
+      0.46,
+      0.49,
+      0.52,
+      0.56,
+      0.57,
+      0.57,
+      0.57,
+      0.58,
+      0.58,
+      0.6,
+      0.61,
+      0.62,
+      0.65,
+      0.65,
+      0.67,
+      0.69,
+      0.7,
+      0.71,
+      0.71,
+      0.75,
+      0.78,
+      0.8,
+      0.8,
+      0.81,
+      0.84,
+      0.84,
+      0.84,
+      0.84,
+      0.84,
+      0.84,
+      0.85,
+      0.86,
+      0.86,
+      0.86,
+      0.87,
+      0.87,
+      0.87
+     ],
+     "first_fail_items": [
+      [
+       "e7-05",
+       1,
+       0
+      ],
+      [
+       "e7-08",
+       0,
+       0
+      ],
+      [
+       "e7-18",
+       0,
+       0
+      ],
+      [
+       "e7-18",
+       1,
+       0
+      ],
+      [
+       "e7-20",
+       1,
+       0
+      ],
+      [
+       "e7-24",
+       0,
+       0
+      ],
+      [
+       "e7-24",
+       1,
+       0
+      ]
+     ],
+     "no_read_items": [
+      [
+       "e7-05",
+       1,
+       false
+      ],
+      [
+       "e7-07",
+       1,
+       true
+      ],
+      [
+       "e7-08",
+       0,
+       false
+      ],
+      [
+       "e7-15",
+       1,
+       true
+      ],
+      [
+       "e7-18",
+       0,
+       false
+      ],
+      [
+       "e7-18",
+       1,
+       false
+      ],
+      [
+       "e7-20",
+       1,
+       false
+      ],
+      [
+       "e7-24",
+       0,
+       false
+      ],
+      [
+       "e7-24",
+       1,
+       false
+      ]
+     ]
+    }
+   },
+   "fisher_one_sided_first_pass": {
+    "E_jev_withdraw > E_quiet": 0.0058,
+    "D_warn > D_noclaim": 0.1243,
+    "E_quiet > B_claim": 0.0009,
+    "C_jev_mark > B_claim": 0.2458,
+    "E_jev_withdraw > B_claim": 0.0,
+    "D_noclaim > B_claim": 0.0095
+   },
+   "by_item": {
+    "e7-00": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-01": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-02": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-03": {
+     "B_claim": "✓✗",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-04": {
+     "B_claim": "✗✓",
+     "C_jev_mark": "✓✗",
+     "D_noclaim": "✗✗",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-05": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✗✗",
+     "D_warn": "✓✗",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✗"
+    },
+    "e7-06": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-07": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-08": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✗✗",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✗✓"
+    },
+    "e7-09": {
+     "B_claim": "✓✗",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-10": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-15": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-17": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✓✗",
+     "D_warn": "✓✗",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-18": {
+     "B_claim": "✓✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✗",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✗✗"
+    },
+    "e7-20": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✗✗",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✗",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✗"
+    },
+    "e7-21": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-22": {
+     "B_claim": "✓✓",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✓",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-23": {
+     "B_claim": "✗✗",
+     "C_jev_mark": "✓✓",
+     "D_noclaim": "✓✗",
+     "D_warn": "✓✓",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✓✓"
+    },
+    "e7-24": {
+     "B_claim": "✓✗",
+     "C_jev_mark": "✗✓",
+     "D_noclaim": "✗✗",
+     "D_warn": "✓✗",
+     "E_jev_withdraw": "✓✓",
+     "E_quiet": "✗✗"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,67 @@
+{
+ "n_statements": 338,
+ "flagged_union_0.5": 60,
+ "unflagged": 278,
+ "unflagged_sample": {
+  "n": 40,
+  "pos": 2,
+  "neg": 37,
+  "excluded": 1,
+  "pos_rate": 0.051,
+  "ids_pos": [
+   "e4-23-s50",
+   "e4-03-s46"
+  ]
+ },
+ "single@0.5": {
+  "flags": 57,
+  "tp": 45,
+  "fp": 7,
+  "excluded": 5,
+  "precision": 0.865,
+  "est_recall": 0.735,
+  "fp_ids": [
+   "e4-21-s74",
+   "e4-21-s66",
+   "e4-23-s62",
+   "e4-11-s4",
+   "e4-21-s68",
+   "e4-07-s100",
+   "e4-06-s88"
+  ]
+ },
+ "single@0.7": {
+  "flags": 30,
+  "tp": 28,
+  "fp": 0,
+  "excluded": 2,
+  "precision": 1.0,
+  "est_recall": 0.457,
+  "fp_ids": []
+ },
+ "fanout@0.5": {
+  "flags": 53,
+  "tp": 44,
+  "fp": 5,
+  "excluded": 4,
+  "precision": 0.898,
+  "est_recall": 0.718,
+  "fp_ids": [
+   "e4-21-s66",
+   "e4-07-s4",
+   "e4-11-s4",
+   "e4-21-s68",
+   "e4-06-s88"
+  ]
+ },
+ "fanout@0.7": {
+  "flags": 30,
+  "tp": 28,
+  "fp": 0,
+  "excluded": 2,
+  "precision": 1.0,
+  "est_recall": 0.457,
+  "fp_ids": []
+ },
+ "est_prevalence": 0.181
+}
