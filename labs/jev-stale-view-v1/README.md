@@ -175,6 +175,36 @@ Not yet shown: that Jev is needed. The notice names only the file, and FreshCtx
 already knows which files changed. E10 should compare against that
 deterministic rule, with control items whose claim is still true.
 
+## E10 — does the tail withdrawal need Jev? (`PROTOCOL-E10.md`)
+
+The E9 notice only names the file, and FreshCtx already knows which files
+changed. E10 compares Jev against a model-free rule (the notice for every
+changed file) on the 19 stale items plus 19 controls: same claim and question,
+but the edit is an unrelated comment, so the claim stays true. 228 runs,
+$0.406 at list price, $0.150 with the cache discount (measured).
+
+| Items | Arm | First-submission | Reads | Cost per correct first answer |
+| --- | --- | ---: | ---: | ---: |
+| stale | no notice | 22/38 | 40 | $0.00065 |
+| stale | notice if Jev p ≥ 0.5 | 38/38 | 41 | $0.00033 |
+| stale | notice always (rule) | 38/38 | 40 | $0.00032 |
+| control | no notice | 35/38 | 27 | $0.00028 |
+| control | notice if Jev p ≥ 0.5 | 35/38 | 20 | $0.00024 |
+| control | notice always (rule) | 36/38 | 52 | $0.00039 |
+
+- Stale items: the rule matches Jev (38 vs 38).
+- Controls: the rule does not cost accuracy (Jev > rule, p = 0.82), but it makes
+  the model re-read every time: 1.65× the cost per correct answer. Jev flagged
+  0 of 38 control runs. By the preregistered rule, Jev's selectivity has a
+  measured value here, **on cost only**.
+- In dollars that is $0.00015 per control run on these 7–67 line excerpts,
+  about the price of a fan-out Jev call per edit ($0.00014, E4). The saving
+  grows with file size; Jev's ~1 s latency and external dependency do not.
+
+Not a product change yet: all of E8b–E10 comes from one cell chosen because it
+produced the failure. The next check is the per-changed-file notice on real
+resumed tasks with the FreshCtx bridge.
+
 ## Running
 
 ```sh
