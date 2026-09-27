@@ -108,6 +108,15 @@ Findings recorded there:
   several times the others. The pilot measures it; lowering the budget for both
   FreshCtx arms is a pre-allowed change.
 
+## Since then (product and lab, 2026-09-27)
+
+- Notice `once` (brief) or `persist` (`--notice`), product `e890499`.
+- `analyze.py` (tests, decision, measures, pilot gate) and `run.sh`, tested
+  on synthetic trials.
+- Cache-preserving freshness (`refresh: "changed"`, product `c4c589a`) with an
+  offline cost estimate; pre-allowed as a pilot-driven cost change
+  (`PROTOCOL.md`).
+
 ## Runbook once unblocked
 
 Everything is scripted in `run.sh` (checks keys by presence only, checks the

@@ -1,0 +1,23 @@
+{
+  "native": {
+    "requests": 32,
+    "uncached_bytes_after_first": 46748,
+    "total_bytes": 863657,
+    "last_request_bytes": 49978,
+    "uncached_vs_native": 1.0
+  },
+  "freshctx all": {
+    "requests": 32,
+    "uncached_bytes_after_first": 335117,
+    "total_bytes": 593426,
+    "last_request_bytes": 33441,
+    "uncached_vs_native": 7.17
+  },
+  "freshctx changed": {
+    "requests": 32,
+    "uncached_bytes_after_first": 100537,
+    "total_bytes": 845954,
+    "last_request_bytes": 48372,
+    "uncached_vs_native": 2.15
+  }
+}

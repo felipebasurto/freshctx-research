@@ -206,10 +206,20 @@ any of these hold:
   file at that request, notice text exact).
 
 Otherwise record the pilot outcome below, with any pilot-driven change, before
-the main run. A cost-driven change allowed in advance: lowering the projection
-budget (for example to 32,768 bytes) for both FreshCtx arms. The projection is
-appended after the cached prefix, so it is re-sent uncached on every request
-(TODO item 5).
+the main run. Cost-driven changes allowed in advance, applied to both FreshCtx
+arms together (`make_jobs.py --refresh changed`, `--budget-bytes N`):
+
+1. `refresh: "changed"` (cache-preserving freshness, product `c4c589a`): reads
+   whose bytes are still current stay native; only units behind stale reads
+   are projected. In an offline scripted session (`offline/cache_estimate.py`,
+   `results/offline/cache_estimate.json`: 32 requests, ten 200-line files, one
+   user edit, one agent edit), uncached request bytes were 7.17× native with
+   `all` and 2.15× with `changed`. It is not the mode E11c ran.
+2. Lowering the projection budget (for example to 32,768 bytes).
+
+The default for the pilot is `all` with the product budget, as in E11c. The
+projection is appended after the cached prefix, so it is re-sent uncached on
+every request.
 
 ### Pilot outcome
 

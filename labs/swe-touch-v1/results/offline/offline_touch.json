@@ -13,7 +13,8 @@
       },
       "observed_reads": 0,
       "coverage": [],
-      "final_file_keeps_user_edit": false
+      "final_file_keeps_user_edit": false,
+      "prefix_reuse": 0.883
     },
     "V+FC": {
       "exit": 0,
@@ -27,7 +28,8 @@
       },
       "observed_reads": 3,
       "coverage": [],
-      "final_file_keeps_user_edit": false
+      "final_file_keeps_user_edit": false,
+      "prefix_reuse": 0.829
     },
     "S": {
       "exit": 0,
@@ -55,7 +57,8 @@
         "full",
         "full"
       ],
-      "final_file_keeps_user_edit": true
+      "final_file_keeps_user_edit": true,
+      "prefix_reuse": 0.879
     },
     "S+FC": {
       "exit": 0,
@@ -83,7 +86,8 @@
         "full",
         "full"
       ],
-      "final_file_keeps_user_edit": true
+      "final_file_keeps_user_edit": true,
+      "prefix_reuse": 0.822
     },
     "S+N": {
       "exit": 0,
@@ -111,7 +115,37 @@
         "full",
         "full"
       ],
-      "final_file_keeps_user_edit": true
+      "final_file_keeps_user_edit": true,
+      "prefix_reuse": 0.856
+    },
+    "S+FC changed": {
+      "exit": 0,
+      "interventions": [
+        [
+          1,
+          1,
+          true
+        ],
+        [
+          4,
+          2,
+          true
+        ]
+      ],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 2,
+        "coverage": 2
+      },
+      "observed_reads": 3,
+      "coverage": [
+        "full",
+        "full"
+      ],
+      "final_file_keeps_user_edit": true,
+      "prefix_reuse": 0.822
     },
     "S+FC narrow": {
       "exit": 0,
@@ -139,7 +173,8 @@
         "none",
         "full"
       ],
-      "final_file_keeps_user_edit": true
+      "final_file_keeps_user_edit": true,
+      "prefix_reuse": 0.825
     }
   }
 }

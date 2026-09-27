@@ -99,6 +99,8 @@ def write_jobs(args: argparse.Namespace) -> None:
                 "FRESHCTX_NOTICE": notice,
                 "FRESHCTX_BRIDGE_DIR": str(args.freshctx_bridge.resolve()),
                 "FRESHCTX_REPO_ROOT": "/testbed",
+                "FRESHCTX_REFRESH": args.refresh,
+                **({"FRESHCTX_BUDGET_BYTES": str(args.budget_bytes)} if args.budget_bytes else {}),
             },
         }
         if mode:
@@ -136,6 +138,9 @@ def main() -> None:
     jobs.add_argument("--reps", type=int, default=1)
     jobs.add_argument("--reps-s", type=int, default=1, help="reps for S, S+FC and S+N")
     jobs.add_argument("--concurrency", type=int, default=4)
+    jobs.add_argument("--refresh", choices=["all", "changed"], default="all",
+                      help="FreshCtx arms: re-send every observed unit (E11c product) or only changed ones")
+    jobs.add_argument("--budget-bytes", type=int, default=0, help="FreshCtx projection budget (0: product default)")
     jobs.add_argument("--notice", choices=["once", "persist"], default="once",
                       help="S+N: notice in the next request only (brief) or kept at its place afterwards")
     args = parser.parse_args()

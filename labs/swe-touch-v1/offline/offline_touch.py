@@ -91,6 +91,7 @@ ARMS = {
     "S+FC": {"controller": True, "mode": "rewrite", "notice": False},
     "S+N": {"controller": True, "mode": "shadow", "notice": True},
     # The first read overlaps the critical region (so SWE-Touch fires) but stops above the inserted lines.
+    "S+FC changed": {"controller": True, "mode": "rewrite", "notice": False, "refresh": "changed"},
     "S+FC narrow": {"controller": True, "mode": "rewrite", "notice": False,
                     "commands": [COMMANDS[0].replace("'1,16p'", "'1,12p'"), *COMMANDS[1:]]},
 }
@@ -171,6 +172,7 @@ async def run_arm(name: str, arm: dict, base: Path, bridge_dir: Path) -> dict:
         "PYTHONPATH": str(HERE), "RECORDING_MODEL_LOG": str(requests_log),
         "FRESHCTX_MODE": arm["mode"], "FRESHCTX_NOTICE": "1" if arm["notice"] else "0",
         "FRESHCTX_BRIDGE_DIR": str(bridge_dir), "FRESHCTX_REPO_ROOT": "/testbed",
+        "FRESHCTX_REFRESH": arm.get("refresh", "all"),
     }
     trajectory = logs / "mini-swe-agent.trajectory.json"
     await server.start()
@@ -194,6 +196,17 @@ async def run_arm(name: str, arm: dict, base: Path, bridge_dir: Path) -> dict:
         "final": (repo / "pricing.py").read_text(),
         "stderr": (logs / "external-harness.stderr.log").read_text()[-3000:],
     }
+
+
+def prefix_reuse(requests: list[list[dict]]) -> float | None:
+    """Share of request bytes (after the first) that repeat the previous request's leading bytes:
+    what a provider's prefix cache can reuse."""
+    reused = total = 0
+    for previous, current in zip(requests, requests[1:]):
+        a, b = json.dumps(previous), json.dumps(current)
+        common = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+        reused, total = reused + common, total + len(b)
+    return round(reused / total, 3) if total else None
 
 
 def strip(messages: list[dict]) -> list[dict]:
@@ -234,6 +247,9 @@ def check(results: dict) -> list[str]:
     narrow = results["S+FC narrow"]
     expect([row["covered"] for row in narrow["freshctx"] if row["event"] == "coverage"][:1] == ["none"], "narrow: round-1 coverage should be none")
     expect("if rate > 0.5" not in narrow["requests"][1][-1]["content"], "narrow: projected lines the agent never read")
+    changed = results["S+FC changed"]
+    expect(changed["requests"][0] == strip(changed["saved"])[:len(changed["requests"][0])], "changed: first request not native")
+    expect("if rate > 0.5:" in changed["requests"][1][-1]["content"], "changed: edit not projected")
     vfc = results["V+FC"]
     expect(not any(row["event"] == "intervention" for row in vfc["freshctx"]), "V+FC: unexpected intervention")
     expect(any(row.get("rewritten") for row in vfc["freshctx"] if row["event"] == "request"), "V+FC: never rewrote")
@@ -257,6 +273,7 @@ async def main() -> int:
             "observed_reads": sum(1 for row in result["freshctx"] if row["event"] == "command" and row.get("status") == "observed"),
             "coverage": [row["covered"] for row in result["freshctx"] if row["event"] == "coverage"],
             "final_file_keeps_user_edit": "if rate > 0.5" in result["final"],
+            "prefix_reuse": prefix_reuse(result["requests"]),
         }
         for name, result in results.items()
     }
