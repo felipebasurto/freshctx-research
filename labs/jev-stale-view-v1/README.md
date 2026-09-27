@@ -205,6 +205,57 @@ Not a product change yet: all of E8b–E10 comes from one cell chosen because it
 produced the failure. The next check is the per-changed-file notice on real
 resumed tasks with the FreshCtx bridge.
 
+## E11 — the rule on real files, with the model's own conclusion (`PROTOCOL-E11.md`)
+
+The 19 E7 edits on the full real files (73–7,636 lines, fetched at the
+SWE-rebench `base_commit`). Nothing is scripted: the model investigates the
+question with the FreshCtx bridge observing, writes its own conclusion, the
+real edit lands while the session is closed, and the session resumes with a
+neutral question. 38 investigations and 152 arm-runs cost $1.13 at list price
+($0.50 with the cache discount).
+
+9 of 38 investigations did not finish within 16 requests (e11-00, -05, -06,
+-09 in both reps and e11-24 in rep 1), so 29 runs per arm are analysed, not 38.
+
+| Arm | First-submission | Within two | Reads | Cost per correct first answer |
+| --- | ---: | ---: | ---: | ---: |
+| plain Pi | 2/29 | 16/29 | 64 | $0.0440 |
+| plain Pi + notice (rule) | 5/29 | 19/29 | 31 | $0.0090 |
+| FreshCtx bridge | 17/29 | 29/29 | 12 | $0.0022 |
+| FreshCtx bridge + notice | 18/29 | 29/29 | 12 | $0.0019 |
+
+Preregistered tests (exact Fisher, one-sided): rule with FreshCtx p = 0.50,
+rule without FreshCtx p = 0.21, **FreshCtx vs plain Pi p = 2.3 × 10⁻⁵**.
+By the fixed decision **the rule stays in the lab**.
+
+- **On real transcripts the notice is ignored.** With a scripted conclusion
+  (E9/E10) it always triggered a read. Here, with the model's own conclusion,
+  26 of 29 plain-Pi + notice first answers came without reading. 25 of 29
+  conclusions state the pre-edit answer (author label, blind to arm,
+  `labels/e11_author.json`). The two exceptions: e11-01 already states the
+  post-edit answer, and e11-15 is mixed.
+- **What helps is FreshCtx putting current code in the transcript.** Across
+  both bridge arms, 30/30 runs with current code in the first request passed,
+  against 5/28 without it. The split is by file size. Every file of 190 lines
+  or fewer (e11-03, -04, -08, -18, -21, -22) was read whole in one call, and
+  the bridge replaced that read with an `ambiguous` marker instead of current
+  code. All 12 of those runs failed in both bridge arms, answering from the
+  conclusion without reading. Every file over 200 lines (read in ranged
+  pages) was refreshed, and all of those passed. e11-01 passed despite the
+  marker because its conclusion already gave the post-edit answer.
+- The 4 plain-Pi errors are the request cap on the retry, after a failed
+  first answer, so they don't affect first-submission accuracy.
+
+Product implication: the most useful fix is not a notice. It is making
+whole-file reads relocate instead of falling back to `ambiguous`. Relocating
+the whole file also shows the known truncation bug (the region comes back
+`updated` but keeps the old byte length). The `ambiguous` path in the bridge
+is a separate issue and is not fixed here.
+
+Limits: single-file workspaces, investigation prompt identical to the later
+question, one model, 2 reps. Ambiguous-vs-refreshed coincides exactly with
+file size here, so this run can't separate the two.
+
 ## Running
 
 ```sh

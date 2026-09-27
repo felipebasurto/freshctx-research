@@ -1,0 +1,968 @@
+{
+ "runs": 38,
+ "spendUsdPeak": 1.12541,
+ "spendUsdCached": 0.5044,
+ "investigations_failed": [
+  [
+   "e11-00",
+   0,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-00",
+   1,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-05",
+   0,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-05",
+   1,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-06",
+   0,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-06",
+   1,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-09",
+   0,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-09",
+   1,
+   [
+    "investigation must finish\n\n'length' !== 'stop'\n"
+   ]
+  ],
+  [
+   "e11-24",
+   1,
+   [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ]
+  ]
+ ],
+ "arms": {
+  "A_native": {
+   "n": 29,
+   "errors": 4,
+   "pass_first": 2,
+   "pass_within_two": 16,
+   "first_stale_derived": 27,
+   "first_without_reading": 29,
+   "first_without_reading_failed": 27,
+   "first_after_reading_failed": 0,
+   "requests_total": 112,
+   "reads_total": 64,
+   "stale_code_in_first": 14,
+   "current_code_in_first": 2,
+   "tail_applied": 0,
+   "history_preserved": 29,
+   "prompt_tokens": 756298,
+   "hit_share": 0.789,
+   "usd_with_cache": 0.08799,
+   "usd_per_correct_first": 0.043997,
+   "first_fail_items": [
+    [
+     "e11-02",
+     0,
+     0
+    ],
+    [
+     "e11-02",
+     1,
+     0
+    ],
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-07",
+     0,
+     0
+    ],
+    [
+     "e11-07",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-10",
+     0,
+     0
+    ],
+    [
+     "e11-10",
+     1,
+     0
+    ],
+    [
+     "e11-15",
+     0,
+     0
+    ],
+    [
+     "e11-15",
+     1,
+     0
+    ],
+    [
+     "e11-17",
+     0,
+     0
+    ],
+    [
+     "e11-17",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-20",
+     0,
+     0
+    ],
+    [
+     "e11-20",
+     1,
+     0
+    ],
+    [
+     "e11-21",
+     0,
+     0
+    ],
+    [
+     "e11-21",
+     1,
+     0
+    ],
+    [
+     "e11-22",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ],
+    [
+     "e11-23",
+     0,
+     0
+    ],
+    [
+     "e11-23",
+     1,
+     0
+    ],
+    [
+     "e11-24",
+     0,
+     0
+    ]
+   ]
+  },
+  "A_rule": {
+   "n": 29,
+   "errors": 0,
+   "pass_first": 5,
+   "pass_within_two": 19,
+   "first_stale_derived": 24,
+   "first_without_reading": 26,
+   "first_without_reading_failed": 24,
+   "first_after_reading_failed": 0,
+   "requests_total": 84,
+   "reads_total": 31,
+   "stale_code_in_first": 14,
+   "current_code_in_first": 2,
+   "tail_applied": 29,
+   "history_preserved": 29,
+   "prompt_tokens": 477156,
+   "hit_share": 0.83,
+   "usd_with_cache": 0.04481,
+   "usd_per_correct_first": 0.008962,
+   "first_fail_items": [
+    [
+     "e11-02",
+     0,
+     0
+    ],
+    [
+     "e11-02",
+     1,
+     0
+    ],
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-07",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-10",
+     0,
+     0
+    ],
+    [
+     "e11-15",
+     0,
+     0
+    ],
+    [
+     "e11-15",
+     1,
+     0
+    ],
+    [
+     "e11-17",
+     0,
+     0
+    ],
+    [
+     "e11-17",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-20",
+     0,
+     0
+    ],
+    [
+     "e11-20",
+     1,
+     0
+    ],
+    [
+     "e11-21",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ],
+    [
+     "e11-23",
+     0,
+     0
+    ],
+    [
+     "e11-23",
+     1,
+     0
+    ],
+    [
+     "e11-24",
+     0,
+     0
+    ]
+   ]
+  },
+  "F_fc": {
+   "n": 29,
+   "errors": 0,
+   "pass_first": 17,
+   "pass_within_two": 29,
+   "first_stale_derived": 12,
+   "first_without_reading": 29,
+   "first_without_reading_failed": 12,
+   "first_after_reading_failed": 0,
+   "requests_total": 53,
+   "reads_total": 12,
+   "stale_code_in_first": 3,
+   "current_code_in_first": 15,
+   "tail_applied": 0,
+   "history_preserved": 29,
+   "prompt_tokens": 149245,
+   "hit_share": 0.472,
+   "usd_with_cache": 0.03664,
+   "usd_per_correct_first": 0.002155,
+   "first_fail_items": [
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-21",
+     0,
+     0
+    ],
+    [
+     "e11-21",
+     1,
+     0
+    ],
+    [
+     "e11-22",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ]
+   ]
+  },
+  "F_rule": {
+   "n": 29,
+   "errors": 0,
+   "pass_first": 18,
+   "pass_within_two": 29,
+   "first_stale_derived": 11,
+   "first_without_reading": 28,
+   "first_without_reading_failed": 11,
+   "first_after_reading_failed": 0,
+   "requests_total": 52,
+   "reads_total": 12,
+   "stale_code_in_first": 3,
+   "current_code_in_first": 15,
+   "tail_applied": 29,
+   "history_preserved": 29,
+   "prompt_tokens": 149558,
+   "hit_share": 0.519,
+   "usd_with_cache": 0.03374,
+   "usd_per_correct_first": 0.001875,
+   "first_fail_items": [
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-21",
+     0,
+     0
+    ],
+    [
+     "e11-21",
+     1,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ]
+   ]
+  }
+ },
+ "tests": {
+  "1 F_rule > F_fc": 0.5,
+  "2 A_rule > A_native": 0.2114,
+  "3 F_fc > A_native": 2.33e-05
+ },
+ "decision": "rule stays in the lab",
+ "by_item": {
+  "e11-01": {
+   "A_native": "✓✓",
+   "A_rule": "✓✓",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-02": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-03": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✗✗",
+   "F_rule": "✗✗"
+  },
+  "e11-04": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✗✗",
+   "F_rule": "✗✗"
+  },
+  "e11-07": {
+   "A_native": "✗✗",
+   "A_rule": "✓✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-08": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✗✗",
+   "F_rule": "✗✗"
+  },
+  "e11-10": {
+   "A_native": "✗✗",
+   "A_rule": "✗✓",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-15": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-17": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-18": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✗✗",
+   "F_rule": "✗✗"
+  },
+  "e11-20": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-21": {
+   "A_native": "✗✗",
+   "A_rule": "✗✓",
+   "F_fc": "✗✗",
+   "F_rule": "✗✗"
+  },
+  "e11-22": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✗✗",
+   "F_rule": "✓✗"
+  },
+  "e11-23": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-24": {
+   "A_native": "✗",
+   "A_rule": "✗",
+   "F_fc": "✓",
+   "F_rule": "✓"
+  }
+ },
+ "investigations": [
+  {
+   "item": "e11-00",
+   "rep": 0,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-00",
+   "rep": 1,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-01",
+   "rep": 0,
+   "reads": 3,
+   "errors": [],
+   "requests": 3,
+   "conclusion": "I read the file. Here's what I found.\n\n## The key line\n\nThe entire behavior hinges on one dict-comprehension filter in `_remove_names`:\n\n```python\nif isinstance(obj, dict):\n    return {k: _remove_names(v, k) for k, v in obj.items() if k != 'name' or parent is None}\n```\n\nThe filter is `if k != 'name' or parent is None`. So a `name` key is dropped **only when `parent is not None`**. When `parent is None`, the condition `parent is None` is true, so the `name` key is *kept*.\n\n## What `parent` actually is\n\n`parent` is not a \"depth\" or \"is this a schema element\" flag — it is simply **the key under which the current dict was stored in its parent dict** (or the list element's enclosing key). It is passed down as `k` in the dict branch and as the unchanged `parent` in the list branch:\n\n```python\nreturn {k: _remove_names(v, k) for k, v in obj.items() if k != 'name' or parent is None}\n...\nreturn [_remove_names(x, parent) for x in obj]\n```\n\nThe top-level call is `_remove_names(obj, None)` in `schema_as_dict`, so `parent is None` holds only for the root schema dict itself.\n\n## Consequences\n\n1. **Not every `name` key is removed.** A `name` key is removed only if its containing dict is a *value* of some parent dict (i.e., `parent` is a non-None key string). The root schema's own `name` key is preserved, because at the root `parent is None`.\n\n2. **The removal is positional, not semantic.** The docstring says it removes `name` keys \"where that dictionary is already keyed by name\" (e.g. `classes: {Person: {name: Person, ...}}`). But the implementation does not check whether the parent key actually equals the `name` value, nor whether the parent is an `inlined_as_dict` collection. Any `name` key sitting inside any nested dict is deleted, regardless of whether it is redundant. For example, a `name` inside a nested structure that is *not* keyed by name (say a value under some other key) would still be stripped.\n\n3. **Lists propagate the parent key unchanged.** For a list value, each element is recursed with the same `parent` (the list's key). So dicts inside a list are treated as if their parent key were the list's key — again positional, not semantic.\n\n4. **The root is special-cased only by accident of `parent is None`.** There is no explicit \"keep the schema name\" logic; it falls out of the `or parent is None` clause.\n\nSo the answer to the question is **no**: `_remove_names` does not remove every `name` key. It removes `name` keys from nested dicts (those reached as a value of another dict, or inside a list under a key), while preserving the root-level `name` because the root is invoked with `parent=None`. The filter is purely about position in the traversal, not about whether the key is genuinely redundant."
+  },
+  {
+   "item": "e11-01",
+   "rep": 1,
+   "reads": 4,
+   "errors": [],
+   "requests": 3,
+   "conclusion": "I have the file contents. Let me analyze the `_remove_names` function carefully.\n\n## Analysis of `_remove_names`\n\nThe function is defined at the top of the file:\n\n```python\ndef _remove_names(obj: Any, parent: Optional[str]) -> Any:\n    ...\n    if isinstance(obj, dict):\n        return {k: _remove_names(v, k) for k, v in obj.items() if k != 'name' or parent is None}\n    elif isinstance(obj, list):\n        return [_remove_names(x, parent) for x in obj]\n    else:\n        return obj\n```\n\n### The key line\n\nThe dict branch is the only place a `name` key is ever dropped:\n\n```python\nreturn {k: _remove_names(v, k) for k, v in obj.items() if k != 'name' or parent is None}\n```\n\nThe filter condition is `k != 'name' or parent is None`. This means a key `k` is **kept** when either:\n- `k != 'name'` (it isn't a name key at all), **or**\n- `parent is None` (we're at the top level).\n\nEquivalently, a `name` key is **removed** only when `k == 'name'` **and** `parent is not None`.\n\n### What `parent` actually is\n\n`parent` is the key under which the current dict was found in its enclosing dict. It is passed down in the dict comprehension as `_remove_names(v, k)` — i.e., the child's `parent` is the key `k` that pointed to it.\n\nSo `parent is None` happens only for the **root** call, which is invoked as `_remove_names(obj, None)` in `schema_as_dict` (near the end of the file). Every nested dict gets a non-`None` parent (the key that led to it).\n\n### Answer to the question\n\n**No — it does not remove every `name` key regardless of where it appears.** It removes a `name` key only when that key sits inside a dict that is itself a value under some parent key (i.e., `parent is not None`). The root-level `name` key is deliberately preserved, because at the root `parent is None`, so the condition `k != 'name' or parent is None` is `True` and the key is kept.\n\n### Important nuances / caveats\n\n1. **It is not \"keyed by name\" aware.** The docstring says it removes `name` keys \"where that dictionary is already keyed by name,\" but the implementation does not check whether the parent key actually equals the value of `name`. It removes *any* `name` key in *any* nested dict, regardless of whether the parent key matches. So a nested dict that legitimately has a `name` field unrelated to its parent key would still lose it.\n\n2. **Lists propagate the parent unchanged.** In the list branch, `_remove_names(x, parent)` passes the *same* `parent` down. So dicts inside a list inherit the list's parent key. If a list appears at the root (parent `None`), dicts inside it also get `parent is None` and thus keep their `name` keys. If a list is a value under a key, its dict elements get that key as parent and lose `name`.\n\n3. **Only the literal string `'name'` is targeted.** Keys like `'names'`, `'name_'`, or `'@name'` are untouched.\n\n4. **The root exception is intentional** per the docstring's example: the top-level schema dict may carry a `name` (the schema's own name), which should be retained.\n\n### Summary\n\n- Removal condition: `k == 'name' and parent is not None`.\n- Root-level `name` is preserved (`parent is None`).\n- All nested `name` keys are removed, whether or not the enclosing dict is actually keyed by that name — the function does not verify the \"keyed by name\" premise.\n- Lists pass the parent through unchanged, so behavior inside lists depends on the list's own parent context."
+  },
+  {
+   "item": "e11-02",
+   "rep": 0,
+   "reads": 3,
+   "errors": [],
+   "requests": 4,
+   "conclusion": "I found the relevant code. Let me read the `Event.got_update` method carefully.\n\nThe `Event` class is defined in the file, and its `got_update` method is:\n\n```python\nclass Event(object):\n    \"\"\"\n    A class representing one of the valid EVENTs that Tor\n    supports.\n\n    This allows you to listen for such an event; see\n    TorController.add_event The callbacks will be called every time\n    the event in question is received.\n    \"\"\"\n    def __init__(self, name):\n        self.name = name\n        self.callbacks = []\n\n    def listen(self, cb):\n        self.callbacks.append(cb)\n\n    def unlisten(self, cb):\n        self.callbacks.remove(cb)\n\n    def got_update(self, data):\n        for cb in self.callbacks:\n            cb(data)\n```\n\n## Findings\n\n**No, `got_update` does not catch exceptions raised by a callback.**\n\nThe method body is simply:\n\n```python\ndef got_update(self, data):\n    for cb in self.callbacks:\n        cb(data)\n```\n\nThere is no `try`/`except` block wrapping the `cb(data)` call. This means:\n\n1. **If any callback raises an exception, that exception propagates out of `got_update` immediately.** The `for` loop is terminated at that point, so **the remaining callbacks in `self.callbacks` will NOT run.**\n\n2. The exception is not logged or swallowed here either — it propagates up to whatever called `got_update` (the event-dispatch machinery in `TorControlProtocol`).\n\nSo the behavior is \"fail-fast\": the first callback that raises aborts the dispatch of the event to all subsequent listeners. If the intent is that one misbehaving listener should not prevent other listeners from receiving the event, this code does not provide that guarantee — it would need a `try`/`except` (typically logging the error) around the `cb(data)` call inside the loop.\n\nNote: the question mentions `torcontrolprotocol.py`, and this `Event.got_update` is the only `got_update` definition in the file. If you were thinking of a different `got_update` (e.g., in `TorState` or a stream/circuit listener), let me know and I can check those too — but within this file, the answer is that no exception handling is present."
+  },
+  {
+   "item": "e11-02",
+   "rep": 1,
+   "reads": 4,
+   "errors": [],
+   "requests": 5,
+   "conclusion": "I now have the relevant code. Let me analyze the `got_update` method.\n\n## Findings\n\nThe `Event.got_update` method is defined in `txtorcon/torcontrolprotocol.py`:\n\n```python\ndef got_update(self, data):\n    for cb in self.callbacks:\n        cb(data)\n```\n\n**Answer: No, `got_update` does not catch exceptions raised by a callback.**\n\nThe method simply iterates over `self.callbacks` and calls each callback directly with `cb(data)`. There is:\n\n- **No `try`/`except` block** wrapping the `cb(data)` call.\n- **No per-callback error handling** of any kind.\n\n### Consequence\n\nIf any callback raises an exception, that exception propagates immediately out of `got_update`. Because the exception is raised inside the `for` loop, the loop terminates at that point, and **any remaining callbacks in `self.callbacks` that come after the failing one will not run**.\n\nSo the behavior is:\n- Callbacks are invoked in registration order (the order they were added via `listen`, which appends to `self.callbacks`).\n- The first callback that raises an exception aborts the entire dispatch; subsequent callbacks are skipped.\n- The exception propagates to the caller of `got_update` (the code that processes incoming Tor events).\n\n### Summary\n\n`got_update` is a plain, unguarded loop. It does **not** isolate callback failures, so a single misbehaving callback can prevent the remaining callbacks from being invoked. If the intent is for all callbacks to run regardless of individual failures, this method would need a `try`/`except` around `cb(data)` (and likely logging of the error)."
+  },
+  {
+   "item": "e11-03",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found:\n\n## Answer: No, `Submission` does not convert `attachments` into `File` objects.\n\n### Evidence\n\n**1. `Submission` has no `__init__` and no attribute conversion logic.**\n\nThe class body (lines 8–231) contains only:\n- `__str__` (lines 9–10)\n- `create_submission_peer_review` (lines 12–38)\n- `delete_submission_peer_review` (lines 40–66)\n- `edit` (lines 68–88)\n- `get_submission_peer_reviews` (lines 90–108)\n- `mark_read` (lines 110–126)\n- `mark_unread` (lines 128–144)\n- `upload_comment` (lines 146–231)\n\nThere is no `__init__` override, and no method that iterates over `attachments` to wrap them in `File`. `Submission` inherits directly from `CanvasObject` (line 8), so its attributes are set by the base class's `set_attributes` from the raw JSON response.\n\n**2. `File` is never imported or referenced.**\n\nThe imports at the top of the file (lines 1–5) are:\n\n```python\nfrom canvasapi.canvas_object import CanvasObject\nfrom canvasapi.paginated_list import PaginatedList\nfrom canvasapi.peer_review import PeerReview\nfrom canvasapi.upload import FileOrPathLike, Uploader\nfrom canvasapi.util import combine_kwargs, obj_or_id\n```\n\n`canvasapi.file.File` is not imported. The only file-related import is `FileOrPathLike` and `Uploader` from `canvasapi.upload` (line 4), which are used solely as a type hint and upload helper in `upload_comment` (lines 146–231) — not for converting `attachments`.\n\n**3. The only nested-object conversion in the file is for `submissions`, not `attachments`.**\n\n`GroupedSubmission.__init__` (lines 234–243) converts the `submissions` key into `Submission` objects:\n\n```python\nself.submissions = [\n    Submission(requester, submission)\n    for submission in attributes[\"submissions\"]\n]\n```\n\nThis is the only place in the module where raw JSON is wrapped into objects, and it concerns `submissions`, not `attachments`.\n\n### Conclusion\n\nWhen a `Submission` is constructed from Canvas API JSON, any `attachments` field is stored as-is (raw dicts/lists from the response) via the inherited `CanvasObject` behavior. There is no code in `submission.py` that transforms `attachments` into `canvasapi.file.File` instances."
+  },
+  {
+   "item": "e11-03",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found:\n\n## Answer: No, `Submission` does not convert `attachments` into `File` objects.\n\n### Evidence\n\n**1. `Submission` has no `__init__` and no attribute conversion logic.**\n\nThe class body (lines 8–211) contains only:\n- `__str__` (lines 9–10)\n- `create_submission_peer_review` (lines 12–38)\n- `delete_submission_peer_review` (lines 40–65)\n- `edit` (lines 67–89)\n- `get_submission_peer_reviews` (lines 91–110)\n- `mark_read` (lines 112–127)\n- `mark_unread` (lines 129–144)\n- `upload_comment` (lines 146–211)\n\nThere is no `__init__` override, and no code anywhere that touches an `attachments` attribute. `Submission` inherits directly from `CanvasObject` (line 1, line 8) and relies on the base class to store whatever JSON attributes the API returns.\n\n**2. `File` is never imported or referenced.**\n\nThe imports at the top of the file are:\n\n```python\nfrom canvasapi.canvas_object import CanvasObject\nfrom canvasapi.paginated_list import PaginatedList\nfrom canvasapi.peer_review import PeerReview\nfrom canvasapi.upload import FileOrPathLike, Uploader\nfrom canvasapi.util import combine_kwargs, obj_or_id\n```\n\n`canvasapi.file.File` is not imported. The only file-related import is `FileOrPathLike`/`Uploader` from `canvasapi.upload`, and those are used solely in `upload_comment` (lines 146–211) to upload a *new* file as a comment attachment — not to convert existing `attachments`.\n\n**3. `GroupedSubmission` also does no attachment conversion.**\n\n`GroupedSubmission.__init__` (lines 214–223) only wraps the nested `submissions` list into `Submission` objects. It does not process `attachments` either.\n\n### Conclusion\n\nWhen the Canvas API returns a submission JSON containing an `attachments` array, `CanvasObject` stores it as-is (a plain list of dicts). `Submission` never wraps those dicts into `canvasapi.file.File` instances. Any code expecting `submission.attachments` to be `File` objects would be relying on behavior that this module does not implement."
+  },
+  {
+   "item": "e11-04",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "## Findings\n\n**No, this file does not import the `re` module.**\n\nThe complete set of imports is at the top of the file (lines 1–5):\n\n```python\nimport argparse\nfrom typing import IO\nfrom typing import List\nfrom typing import Optional\nfrom typing import Sequence\n```\n\nOnly `argparse` and several names from `typing` are imported. There is no `import re` statement anywhere in the file.\n\nI also checked the rest of the file for any use of the `re` module (e.g., `re.match`, `re.sub`, `re.compile`). None appears. The code performs all of its text/byte processing using plain string and bytes operations instead:\n\n- `partition` and `in` for parsing requirement names (lines 20–27)\n- `startswith` / `endswith` for detecting comments and line continuations (lines 33, 44, 68, 84)\n- `strip`, `rstrip`, `lower`, `join`, `sorted` for the rest of the logic\n\nSo the answer is that `re` is neither imported nor used in `pre_commit_hooks/requirements_txt_fixer.py`."
+  },
+  {
+   "item": "e11-04",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the entire file (3987 bytes). Here's what I found:\n\n**No, this file does not import the `re` module.**\n\nThe complete set of imports is at the top of the file (lines 1–5):\n\n```python\nimport argparse\nfrom typing import IO\nfrom typing import List\nfrom typing import Optional\nfrom typing import Sequence\n```\n\nThe only modules imported are:\n- `argparse` (line 1)\n- `typing` — specifically `IO`, `List`, `Optional`, and `Sequence` (lines 2–5)\n\nThere is no `import re` statement anywhere in the file, and no `from re import ...` either. I also checked the rest of the file's body (the `Requirement` class, `fix_requirements`, and `main` functions) — none of the code references `re.` or any regex functionality. The string/byte manipulation is done with plain methods like `.partition()`, `.startswith()`, `.strip()`, `.rstrip()`, and `.endswith()`.\n\nSo the answer is: **the `re` module is not imported in `pre_commit_hooks/requirements_txt_fixer.py`.**"
+  },
+  {
+   "item": "e11-05",
+   "rep": 0,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-05",
+   "rep": 1,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-06",
+   "rep": 0,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-06",
+   "rep": 1,
+   "reads": 17,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-07",
+   "rep": 0,
+   "reads": 3,
+   "errors": [],
+   "requests": 4,
+   "conclusion": "I found the relevant code. Here's what I found:\n\n## Answer: Yes, the code emits `ADD` (not `COPY`) for `~/.ansible.cfg`\n\nThe relevant method is `_prepare_ansible_config_file` in `ansible_builder/containerfile.py`:\n\n```python\ndef _prepare_ansible_config_file(self):\n    if self.definition.version != 1:\n        return\n\n    ansible_config_file_path = self.definition.ansible_config\n    if ansible_config_file_path:\n        context_file_path = os.path.join(\n            constants.user_content_subfolder, 'ansible.cfg')\n        self.steps.extend([\n            f\"ADD {context_file_path} ~/.ansible.cfg\",\n            \"\",\n        ])\n```\n\nThe key line is:\n\n```python\nf\"ADD {context_file_path} ~/.ansible.cfg\",\n```\n\nThis explicitly emits an `ADD` instruction with the destination `~/.ansible.cfg`, not `COPY`.\n\n### Important caveats\n\n1. **Version-gated**: The method returns early unless `self.definition.version == 1`. So this `ADD` is only emitted for version 1 execution environment definitions. For versions 2 and 3, this method does nothing.\n\n2. **Conditional on config presence**: The `ADD` is only emitted if `self.definition.ansible_config` is truthy (i.e., the user actually specified an `ansible.cfg`).\n\n3. **Where it's called**: `_prepare_ansible_config_file()` is invoked inside the \"galaxy\" build stage (only when galaxy requirements exist), right before `_prepare_build_context()` and `_prepare_galaxy_install_steps()`.\n\n### Contrast with other instructions in the same file\n\nNotably, the codebase is inconsistent about `ADD` vs `COPY`:\n- `_create_folder_copy_files` uses `COPY {context_dir}/scripts/ /output/scripts/`\n- `_prepare_system_runtime_deps_steps` uses `COPY --from=builder ...`\n- `_prepare_galaxy_copy_steps` uses `COPY --from=galaxy ...`\n- But `_prepare_build_context` uses `ADD {0} /build`, and `_prepare_introspect_assemble_steps` uses `ADD` for requirements/bindep files.\n\nSo the `ADD` for `~/.ansible.cfg` is consistent with the other `ADD` usages in the build-context handling, but it is indeed `ADD` rather than `COPY`."
+  },
+  {
+   "item": "e11-07",
+   "rep": 1,
+   "reads": 10,
+   "errors": [],
+   "requests": 11,
+   "conclusion": "Yes, the code does emit an `ADD` instruction (not `COPY`) for `~/.ansible.cfg`. Here's what I found:\n\n## The relevant method: `_prepare_ansible_config_file`\n\n```python\ndef _prepare_ansible_config_file(self):\n    if self.definition.version != 1:\n        return\n\n    ansible_config_file_path = self.definition.ansible_config\n    if ansible_config_file_path:\n        context_file_path = os.path.join(\n            constants.user_content_subfolder, 'ansible.cfg')\n        self.steps.extend([\n            f\"ADD {context_file_path} ~/.ansible.cfg\",\n            \"\",\n        ])\n```\n\nThe key line is:\n\n```python\nf\"ADD {context_file_path} ~/.ansible.cfg\",\n```\n\nThis explicitly uses the `ADD` instruction to place the user's `ansible.cfg` at `~/.ansible.cfg` in the image.\n\n## Important caveats\n\n1. **Version-gated**: The method returns early unless `self.definition.version == 1`. So this `ADD ~/.ansible.cfg` step is only emitted for **version 1** execution environment definitions. For versions 2 and 3, this method does nothing.\n\n2. **Conditional on config presence**: Even for version 1, the `ADD` is only emitted if `self.definition.ansible_config` is truthy (i.e., the user actually specified an `ansible_config`).\n\n3. **Called only in the galaxy stage**: `_prepare_ansible_config_file()` is invoked inside `prepare()` within the galaxy build stage block (guarded by `if self.definition.get_dep_abs_path('galaxy'):`), so it only runs when galaxy requirements exist.\n\n## Contrast with other file-copying steps\n\nNote that elsewhere in the file, `COPY` is used for build-context files:\n- `_create_folder_copy_files` emits `COPY {context_dir}/scripts/ /output/scripts/`\n- `_prepare_system_runtime_deps_steps` emits `COPY --from=builder /output/ /output/`\n- `_prepare_galaxy_copy_steps` emits `COPY --from=galaxy ...`\n\nBut the `~/.ansible.cfg` placement specifically uses `ADD`. So the answer to your question is **yes** — for version 1 definitions with an `ansible_config` set, the code emits `ADD <context>/ansible.cfg ~/.ansible.cfg` rather than a `COPY` instruction."
+  },
+  {
+   "item": "e11-08",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found.\n\n## Answer: No, the code does **not** honour `HY_HISTORY`\n\nThe history file path is hard-coded and never consults the `HY_HISTORY` environment variable.\n\n### The relevant code\n\nIn the `completion` context manager, the history path is set like this:\n\n```python\nhistory = os.path.expanduser(\"~/.hy-history\")\n```\n\nThis is the only place a history path is defined. It is a literal string `\"~/.hy-history\"` passed through `os.path.expanduser`, so it always resolves to `~/.hy-history` (e.g. `/home/user/.hy-history`). There is no `os.environ` / `os.getenv` lookup anywhere in the file.\n\nThat same `history` variable is then used for both reading and writing:\n\n```python\ntry:\n    readline.read_history_file(history)\nexcept IOError:\n    pass\n```\n\nand in the `finally` block:\n\n```python\ntry:\n    readline.write_history_file(history)\nexcept IOError:\n    pass\n```\n\n### Supporting observations\n\n- The module imports `os` (used for `os.path.expanduser`), but `os.environ` is never accessed.\n- A search of the file shows no occurrence of `HY_HISTORY`, `getenv`, or `environ`.\n- The only environment-related behaviour in the file is the platform check `sys.platform == 'darwin'` for choosing the readline binding, which is unrelated to history.\n\n### Conclusion\n\nIf a user sets `HY_HISTORY=/some/path`, it will be silently ignored. History will always be read from and written to `~/.hy-history`. To honour `HY_HISTORY`, the line would need to be changed to something like:\n\n```python\nhistory = os.path.expanduser(os.environ.get(\"HY_HISTORY\", \"~/.hy-history\"))\n```\n\nNote: I only inspected `hy/completer.py` as requested. If `HY_HISTORY` is handled elsewhere (e.g. in a CLI entry point that sets up readline before importing this module), that would be outside this file — but within `completer.py` itself, the variable is not honoured."
+  },
+  {
+   "item": "e11-08",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the entire file (it's 3551 bytes, ~130 lines). Here's what I found.\n\n## Answer: No, the code does **not** honour `HY_HISTORY`\n\nThe history file path is hard-coded and never consults the environment.\n\n### The relevant code\n\nIn the `completion` context manager, the history path is set unconditionally:\n\n```python\nhistory = os.path.expanduser(\"~/.hy-history\")\n```\n\nThis is the only place `history` is assigned. It is a literal string `\"~/.hy-history\"` passed through `os.path.expanduser`, with no reference to `os.environ`, `os.getenv`, or `HY_HISTORY` anywhere in the file.\n\n### How it's used\n\nThe same `history` variable is then used for both reading and writing:\n\n- On entry: `readline.read_history_file(history)` (wrapped in `try/except IOError: pass`)\n- On exit (in the `finally` block): `readline.write_history_file(history)` (also wrapped in `try/except IOError: pass`)\n\n### Supporting observations\n\n- `os` **is** imported at the top of the file, so the module has the capability to read environment variables — it simply doesn't do so for the history path.\n- A search of the file shows no occurrence of `HY_HISTORY`, `environ`, or `getenv` at all. The only environment-related usage is `sys.platform` (for the libedit/darwin readline binding), which is unrelated.\n\n### Conclusion\n\nThe history file location is fixed at `~/.hy-history`. If a user sets `HY_HISTORY` to point elsewhere, it will be silently ignored — history will still be read from and written to `~/.hy-history`. To honour the variable, the assignment would need to be something like:\n\n```python\nhistory = os.path.expanduser(os.environ.get(\"HY_HISTORY\", \"~/.hy-history\"))\n```\n\nbut no such logic exists in the current code."
+  },
+  {
+   "item": "e11-09",
+   "rep": 0,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  },
+  {
+   "item": "e11-09",
+   "rep": 1,
+   "reads": 10,
+   "errors": [
+    "investigation must finish\n\n'length' !== 'stop'\n"
+   ],
+   "requests": 11,
+   "conclusion": "I now have the full picture of the relevant code. Let me examine the `_fix_extraneous_parens` function and the `_fix_tokens` function closely, since that's where parentheses removal happens.\n\nLooking at the code I've read, here's what I found:\n\n## Answer: No, the code does **not** keep parentheses when they contain a `yield` expression\n\nThe relevant function is `_fix_extraneous_parens`, which is called from `_fix_tokens`:\n\n```python\nelif token.src == '(':\n    _fix_extraneous_parens(tokens, i)\n```\n\nHere is the full function:\n\n```python\ndef _fix_extraneous_parens(tokens, i):\n    # search forward for another non-coding token\n    i += 1\n    while tokens[i].name in NON_CODING_TOKENS:\n        i += 1\n    # if we did not find another brace, return immediately\n    if tokens[i].src != '(':\n        return\n\n    start = i\n    depth = 1\n    while depth:\n        i += 1\n        # found comma at depth 1: this is a tuple\n        if depth == 1 and tokens[i].src == ',':\n            return\n        elif tokens[i].src in OPENING:\n            depth += 1\n        elif tokens[i].src in CLOSING:\n            depth -= 1\n    end = i\n\n    # empty tuple\n    if all(t.name in NON_CODING_TOKENS for t in tokens[start + 1:i]):\n        return\n\n    # search forward for the next non-coding token\n    i += 1\n    while tokens[i].name in NON_CODING_TOKENS:\n        i += 1\n\n    if tokens[i].src == ')':\n        _remove_brace(tokens, end)\n        _remove_brace(tokens, start)\n```\n\n### What this function does\n\nIt removes **double parentheses** — i.e., a redundant pair of parens wrapping another parenthesized expression, like `((x))` → `(x)`. The logic:\n\n1. It looks at the token *after* the current `(` (skipping non-coding tokens like whitespace/comments).\n2. If that next token is **not** another `(`, it returns immediately — nothing to do.\n3. Otherwise it walks forward tracking brace depth to find the matching close of the inner paren.\n4. It bails out if it hits a comma at depth 1 (that would be a tuple, so parens are meaningful).\n5. It bails out on an empty tuple.\n6. Finally, if the token after the inner group is a `)`, it removes both the inner and outer braces.\n\n### Why `yield` is not special-cased\n\nThere is **no reference to `yield` anywhere** in this function (or in `_fix_tokens`). The function operates purely on token text — it only checks for `(`, `)`, `,`, and brace nesting. It never inspects the AST or looks for a `yield` keyword.\n\nThis means the code does **not** keep parentheses when they contain a `yield` expression. For example, given something like:\n\n```python\nx = ((yield))\n```\n\nthe function would see the outer `(`, then the inner `(`, find the matching `)`, then find the following `)`, and remove both braces, producing:\n\n```python\nx = (yield)\n```\n\nMore importantly, consider a case where the parens are semantically required for a `yield` expression, such as:\n\n```python\nx = (yield)\n```\n\nHere there is only a single pair of parens, so `_fix_extraneous_parens` returns early at the `if tokens[i].src != '(':` check (the token after the first `(` is `yield`, not `(`). So single parens around `yield` are preserved — but only incidentally, because the function only targets *doubled* parens, not because of any `yield`-awareness.\n\n### Summary\n\n- The parenthesis-removal logic lives in `_fix_extraneous_parens` (called from `_fix_tokens`).\n- It only removes **redundant doubled parentheses** (`((...))` → `(...)`).\n- It contains **no `yield` handling whatsoever** — it is purely token/brace-based.\n- Therefore, the code does **not** deliberately keep parentheses around a `yield` expression. It would strip doubled parens even if the inner expression is a `yield`, and it preserves single parens only because it never touches single-paren groups.\n\nIf the intent were to preserve parens around `yield` (which can matter for syntax/semantics in some contexts), that logic is"
+  },
+  {
+   "item": "e11-10",
+   "rep": 0,
+   "reads": 13,
+   "errors": [],
+   "requests": 14,
+   "conclusion": "Based on the code I read, here is what I found.\n\n## Answer: No, the code does **not** check for a default RangeIndex — it calls `reset_index` unconditionally for pandas-like objects.\n\nThe relevant function is `maybe_reset_index` in `narwhals/utils.py`. Its body is:\n\n```python\ndef maybe_reset_index(obj: T) -> T:\n    ...\n    obj_any = cast(Any, obj)\n    native_obj = to_native(obj_any)\n    if is_pandas_like_dataframe(native_obj):\n        return obj_any._from_compliant_dataframe(\n            obj_any._compliant_frame._from_native_frame(native_obj.reset_index(drop=True))\n        )\n    if is_pandas_like_series(native_obj):\n        return obj_any._from_compliant_series(\n            obj_any._compliant_series._from_native_series(\n                native_obj.reset_index(drop=True)\n            )\n        )\n    return obj_any\n```\n\n### What the code actually does\n\n1. **The only guard is the type check.** The branch is taken purely based on `is_pandas_like_dataframe(native_obj)` (and similarly `is_pandas_like_series`). There is no inspection of the index's `start`, `step`, or `stop`, and no comparison of `stop` against `len`.\n\n2. **`reset_index(drop=True)` is called unconditionally** inside that branch. So even if the dataframe already has a default `RangeIndex(start=0, stop=len, step=1)`, the code still invokes `native_obj.reset_index(drop=True)`.\n\n3. **For non-pandas-like inputs it is a no-op** — the function falls through to `return obj_any` (e.g., Polars, PyArrow), as the docstring notes (\"For non-pandas-like inputs, this is a no-op\").\n\n### Conclusion\n\nThe function name `maybe_reset_index` refers to \"maybe\" in the sense of *\"only if the object is pandas-like\"* — **not** *\"only if the index is non-default.\"* There is no short-circuit for an already-default RangeIndex. If the input is a pandas-like DataFrame/Series, `reset_index(drop=True)` is always called, regardless of whether the index is already the default `RangeIndex(start=0, step=1, stop=len)`.\n\n(Note: I was unable to pin down exact line numbers because the file reads returned overlapping/region content rather than a clean numbered view; the function is `maybe_reset_index`, located after `maybe_set_index` and before `maybe_convert_dtypes` in `narwhals/utils.py`.)"
+  },
+  {
+   "item": "e11-10",
+   "rep": 1,
+   "reads": 4,
+   "errors": [],
+   "requests": 5,
+   "conclusion": "I've read the relevant code. Here's what I found.\n\n## Answer: No, the code does **not** check whether the index is already a default RangeIndex\n\nThe function in question is `maybe_reset_index` in `narwhals/utils.py`. Its body is:\n\n```python\nobj_any = cast(Any, obj)\nnative_obj = to_native(obj_any)\nif is_pandas_like_dataframe(native_obj):\n    return obj_any._from_compliant_dataframe(  # type: ignore[no-any-return]\n        obj_any._compliant_frame._from_native_frame(native_obj.reset_index(drop=True))\n    )\nif is_pandas_like_series(native_obj):\n    return obj_any._from_compliant_series(  # type: ignore[no-any-return]\n        obj_any._compliant_series._from_native_series(\n            native_obj.reset_index(drop=True)\n        )\n    )\nreturn obj_any  # type: ignore[no-any-return]\n```\n\n### What the code actually does\n\n1. It converts the Narwhals object to its native backend via `to_native(obj_any)`.\n2. It checks **only** whether the native object is a pandas-like DataFrame (`is_pandas_like_dataframe`) or a pandas-like Series (`is_pandas_like_series`).\n3. If it is pandas-like, it **unconditionally** calls `native_obj.reset_index(drop=True)` — for both the DataFrame branch and the Series branch.\n4. For any non-pandas-like input (e.g. Polars, PyArrow, Dask), it returns the object unchanged (the final `return obj_any`).\n\n### Key finding\n\nThere is **no inspection of the existing index at all**. The code never checks:\n- whether the index is a `RangeIndex`,\n- whether it starts at 0,\n- whether its step is 1,\n- whether its stop equals `len`.\n\nThe only condition gating the `reset_index` call is the *type* of the object (`is_pandas_like_dataframe` / `is_pandas_like_series`). So even if the DataFrame already has a default `RangeIndex(start=0, stop=len, step=1)`, the code still calls `reset_index(drop=True)`.\n\n### Corroborating evidence from the docstring\n\nThe docstring's own example confirms this behavior is intentional and unconditional for pandas-like inputs:\n\n```\n>>> df_pd = pd.DataFrame({\"a\": [1, 2], \"b\": [4, 5]}, index=([6, 7]))\n>>> df = nw.from_native(df_pd)\n>>> nw.to_native(nw.maybe_reset_index(df))\n   a  b\n0  1  4\n1  2  5\n```\n\nThe docstring also states the intent: *\"Reset the index to the default integer index of a DataFrame or a Series, if it's pandas-like.\"* The condition is \"if it's pandas-like,\" not \"if the index is non-default.\"\n\n### Summary\n\n- **Does it call `reset_index` when the index is already a default RangeIndex?** Yes — for pandas-like DataFrames and Series it always calls `reset_index(drop=True)`, regardless of the current index.\n- **Is there any RangeIndex/start/step/stop check?** No. The only guard is the pandas-like type check.\n- **For non-pandas-like inputs?** It's a no-op (returns the object unchanged)."
+  },
+  {
+   "item": "e11-15",
+   "rep": 0,
+   "reads": 6,
+   "errors": [],
+   "requests": 7,
+   "conclusion": "I've now read the full file. Here's what I found regarding `remote_path`:\n\n## Answer: No — `remote_path` is built with `os.sep`, not `os.sep`-independent logic, and there are two different constructions\n\nThere are **two** places where `remote_path` is assigned, and they use **different** mechanisms:\n\n### 1. `DownloadedFileRelations.run` — uses `project_file.path` directly\n\n```python\ndef run(self, data_service, project_file):\n    remote_path = project_file.path\n    ...\n    self.activity.remote_path_to_file_version_id[remote_path] = file_version_id\n```\n\nHere `remote_path` is **not** built with `os.sep` at all. It is taken verbatim from `project_file.path`, which is a path supplied by the download machinery (a local filesystem path). Whatever separator that path uses is whatever the download layer produced.\n\n### 2. `UploadedFileRelations._lookup_used_entity_id` — explicitly uses `os.sep`\n\n```python\nname_parts = [ancestor['name'] for ancestor in file_details['ancestors']\n              if ancestor['kind'] == KindType.folder_str]\nname_parts.append(file_details['name'])\nremote_path = os.sep.join(name_parts)\nreturn self.activity.remote_path_to_file_version_id[remote_path]\n```\n\nHere `remote_path` **is** built with `os.sep` — it joins the ancestor folder names plus the file name using the platform's native separator.\n\n## Why this matters\n\nThe two `remote_path` values are used as **keys into the same dictionary** (`activity.remote_path_to_file_version_id`):\n\n- `DownloadedFileRelations.run` **writes** the key (from `project_file.path`).\n- `UploadedFileRelations._lookup_used_entity_id` **reads** the key (built with `os.sep.join(...)`).\n\nFor the lookup to succeed, the key written during download must exactly match the key built during upload. The upload side hard-codes `os.sep`, so it assumes `project_file.path` on the download side also used `os.sep`. On a platform where the download path uses a different separator than `os.sep` (or where `project_file.path` is normalized differently), the dictionary lookup would raise a `KeyError`.\n\nSo, to directly answer the question: **`remote_path` is built with `os.sep` in `UploadedFileRelations._lookup_used_entity_id`, but it is *not* built with `os.sep` in `DownloadedFileRelations.run` — it is copied from `project_file.path`.** The correctness of the copy operation depends on those two representations agreeing."
+  },
+  {
+   "item": "e11-15",
+   "rep": 1,
+   "reads": 8,
+   "errors": [],
+   "requests": 9,
+   "conclusion": "I found the relevant code. Here's what I found:\n\n## Answer: Yes, `remote_path` is built with `os.sep`\n\nThere are two places in `ddsc/core/d4s2.py` where `remote_path` is assigned, and they use different approaches:\n\n### 1. `DownloadedFileRelations.run` — uses `project_file.path` directly\n\n```python\ndef run(self, data_service, project_file):\n    ...\n    remote_path = project_file.path\n    file_dict = data_service.get_file(project_file.id).json()\n    file_version_id = file_dict['current_version']['id']\n    data_service.create_used_relation(self.activity.id, KindType.file_str, file_version_id)\n    self.activity.remote_path_to_file_version_id[remote_path] = file_version_id\n```\n\nHere `remote_path` is **not** built with `os.sep` — it's taken verbatim from `project_file.path`.\n\n### 2. `UploadedFileRelations._lookup_used_entity_id` — **does** use `os.sep`\n\n```python\ndef _lookup_used_entity_id(self, file_details):\n    ...\n    # Since this uses the response from POST to /files/ this will include the ancestors and not be\n    # effected by exclude_response_fields that were used when listing the project\n    name_parts = [ancestor['name'] for ancestor in file_details['ancestors']\n                  if ancestor['kind'] == KindType.folder_str]\n    name_parts.append(file_details['name'])\n    remote_path = os.sep.join(name_parts)\n    return self.activity.remote_path_to_file_version_id[remote_path]\n```\n\nHere `remote_path` **is** built with `os.sep` via `os.sep.join(name_parts)`.\n\n## Why this matters\n\nThe two `remote_path` values are used as **dictionary keys** into the same dict, `self.activity.remote_path_to_file_version_id`:\n\n- `DownloadedFileRelations.run` **writes** to it: `self.activity.remote_path_to_file_version_id[remote_path] = file_version_id`\n- `UploadedFileRelations._lookup_used_entity_id` **reads** from it: `return self.activity.remote_path_to_file_version_id[remote_path]`\n\nSo the lookup only succeeds if both sides produce identical strings. The upload side joins ancestor folder names with `os.sep`, while the download side relies on whatever separator `project_file.path` uses. On Windows, `os.sep` is `\\`, so if `project_file.path` uses `/` (or vice versa), the keys won't match and the lookup will raise a `KeyError`. This is a potential cross-platform inconsistency worth flagging.\n\nNote: I was unable to see the exact line numbers in the tool output (the file was returned as region excerpts rather than numbered lines), so I've cited the code blocks by their enclosing functions/methods rather than by line number."
+  },
+  {
+   "item": "e11-17",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I found the relevant code. Let me look at the `systemctl_list_sockets` function closely.\n\nThe function in question is `systemctl_list_sockets` (lines ~130-145). Here's the key part:\n\n```python\ndef systemctl_list_sockets():\n    with pipe('systemctl', 'list-sockets', '--show-types') as f:\n        header = next(f)\n        cols = [0] + [m.start() + 1 for m in re.finditer(r' [^ ]', header)] + [None]\n        cols = [slice(cols[i], cols[i + 1]) for i in range(len(cols) - 1)]\n        for line in f:\n            line = line.rstrip()\n            if not line:\n                break\n            parts = [line[col].rstrip() for col in cols]\n            listen, type_, unit, activates = parts\n            ...\n```\n\n**Answer: Yes.** The code unpacks `parts` into exactly four variables — `listen, type_, unit, activates` — without checking how many columns `parts` actually contains.\n\nDetails:\n\n1. **Column count is derived from the header, not validated.** The `cols` list is built dynamically from the header line via `re.finditer(r' [^ ]', header)`. The number of slices therefore depends entirely on how many space-separated columns the `systemctl list-sockets --show-types` header happens to have. There is no assertion or check that this yields exactly 4 columns.\n\n2. **The unpacking is unconditional.** The line `listen, type_, unit, activates = parts` will raise `ValueError: too many values to unpack` (or `not enough values to unpack`) if `parts` does not have exactly 4 elements. This is a hard failure, not a graceful skip.\n\n3. **Note the `activates` variable is never used** afterward — only `listen`, `type_`, and `unit` are consumed. So the fourth column is required purely to satisfy the tuple unpacking, which makes the code brittle: if a future `systemctl` version adds or removes a column, this breaks even though the extra data isn't needed.\n\n4. **Contrast with the other parsers in the file**, which are more defensive:\n   - `rpcinfo_dump` guards with `program = parts[4] if len(parts) > 4 else '-'`.\n   - `netstat` indexes `parts[0]`, `parts[3]`, etc. directly (also unguarded, but it relies on a fixed netstat format).\n   \n   So `systemctl_list_sockets` is the one place where a variable-length `parts` list is unpacked into a fixed number of names with no length check.\n\nIn short: the code assumes the `systemctl list-sockets --show-types` output always has exactly four columns, and will crash with a `ValueError` if that assumption is violated."
+  },
+  {
+   "item": "e11-17",
+   "rep": 1,
+   "reads": 2,
+   "errors": [],
+   "requests": 3,
+   "conclusion": "Yes, the code does exactly that. Here's what I found in `systemctl_list_sockets`:\n\n**The unpacking without a column-count check:**\n\n```python\nparts = [line[col].rstrip() for col in cols]\nlisten, type_, unit, activates = parts\n```\n\nThe line `listen, type_, unit, activates = parts` unpacks `parts` into exactly four variables. There is no check that `len(parts) == 4` before this unpacking.\n\n**How `parts` is built (and why the count can vary):**\n\n```python\nheader = next(f)\ncols = [0] + [m.start() + 1 for m in re.finditer(r' [^ ]', header)] + [None]\ncols = [slice(cols[i], cols[i + 1]) for i in range(len(cols) - 1)]\n```\n\nThe number of slices in `cols` — and therefore the number of elements in `parts` — is derived dynamically from the header line of `systemctl list-sockets --show-types` output. It is not hardcoded to four. The code assumes the header yields exactly four columns (LISTEN, TYPE, UNIT, ACTIVATES), but nothing enforces that.\n\n**Consequence:**\n\n- If the header has fewer than four columns, `parts` will have fewer than four elements and the unpack raises `ValueError: not enough values to unpack`.\n- If the header has more than four columns, `parts` will have more elements and the unpack raises `ValueError: too many values to unpack`.\n\nSo the answer to the question is **yes**: the code unpacks `parts` into exactly four variables (`listen, type_, unit, activates`) without verifying how many columns/elements `parts` actually contains. The column count is computed from the header at runtime, so a mismatch between the assumed four columns and the actual header would cause an unpacking `ValueError` rather than being handled gracefully."
+  },
+  {
+   "item": "e11-18",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file (it's short — 1714 bytes, ~80 lines). Here's what I found.\n\n## Answer: No, it does not handle file-like objects with a `read()` method\n\nThe central function is `get_bytes(obj)`, which dispatches on the input type. Let me walk through the relevant lines.\n\n**The dispatch logic** (`get_bytes`, lines 47–80):\n\n```python\nif isinstance(obj, bytearray):\n    return signature(obj)\n\nif isinstance(obj, str):\n    return get_signature_bytes(obj)\n\nif isinstance(obj, bytes):\n    return signature(obj)\n\nif isinstance(obj, memoryview):\n    return bytearray(signature(obj).tolist())\n\nif isinstance(obj, pathlib.PurePath):\n    return get_signature_bytes(obj)\n\nraise TypeError('Unsupported type as file input: %s' % type(obj))\n```\n\nThe function recognizes exactly five input categories:\n1. `bytearray` → sliced via `signature()`\n2. `str` → treated as a path, opened via `get_signature_bytes()`\n3. `bytes` → sliced via `signature()`\n4. `memoryview` → converted and sliced\n5. `pathlib.PurePath` → treated as a path, opened via `get_signature_bytes()`\n\nAnything else falls through to the final `raise TypeError(...)`.\n\n**Why file-like objects fail:** A file object (e.g. the result of `open(path, 'rb')`, an `io.BytesIO`, or any object exposing `read()`) is not an instance of any of those five types. There is no `hasattr(obj, 'read')` check, no `io.IOBase` check, and no duck-typing branch anywhere in the file. So such an object hits the `raise TypeError` at the end.\n\n**Note on the docstring:** The docstring for `get_bytes` (lines 47–58) says the `obj` argument may be a \"path to readable, file, bytes, bytearray or memoryview.\" The word **\"file\"** in that docstring is misleading — the implementation has no branch that accepts a file object. Only the path-based branches (`str` and `pathlib.PurePath`) actually open files, and they do so internally via `get_signature_bytes` (lines 15–27), which calls `open(path, 'rb')` itself. A caller cannot pass an already-open file handle.\n\n**The only place `read()` is used** is inside `get_signature_bytes` (line 26):\n\n```python\nwith open(path, 'rb') as fp:\n    return bytearray(fp.read(_NUM_SIGNATURE_BYTES))\n```\n\nHere `read()` is called on a file object that the function itself created from a path — not on a caller-supplied file-like object.\n\n## Summary\n\n- `get_bytes` supports: `bytearray`, `str` (path), `bytes`, `memoryview`, `pathlib.PurePath` (path).\n- It does **not** support file-like objects with a `read()` method; they raise `TypeError`.\n- The docstring's mention of \"file\" is inaccurate relative to the code.\n- `read()` appears only internally in `get_signature_bytes`, on a file the function opened itself."
+  },
+  {
+   "item": "e11-18",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the file. Here's what I found regarding file-like objects with a `read()` method:\n\n## Finding: No, the code does **not** handle file-like objects with a `read()` method\n\nThe `get_bytes()` function (lines 47–77) is the central dispatcher that infers the input type. It explicitly checks for these types:\n\n- `bytearray` (line 63) → `signature(obj)`\n- `str` (line 66) → `get_signature_bytes(obj)` (opens as a path)\n- `bytes` (line 69) → `signature(obj)`\n- `memoryview` (line 72) → `bytearray(signature(obj).tolist())`\n- `pathlib.PurePath` (line 75) → `get_signature_bytes(obj)`\n\nIf none of these match, it raises `TypeError('Unsupported type as file input: %s' % type(obj))` (line 77).\n\n### Key observations\n\n1. **No `read()` check anywhere.** There is no `hasattr(obj, 'read')` test, no `io.IOBase` check, and no duck-typing on a `read` method. A file object (e.g., `open('x', 'rb')`) or any file-like object would fall through all the `isinstance` branches and hit the `TypeError` on line 77.\n\n2. **The docstring is misleading.** Line 53 claims `obj` may be a \"path to readable, file, bytes, bytearray or memoryview.\" The word \"file\" suggests file objects are supported, but the implementation has no branch for them. Only *paths* (as `str` or `pathlib.PurePath`) are handled via `get_signature_bytes()`.\n\n3. **`get_signature_bytes()` (lines 14–25)** only accepts a path — it calls `open(path, 'rb')` directly (line 24). It does not accept an already-open file object.\n\n4. **`signature()` (lines 28–44)** operates on an indexable/sliceable sequence (`len(array)` and `array[:index]`), so it works for `bytearray`/`bytes`/`memoryview` but not for a stream.\n\n### Conclusion\n\nDespite the docstring mentioning \"file,\" the code does **not** support file-like objects exposing `read()`. Passing an open file handle would raise `TypeError`. To support such objects, a branch like `if hasattr(obj, 'read'): return signature(bytearray(obj.read(_NUM_SIGNATURE_BYTES)))` would be needed — but no such handling exists in the current code."
+  },
+  {
+   "item": "e11-20",
+   "rep": 0,
+   "reads": 4,
+   "errors": [],
+   "requests": 5,
+   "conclusion": "I've now read the complete file (the full content was provided in the last message, ending at the `open` method). Let me analyze it.\n\n## Findings\n\n**No, `fsspec/implementations/dirfs.py` does not define an `open_async` method.**\n\nThe file defines the `DirFileSystem` class (subclassing `AsyncFileSystem`), which is a wrapper that prefixes paths and delegates to a wrapped filesystem. It defines many paired sync/async methods, but `open_async` is not among them.\n\n### What the file does define\n\nThe class defines a large set of wrapper methods, typically in sync/async pairs:\n\n- **Async methods** (prefixed with `_`): `set_session`, `_rm_file`, `_rm`, `_cp_file`, `_copy`, `_pipe`, `_pipe_file`, `_cat_file`, `_cat`, `_put_file`, `_put`, `_get_file`, `_get`, `_isfile`, `_isdir`, `_size`, `_exists`, `_info`, `_ls`, `_walk`, `_glob`, `_du`, `_find`, `_expand_path`, `_mkdir`, `_makedirs`\n- **Sync methods**: `rm_file`, `rm`, `cp_file`, `copy`, `pipe`, `pipe_file`, `cat_file`, `cat`, `put_file`, `put`, `get_file`, `get`, `isfile`, `isdir`, `size`, `exists`, `info`, `ls`, `walk`, `glob`, `du`, `find`, `expand_path`, `mkdir`, `makedirs`, `rmdir`, `mv`, `touch`, `created`, `modified`, `sign`\n- **Other**: `__init__`, `_join`, `_relpath`, `sep` (property), `__repr__`\n\n### The relevant `open` method\n\nThe file ends with a **synchronous** `open` method (the final method in the file):\n\n```python\ndef open(\n    self,\n    path,\n    *args,\n    **kwargs,\n):\n    return self.fs.open(\n        self._join(path),\n        *args,\n        **kwargs,\n    )\n```\n\nThis is a plain `def open(...)` — it is **not** `async def open_async(...)`. It simply joins the path with the directory prefix and delegates to the wrapped filesystem's `open`.\n\n### Conclusion\n\nThere is **no `open_async` method** defined anywhere in `dirfs.py`. The only open-related method is the synchronous `open` at the end of the file. If async opening is needed, it would have to come from the base class `AsyncFileSystem` (or be absent entirely), not from `DirFileSystem` itself."
+  },
+  {
+   "item": "e11-20",
+   "rep": 1,
+   "reads": 6,
+   "errors": [],
+   "requests": 7,
+   "conclusion": "I've now read the complete file. Here's what I found:\n\n## Answer: No, `dirfs.py` does not define an `open_async` method.\n\nThe file defines `DirFileSystem(AsyncFileSystem)` with many wrapper methods, but **`open_async` is not among them**. The file ends with the synchronous `open` method:\n\n```python\ndef open(\n    self,\n    path,\n    *args,\n    **kwargs,\n):\n    return self.fs.open(\n        self._join(path),\n        *args,\n        **kwargs,\n    )\n```\n\nThis is the last method in the file (the file ends here — reading past it returns \"offset is past the end of the file\").\n\n### What the file does define\n\nThe class wraps another filesystem and delegates calls, joining/relativizing paths. The methods present are:\n\n- **Async private wrappers** (prefixed `_`): `set_session`, `_rm_file`, `_rm`, `_cp_file`, `_copy`, `_pipe`, `_pipe_file`, `_cat_file`, `_cat`, `_put_file`, `_put`, `_get_file`, `_get`, `_isfile`, `_isdir`, `_size`, `_exists`, `_info`, `_ls`, `_walk`, `_glob`, `_du`, `_find`, `_expand_path`, `_mkdir`, `_makedirs`\n- **Sync public wrappers**: `rm_file`, `rm`, `cp_file`, `copy`, `pipe`, `pipe_file`, `cat_file`, `cat`, `put_file`, `put`, `get_file`, `get`, `isfile`, `isdir`, `size`, `exists`, `info`, `ls`, `walk`, `glob`, `du`, `find`, `expand_path`, `mkdir`, `makedirs`, `rmdir`, `mv`, `touch`, `created`, `modified`, `sign`\n- **Other**: `sep` (property), `__repr__`, and `open`\n\n### Why this matters\n\n`DirFileSystem` subclasses `AsyncFileSystem`, which typically provides an `open_async` method (often implemented in terms of `_open` or the sync `open`). Since `DirFileSystem` does **not** override `open_async`, any async open call would fall back to the base class implementation. Notably, the class also does not define `_open`, so the async open path relies entirely on the parent `AsyncFileSystem` behavior rather than a dirfs-specific path-joining wrapper. This is a potential gap: the sync `open` correctly applies `self._join(path)`, but there is no corresponding async override to do the same path translation."
+  },
+  {
+   "item": "e11-21",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes — when `sampled` is `None`, the code sets `carrier[_SAMPLED]` to the integer `1`.\n\nRelevant lines in `lightstep/b3_propagator.py`:\n\n- Line 39: `sampled = baggage.pop(_SAMPLED, None)` — pulls the sampled value out of baggage, defaulting to `None`.\n- Lines 41–42:\n  ```python\n  if sampled is None:\n      carrier[_SAMPLED] = 1\n  ```\n  This is the direct answer: the literal integer `1` (not the string `\"1\"`, not `True`) is assigned to `carrier[_SAMPLED]`.\n\nAdditional context worth noting:\n\n- The `else` branch (lines 43–56) handles the non-`None` case. If `flags == 1`, it logs a warning and does *not* set `carrier[_SAMPLED]` (since flags=1 already implies sampled=1). Otherwise it warns if `sampled` is a `bool` and then assigns `carrier[_SAMPLED] = sampled` (line 56).\n- Lines 58–63 contain a second, separate guard:\n  ```python\n  if sampled is flags is (traceid and spanid) is None:\n      warn(...)\n      carrier[_SAMPLED] = 1\n  ```\n  This also assigns the integer `1`, but only in the degenerate case where `sampled`, `flags`, and `traceid and spanid` are all `None`. Note this condition is only reachable when `sampled is None` (so it overlaps with the first branch), and it re-assigns the same value `1`.\n\nSo the primary assignment is at line 42, with a redundant/overlapping assignment at line 63. Both use the integer `1`."
+  },
+  {
+   "item": "e11-21",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes. In `inject`, when `sampled` is `None`, the code sets `carrier[_SAMPLED]` to the integer `1`.\n\nRelevant lines:\n\n```python\nsampled = baggage.pop(_SAMPLED, None)\n\nif sampled is None:\n    carrier[_SAMPLED] = 1\nelse:\n    ...\n```\n\n- `sampled = baggage.pop(_SAMPLED, None)` — pulls the sampling value out of baggage, defaulting to `None`.\n- `if sampled is None:` — the branch taken when no sampling value was present.\n- `carrier[_SAMPLED] = 1` — assigns the integer literal `1` (not `True`, not the string `\"1\"`) to the `x-b3-sampled` header key.\n\nNote there is a second, separate place where `carrier[_SAMPLED] = 1` is also assigned: the later guard\n\n```python\nif sampled is flags is (traceid and spanid) is None:\n    warn(...)\n    carrier[_SAMPLED] = 1\n```\n\nThat condition is a chained comparison, so it only fires when `sampled`, `flags`, and `(traceid and spanid)` are all `None` — i.e., when nothing at all is being propagated. In the ordinary case where `sampled is None` but trace/span IDs exist, only the first assignment applies. Either way, the value written is the integer `1`."
+  },
+  {
+   "item": "e11-22",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes, the `name` property can raise `IndexError`. Here's the relevant code:\n\n```python\n@property\ndef name(self):\n    names = [tag for tag in self.tags if tag['Key'] == 'Name']\n    if names is None:\n        return ''\n    else:\n        return names[0]['Value']\n```\n\n**What happens:**\n\n1. **Line 1 of the property** builds `names` as a list comprehension filtering `self.tags` for tags whose `Key` is `'Name'`. A list comprehension always returns a list — never `None`. If no tag matches, it returns an **empty list** `[]`.\n\n2. **The `if names is None:` check is dead code.** Since `names` is always a list, this condition is never true. The guard was presumably intended to handle the \"no Name tag\" case, but it's checking the wrong thing (it should be `if not names:`).\n\n3. **The `else` branch executes for the empty-list case**, and `names[0]` raises `IndexError: list index out of range`.\n\n**Conclusion:** For an instance that has tags but none with `Key == 'Name'`, `self.tags` is non-empty, the comprehension yields `[]`, the `is None` check fails, and `names[0]` raises `IndexError`. The bug is the incorrect emptiness check — it should test for an empty list rather than `None`."
+  },
+  {
+   "item": "e11-22",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes, the `name` property can raise `IndexError`. Here's the relevant code:\n\n```python\n@property\ndef name(self):\n    names = [tag for tag in self.tags if tag['Key'] == 'Name']\n    if names is None:\n        return ''\n    else:\n        return names[0]['Value']\n```\n\n**What happens:**\n\n1. **Line 1 of the property** builds a list comprehension filtering `self.tags` for tags whose `'Key'` equals `'Name'`. If the instance has tags but none named `'Name'`, this comprehension produces an **empty list** `[]`, not `None`.\n\n2. **The `if names is None:` check is dead code / a bug.** A list comprehension always returns a list object — it can never be `None`. So the guard never triggers, and the `else` branch always executes.\n\n3. **`names[0]`** then indexes into that empty list, raising `IndexError: list index out of range`.\n\n**Conclusion:** For an instance that has tags but none with `Key == 'Name'`, `names` is `[]`, the `is None` check fails to catch it, and `names[0]` raises `IndexError`. The intended behavior was presumably to return `''` when no `Name` tag exists, but the check should have been `if not names:` (or `if len(names) == 0:`) instead of `if names is None:`.\n\nNote also that if `self.tags` itself were `None`, the comprehension would raise `TypeError` — but that's a separate issue from the one asked about."
+  },
+  {
+   "item": "e11-23",
+   "rep": 0,
+   "reads": 2,
+   "errors": [],
+   "requests": 3,
+   "conclusion": "I've read the full file. Let me focus on the key question: does the code convert an empty-string `port` to `None`?\n\nLooking at the relevant code:\n\n**The `port` property (lines ~430-440):**\n```python\n@property\ndef port(self):\n    \"\"\"Port part of URL, with scheme-based fallback.\n\n    None for relative URLs or URLs without explicit port and\n    scheme without default port substitution.\n\n    \"\"\"\n    return self._val.port or DEFAULT_PORTS.get(self._val.scheme)\n```\n\nThis uses `self._val.port` (from `urllib.parse.SplitResult`), not a raw string. `SplitResult.port` already returns `None` when there's no port, and raises `ValueError` for a non-numeric port. It never returns an empty string.\n\n**The `explicit_port` property:**\n```python\n@property\ndef explicit_port(self):\n    \"\"\"Port part of URL, without scheme-based fallback.\n\n    None for relative URLs or URLs without explicit port.\n\n    \"\"\"\n    return self._val.port\n```\n\nAgain, this delegates to `SplitResult.port`, which returns `None` (not `\"\"`) when no port is present.\n\n**`_make_netloc` (the only place a port is serialized):**\n```python\nif port is not None:\n    ret = ret + \":\" + str(port)\n```\n\nHere the check is `if port is not None`. An empty string `\"\"` is **not** `None`, so if `\"\"` were ever passed in, it would produce a trailing `\":\"` (e.g. `host:`). There is no `if not port` / `if port == \"\"` normalization to `None` anywhere in this function.\n\n**`build()`:**\n```python\nif port and not host:\n    raise ValueError('Can\\'t build URL with \"port\" but without \"host\".')\n...\nelif not user and not password and not host and not port:\n    netloc = \"\"\nelse:\n    netloc = cls._make_netloc(\n        user, password, host, port, encode=not encoded, encode_host=not encoded\n    )\n```\n\nNote `build()` uses truthiness (`if port`, `not port`) for its guard checks, so an empty-string port would be treated as \"no port\" for the `netloc == \"\"` decision — but if `host` is present, it still falls into the `else` branch and passes `port=\"\"` straight to `_make_netloc`, which would then emit a trailing `\":\"`.\n\n**`with_port()`:**\n```python\nif port is not None:\n    if isinstance(port, bool) or not isinstance(port, int):\n        raise TypeError(f\"port should be int or None, got {type(port)}\")\n```\nThis explicitly rejects non-int, non-None values, so `\"\"` raises `TypeError` here.\n\n**Conclusion:** No, the code does **not** convert an empty-string `port` to `None`. There is no such normalization anywhere in `yarl/_url.py`. The `port`/`explicit_port` properties rely on `urllib.parse.SplitResult.port`, which itself returns `None` (never `\"\"`) for a missing port, so the empty-string case doesn't arise through parsing. But `_make_netloc` guards only with `if port is not None`, meaning an empty string passed directly (e.g. via `build(host=..., port=\"\")`) would be treated as a real port and produce a trailing colon rather than being converted to `None`."
+  },
+  {
+   "item": "e11-23",
+   "rep": 1,
+   "reads": 5,
+   "errors": [],
+   "requests": 5,
+   "conclusion": "I've read the full file. Let me focus on the specific question about empty-string `port` conversion.\n\nLooking at the code, the key locations are:\n\n**1. The `port` property (around line 470):**\n```python\n@property\ndef port(self):\n    \"\"\"Port part of URL, with scheme-based fallback.\n\n    None for relative URLs or URLs without explicit port and\n    scheme without default port substitution.\n\n    \"\"\"\n    return self._val.port or DEFAULT_PORTS.get(self._val.scheme)\n```\n\n**2. The `explicit_port` property:**\n```python\n@property\ndef explicit_port(self):\n    \"\"\"Port part of URL, without scheme-based fallback.\n\n    None for relative URLs or URLs without explicit port.\n\n    \"\"\"\n    return self._val.port\n```\n\n**3. `_make_netloc` (the constructor helper):**\n```python\n@classmethod\ndef _make_netloc(\n    cls, user, password, host, port, encode=False, encode_host=True, requote=False\n):\n    quoter = cls._REQUOTER if requote else cls._QUOTER\n    if encode_host:\n        ret = cls._encode_host(host)\n    else:\n        ret = host\n    if port is not None:\n        ret = ret + \":\" + str(port)\n    ...\n```\n\n**4. `with_port`:**\n```python\ndef with_port(self, port):\n    \"\"\"Return a new URL with port replaced.\n\n    Clear port to default if None is passed.\n\n    \"\"\"\n    # N.B. doesn't cleanup query/fragment\n    if port is not None:\n        if isinstance(port, bool) or not isinstance(port, int):\n            raise TypeError(f\"port should be int or None, got {type(port)}\")\n        if port < 0 or port > 65535:\n            raise ValueError(f\"port must be between 0 and 65535, got {port}\")\n    ...\n```\n\n## Findings\n\n**No, the code does not convert an empty-string `port` to `None`.**\n\nHere's what I found:\n\n1. **`_make_netloc`** checks `if port is not None:` — it only skips appending the port when `port` is literally `None`. An empty string `\"\"` is **not** `None`, so `str(\"\")` would be appended, producing a trailing `\":\"` in the netloc (e.g. `host:`). There is no `if not port` or `if port == \"\"` normalization.\n\n2. **The `port` property** uses `self._val.port or DEFAULT_PORTS.get(...)`. This relies on `urllib.parse.SplitResult.port`, which itself returns `None` for an empty port string (the stdlib parses `host:` as port `None`). So the empty-string-to-`None` behavior, where it exists, comes from the **stdlib `urlsplit`/`SplitResult`**, not from yarl's own code.\n\n3. **`with_port`** explicitly rejects non-`int`/`None` values with a `TypeError` (`port should be int or None`), so passing `\"\"` there raises rather than being converted to `None`.\n\n4. **`build()`** guards with `if port and not host:` and `elif not user and not password and not host and not port:` — these use truthiness, so an empty-string port is treated as falsy (like `None`) in those checks, but it is still passed through to `_make_netloc` unchanged in the `else` branch.\n\n**Conclusion:** yarl's own code does not perform an empty-string → `None` conversion for `port`. Any such conversion observed at the `URL.port` level originates from the underlying `urllib.parse.SplitResult.port` property. Within yarl, `_make_netloc` distinguishes only `None` (skip) from everything else (append), and `with_port` rejects strings outright."
+  },
+  {
+   "item": "e11-24",
+   "rep": 0,
+   "reads": 4,
+   "errors": [],
+   "requests": 5,
+   "conclusion": "I now have the full lexer source. Let me analyze the question about a lone `-` followed by whitespace.\n\n**Relevant code:**\n\nThe `scan` dispatch loop (lines ~72–105) decides how each character is tokenized:\n\n```python\nelif ch in CHARACTER_TO_TOKEN.keys():\n    self.advance()\n    self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))\nelif self.check_for_expression_block(self.peek_multiple(25)):\n    ...\nelse:\n    self.tokens.append(self.scan_literal())\n```\n\nAnd `scan_literal` (lines ~180–195):\n\n```python\ndef scan_literal(self) -> tokens.LiteralToken:\n    chars = \"\"\n    while self.peek() not in \"\\0 \\n\\t:}{,]\":\n        chars += self.consume()\n    return tokens.LiteralToken(chars, self.line_number)\n```\n\n**Analysis:**\n\n1. **`-` is not in the stop set of `scan_literal`.** The loop stops only on `\\0`, space, `\\n`, `\\t`, `:`, `}`, `{`, `,`, `]`. A `-` is not among these, so it is consumed as an ordinary literal character.\n\n2. **`-` is not a special dispatch character.** The `scan` loop only gives special treatment to `\\0`, whitespace (`\\n\\t `), `#`, `;`, `\"`, and characters present in `CHARACTER_TO_TOKEN` (from `lkml/keys.py`). There is no branch for `-`.\n\n3. **Consequence for a lone `-` followed by whitespace:** When the lexer encounters `-` at the start of a token, it falls through to `scan_literal`. The loop consumes the `-`, then immediately sees the following whitespace (space/tab/newline), which *is* in the stop set, so it stops. The result is a `LiteralToken(\"-\")` — a literal token whose text is just the hyphen.\n\n**Conclusion:** The lexer has **no special handling** for a lone `-` followed by whitespace. It is treated as an ordinary one-character literal, producing `LiteralToken(\"-\")`. There is no dedicated token type, no negative-number handling, and no branch in `scan` or `scan_literal` that distinguishes `-` from any other non-special character.\n\nOne caveat: I could not read `lkml/keys.py` (the read tool reported the source file no longer exists), so I cannot 100% rule out that `-` appears as a key in `CHARACTER_TO_TOKEN`. However, based on the lexer's own logic and the token types referenced (`StreamStartToken`, `WhitespaceToken`, `LinebreakToken`, `InlineWhitespaceToken`, `CommentToken`, `ExpressionBlockToken`, `LiteralToken`, `QuotedLiteralToken`, `ValueToken`), there is no hyphen-specific token, and the `scan_literal` stop set clearly does not treat `-` specially."
+  },
+  {
+   "item": "e11-24",
+   "rep": 1,
+   "reads": 16,
+   "errors": [
+    "investigate request cap reached",
+    "investigation must finish\n\n'error' !== 'stop'\n"
+   ],
+   "requests": 16,
+   "conclusion": ""
+  }
+ ]
+}

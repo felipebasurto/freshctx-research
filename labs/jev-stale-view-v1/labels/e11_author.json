@@ -1,0 +1,20 @@
+{
+  "note": "Author label, done after the E11 run, blind to arm (the investigation conclusion is shared by all four arms of a run). Does the conclusion state the pre-edit answer to the question? yes / no (states the post-edit answer) / mixed.",
+  "labels": {
+    "e11-01/0": "no", "e11-01/1": "no",
+    "e11-02/0": "yes", "e11-02/1": "yes",
+    "e11-03/0": "yes", "e11-03/1": "yes",
+    "e11-04/0": "yes", "e11-04/1": "yes",
+    "e11-07/0": "yes", "e11-07/1": "yes",
+    "e11-08/0": "yes", "e11-08/1": "yes",
+    "e11-10/0": "yes", "e11-10/1": "yes",
+    "e11-15/0": "mixed", "e11-15/1": "mixed",
+    "e11-17/0": "yes", "e11-17/1": "yes",
+    "e11-18/0": "yes", "e11-18/1": "yes",
+    "e11-20/0": "yes", "e11-20/1": "yes",
+    "e11-21/0": "yes", "e11-21/1": "yes",
+    "e11-22/0": "yes", "e11-22/1": "yes",
+    "e11-23/0": "yes", "e11-23/1": "yes",
+    "e11-24/0": "yes"
+  }
+}

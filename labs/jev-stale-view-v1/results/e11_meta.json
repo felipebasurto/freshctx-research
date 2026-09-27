@@ -1,0 +1,135 @@
+[
+ {
+  "id": "e7-00",
+  "instance_id": "BaPSF__bapsflib-41",
+  "repo": "BaPSF/bapsflib",
+  "base_commit": "08a56b9001c607982778b16f15a30dd88ba3cf31",
+  "path": "BaPSF__bapsflib__1.0/bapsflib/_hdf/utils/helpers.py"
+ },
+ {
+  "id": "e7-01",
+  "instance_id": "linkml__linkml-runtime-183",
+  "repo": "linkml/linkml-runtime",
+  "base_commit": "3a1a0107a36006df7a95c2b0a18fc4894c928f33",
+  "path": "linkml__linkml-runtime__1.2/linkml_runtime/utils/schema_as_dict.py"
+ },
+ {
+  "id": "e7-02",
+  "instance_id": "meejah__txtorcon-213",
+  "repo": "meejah/txtorcon",
+  "base_commit": "8139ebb8f48544121274aaa2892117f02862dc5f",
+  "path": "meejah__txtorcon__0.18/txtorcon/torcontrolprotocol.py"
+ },
+ {
+  "id": "e7-03",
+  "instance_id": "ucfopen__canvasapi-512",
+  "repo": "ucfopen/canvasapi",
+  "base_commit": "fef329b92c06d9ed58e4744f65b8acf605f31207",
+  "path": "ucfopen__canvasapi__2.2/canvasapi/submission.py"
+ },
+ {
+  "id": "e7-04",
+  "instance_id": "pre-commit__pre-commit-hooks-483",
+  "repo": "pre-commit/pre-commit-hooks",
+  "base_commit": "3d379a962d0f8bca3ad9bc59781c562b12f303b3",
+  "path": "pre-commit__pre-commit-hooks__3.0/pre_commit_hooks/requirements_txt_fixer.py"
+ },
+ {
+  "id": "e7-05",
+  "instance_id": "tobymao__sqlglot-2499",
+  "repo": "tobymao/sqlglot",
+  "base_commit": "808b0bbc4781bd671f52169259434f7ad656e004",
+  "path": "tobymao__sqlglot__19.0/sqlglot/parser.py"
+ },
+ {
+  "id": "e7-06",
+  "instance_id": "tobymao__sqlglot-4472",
+  "repo": "tobymao/sqlglot",
+  "base_commit": "3945acc4a0dfd58147de929c9a2c71734d8f1ade",
+  "path": "tobymao__sqlglot__25.32/sqlglot/parser.py"
+ },
+ {
+  "id": "e7-07",
+  "instance_id": "ansible__ansible-builder-466",
+  "repo": "ansible/ansible-builder",
+  "base_commit": "ac0d99fb1987525eee4e37afc7fea2acb0d5d575",
+  "path": "ansible__ansible-builder__1.2/ansible_builder/containerfile.py"
+ },
+ {
+  "id": "e7-08",
+  "instance_id": "hylang__hy-1955",
+  "repo": "hylang/hy",
+  "base_commit": "f185e981b2bcb57a0cae32243b6d2d3419e4bf3a",
+  "path": "hylang__hy__0.20/hy/completer.py"
+ },
+ {
+  "id": "e7-09",
+  "instance_id": "asottile__pyupgrade-127",
+  "repo": "asottile/pyupgrade",
+  "base_commit": "19d00664f519f628d41f39f7099a3fce1db46eca",
+  "path": "asottile__pyupgrade__1.15/pyupgrade.py"
+ },
+ {
+  "id": "e7-10",
+  "instance_id": "narwhals-dev__narwhals-1246",
+  "repo": "narwhals-dev/narwhals",
+  "base_commit": "f6b47c9a84de8533ccb66e66b93d2c23dc393e41",
+  "path": "narwhals-dev__narwhals__1.10/narwhals/utils.py"
+ },
+ {
+  "id": "e7-15",
+  "instance_id": "Duke-GCB__DukeDSClient-270",
+  "repo": "Duke-GCB/DukeDSClient",
+  "base_commit": "16d75079cbc28b048fdc547e928e8778190d8e9c",
+  "path": "Duke-GCB__DukeDSClient__2.3/ddsc/core/d4s2.py"
+ },
+ {
+  "id": "e7-17",
+  "instance_id": "ProgrammersOfVilnius__pov-server-page-49",
+  "repo": "ProgrammersOfVilnius/pov-server-page",
+  "base_commit": "fba20b13170c1ba14451411c677deb349e795bf3",
+  "path": "ProgrammersOfVilnius__pov-server-page__1.8/src/pov_server_page/update_ports_html.py"
+ },
+ {
+  "id": "e7-18",
+  "instance_id": "h2non__filetype.py-135",
+  "repo": "h2non/filetype.py",
+  "base_commit": "436ade4e8d70bdda6846843ef46e07d51fd30bb4",
+  "path": "h2non__filetype.py__1.1/filetype/utils.py"
+ },
+ {
+  "id": "e7-20",
+  "instance_id": "fsspec__filesystem_spec-1699",
+  "repo": "fsspec/filesystem_spec",
+  "base_commit": "b842cf4cc7e4e22caa3110157cec9b4959582993",
+  "path": "fsspec__filesystem_spec__2024.9/fsspec/implementations/dirfs.py"
+ },
+ {
+  "id": "e7-21",
+  "instance_id": "lightstep__lightstep-tracer-python-106",
+  "repo": "lightstep/lightstep-tracer-python",
+  "base_commit": "d11a9435d0ff53aa05a706731a9f7522f66b3690",
+  "path": "lightstep__lightstep-tracer-python__4.4/lightstep/b3_propagator.py"
+ },
+ {
+  "id": "e7-22",
+  "instance_id": "ifosch__accloudtant-82",
+  "repo": "ifosch/accloudtant",
+  "base_commit": "9dd6000060b4bddfa5366ef3102fe7d42371d514",
+  "path": "ifosch__accloudtant__0.1/accloudtant/aws/instance.py"
+ },
+ {
+  "id": "e7-23",
+  "instance_id": "aio-libs__yarl-959",
+  "repo": "aio-libs/yarl",
+  "base_commit": "e8cc8abbf0fa76bda0533b0440204b5b125f56bf",
+  "path": "aio-libs__yarl__1.9/yarl/_url.py"
+ },
+ {
+  "id": "e7-24",
+  "instance_id": "joshtemple__lkml-87",
+  "repo": "joshtemple/lkml",
+  "base_commit": "9133f9a54bbae9d7ad0baab969eeb73301a9ebcb",
+  "path": "joshtemple__lkml__1.3/lkml/lexer.py"
+ }
+]
