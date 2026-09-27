@@ -21,7 +21,7 @@ const product = resolve(process.env.FRESHCTX_PRODUCT);
 const piRoot = join(product, 'bridges/pi/node_modules/@earendil-works/pi-coding-agent');
 const { createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager } = await import(pathToFileURL(join(piRoot, 'dist/index.js')));
 
-const MODEL = 'deepseek-v4-flash', TEMPERATURE = 0, MAX_TOKENS_INVESTIGATE = 1024, MAX_TOKENS = 512;
+const MODEL = 'deepseek-v4-flash', TEMPERATURE = 0, MAX_TOKENS_INVESTIGATE = 4096, MAX_TOKENS = 512;
 const MAX_REQUESTS = 8, MAX_REQUESTS_INVESTIGATE = 24, MAX_BYTES = 400000, MAX_SUBMISSIONS = 2, CAP_USD = Number(arg('cap') ?? 6);
 const outDir = join(LAB, arg('out') ?? 'results/e11c'); await mkdir(outDir, { recursive: true });
 const spentFile = join(outDir, '.spent.json');

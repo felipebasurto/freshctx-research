@@ -85,6 +85,15 @@ Dry run (scripted model) on a small and the largest item first. Then one live
 item (e11-08, rep 0) as a pilot, excluded from the analysis and rerun in the
 main run. Any change it causes is recorded here before the main run.
 
+### Pilot outcome (recorded before the main run)
+
+Live pilot e11-08 rep 0 (`results/e11c/live-e11-08-rep0-*.json`, excluded):
+the investigation read the file, then stopped on `length` at E11's 1,024-token
+output cap (the broader topic draws a longer explanation), so the run was
+excluded before any arm ran. Served model: `deepseek-flash`. Change: the
+investigation output cap is raised to **4,096** tokens. Measurement caps are
+unchanged. The pilot is rerun once with the change, still excluded.
+
 ## Limits known in advance
 
 - Pi's only tool is `read`: the model can open other files in the repository
