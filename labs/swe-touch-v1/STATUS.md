@@ -1,54 +1,125 @@
-# swe-touch-v1 — status (2026-09-27): blocked at Step 0 (environment gate)
+# swe-touch-v1 — status (2026-09-27): Steps 1–2 done, blocked at Step 0 for Steps 3–4
 
-Nothing has run. No model calls and no sandbox spend: $0 model, $0 sandbox.
+No model calls and no sandbox runs: **$0 model, $0 sandbox.**
 
-## Environment measured (cloud agent container)
+## Step 0: environment (owner's Mac, 2026-09-27)
 
 | Check | Result | Needed |
 | --- | --- | --- |
-| `uname -m` | x86_64 | x86_64 ✓ |
-| CPU / RAM | 4 vCPU / 15 GiB, no swap | — |
-| Free disk | 30 GB (per-session allowance, not the 252 GB `df` size) | ~150 GB ✗ |
-| Docker | CLI 29.3.1 and `dockerd` binary present; **no daemon** (`/var/run/docker.sock` missing) | running daemon ✗ |
-| `DEEPSEEK_API_KEY` | **not set** in the environment | set ✗ |
+| `uname -m` | arm64 (Apple M4, 10 cores, 16 GB RAM) | x86_64 ✗ |
+| Free disk | 54 GB of 460 GB | ~150 GB for local images ✗ |
+| Docker | CLI 29.3.0; **no daemon** (`/var/run/docker.sock` missing) | running daemon ✗ |
+| Remote sandbox credentials | none set (`MODAL_TOKEN_ID`/`SECRET`, `DAYTONA_API_KEY`, `E2B_API_KEY`, `RUNLOOP_API_KEY`; no `~/.modal.toml`) | one backend ✗ |
+| `DEEPSEEK_API_KEY` | **not set** | set ✗ |
 
-We tried to start `dockerd` in the container, and the agent's sandbox policy
-refused it. Even with a daemon, 30 GB is not enough for SWE-bench Verified
-images, so local Docker is out in this environment.
+The earlier cloud-agent check (x86_64, 30 GB, no daemon, sandbox policy refused
+`dockerd`, no key) is in this file's history (`0062f93`).
 
-## What would unblock it
+Per the brief, no x86 emulation and no accounts. Steps 3 (pilot) and 4 (main
+run) have not started.
 
-The Harbor fork's external runner (`mini_swe_agent_runner.py`, host-side loop,
-commands via the bridge's `/exec` → `environment.exec`) doesn't depend on the
-backend, so a remote sandbox fits the integration design unchanged. Supported
-backends in `harbor/src/harbor/environments/` and the credentials they read:
+### What would unblock it
 
-| Backend | Credential env vars | Note |
-| --- | --- | --- |
-| **Modal** (recommended) | `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET` | pulls public SWE-bench images; widely used for SWE-bench |
-| Daytona | `DAYTONA_API_KEY` (+ optional `DAYTONA_ORGANIZATION_ID`, `DAYTONA_TARGET`) | |
-| E2B | `E2B_API_KEY` | |
-| Runloop | `RUNLOOP_API_KEY` | |
-| Novita | `NOVITA_API_KEY` | |
+1. **`DEEPSEEK_API_KEY`** in the environment (never in chat or a file).
+2. **A sandbox backend**, one of:
+   - Modal (recommended): `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` in the
+     environment, then `--env-type modal` in `make_jobs.py`. The agent loop,
+     FreshCtx sidecar and mirror stay on the host; only commands go to Modal.
+   - Daytona (`DAYTONA_API_KEY`), E2B (`E2B_API_KEY`), Runloop
+     (`RUNLOOP_API_KEY`), Novita (`NOVITA_API_KEY`).
+   - Or an x86_64 Linux machine with a running Docker daemon and ≥200 GB disk.
+3. The sandbox price, to set the sandbox cap in `PROTOCOL.md` before the pilot.
+4. A decision on the notice arm (`PROTOCOL.md`, "Open decision"): as briefed,
+   the notice appears in the next request only; a harness like Claude Code
+   keeps it in later requests.
 
-The owner needs to:
-1. Pick a backend, and add its credentials and `DEEPSEEK_API_KEY` as
-   environment secrets. Don't paste secrets into the chat.
-2. Allow the backend's API host in the environment's network policy.
-3. Optionally, raise the disk allowance. The mirror and trajectories need only
-   a few GB once sandboxes are remote.
+Then: 3 vanilla tasks end to end for wall time and cost per task (Step 0 of
+the brief), then the pilot.
 
-Alternative: an x86_64 VM with a running Docker daemon and ≥200 GB disk.
+## Step 1: product (done, pushed)
 
-## Open item from the owner
+`freshctx` branch `feat/shell-read-observation` (base `fix/whole-file-ambiguous`
+`5dc05d1`):
 
-The owner asked to use "4.1 flash" instead of `deepseek/deepseek-v4-flash`.
-Before the first call, confirm the exact LiteLLM model id, and how LiteLLM
-turns thinking off for it, and record both here.
+- `35888fc` **fix: a later partial read no longer narrows a wider unit**
+  (TODO 6b). Cause: `buildProjection` kept the most recent unit and dropped any
+  older unit it overlapped. Units inside another candidate now rank after it,
+  and a unit is omitted as `overlap` only when admitted units cover all its
+  bytes. Replaying E11c's exact read sequences offline through the Pi bridge:
+  e11-24 (read without `limit`, then `offset: 200`) and e11-10 (five
+  overlapping ranged reads) both carried the edited function after the fix and
+  not before, with the same unit IDs and markers as the live records. Note: in
+  Pi a read without `limit` returns 200 lines, so e11-24's "whole-file" read of
+  a 204-line file was a region, and the fix that matters there is keeping
+  partially overlapping units. e11-10's `ambiguous` marker on the 320–379 read
+  is a separate cause (its 128-byte prefix anchor occurs twice after the edit);
+  the covering 200–399 region now carries the edit, so the item no longer
+  depends on it. Not fixed.
+- `c11172c` **Mini-SWE-Agent bridge** (`bridges/mini-swe-agent`, TODO 2):
+  mirror, allowlisted shell-read observation with exact output match, outgoing
+  rewrite with fail-closed checks, coverage log, notice arm. 14 offline tests,
+  including Mini-SWE-Agent 2.4.1's `DefaultAgent` with a scripted model on a
+  local git repository (markers, projection, commit, coverage and notice
+  checked byte for byte).
+- `63f7eb2`, `e6dacbb`: audit dump of rewritten requests for the pilot's
+  corruption check.
 
-## Steps that don't need the sandbox
+`npm run check && npm test && npm run pack:check` passed before each commit,
+plus the Pi and OpenHands bridge checks.
 
-Step 1 (the Mini-SWE-Agent FreshCtx bridge with offline tests) and the Step 2
-protocol draft don't need Docker. The prompt says to stop at the Step 0 gate,
-so neither was started. If the owner approves, they can go ahead before the
-infrastructure is ready.
+## Step 1b: SWE-Touch side (done, offline)
+
+`harbor/swe-touch-freshctx.patch` against SWE-Touch `4bd121b` (internal exec,
+intervention events for the runner, bridge installation, `DEEPSEEK_API_KEY`
+passthrough, LiteLLM pin). SWE-Touch's unit tests: same 24 failures before and
+after the patch (all pre-existing, CLI template tests), 3,382 passed.
+
+`offline/offline_touch.py` runs SWE-Touch's real bridge server,
+`CounterEditController` (`patch_only`) and patched runner process against a
+local repository, all five arms, scripted model
+(`results/offline/offline_touch.json`, all checks pass):
+
+- SWE-Touch applies the same interventions at the same agent command indices in
+  S, S+FC and S+N (after commands 1 and 4; round 2 re-applies the patch after
+  the agent's stale rewrite dropped it). FreshCtx's mirror reads don't count as
+  agent commands.
+- S+FC projects the user's edit and keeps the saved trajectory unchanged; S+N
+  carries the exact E11c notice in requests 2 and 5 only.
+- With the first read limited to lines 1–12, SWE-Touch still fires (the read
+  overlaps the critical region), but the inserted lines fall outside what was
+  read, so coverage is `none`: correct, but it will cap coverage on real tasks.
+
+## Step 2: protocol (done)
+
+`PROTOCOL.md`: arms, hypotheses, decision rule, measures, caps, pilot gate.
+`results/items.json`: the 192 records with a code edit, read from the data file
+(sha256 recorded), and the 15 pilot tasks (seed `swe-touch-v1-pilot`). All 192
+resolve to Harbor `swebench-verified@1.0` tasks (`make_jobs.py jobs` dry run).
+
+Findings recorded there:
+- Each record has **three** interventions with the same patch (round 1 on
+  `read_or_edit`, rounds 2–3 on `edit`), not one.
+- LiteLLM 1.86.2 (Harbor's lock) drops `thinking: {"type": "disabled"}` for
+  DeepSeek; the runner resolves LiteLLM freshly (1.102.1 today), so the patch
+  pins it, and the protocol sends thinking-off in `extra_body`, which reaches
+  the wire in both versions (loopback check).
+- Cost risk: the projection (up to 131,072 bytes) is appended after the cached
+  prefix and re-sent uncached on every request, so FreshCtx arms may cost
+  several times the others. The pilot measures it; lowering the budget for both
+  FreshCtx arms is a pre-allowed change.
+
+## Runbook once unblocked
+
+```sh
+cd <SWE-Touch> && git checkout 4bd121b && git apply <lab>/harbor/swe-touch-freshctx.patch
+export UV_NO_DEV=1 && uv sync --project harbor --locked
+uv run --project harbor harbor download swebench-verified@1.0 --output-dir tasks --export
+cd <lab>
+uv run --project <SWE-Touch>/harbor python make_jobs.py jobs --phase pilot \
+  --tasks <SWE-Touch>/tasks/swebench-verified --freshctx-bridge <freshctx>/bridges/mini-swe-agent \
+  --env-type modal --out runs/pilot
+python3 spend.py check --runs 75 --usd-per-run <estimate> --phase pilot
+for arm in V V_FC S S_FC S_N; do uv run --project <SWE-Touch>/harbor harbor run --config runs/pilot/$arm.json; done
+uv run --project <SWE-Touch>/harbor python spend.py tally runs/pilot --sandbox-usd-per-hour <rate>
+uv run --project <SWE-Touch>/harbor python spend.py status runs/pilot
+```
