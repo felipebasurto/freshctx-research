@@ -285,6 +285,55 @@ the cache discount).
   over 200 lines, the bridge refreshed every whole-file and paged read in this
   set.
 
+## E11c — whole repositories, a topic that doesn't ask the question, and a diff notice (`PROTOCOL-E11c.md`)
+
+All 19 E11 items. Each workspace is the whole repository at `base_commit`, and
+the investigation gets a topic that names the area but not the later question.
+Three arms: plain Pi, plain Pi with a harness-style change notice carrying the
+unified diff, and the FreshCtx bridge from `official` `5dc05d1`. The pilot
+raised the investigation output cap from 1,024 to 4,096 tokens (recorded in
+the protocol before the main run). 38 investigations and 114 arm-runs cost
+$0.76 at list price ($0.38 with the cache discount). Every response was served
+as `deepseek-flash`.
+
+4 of 38 investigations hit the 24-request cap (e11-05 and e11-06, both reps),
+so each arm has 34 runs.
+
+| Arm | First-submission | Within two | Reads | Cost per correct first answer |
+| --- | ---: | ---: | ---: | ---: |
+| plain Pi | 4/34 | 18/34 | 45 | $0.0179 |
+| plain Pi + diff notice | **34/34** | 34/34 | 0 | $0.0010 |
+| FreshCtx bridge | 31/34 | 32/34 | 2 | $0.0018 |
+
+Preregistered tests (exact Fisher, one-sided): FreshCtx vs plain Pi
+p = 1.0 × 10⁻¹¹, **FreshCtx vs diff notice p = 1.0**, diff notice vs plain Pi
+p = 2.6 × 10⁻¹⁵. By the fixed decision, **a diff notice is enough here**.
+
+- **The E11 result replicates in whole repositories with an unrelated topic.**
+  Plain Pi answers 30 of 34 first submissions from its stale conclusion,
+  without reading.
+- **A notice with the diff is as good as FreshCtx, and cheaper.** Unlike E11's
+  notice, which only said the file had changed, this one carries the change,
+  and the model used it every time without reading. For a single edit in one
+  file that the harness can see, verified refresh adds nothing over the diff.
+- **FreshCtx's three failures come from one bridge bug.** None of the three
+  first requests carried the edited code, old or new. In e11-24 (both reps)
+  the model read the file whole, then read `offset: 200` to see the last four
+  lines. That second read narrowed the tracked unit from the whole file to the
+  last symbol (`scan_quoted_literal`), and the edit sat in the function above
+  it. In e11-10 rep 0, overlapping ranged reads left a region that doesn't
+  cover the edit, and the first request carries an `ambiguous` marker (the
+  protocol expected none). Fix: a later partial read of a file already
+  observed whole should not narrow the whole-file unit.
+- Pending: blind author labelling of whether each conclusion states the
+  pre-edit answer.
+
+Limits: one edit per item, which is the case a diff notice handles best.
+Several edits, long diffs, or edits to files the harness didn't make (for
+example git checkout or a formatter) are where a notice and verified refresh
+could come apart. That isn't measured here. Also: one model, 2 reps,
+author-written topics, and Pi's only tool is `read`.
+
 ## Running
 
 ```sh
