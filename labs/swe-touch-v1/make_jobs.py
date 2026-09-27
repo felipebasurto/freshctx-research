@@ -34,7 +34,7 @@ ARMS = {
     "V+FC": (None, "rewrite", "0"),
     "S": ("patch_only", "shadow", "0"),
     "S+FC": ("patch_only", "rewrite", "0"),
-    "S+N": ("patch_only", "shadow", "1"),
+    "S+N": ("patch_only", "shadow", "notice"),  # "once" or "persist": --notice
 }
 
 
@@ -85,6 +85,7 @@ def write_jobs(args: argparse.Namespace) -> None:
     plan = {"phase": args.phase, "items": ids, "arms": {}, "model": MODEL}
     for arm in arms:
         mode, freshctx_mode, notice = ARMS[arm]
+        notice = args.notice if notice == "notice" else notice
         kwargs = {
             "step_limit": STEP_LIMIT,
             "command_timeout_sec": 600,
@@ -135,6 +136,8 @@ def main() -> None:
     jobs.add_argument("--reps", type=int, default=1)
     jobs.add_argument("--reps-s", type=int, default=1, help="reps for S, S+FC and S+N")
     jobs.add_argument("--concurrency", type=int, default=4)
+    jobs.add_argument("--notice", choices=["once", "persist"], default="once",
+                      help="S+N: notice in the next request only (brief) or kept at its place afterwards")
     args = parser.parse_args()
     select_pilot(args) if args.command == "select-pilot" else write_jobs(args)
 

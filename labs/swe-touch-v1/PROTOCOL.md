@@ -94,9 +94,10 @@ The patch changes no intervention logic. It adds:
   **next request only**, in the outgoing copy; the saved trajectory never
   contains it. **Open decision for the owner:** a real harness (Claude Code)
   keeps its reminder in the conversation for later requests. This protocol
-  follows the brief ("append it to the next request, once"). If the owner
-  prefers a persistent notice, that is a protocol change to record here before
-  the pilot.
+  follows the brief ("append it to the next request, once"; `--notice once`).
+  The bridge also implements `--notice persist` (the note stays at its place in
+  every later outgoing copy). Choosing `persist` is a protocol change recorded
+  here before the pilot; the value used is written to each job config.
 
 ## Items
 
@@ -153,8 +154,12 @@ below are reported regardless.
 
 ## Measures
 
-From Harbor results, trajectories, `swe_touch.jsonl` and `freshctx.jsonl`
-(`analyze.py`, written after the main run):
+From Harbor results, trajectories, `swe_touch_interventions.jsonl` and
+`freshctx.jsonl`. `analyze.py` implements the tests, the decision rule, these
+measures and the pilot gate; it was written and tested on synthetic trials
+(`test_analyze.py`) before any model call. Re-inspection, kept user code and
+stale-edit failures are heuristics over commands (documented in `analyze.py`);
+the failure analysis reads trajectories by hand:
 
 - Resolve rate per arm; infrastructure errors; agent exit statuses.
 - **Coverage:** for each applied intervention in S, S+FC and S+N, whether the

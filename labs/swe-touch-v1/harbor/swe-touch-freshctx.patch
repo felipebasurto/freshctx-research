@@ -119,7 +119,7 @@ index 7f6f19e..98b5e49 100644
              value = self._get_env(key)
              if value is not None:
 diff --git a/harbor/src/harbor/agents/external/runners/mini_swe_agent_runner.py b/harbor/src/harbor/agents/external/runners/mini_swe_agent_runner.py
-index 4846c2b..b0ed1f8 100644
+index 4846c2b..69ec99e 100644
 --- a/harbor/src/harbor/agents/external/runners/mini_swe_agent_runner.py
 +++ b/harbor/src/harbor/agents/external/runners/mini_swe_agent_runner.py
 @@ -12,6 +12,7 @@ from typing import Any
@@ -175,15 +175,16 @@ index 4846c2b..b0ed1f8 100644
      def get_template_vars(self, **kwargs: Any) -> dict[str, Any]:
          from minisweagent.utils.serialize import recursive_merge
  
-@@ -208,6 +233,32 @@ def _build_swe_touch_agent_class(base_agent_class: type) -> type:
+@@ -208,6 +233,33 @@ def _build_swe_touch_agent_class(base_agent_class: type) -> type:
      return SweTouchAgent
  
  
 +def _freshctx_bridge(env: HarborBridgeEnvironment, output_path: Path) -> Any | None:
 +    """FreshCtx arms (freshctx-research labs/swe-touch-v1). None when disabled."""
 +    mode = os.environ.get("FRESHCTX_MODE", "off")
-+    notice = os.environ.get("FRESHCTX_NOTICE") == "1"
-+    if mode == "off" and not notice:
++    raw_notice = os.environ.get("FRESHCTX_NOTICE", "0")
++    notice = {"0": "off", "1": "once"}.get(raw_notice, raw_notice)  # off | once | persist
++    if mode == "off" and notice == "off":
 +        return None
 +    import sys
 +    import tempfile
@@ -208,7 +209,7 @@ index 4846c2b..b0ed1f8 100644
  def main() -> None:
      parser = argparse.ArgumentParser()
      parser.add_argument("--bridge-url", required=True)
-@@ -279,12 +330,29 @@ def main() -> None:
+@@ -279,12 +331,29 @@ def main() -> None:
      agent_class = get_agent_class(
          resolved_agent_config.pop("agent_class", "interactive")
      )

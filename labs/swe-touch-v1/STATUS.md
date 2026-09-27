@@ -110,16 +110,19 @@ Findings recorded there:
 
 ## Runbook once unblocked
 
+Everything is scripted in `run.sh` (checks keys by presence only, checks the
+patch is applied unchanged, downloads tasks, generates jobs, runs
+`spend.py check` before and `tally`/`status` after, then `analyze.py`):
+
 ```sh
 cd <SWE-Touch> && git checkout 4bd121b && git apply <lab>/harbor/swe-touch-freshctx.patch
-export UV_NO_DEV=1 && uv sync --project harbor --locked
-uv run --project harbor harbor download swebench-verified@1.0 --output-dir tasks --export
-cd <lab>
-uv run --project <SWE-Touch>/harbor python make_jobs.py jobs --phase pilot \
-  --tasks <SWE-Touch>/tasks/swebench-verified --freshctx-bridge <freshctx>/bridges/mini-swe-agent \
-  --env-type modal --out runs/pilot
-python3 spend.py check --runs 75 --usd-per-run <estimate> --phase pilot
-for arm in V V_FC S S_FC S_N; do uv run --project <SWE-Touch>/harbor harbor run --config runs/pilot/$arm.json; done
-uv run --project <SWE-Touch>/harbor python spend.py tally runs/pilot --sandbox-usd-per-hour <rate>
-uv run --project <SWE-Touch>/harbor python spend.py status runs/pilot
+export SWE_TOUCH=<SWE-Touch> FRESHCTX=<freshctx checkout of feat/shell-read-observation>
+export ENV_TYPE=modal SANDBOX_USD_PER_HOUR=<rate> NOTICE=once
+USD_PER_RUN=0.10 ./run.sh smoke     # Step 0: 3 vanilla tasks, wall time and cost per task
+USD_PER_RUN=<from smoke> ./run.sh pilot   # stops with exit 1 if the pilot gate trips
+# record the pilot outcome in PROTOCOL.md, then:
+USD_PER_RUN=<from pilot> ./run.sh main [--reps-s 2]
 ```
+
+Offline checks that must still pass first: `python3 test_analyze.py`,
+`offline/offline_touch.py` (see its docstring), and the bridge tests.
