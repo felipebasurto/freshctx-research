@@ -1,0 +1,145 @@
+{
+  "failures": [],
+  "arms": {
+    "V": {
+      "exit": 0,
+      "interventions": [],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 0,
+        "request": 0,
+        "intervention": 0,
+        "coverage": 0
+      },
+      "observed_reads": 0,
+      "coverage": [],
+      "final_file_keeps_user_edit": false
+    },
+    "V+FC": {
+      "exit": 0,
+      "interventions": [],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 0,
+        "coverage": 0
+      },
+      "observed_reads": 3,
+      "coverage": [],
+      "final_file_keeps_user_edit": false
+    },
+    "S": {
+      "exit": 0,
+      "interventions": [
+        [
+          1,
+          1,
+          true
+        ],
+        [
+          4,
+          2,
+          true
+        ]
+      ],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 2,
+        "coverage": 2
+      },
+      "observed_reads": 3,
+      "coverage": [
+        "full",
+        "full"
+      ],
+      "final_file_keeps_user_edit": true
+    },
+    "S+FC": {
+      "exit": 0,
+      "interventions": [
+        [
+          1,
+          1,
+          true
+        ],
+        [
+          4,
+          2,
+          true
+        ]
+      ],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 2,
+        "coverage": 2
+      },
+      "observed_reads": 3,
+      "coverage": [
+        "full",
+        "full"
+      ],
+      "final_file_keeps_user_edit": true
+    },
+    "S+N": {
+      "exit": 0,
+      "interventions": [
+        [
+          1,
+          1,
+          true
+        ],
+        [
+          4,
+          2,
+          true
+        ]
+      ],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 2,
+        "coverage": 2
+      },
+      "observed_reads": 3,
+      "coverage": [
+        "full",
+        "full"
+      ],
+      "final_file_keeps_user_edit": true
+    },
+    "S+FC narrow": {
+      "exit": 0,
+      "interventions": [
+        [
+          1,
+          1,
+          true
+        ],
+        [
+          4,
+          2,
+          true
+        ]
+      ],
+      "requests": 6,
+      "freshctx_events": {
+        "command": 5,
+        "request": 6,
+        "intervention": 2,
+        "coverage": 2
+      },
+      "observed_reads": 3,
+      "coverage": [
+        "none",
+        "full"
+      ],
+      "final_file_keeps_user_edit": true
+    }
+  }
+}
