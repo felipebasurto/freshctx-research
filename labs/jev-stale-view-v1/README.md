@@ -256,6 +256,35 @@ Limits: single-file workspaces, investigation prompt identical to the later
 question, one model, 2 reps. Ambiguous-vs-refreshed coincides exactly with
 file size here, so this run can't separate the two.
 
+## E11b — the six small files with the whole-file fix (`PROTOCOL-E11b.md`)
+
+The product fix (`official` branch `fix/whole-file-ambiguous`, `6e8fac8`)
+pins region anchors shorter than 128 bytes to the file edge. Offline it turns
+all 19 E11 whole-file relocations from `ambiguous` into `updated` at the full
+new length. E11b reruns E11 live, unchanged except for that one file, on the
+six items where every bridge run had failed (e11-03, -04, -08, -18, -21,
+-22), 2 reps. The investigations are new. $0.135 at list price ($0.060 with
+the cache discount).
+
+| Arm | E11 first-submission (same items) | E11b first-submission | E11b reads |
+| --- | ---: | ---: | ---: |
+| plain Pi | 0/12 | 0/12 | 12 |
+| plain Pi + notice (rule) | 0/12 | 2/12 | 12 |
+| FreshCtx bridge | 0/12 | **12/12** | 0 |
+| FreshCtx bridge + notice | 1/12 | **12/12** | 0 |
+
+- No first bridge request carries the `ambiguous` marker any more. The
+  harness flags current code in 10/12. The other two are e11-04, where the
+  projection does hold the edited file at its full new length (3,997 bytes),
+  but the flag's string matching misses it.
+- The bridge now answers correctly without re-reading: the refreshed file is
+  already in the transcript.
+- Plain Pi still answers every first submission from its stale conclusion, so
+  these items still produce the failure. Only the product changed.
+- Small n (12 runs per arm, six items), one model. Together with E11's files
+  over 200 lines, the bridge refreshed every whole-file and paged read in this
+  set.
+
 ## Running
 
 ```sh

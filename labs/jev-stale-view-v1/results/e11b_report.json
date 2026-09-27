@@ -1,0 +1,346 @@
+{
+ "runs": 12,
+ "spendUsdPeak": 0.135,
+ "spendUsdCached": 0.06019,
+ "investigations_failed": [],
+ "arms": {
+  "A_native": {
+   "n": 12,
+   "errors": 0,
+   "pass_first": 0,
+   "pass_within_two": 9,
+   "first_stale_derived": 12,
+   "first_without_reading": 12,
+   "first_without_reading_failed": 12,
+   "first_after_reading_failed": 0,
+   "requests_total": 36,
+   "reads_total": 12,
+   "stale_code_in_first": 6,
+   "current_code_in_first": 2,
+   "tail_applied": 0,
+   "history_preserved": 12,
+   "prompt_tokens": 97643,
+   "hit_share": 0.67,
+   "usd_with_cache": 0.01674,
+   "usd_per_correct_first": null,
+   "first_fail_items": [
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-21",
+     0,
+     0
+    ],
+    [
+     "e11-21",
+     1,
+     0
+    ],
+    [
+     "e11-22",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ]
+   ]
+  },
+  "A_rule": {
+   "n": 12,
+   "errors": 0,
+   "pass_first": 2,
+   "pass_within_two": 12,
+   "first_stale_derived": 10,
+   "first_without_reading": 10,
+   "first_without_reading_failed": 10,
+   "first_after_reading_failed": 0,
+   "requests_total": 34,
+   "reads_total": 12,
+   "stale_code_in_first": 6,
+   "current_code_in_first": 2,
+   "tail_applied": 12,
+   "history_preserved": 12,
+   "prompt_tokens": 95404,
+   "hit_share": 0.746,
+   "usd_with_cache": 0.01247,
+   "usd_per_correct_first": 0.006235,
+   "first_fail_items": [
+    [
+     "e11-03",
+     0,
+     0
+    ],
+    [
+     "e11-03",
+     1,
+     0
+    ],
+    [
+     "e11-04",
+     0,
+     0
+    ],
+    [
+     "e11-04",
+     1,
+     0
+    ],
+    [
+     "e11-08",
+     0,
+     0
+    ],
+    [
+     "e11-08",
+     1,
+     0
+    ],
+    [
+     "e11-18",
+     0,
+     0
+    ],
+    [
+     "e11-18",
+     1,
+     0
+    ],
+    [
+     "e11-22",
+     0,
+     0
+    ],
+    [
+     "e11-22",
+     1,
+     0
+    ]
+   ]
+  },
+  "F_fc": {
+   "n": 12,
+   "errors": 0,
+   "pass_first": 12,
+   "pass_within_two": 12,
+   "first_stale_derived": 0,
+   "first_without_reading": 12,
+   "first_without_reading_failed": 0,
+   "first_after_reading_failed": 0,
+   "requests_total": 12,
+   "reads_total": 0,
+   "stale_code_in_first": 0,
+   "current_code_in_first": 10,
+   "tail_applied": 0,
+   "history_preserved": 12,
+   "prompt_tokens": 28765,
+   "hit_share": 0.4,
+   "usd_with_cache": 0.00783,
+   "usd_per_correct_first": 0.000652,
+   "first_fail_items": []
+  },
+  "F_rule": {
+   "n": 12,
+   "errors": 0,
+   "pass_first": 12,
+   "pass_within_two": 12,
+   "first_stale_derived": 0,
+   "first_without_reading": 12,
+   "first_without_reading_failed": 0,
+   "first_after_reading_failed": 0,
+   "requests_total": 12,
+   "reads_total": 0,
+   "stale_code_in_first": 0,
+   "current_code_in_first": 10,
+   "tail_applied": 12,
+   "history_preserved": 12,
+   "prompt_tokens": 29161,
+   "hit_share": 0.478,
+   "usd_with_cache": 0.00697,
+   "usd_per_correct_first": 0.000581,
+   "first_fail_items": []
+  }
+ },
+ "tests": {
+  "1 F_rule > F_fc": 1.0,
+  "2 A_rule > A_native": 0.2391,
+  "3 F_fc > A_native": 3.7e-07
+ },
+ "decision": "rule stays in the lab",
+ "by_item": {
+  "e11-03": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-04": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-08": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-18": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-21": {
+   "A_native": "✗✗",
+   "A_rule": "✓✓",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  },
+  "e11-22": {
+   "A_native": "✗✗",
+   "A_rule": "✗✗",
+   "F_fc": "✓✓",
+   "F_rule": "✓✓"
+  }
+ },
+ "investigations": [
+  {
+   "item": "e11-03",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found:\n\n## Answer: No, `Submission` does not convert `attachments` into `File` objects.\n\nThe `Submission` class (canvasapi/submission.py, lines 8–~230) inherits from `CanvasObject` and defines only these methods:\n\n- `__str__` (lines 9–10)\n- `create_submission_peer_review` (lines 12–38)\n- `delete_submission_peer_review` (lines 40–65)\n- `edit` (lines 67–88)\n- `get_submission_peer_reviews` (lines 90–108)\n- `mark_read` (lines 110–126)\n- `mark_unread` (lines 128–144)\n- `upload_comment` (lines 146–~180)\n\nThere is **no `__init__` override** in `Submission`, and no code anywhere in the class that touches an `attachments` attribute or imports/instantiates `File`.\n\n### Evidence\n\n1. **No `__init__`**: `Submission` does not define its own constructor, so it uses `CanvasObject.__init__`, which simply stores the raw API attributes as-is. There is no post-processing of `attachments`.\n\n2. **No `File` import**: The imports at the top of the file are:\n   - `CanvasObject` (line 1)\n   - `PaginatedList` (line 2)\n   - `PeerReview` (line 3)\n   - `FileOrPathLike`, `Uploader` (line 4)\n   - `combine_kwargs`, `obj_or_id` (line 5)\n\n   `File` is **not imported**, so the class cannot construct `File` objects.\n\n3. **`attachments` is never referenced**: Searching the class body, the string `attachments` does not appear at all. The only file-related logic is in `upload_comment` (lines 146–180), which *uploads* a file and attaches it via `self.edit(comment={\"file_ids\": [...]})` — it does not convert existing `attachments` into `File` objects.\n\n4. **Contrast with `GroupedSubmission`**: The only nested-object conversion in this file is in `GroupedSubmission.__init__` (lines ~183–193), which converts the `submissions` list into `Submission` objects. There is no analogous handling for `attachments`.\n\n### Conclusion\n\nWhen the Canvas API returns a submission with an `attachments` field, `Submission` stores it as the raw JSON (typically a list of dicts) via the inherited `CanvasObject` behavior. It does **not** wrap those entries in `canvasapi.file.File` objects. Any consumer wanting `File` objects would have to construct them manually."
+  },
+  {
+   "item": "e11-03",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found:\n\n**No — `Submission` does not convert its `attachments` into `File` objects.**\n\nEvidence from `canvasapi/submission.py`:\n\n1. **`Submission` has no `__init__` of its own.** The class body starts at line 7 with `class Submission(CanvasObject):` and immediately defines `__str__` (lines 8–9). It inherits its constructor from `CanvasObject`, which simply stores the raw JSON attributes. There is no code anywhere in the class that iterates over `attachments` or wraps them in `File`.\n\n2. **No `File` import.** The imports at the top of the file are:\n   - `CanvasObject` (line 1)\n   - `PaginatedList` (line 2)\n   - `PeerReview` (line 3)\n   - `FileOrPathLike, Uploader` (line 4)\n   - `combine_kwargs, obj_or_id` (line 5)\n\n   `canvasapi.file.File` is never imported, so the class cannot construct `File` objects.\n\n3. **The only `File`-related code is unrelated to `attachments`.** `upload_comment` (lines ~150–180) uses `FileOrPathLike`/`Uploader` to upload a file as a comment, and it references `response[1][\"id\"]` — but that's about uploading, not about converting the `attachments` attribute.\n\n4. **`GroupedSubmission.__init__` (lines ~183–192)** does convert its `submissions` list into `Submission` objects, but it does nothing with `attachments`.\n\nSo `submission.attachments` remains whatever raw value the API returned (typically a list of dicts), not a list of `File` instances."
+  },
+  {
+   "item": "e11-04",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "**No, this file does not import the `re` module.**\n\nThe complete import block is at the top of the file (lines 1–5):\n\n```python\nimport argparse\nfrom typing import IO\nfrom typing import List\nfrom typing import Optional\nfrom typing import Sequence\n```\n\nThe only modules imported are:\n- `argparse` (line 1)\n- `typing` names: `IO`, `List`, `Optional`, `Sequence` (lines 2–5)\n\nThere is no `import re` statement anywhere in the file, and no `re.` usage in the code. The file performs its parsing and manipulation using plain bytes operations (`partition`, `startswith`, `strip`, `endswith`, `rstrip`) rather than regular expressions."
+  },
+  {
+   "item": "e11-04",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the entire file. Here's what I found:\n\n**No, `pre_commit_hooks/requirements_txt_fixer.py` does not import the `re` module.**\n\nThe complete set of imports is at the top of the file (lines 1–5):\n\n```python\nimport argparse\nfrom typing import IO\nfrom typing import List\nfrom typing import Optional\nfrom typing import Sequence\n```\n\n- Line 1: `import argparse`\n- Lines 2–5: `from typing import IO, List, Optional, Sequence`\n\nThere is no `import re` statement anywhere in the file, and no `re.` usage in the code. The module relies only on `argparse`, `typing`, and built-in string/bytes methods (e.g., `.partition()`, `.startswith()`, `.strip()`, `.rstrip()`) for its parsing logic.\n\nSo the answer to the question is: **the file does not import `re`.**"
+  },
+  {
+   "item": "e11-08",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file. Here's what I found.\n\n## Answer: No, the code does **not** honour `HY_HISTORY`\n\nThe history file path is hard-coded and never consults the environment.\n\n### The relevant lines\n\nIn the `completion` context manager, the history path is set like this:\n\n```python\nhistory = os.path.expanduser(\"~/.hy-history\")\n```\n\nThis is the only place a history path is defined. It is a literal string `\"~/.hy-history\"` passed through `os.path.expanduser`, with no reference to `os.environ`, `os.getenv`, or `HY_HISTORY` anywhere.\n\nThat `history` variable is then used for both reading and writing:\n\n```python\ntry:\n    readline.read_history_file(history)\nexcept IOError:\n    pass\n```\n\nand in the `finally` block:\n\n```python\ntry:\n    readline.write_history_file(history)\nexcept IOError:\n    pass\n```\n\n### What this means\n\n- The history file is always `~/.hy-history` (expanded to the user's home directory).\n- Setting `HY_HISTORY` in the environment has **no effect** — the variable is never read.\n- There is no fallback, override, or conditional logic that would pick up an environment variable.\n\n### Note on scope\n\nI read the entire file (it's ~3551 bytes, shown in full above). The only `os` usage is `os.path.expanduser` for the hard-coded path; there is no environment lookup anywhere in `completer.py`. So if the intent is to support `HY_HISTORY`, this file does not implement it — the feature would need to be added (e.g. `os.environ.get(\"HY_HISTORY\", \"~/.hy-history\")`)."
+  },
+  {
+   "item": "e11-08",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "## Findings\n\n**No — the code does not honour `HY_HISTORY`.** The history file path is hard-coded.\n\nThe relevant code is in the `completion` context manager at the bottom of `hy/completer.py`:\n\n```python\nhistory = os.path.expanduser(\"~/.hy-history\")\n```\n\nThis line unconditionally sets `history` to `~/.hy-history` (expanded to the user's home directory). There is no lookup of `os.environ` / `os.getenv(\"HY_HISTORY\")` anywhere in the file, and no fallback logic that would consult an environment variable.\n\nThe `history` variable is then used in two places, both of which inherit the hard-coded value:\n\n- `readline.read_history_file(history)` — reading history on entry to the context manager.\n- `readline.write_history_file(history)` — writing history on exit (in the `finally` block).\n\n### Notes on the surrounding code\n\n- `os` is imported at the top of the file, so the module *could* read an environment variable, but it never does.\n- The only use of `os` here is `os.path.expanduser`, which expands `~` but does not consult `HY_HISTORY`.\n- The `try/except IOError` blocks around the read/write calls mean that if the hard-coded path is unusable, the failure is silently swallowed — but that does not change the fact that the path is fixed.\n\n### Conclusion\n\nTo honour `HY_HISTORY`, the line would need to be changed to something like:\n\n```python\nhistory = os.environ.get(\"HY_HISTORY\") or os.path.expanduser(\"~/.hy-history\")\n```\n\nAs written, the environment variable is ignored entirely."
+  },
+  {
+   "item": "e11-18",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file (it's short — 1714 bytes, ~70 lines). Here's what I found.\n\n## Answer: No — file-like objects with a `read()` method are **not** handled\n\nThe relevant function is `get_bytes(obj)` (lines 44–70). It performs a type-dispatch chain and explicitly raises `TypeError` for anything it doesn't recognize:\n\n```python\ndef get_bytes(obj):\n    ...\n    if isinstance(obj, bytearray):\n        return signature(obj)\n\n    if isinstance(obj, str):\n        return get_signature_bytes(obj)\n\n    if isinstance(obj, bytes):\n        return signature(obj)\n\n    if isinstance(obj, memoryview):\n        return bytearray(signature(obj).tolist())\n\n    if isinstance(obj, pathlib.PurePath):\n        return get_signature_bytes(obj)\n\n    raise TypeError('Unsupported type as file input: %s' % type(obj))\n```\n\n### What is supported\nThe dispatch handles exactly five cases:\n- `bytearray` → `signature(obj)` (line 55–56)\n- `str` → `get_signature_bytes(obj)` (line 58–59)\n- `bytes` → `signature(obj)` (line 61–62)\n- `memoryview` → `bytearray(signature(obj).tolist())` (line 64–65)\n- `pathlib.PurePath` → `get_signature_bytes(obj)` (line 67–68)\n\n### What is not supported\nThere is **no branch** that checks for a `read()` method, nor any `hasattr(obj, 'read')` / `callable(obj.read)` / `io.IOBase` check. A file object (e.g. `open('x', 'rb')`, `io.BytesIO`, `io.BufferedReader`) matches none of the `isinstance` tests above, so control falls through to:\n\n```python\nraise TypeError('Unsupported type as file input: %s' % type(obj))\n```\n\n(line 70)\n\n### Note on the docstring\nThe docstring at line 48 claims the accepted input is:\n\n> `obj: path to readable, file, bytes, bytearray or memoryview.`\n\nThe word **\"file\"** here is misleading. The code only accepts a *path* (a `str` or `pathlib.PurePath`) and reads it from disk via `get_signature_bytes` (lines 20–31, which calls `open(path, 'rb')`). It never accepts an already-open file object. So the docstring overstates the actual behavior — a genuine file-like object with `read()` will raise `TypeError`, not be read.\n\n### Summary\n- `get_bytes` is a strict `isinstance`-based dispatcher (lines 54–68).\n- No `read()`-method detection exists anywhere in the file.\n- File-like objects are rejected with `TypeError` at line 70, despite the docstring mentioning \"file\" at line 48."
+  },
+  {
+   "item": "e11-18",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "I've read the full file (it's short — 1714 bytes, ~70 lines). Here's what I found.\n\n## Answer: No — file-like objects with a `read()` method are **not** handled\n\nThe relevant function is `get_bytes(obj)`, which is the central input-normalization helper. Its docstring claims support for \"path to readable, file, bytes, bytearray or memoryview\":\n\n```python\ndef get_bytes(obj):\n    \"\"\"\n    Infers the input type and reads the first 8192 bytes,\n    returning a sliced bytearray.\n\n    Args:\n        obj: path to readable, file, bytes, bytearray or memoryview.\n    ...\n```\n\nBut the actual type dispatch only checks these cases:\n\n- `bytearray` → `signature(obj)`\n- `str` → `get_signature_bytes(obj)` (opens the path from disk)\n- `bytes` → `signature(obj)`\n- `memoryview` → `bytearray(signature(obj).tolist())`\n- `pathlib.PurePath` → `get_signature_bytes(obj)`\n\nThen it falls through to:\n\n```python\n    raise TypeError('Unsupported type as file input: %s' % type(obj))\n```\n\n## Key observations\n\n1. **No `read()` / file-object branch exists.** There is no `hasattr(obj, 'read')` check, no `io.IOBase` check, and no `isinstance(obj, (io.RawIOBase, io.BufferedIOBase, io.TextIOBase))` check anywhere in the file. A file handle passed in would hit the final `raise TypeError`.\n\n2. **The docstring is misleading.** It advertises \"file\" as a supported input, but the code does not implement that. The only way a file gets read is via a *path* (`str` or `pathlib.PurePath`), which is opened internally by `get_signature_bytes`:\n\n```python\n    with open(path, 'rb') as fp:\n        return bytearray(fp.read(_NUM_SIGNATURE_BYTES))\n```\n\n   Note that `fp.read(...)` here is the code's *own* internal use of a `read()` method — it does not mean caller-supplied file-like objects are accepted.\n\n3. **`signature(array)` requires `len()` and slicing.** It does `length = len(array)` and `array[:index]`, so it only works on sized, sliceable objects (bytes/bytearray/memoryview). A generic file-like object (which is not sized/sliceable) would fail here anyway, reinforcing that the design assumes in-memory buffers or paths.\n\n4. **`memoryview` handling is a special case** that converts back to `bytearray` via `.tolist()`, showing the author did consider some non-bytes buffer types — but still not stream/file objects.\n\n## Conclusion\n\nIf a caller passes an open file object (e.g. `open('x.png', 'rb')`), `get_bytes` raises `TypeError: Unsupported type as file input: <class '_io.BufferedReader'>`. To support file-like objects, the function would need an added branch such as checking `hasattr(obj, 'read')` and calling `obj.read(_NUM_SIGNATURE_BYTES)` (wrapped in `bytearray(...)`), placed before the final `raise`."
+  },
+  {
+   "item": "e11-21",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes, the code does set `carrier[_SAMPLED]` to the integer `1` when `sampled` is `None`.\n\nIn `inject` (lines 24–31):\n\n```python\nsampled = baggage.pop(_SAMPLED, None)\n\nif sampled is None:\n    carrier[_SAMPLED] = 1\nelse:\n    ...\n```\n\n- Line 24: `sampled = baggage.pop(_SAMPLED, None)` — pops the sampling value from baggage, defaulting to `None`.\n- Lines 26–27: `if sampled is None:` then `carrier[_SAMPLED] = 1` — assigns the literal integer `1` (not a string, not `True`) to the `x-b3-sampled` header.\n\nNote there is a second place that also assigns `1` (lines 45–50), but that is a separate guard for the case where `sampled`, `flags`, `traceid`, and `spanid` are all `None`; it is not the `sampled is None` branch itself. The direct answer to the question is the branch at lines 26–27."
+  },
+  {
+   "item": "e11-21",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes. In `inject`, when `sampled` is `None`, the code sets `carrier[_SAMPLED]` to the integer `1`.\n\nRelevant lines:\n\n```python\nsampled = baggage.pop(_SAMPLED, None)\n\nif sampled is None:\n    carrier[_SAMPLED] = 1\nelse:\n    ...\n```\n\n- `sampled = baggage.pop(_SAMPLED, None)` — pulls the sampled value out of baggage, defaulting to `None`.\n- `if sampled is None:` — the branch taken when no sampled value was present.\n- `carrier[_SAMPLED] = 1` — assigns the integer literal `1` (not the string `\"1\"`, not `True`) to the `x-b3-sampled` header.\n\nNote there is a second place that also assigns `carrier[_SAMPLED] = 1`: the later guard\n\n```python\nif sampled is flags is (traceid and spanid) is None:\n    warn(...)\n    carrier[_SAMPLED] = 1\n```\n\nThat one fires only when `sampled`, `flags`, and `(traceid and spanid)` are all `None` (i.e., nothing meaningful is being propagated), and it likewise writes the integer `1`. So in both cases the value written is the integer `1`."
+  },
+  {
+   "item": "e11-22",
+   "rep": 0,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes, the `name` property can raise `IndexError`. Here's the relevant code:\n\n```python\n@property\ndef name(self):\n    names = [tag for tag in self.tags if tag['Key'] == 'Name']\n    if names is None:\n        return ''\n    else:\n        return names[0]['Value']\n```\n\n**What happens:**\n\n1. `names` is a **list comprehension**, so it is always a list — never `None`. If no tag has `Key == 'Name'`, the comprehension produces an empty list `[]`.\n2. The guard `if names is None:` is therefore dead code; it can never be true for a list comprehension result.\n3. Execution falls through to `return names[0]['Value']`, and indexing an empty list with `[0]` raises `IndexError: list index out of range`.\n\n**Conclusion:** For an instance that has tags but none with `Key == 'Name'` (and equally for an instance with no tags at all, since `self.tags` would be an empty list), `names` is `[]`, the `is None` check fails to catch it, and `names[0]` raises `IndexError`.\n\nThe likely intended check was `if not names:` (or `if len(names) == 0:`), which would correctly return `''` for the empty case."
+  },
+  {
+   "item": "e11-22",
+   "rep": 1,
+   "reads": 1,
+   "errors": [],
+   "requests": 2,
+   "conclusion": "Yes, the `name` property can raise `IndexError`. Here's the relevant code:\n\n```python\n@property\ndef name(self):\n    names = [tag for tag in self.tags if tag['Key'] == 'Name']\n    if names is None:\n        return ''\n    else:\n        return names[0]['Value']\n```\n\n**Analysis:**\n\n1. **Line 1 of the property:** `names = [tag for tag in self.tags if tag['Key'] == 'Name']` builds a list comprehension. This always produces a **list** — never `None`. If no tag has `Key == 'Name'`, the result is an empty list `[]`.\n\n2. **The guard is ineffective:** `if names is None:` can never be true, because a list comprehension always returns a list object. So the intended \"no name\" fallback (`return ''`) is dead code.\n\n3. **The failure:** When `self.tags` is non-empty but contains no tag with `Key == 'Name'`, `names` is `[]`, and the `else` branch executes `names[0]['Value']`, which raises `IndexError: list index out of range`.\n\nSo the answer is **yes**: for an instance that has tags but none with `Key == 'Name'`, the property raises `IndexError` rather than returning `''`. The bug is the incorrect `is None` check — it should test for an empty list (e.g., `if not names:`).\n\nNote: if `self.tags` is empty (`[]`), the comprehension still yields `[]`, so the same `IndexError` occurs there too. The `is None` check never protects against either case."
+  }
+ ]
+}

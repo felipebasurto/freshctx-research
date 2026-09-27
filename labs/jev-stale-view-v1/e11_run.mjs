@@ -22,8 +22,8 @@ const piRoot = join(product, 'bridges/pi/node_modules/@earendil-works/pi-coding-
 const { createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager } = await import(pathToFileURL(join(piRoot, 'dist/index.js')));
 
 const MODEL = 'deepseek-v4-flash', TEMPERATURE = 0, MAX_TOKENS_INVESTIGATE = 1024, MAX_TOKENS = 512;
-const MAX_REQUESTS = 8, MAX_REQUESTS_INVESTIGATE = 16, MAX_BYTES = 400000, MAX_SUBMISSIONS = 2, CAP_USD = 6;
-const outDir = join(LAB, 'results/e11'); await mkdir(outDir, { recursive: true });
+const MAX_REQUESTS = 8, MAX_REQUESTS_INVESTIGATE = 16, MAX_BYTES = 400000, MAX_SUBMISSIONS = 2, CAP_USD = Number(arg('cap') ?? 6);
+const outDir = join(LAB, arg('out') ?? 'results/e11'); await mkdir(outDir, { recursive: true });
 const spentFile = join(outDir, '.spent.json');
 let spent = 0; try { spent = JSON.parse(await readFile(spentFile, 'utf8')).usd; } catch { /* first run */ }
 if (live && spent >= CAP_USD) throw new Error(`Spend cap reached: ${spent}`);

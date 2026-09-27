@@ -1,5 +1,6 @@
 """E11 aggregate per arm, preregistered tests and decision (see PROTOCOL-E11.md)."""
-import json, glob, collections
+import json, glob, collections, sys
+NAME = sys.argv[1] if len(sys.argv) > 1 else "e11"
 from math import comb
 
 HIT, MISS, OUT = 0.014, 0.44, 1.32  # DeepSeek USD per MTok, as in the runners
@@ -12,7 +13,7 @@ def fisher_ge(a, n1, b, n2):
 
 
 usd = lambda u: (u["prompt_cache_hit_tokens"] * HIT + u["prompt_cache_miss_tokens"] * MISS + u["completion_tokens"] * OUT) / 1e6
-runs = [json.load(open(f)) for f in sorted(glob.glob("results/e11/live-*.json"))]
+runs = [json.load(open(f)) for f in sorted(glob.glob(f"results/{NAME}/live-*.json"))]
 arms = collections.defaultdict(list)
 inv = []
 for r in runs:
@@ -59,7 +60,7 @@ if len(P) == 4:
 iids = sorted({a["_item"] for A in arms.values() for a in A})
 out["by_item"] = {i: {n: "".join("✓" if a.get("firstSubmissionPass") else "✗" for a in sorted(A, key=lambda a: a["_rep"]) if a["_item"] == i) for n, A in sorted(arms.items())} for i in iids}
 out["investigations"] = inv
-json.dump(out, open("results/e11_report.json", "w"), indent=1, ensure_ascii=False)
+json.dump(out, open(f"results/{NAME}_report.json", "w"), indent=1, ensure_ascii=False)
 if __name__ == "__main__":
     print("runs", out["runs"], "spend peak", out["spendUsdPeak"], "cached", out["spendUsdCached"])
     print("investigations failed:", out["investigations_failed"])
